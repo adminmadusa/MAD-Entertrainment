@@ -26,7 +26,7 @@ const refundSchema = new Schema<IRefund>(
     bookingId: { type: Schema.Types.ObjectId, ref: 'Booking', required: true, index: true },
     paymentId: { type: Schema.Types.ObjectId, ref: 'Payment', required: true, index: true },
     amount: { type: Number, required: true, min: 0 },
-    currency: { type: String, default: 'INR' },
+    currency: { type: String, default: 'USD' },
     reason: String,
     status: {
       type: String,

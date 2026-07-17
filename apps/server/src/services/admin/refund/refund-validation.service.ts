@@ -183,7 +183,7 @@ export class RefundValidationService {
       // 7. Cumulative Refund Check
       if (existingSum + amount > payment.amount) {
         const remaining = payment.amount - existingSum;
-        throw AppError.badRequest(`Cumulative refund amount exceeds original payment amount (Paid: ₹${payment.amount}, Refunded/Processing: ₹${existingSum}, Max Remaining: ₹${remaining})`);
+        throw AppError.badRequest(`Cumulative refund amount exceeds original payment amount (Paid: ${payment.amount} ${payment.currency || 'USD'}, Refunded/Processing: ${existingSum}, Max Remaining: ${remaining})`);
       }
     }
   }
@@ -265,7 +265,7 @@ export class RefundValidationService {
 
     // 4. Cumulative balance cap check
     if (totalRefundedSoFar + refund.amount > payment.amount) {
-      throw AppError.badRequest(`Refund amount exceeds remaining captured balance (Paid: ₹${payment.amount}, Refunded/Processing: ₹${totalRefundedSoFar}, Attempted: ₹${refund.amount})`);
+      throw AppError.badRequest(`Refund amount exceeds remaining captured balance (Paid: ${payment.amount} ${payment.currency || 'USD'}, Refunded/Processing: ${totalRefundedSoFar}, Attempted: ${refund.amount})`);
     }
   }
 }

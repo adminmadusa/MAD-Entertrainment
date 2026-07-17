@@ -137,7 +137,7 @@ export class PaymentIntentService {
         gateway: 'free',
         status: PaymentStatus.PAID,
         amount: 0,
-        currency: booking.currency || 'INR',
+        currency: booking.currency || 'USD',
         gatewayOrderId: `free_${crypto.randomBytes(8).toString('hex')}`,
       });
       const confirmedBooking = await confirmBookingFacade(booking, payment);
@@ -163,7 +163,7 @@ export class PaymentIntentService {
     if (existingPayment) {
       const matchesFingerprint =
         existingPayment.amount === booking.totalAmount &&
-        existingPayment.currency === (booking.currency || 'INR') &&
+        existingPayment.currency === (booking.currency || 'USD') &&
         existingPayment.couponId?.toString() === booking.couponId?.toString();
 
       const ageMs = Date.now() - existingPayment.createdAt.getTime();
@@ -377,7 +377,7 @@ export class PaymentIntentService {
         booking._id,
         'stripe',
         booking.totalAmount,
-        booking.currency || 'INR',
+        booking.currency || 'USD',
         booking.couponId,
         mockIntentId
       );
@@ -416,7 +416,7 @@ export class PaymentIntentService {
         clientSecret:
           mockIntentId + '_secret_' + crypto.randomBytes(4).toString('hex'),
         amount: booking.totalAmount,
-        currency: booking.currency || 'INR',
+        currency: booking.currency || 'USD',
         bookingId: booking._id,
         isMock: true,
       };
@@ -430,7 +430,7 @@ export class PaymentIntentService {
     try {
       const paymentIntent = await StripeAdapter.createPaymentIntent({
         amountPaise,
-        currency: booking.currency || 'INR',
+        currency: booking.currency || 'USD',
         bookingId: booking._id.toString(),
         bookingReference: booking.bookingId,
       });
@@ -439,7 +439,7 @@ export class PaymentIntentService {
         booking._id,
         'stripe',
         booking.totalAmount,
-        booking.currency || 'INR',
+        booking.currency || 'USD',
         booking.couponId,
         paymentIntent.id
       );

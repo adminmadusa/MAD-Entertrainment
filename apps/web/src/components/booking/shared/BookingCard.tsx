@@ -1,15 +1,15 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import Link from 'next/link';
-
 import { BookingHeaderCard } from '@/components/booking/shared/BookingHeaderCard';
-import { useCountdown } from '@/hooks/use-countdown.hook';
-import { formatDate, formatDateTime } from '@/utils/date';
 import { BookingStatus, getBookingLifecycle, buildVenueMapLink, type BookingForLifecycle, type BaseEventForLifecycle } from '@mad/shared';
 import type { Booking, Ticket, Event } from '@mad/types';
+import { formatDate } from '@/utils/date';
 
 import { EventCountdown } from './EventCountdown';
+import { PaymentRecoveryBanner } from './PaymentRecoveryBanner';
+import { TicketStatusMessage } from './TicketStatusMessage';
+import { BookingDetailsGrid } from './BookingDetailsGrid';
 
 const EntryPassGrid = dynamic(() => import('@/components/booking/shared/EntryPassGrid').then(mod => mod.EntryPassGrid), {
   ssr: false,
@@ -40,53 +40,6 @@ const getEventCategoryStyles = (category?: string) => {
     gradient: 'from-slate-800 to-slate-950 border-slate-700/20'
   };
 };
-
-function PaymentRecoveryBanner({ booking }: { booking: Booking }) {
-  const countdown = useCountdown(booking.logicalExpiresAt || booking.expiresAt);
-  if (countdown.isExpired) return null;
-
-  return (
-    <div className="glass rounded-3xl border border-amber-500/30 bg-amber-500/10 p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-      <div className="space-y-1 text-center sm:text-left">
-        <h3 className="text-amber-400 font-bold text-base flex items-center gap-2 justify-center sm:justify-start">
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-          </svg>
-          Complete Your Payment
-        </h3>
-        <p className="text-text-secondary text-xs max-w-md">
-          Your seats are temporarily reserved. Complete your payment to confirm this booking. Reservation expires in <span className="font-mono font-bold text-amber-300">{countdown.minutes}:{String(countdown.seconds).padStart(2, '0')}</span>.
-        </p>
-      </div>
-      <div className="flex flex-col w-full sm:w-auto gap-3 shrink-0">
-        <Link href={`/checkout/${booking.bookingId}`} className="px-6 py-2.5 rounded-xl btn-gradient text-white font-bold text-sm shadow-glow-sm hover:scale-[1.02] active:scale-[0.98] transition-all text-center">
-          Complete Payment
-        </Link>
-        <a href="mailto:support@mad-entertainment.com" className="px-6 py-2.5 rounded-xl border border-white/10 text-white/80 hover:bg-white/5 font-bold text-sm hover:scale-[1.02] active:scale-[0.98] transition-all text-center">
-          Contact Support
-        </a>
-      </div>
-    </div>
-  );
-}
-
-function TicketStatusMessage({ status }: { status: string }) {
-  const messages: Record<string, string> = {
-    [BookingStatus.AWAITING_PAYMENT]: 'Complete payment to receive tickets.',
-    [BookingStatus.FAILED]: 'Payment was unsuccessful. Create a new booking to try again.',
-    [BookingStatus.EXPIRED]: 'Reservation expired before payment completed.',
-    [BookingStatus.CANCELLED]: 'This booking was cancelled.',
-    [BookingStatus.REFUNDED]: 'Payment has been refunded.',
-    [BookingStatus.EXPIRING]: 'We are processing this booking. Please check back shortly.',
-    [BookingStatus.PENDING]: 'This booking is pending. Please check back shortly.',
-  };
-
-  return (
-    <div className="glass-strong rounded-2xl border border-border-subtle p-6 text-center text-text-secondary text-sm">
-      {messages[status] || 'This booking is not ready for ticket access yet.'}
-    </div>
-  );
-}
 
 interface BookingCardProps {
   booking: Booking;
@@ -305,34 +258,7 @@ export function BookingCard({
         })()}
 
         {/* Metadata Details Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 pt-4 border-t border-white/5 text-xs text-text-secondary">
-          <div>
-            <span className="text-[10px] text-text-muted uppercase tracking-wider block">Guest Name</span>
-            <span className="text-white font-semibold">{booking.guestName || 'N/A'}</span>
-          </div>
-          <div>
-            <span className="text-[10px] text-text-muted uppercase tracking-wider block">Venue</span>
-            <span className="text-white font-semibold">{eventInfo?.venue || 'N/A'}</span>
-          </div>
-          {eventInfo?.showTime && eventInfo.showTime !== 'N/A' && (
-            <div>
-              <span className="text-[10px] text-text-muted uppercase tracking-wider block">Show Time</span>
-              <span className="text-white font-semibold">{eventInfo.showTime}</span>
-            </div>
-          )}
-          {booking.createdAt && (
-            <div>
-              <span className="text-[10px] text-text-muted uppercase tracking-wider block">Purchased On</span>
-              <span className="text-white font-semibold font-sans">
-                {formatDate(booking.createdAt, { dateStyle: 'medium' })} {formatDateTime(booking.createdAt, { hour: '2-digit', minute: '2-digit' })}
-              </span>
-            </div>
-          )}
-          <div>
-            <span className="text-[10px] text-text-muted uppercase tracking-wider block">Total Tickets</span>
-            <span className="text-white font-semibold">{booking.totalTickets} Passes</span>
-          </div>
-        </div>
+        <BookingDetailsGrid booking={booking} eventInfo={eventInfo} />
       </div>
     );
   };

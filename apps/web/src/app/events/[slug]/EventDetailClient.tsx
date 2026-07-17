@@ -7,7 +7,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
 import { publicGetEventBySlug } from '@/lib/api/public.service';
-import { QUERY_KEYS } from '@mad/shared';
+import { QUERY_KEYS, formatMoney } from '@mad/shared';
 import type { Event as EventData } from '@mad/types';
 
 import type { EventBookingFlowHandle } from './components/EventBookingFlow';
@@ -111,7 +111,10 @@ export default function EventDetailClient({ slug, initialEvent }: EventDetailCli
   const prices = event.ticketTiers?.map((t) => t.price - (t.discount || 0)) || [];
   const minPrice = prices.length > 0 ? Math.min(...prices) : 0;
   const maxPrice = prices.length > 0 ? Math.max(...prices) : 0;
-  const priceDisplay = minPrice === maxPrice ? `₹${minPrice}` : `₹${minPrice} - ₹${maxPrice}`;
+  const currency = event.currency || 'USD';
+  const priceDisplay = minPrice === maxPrice
+    ? formatMoney(minPrice, currency)
+    : `${formatMoney(minPrice, currency)} - ${formatMoney(maxPrice, currency)}`;
 
   const totalCapacity =
     event.totalCapacity ||

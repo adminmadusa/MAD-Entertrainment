@@ -10,7 +10,7 @@ import { Reveal } from '@/components/common/PageTransition';
 import { useMounted, useWindowWidth } from '@/hooks/use-window.hook';
 import { formatEventDate } from '@/utils/date';
 import { getOptimizedImageUrl } from '@/utils/image';
-import { EventCategory, EVENT_CATEGORY_LABELS } from '@mad/shared';
+import { EventCategory, EVENT_CATEGORY_LABELS, formatMoney } from '@mad/shared';
 import type { Event } from '@mad/types';
 import { ArrowLeft, ArrowRight, CalendarIcon } from '@mad/ui';
 
@@ -249,7 +249,7 @@ export const UpcomingEventsSection = memo(function UpcomingEventsSection({ initi
                           <div>
                             <div className="text-[9px] sm:text-[10px] text-text-muted font-medium">Tickets from</div>
                             <div className="text-white font-black text-xs sm:text-sm">
-                              ₹{event.ticketTiers && event.ticketTiers.length > 0 ? Math.min(...event.ticketTiers.map((t) => t.price)) : 0}
+                              {formatMoney(event.ticketTiers && event.ticketTiers.length > 0 ? Math.min(...event.ticketTiers.map((t) => t.price)) : 0, event.currency)}
                             </div>
                           </div>
                           <button

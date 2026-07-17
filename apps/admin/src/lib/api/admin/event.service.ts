@@ -69,6 +69,12 @@ export interface AdminEvent {
   attendancePercentage?: number;
   noShowCount?: number;
   noShowPercentage?: number;
+  // Localization
+  countryCode?: string;
+  currency?: string;
+  taxLabel?: string;
+  taxPercentage?: number;
+  locale?: string;
 }
 
 export interface EventsResponse {
