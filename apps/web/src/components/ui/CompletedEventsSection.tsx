@@ -19,9 +19,7 @@ interface CompletedEventsSectionProps {
 export const CompletedEventsSection = memo(function CompletedEventsSection({
   initialEvents = [],
 }: CompletedEventsSectionProps) {
-  const events = initialEvents;
-
-  if (events.length === 0) {
+  if (initialEvents.length === 0) {
     return null;
   }
 
@@ -40,7 +38,7 @@ export const CompletedEventsSection = memo(function CompletedEventsSection({
         </Reveal>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {events.map((event, index) => {
+          {initialEvents.map((event, index) => {
             return (
               <Reveal key={event._id} delay={index * 100}>
                 <motion.div

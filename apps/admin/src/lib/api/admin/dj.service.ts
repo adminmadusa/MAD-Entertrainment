@@ -1,5 +1,8 @@
 import { adminApiClient } from '@/lib/api/client';
 import type { DJOperator, PaginatedDataResponse, PaginatedItemsResponse } from '@mad/types';
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger('DJ Service');
 
 export type DJsResponse = PaginatedDataResponse<DJOperator>;
 
@@ -33,7 +36,7 @@ export async function adminGetDJs(filters: DJFilters = {}): Promise<NormalizedDJ
       },
     };
   } catch (error) {
-    console.error('[DJ Service] Failed to fetch DJ Operators, returning safe default NormalizedDJsResponse:', error);
+    logger.error('Failed to fetch DJ Operators, returning safe default NormalizedDJsResponse:', error);
     return {
       items: [],
       pagination: {
@@ -59,7 +62,7 @@ export async function adminGetDJ(id: string): Promise<DJOperator | null> {
     }
     return payload as DJOperator;
   } catch (error) {
-    console.error(`[DJ Service] Failed to fetch DJ Operator ${id}:`, error);
+    logger.error(`Failed to fetch DJ Operator ${id}:`, error);
     return null;
   }
 }
@@ -69,7 +72,7 @@ export async function adminCreateDJ(payload: Partial<DJOperator>): Promise<DJOpe
     const { data } = await adminApiClient.post<{ data: DJOperator }>('/admin/dj-operators', payload);
     return data.data;
   } catch (error) {
-    console.error('[DJ Service] Failed to create DJ Operator:', error);
+    logger.error('Failed to create DJ Operator:', error);
     throw error;
   }
 }
@@ -79,7 +82,7 @@ export async function adminUpdateDJ(id: string, payload: Partial<DJOperator>): P
     const { data } = await adminApiClient.put<{ data: DJOperator }>(`/admin/dj-operators/${id}`, payload);
     return data.data;
   } catch (error) {
-    console.error(`[DJ Service] Failed to update DJ Operator ${id}:`, error);
+    logger.error(`Failed to update DJ Operator ${id}:`, error);
     throw error;
   }
 }
@@ -88,7 +91,7 @@ export async function adminDeleteDJ(id: string): Promise<void> {
   try {
     await adminApiClient.delete(`/admin/dj-operators/${id}`);
   } catch (error) {
-    console.error(`[DJ Service] Failed to delete DJ Operator ${id}:`, error);
+    logger.error(`Failed to delete DJ Operator ${id}:`, error);
     throw error;
   }
 }

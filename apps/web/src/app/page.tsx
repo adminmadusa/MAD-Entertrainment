@@ -4,7 +4,7 @@ import { Suspense } from 'react';
 
 import { Reveal, StaggerContainer, StaggerItem } from '@/components/common/PageTransition';
 import { CompletedEventsSection } from '@/components/ui/CompletedEventsSection';
-import { UpcomingEventsSkeleton } from '@/components/ui/HomeSkeletons';
+import { UpcomingEventsSkeleton, CompletedEventsSkeleton } from '@/components/ui/HomeSkeletons';
 import { UpcomingEventsSection } from '@/components/ui/UpcomingEventsSection';
 import { serverGetUpcomingEvents, serverGetCompletedEvents } from '@/lib/api/server.service';
 import { ArrowRight } from '@mad/ui';
@@ -72,7 +72,7 @@ export default function HomePage() {
       </Suspense>
 
       {/* ─── Completed Events & Moments (Streamed) ──────────── */}
-      <Suspense fallback={<UpcomingEventsSkeleton />}>
+      <Suspense fallback={<CompletedEventsSkeleton />}>
         <CompletedEventsServerSection />
       </Suspense>
 

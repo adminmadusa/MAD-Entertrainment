@@ -177,6 +177,7 @@ export function TicketProfileForm({
             onRemoveTicket={removeTicket}
             onUpdateTicketField={updateTicketField}
             dbTiers={dbTiers}
+            allSelectedTiers={groups.flatMap((g) => g.tickets.map((t) => t.tier))}
           />
         ))}
       </div>

@@ -9,7 +9,8 @@ import { useState } from 'react';
 
 import { publicGetEvents } from '@/lib/api/public.service';
 import { formatEventDate } from '@/utils/date';
-import { EventCategory, EVENT_CATEGORY_LABELS } from '@mad/shared';
+import { getOptimizedImageUrl } from '@/utils/image';
+import { EventCategory, EVENT_CATEGORY_LABELS, formatMoney } from '@mad/shared';
 import { CalendarIcon, EventGridSkeleton } from '@mad/ui';
 
 
@@ -17,7 +18,7 @@ export function EventsList() {
   const router = useRouter();
   const [page, setPage] = useState(1);
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isFetching } = useQuery({
     queryKey: ['public-events', page],
     queryFn: () =>
       publicGetEvents({
@@ -41,7 +42,12 @@ export function EventsList() {
       {/* Event Grid */}
       {(() => {
         if (isLoading) {
-          return <EventGridSkeleton count={8} />;
+          return (
+            <EventGridSkeleton
+              count={8}
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+            />
+          );
         }
 
         if (events.length === 0) {
@@ -54,14 +60,14 @@ export function EventsList() {
               </div>
               <h2 className="text-white font-bold text-lg">No Events Found</h2>
               <p className="text-text-muted text-sm max-w-xs mx-auto mt-1">
-                Try adjusting your search criteria or category filter to discover other active listings.
+                Active listings will appear here. Please check back later.
               </p>
             </div>
           );
         }
 
         return (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 transition-opacity duration-300 ${isFetching ? 'opacity-50' : 'opacity-100'}`}>
             {events.map((event) => {
               let cardAriaLabel = `View details for ${event.title}`;
               const cta = event.bookingCTA || { text: 'Details', disabled: false, variant: 'primary', action: 'VIEW' };
@@ -76,14 +82,14 @@ export function EventsList() {
                   <Link
                     href={`/events/${event.slug}`}
                     id={`event-card-${event.slug}`}
-                    className="flex flex-col h-full focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple"
+                    className="flex flex-col flex-grow focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple"
                     aria-label={cardAriaLabel}
                   >
                     {/* Banner Image */}
                     <div className="aspect-[4/3] w-full overflow-hidden relative bg-white/5 flex-shrink-0">
                       {event.bannerImage?.url ? (
                         <Image
-                          src={event.bannerImage.url}
+                          src={getOptimizedImageUrl(event.bannerImage.url, 400)}
                           alt=""
                           fill
                           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 300px"
@@ -107,32 +113,32 @@ export function EventsList() {
                       )}
                     </div>
 
-                  {/* Card Content */}
-                  <div className="p-5 flex flex-col flex-grow">
-                    <div className="text-text-muted text-[11px] font-semibold uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                      <CalendarIcon className="w-3.5 h-3.5 text-accent-purple-light" />
-                      {formatEventDate(event.startDate)}
+                    {/* Card Content */}
+                    <div className="p-5 flex flex-col flex-grow">
+                      <div className="text-text-muted text-[11px] font-semibold uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                        <CalendarIcon className="w-3.5 h-3.5 text-accent-purple-light" />
+                        {formatEventDate(event.startDate)}
+                      </div>
+                      <h2 className="text-white font-bold text-base line-clamp-1 mb-2 group-hover:text-accent-purple-light transition-colors">
+                        {event.title}
+                      </h2>
+                      <p className="text-text-secondary text-xs line-clamp-2 mb-6 flex-grow leading-relaxed">
+                        {event.description}
+                      </p>
                     </div>
-                    <h2 className="text-white font-bold text-base line-clamp-1 mb-2 group-hover:text-accent-purple-light transition-colors">
-                      {event.title}
-                    </h2>
-                    <p className="text-text-secondary text-xs line-clamp-2 mb-6 flex-grow leading-relaxed">
-                      {event.description}
-                    </p>
-                  </div>
+                  </Link>
 
+                  {/* Card Footer Action Block */}
                   <div className="px-5 pb-5 pt-4 border-t border-border-subtle/40 flex items-center justify-between mt-auto bg-black/10 w-full">
                     <div>
                       <div className="text-[10px] text-text-muted font-medium">Tickets from</div>
                       <div className="text-white font-black text-sm">
-                        ₹{event.ticketTiers?.length > 0 ? Math.min(...event.ticketTiers.map((t) => t.price)) : 0}
+                        {formatMoney(event.ticketTiers?.length > 0 ? Math.min(...event.ticketTiers.map((t) => t.price)) : 0, event.currency)}
                       </div>
                     </div>
                     <button
                       type="button"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
+                      onClick={() => {
                         if (cta.action === 'NONE' || cta.disabled) return;
                         if (cta.action === 'BOOK') {
                           router.push(`/events/${event.slug}?modal=booking`);
@@ -150,9 +156,9 @@ export function EventsList() {
                       {cta.text}
                     </button>
                   </div>
-                </Link>
-              </motion.div>
-            )})}
+                </motion.div>
+              );
+            })}
           </div>
         );
       })()}
@@ -166,19 +172,19 @@ export function EventsList() {
           <div className="flex gap-2">
             <button
               onClick={() => setPage((p) => Math.max(1, p - 1))}
-              disabled={page === 1}
+              disabled={page === 1 || isFetching}
               aria-label="Previous page"
-              className="px-4 py-2 text-xs glass border border-border-subtle rounded-xl disabled:opacity-40 text-text-secondary hover:text-white transition-all font-medium"
+              className="px-4 py-2 text-xs glass border border-border-subtle rounded-xl disabled:opacity-40 text-text-secondary hover:text-white transition-all font-medium disabled:cursor-not-allowed"
             >
               ← Previous
             </button>
             <button
               onClick={() => setPage((p) => p + 1)}
-              disabled={page >= pagination.totalPages}
+              disabled={page >= pagination.totalPages || isFetching}
               aria-label="Next page"
-              className="px-4 py-2 text-xs glass border border-border-subtle rounded-xl disabled:opacity-40 text-text-secondary hover:text-white transition-all font-medium"
+              className="px-4 py-2 text-xs glass border border-border-subtle rounded-xl disabled:opacity-40 text-text-secondary hover:text-white transition-all font-medium disabled:cursor-not-allowed"
             >
-              Next →
+              {isFetching ? 'Loading...' : 'Next →'}
             </button>
           </div>
         </div>

@@ -12,7 +12,7 @@ import { useCountdown } from '@/hooks/use-countdown.hook';
 import { extractApiError } from '@/lib/api/client';
 import { publicGetBookingDetails, publicCreatePaymentIntent, publicVerifyPayment, publicSaveCheckoutDetails, getStoredGuestBookingSession, type PaymentIntentResponse } from '@/lib/api/public.service';
 import { loadScriptOnce } from '@/lib/utils/load-script-once';
-import { BookingStatus, QUERY_KEYS } from '@mad/shared';
+import { BookingStatus, QUERY_KEYS, formatMoney } from '@mad/shared';
 import type { Booking, Event, Ticket } from '@mad/types';
 import { CheckoutDetailsInput } from '@mad/validations';
 
@@ -83,6 +83,7 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose, onConfirm
   });
 
   const booking = details?.booking;
+  const currency = booking?.currency || 'USD';
   const event = asEvent((booking as Booking | undefined)?.eventId);
 
   // Trigger onConfirmed when booking status is confirmed
@@ -346,6 +347,7 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose, onConfirm
                     key={index}
                     tierName={t.tierName}
                     quantity={t.quantity}
+                    currency={currency}
                   />
                 ))}
               </div>
@@ -355,7 +357,7 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose, onConfirm
             <div className="flex justify-between items-center text-xs font-bold pt-3 border-t border-white/5">
               <span className="text-text-primary">Total Paid</span>
               <span className="text-accent-cyan font-mono text-sm font-black">
-                ₹{booking.totalAmount.toLocaleString('en-IN')}
+                {formatMoney(booking.totalAmount, currency)}
               </span>
             </div>
           </div>
@@ -467,7 +469,7 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose, onConfirm
                   <p className="text-xs text-text-muted">
                     {new Date(event.startDate).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'UTC' })} · {event.showTime}
                   </p>
-                  <p className="text-xs text-accent-purple-light font-bold">₹{booking.totalAmount}</p>
+                  <p className="text-xs text-accent-purple-light font-bold">{formatMoney(booking.totalAmount, currency)}</p>
                 </div>
               </div>
             )}
@@ -520,7 +522,7 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose, onConfirm
           <div className={`container-mad max-w-4xl px-4 flex items-center gap-4 ${isModal ? 'py-2' : 'py-3 pb-[calc(1rem+env(safe-area-inset-bottom))]'}`}>
             <div className="flex-1">
               <div className="text-[10px] text-text-muted font-semibold uppercase tracking-wider">Total Amount</div>
-              <div className="text-white font-black text-lg">₹{booking.totalAmount}</div>
+              <div className="text-white font-black text-lg">{formatMoney(booking.totalAmount, currency)}</div>
             </div>
             <button
               type="submit"

@@ -1,7 +1,8 @@
 import React from 'react';
 import { EventStatus } from '@mad/shared';
 import { Button, Badge } from '@mad/ui';
-import { CloudinaryImage, TicketTierInput } from './index';
+import { type TicketTierInput } from '@/components/events/EventTicketingCard';
+import type { CloudinaryImage } from '@/lib/api/admin/event.service';
 
 interface EventReviewSectionProps {
   title: string;

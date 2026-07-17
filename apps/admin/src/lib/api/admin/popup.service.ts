@@ -1,5 +1,8 @@
 import { adminApiClient } from '@/lib/api/client';
 import type { PopupCampaign, PaginatedDataResponse, PaginatedItemsResponse } from '@mad/types';
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger('Popup Service');
 
 export type PopupsResponse = PaginatedDataResponse<PopupCampaign>;
 
@@ -19,7 +22,7 @@ export async function adminGetPopups(page = 1, limit = 15): Promise<NormalizedPo
       },
     };
   } catch (error) {
-    console.error('[Popup Service] Failed to fetch popup campaigns, returning safe default NormalizedPopupsResponse:', error);
+    logger.error('Failed to fetch popup campaigns, returning safe default NormalizedPopupsResponse:', error);
     return {
       items: [],
       pagination: {
@@ -45,7 +48,7 @@ export async function adminGetPopup(id: string): Promise<PopupCampaign | null> {
     }
     return payload as PopupCampaign;
   } catch (error) {
-    console.error(`[Popup Service] Failed to fetch popup campaign ${id}:`, error);
+    logger.error(`Failed to fetch popup campaign ${id}:`, error);
     return null;
   }
 }
@@ -55,7 +58,7 @@ export async function adminCreatePopup(payload: Partial<PopupCampaign>): Promise
     const { data } = await adminApiClient.post<{ data: PopupCampaign }>('/admin/popups', payload);
     return data.data;
   } catch (error) {
-    console.error('[Popup Service] Failed to create popup campaign:', error);
+    logger.error('Failed to create popup campaign:', error);
     throw error;
   }
 }
@@ -65,7 +68,7 @@ export async function adminUpdatePopup(id: string, payload: Partial<PopupCampaig
     const { data } = await adminApiClient.put<{ data: PopupCampaign }>(`/admin/popups/${id}`, payload);
     return data.data;
   } catch (error) {
-    console.error(`[Popup Service] Failed to update popup campaign ${id}:`, error);
+    logger.error(`Failed to update popup campaign ${id}:`, error);
     throw error;
   }
 }
@@ -74,7 +77,7 @@ export async function adminDeletePopup(id: string): Promise<void> {
   try {
     await adminApiClient.delete(`/admin/popups/${id}`);
   } catch (error) {
-    console.error(`[Popup Service] Failed to delete popup campaign ${id}:`, error);
+    logger.error(`Failed to delete popup campaign ${id}:`, error);
     throw error;
   }
 }
@@ -84,7 +87,7 @@ export async function adminTogglePopup(id: string): Promise<{ isActive: boolean 
     const { data } = await adminApiClient.patch<{ data: { isActive: boolean } }>(`/admin/popups/${id}/toggle`);
     return data.data;
   } catch (error) {
-    console.error(`[Popup Service] Failed to toggle active status for popup campaign ${id}:`, error);
+    logger.error(`Failed to toggle active status for popup campaign ${id}:`, error);
     throw error;
   }
 }

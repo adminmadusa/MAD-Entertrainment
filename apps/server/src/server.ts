@@ -132,7 +132,10 @@ async function bootstrap(): Promise<void> {
   // ─── Unhandled Rejections ─────────────────────────────────
   process.on('unhandledRejection', (reason) => {
     logger.fatal({ reason }, '❌ Unhandled Promise Rejection');
-    process.exit(1);
+    // In local development, do not crash the server on unhandled rejections
+    if (env.NODE_ENV !== 'development') {
+      process.exit(1);
+    }
   });
 
   process.on('uncaughtException', (err) => {

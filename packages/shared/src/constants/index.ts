@@ -77,37 +77,6 @@ export enum BookingReason {
   EVENT_ARCHIVED = 'EVENT_ARCHIVED',
 }
 
-// ─── Event Duplication Policy ────────────────────────────────
-export const EVENT_DUPLICATION_POLICY = {
-  copied: [
-    'title', // Title is copied but modified by naming strategy
-    'description',
-    'category',
-    'bookingMode',
-    'bannerImage',
-    'posterImage',
-    'startDate',
-    'endDate',
-    'doorsOpenTime',
-    'showTime',
-    'venue',
-    'djOperatorIds',
-    'ticketTiers',
-    'bookingStartDate',
-    'bookingEndDate',
-  ],
-  reset: [
-    '_id',
-    'slug',
-    'createdAt',
-    'updatedAt',
-    'eventVersion',
-  ],
-  regenerated: [
-    'status', // Defaults to PUBLISHED
-  ]
-} as const;
-
 export type EventStatusTone = 'success' | 'warning' | 'danger' | 'info' | 'neutral';
 
 export type EventStatusMeta = {
@@ -327,11 +296,14 @@ export enum AdminRole {
 }
 
 // ─── Refund Status ───────────────────────────────────────────
+// NOTE: There is no distinct REJECTED status in the database schema.
+// Admin rejections are stored as FAILED by design — both failed gateway
+// executions and admin rejections share the same terminal state.
+// See rejectRefund() in refund-lifecycle.service.ts.
 export enum RefundStatus {
   REQUESTED = 'requested',
   PROCESSING = 'processing',
   COMPLETED = 'completed',
-  REJECTED = 'rejected',
   FAILED = 'failed',
 }
 
@@ -389,6 +361,9 @@ export const MAX_MEMORIES_GALLERY_LIMIT = 50;
 // ─── Popup Cooldown ──────────────────────────────────────────
 export const POPUP_COOLDOWN_HOURS = 24;
 export const POPUP_SESSION_KEY_PREFIX = 'mad_popup_';
+
+// ─── Default Event Duration ──────────────────────────────────
+export const DEFAULT_EVENT_DURATION_HOURS = 4;
 
 // ─── API Routes ──────────────────────────────────────────────
 export const API_ROUTES = {
