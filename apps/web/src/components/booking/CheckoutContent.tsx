@@ -430,8 +430,8 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose, onConfirm
             ←
           </button>
 
-          <div className="text-center">
-            <h1 id="checkout-modal-title" className="text-sm font-bold text-white tracking-wide">Checkout</h1>
+          <div className="text-center min-w-0 flex-1 px-2">
+            <h1 id="checkout-modal-title" className="text-xs md:text-sm font-bold text-white tracking-wide truncate">Checkout</h1>
             <div className={`text-[10px] font-semibold mt-0.5 ${isExpired ? 'text-red-400' : 'text-accent-cyan animate-pulse'}`}>
               {timeLeft}
             </div>
