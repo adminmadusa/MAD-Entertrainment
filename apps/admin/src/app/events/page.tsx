@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useState } from 'react';
 
-import { adminGetEvents, adminDeleteEvent, adminBulkDeleteEvents, adminDuplicateEvent, adminUpdateEvent, type AdminEvent } from '@/lib/api/admin/event.service';
+import { adminGetEvents, adminDeleteEvent, adminBulkDeleteEvents, adminUpdateEvent, type AdminEvent } from '@/lib/api/admin/event.service';
 import { extractApiError } from '@/lib/api/client';
 import { useAdminAuth } from '@/providers/AdminAuthProvider';
 import { EVENT_STATUS_METADATA, EVENT_STATUS_TRANSITIONS, EventStatus, AdminRole } from '@mad/shared';
@@ -62,17 +62,6 @@ export default function AdminEventsPage() {
       qc.invalidateQueries({ queryKey: ['admin-events'] });
       setDeleteTarget(null);
     },
-  });
-
-  const duplicateMutation = useMutation({
-    mutationFn: (id: string) => adminDuplicateEvent(id, {}, Date.now().toString()),
-    onSuccess: (data) => {
-      qc.invalidateQueries({ queryKey: ['admin-events'] });
-      showToast('success', 'Event duplicated successfully');
-    },
-    onError: (err: any) => {
-      showToast('error', err.response?.data?.message || 'Failed to duplicate event');
-    }
   });
 
   const statusUpdateMutation = useMutation({
@@ -188,7 +177,30 @@ export default function AdminEventsPage() {
           </TableCell>
           <TableCell className="py-4 px-4 text-text-secondary">
             {event.startDate ? (
-              formatEventDate(event.startDate)
+              <div className="flex flex-col gap-0.5 text-xs">
+                <div>
+                  <span className="text-text-muted">Starts:</span> {formatEventDate(event.startDate)}
+                </div>
+                {event.endDate && (
+                  <div className="text-[11px] text-text-muted">
+                    <span className="text-text-muted/70">Ends:</span> {formatEventDate(event.endDate)}
+                  </div>
+                )}
+                {(event.bookingStartDate || event.bookingEndDate) && (
+                  <div className="text-[10px] text-text-muted/80 border-t border-white/5 pt-0.5 mt-0.5 flex flex-col gap-0.5">
+                    {event.bookingStartDate && (
+                      <div>
+                        <span className="font-medium text-accent-purple-light">Book Opens:</span> {formatEventDate(event.bookingStartDate)}
+                      </div>
+                    )}
+                    {event.bookingEndDate && (
+                      <div>
+                        <span className="font-medium text-accent-purple-light">Book Closes:</span> {formatEventDate(event.bookingEndDate)}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
             ) : (
               <span className="text-text-muted">N/A</span>
             )}
@@ -241,13 +253,7 @@ export default function AdminEventsPage() {
                 >
                   Edit
                 </Link>
-                <button
-                  onClick={() => duplicateMutation.mutate(event._id)}
-                  disabled={duplicateMutation.isPending}
-                  className="px-3 py-1.5 text-xs font-medium glass border border-border-subtle rounded-lg text-text-secondary hover:text-white hover:border-brand-primary/40 transition-all disabled:opacity-50"
-                >
-                  Duplicate
-                </button>
+
                 <button
                   onClick={() => setDeleteTarget(event)}
                   className="px-3 py-1.5 text-xs font-medium glass border border-border-subtle rounded-lg text-text-muted hover:text-red-400 hover:border-red-500/40 transition-all"
@@ -349,7 +355,7 @@ export default function AdminEventsPage() {
                 Category
               </TableHead>
               <TableHead onClick={() => handleSort('startDate')} className="py-3.5 px-4 cursor-pointer hover:text-white transition-colors select-none">
-                Date {sortField === 'startDate' ? (sortOrder === 'asc' ? '▲' : '▼') : ''}
+                Event Starts {sortField === 'startDate' ? (sortOrder === 'asc' ? '▲' : '▼') : ''}
               </TableHead>
               <TableHead className="py-3.5 px-4 text-text-secondary select-none">
                 Status

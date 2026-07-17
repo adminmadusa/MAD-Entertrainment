@@ -11,7 +11,7 @@ import { EventBasicInfoCard } from '@/components/events/EventBasicInfoCard';
 import { EventMediaCard } from '@/components/events/EventMediaCard';
 import { EventRequirementsCard } from '@/components/events/EventRequirementsCard';
 import { EventScheduleCard } from '@/components/events/EventScheduleCard';
-import { EventTicketingCard, type TicketTierInput } from '@/components/events/EventTicketingCard';
+import { EventTicketingCard, defaultTier, type TicketTierInput } from '@/components/events/EventTicketingCard';
 import { adminGetCategories } from '@/lib/api/admin/category.service';
 import { adminGetEvent, adminUpdateEvent, type AdminEventUpdatePayload, type CloudinaryImage, } from '@/lib/api/admin/event.service';
 import { adminGetTicketProfiles } from '@/lib/api/admin/ticket-profile.service';
@@ -19,12 +19,6 @@ import { adminGetTiers } from '@/lib/api/admin/tier.service';
 import { extractApiError } from '@/lib/api/client';
 import { BookingMode, TicketTier, EventStatus, EVENT_STATUS_TRANSITIONS, type EventLifecycleStatus, deriveEventLifecycleState } from '@mad/shared';
 import { AdminFormActions } from '@mad/ui';
-
-const defaultTier = (): TicketTierInput => ({
-  name: 'general',
-  price: '',
-  capacity: '',
-});
 
 const isEventLifecycleStatus = (status: EventStatus): status is EventLifecycleStatus =>
   Object.prototype.hasOwnProperty.call(EVENT_STATUS_TRANSITIONS, status);

@@ -6,26 +6,20 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 import { EventRequirementsCard } from '@/components/events/EventRequirementsCard';
+import { EventAdditionalDetailsCard } from '@/components/events/EventAdditionalDetailsCard';
+import { EventBasicInfoCard } from '@/components/events/EventBasicInfoCard';
+import { EventMediaCard } from '@/components/events/EventMediaCard';
+import { EventScheduleCard } from '@/components/events/EventScheduleCard';
+import { EventTicketingCard, defaultTier, type TicketTierInput } from '@/components/events/EventTicketingCard';
 import { adminGetCategories } from '@/lib/api/admin/category.service';
-import { adminCreateEvent, AdminEvent } from '@/lib/api/admin/event.service';
+import { adminCreateEvent, AdminEvent, type CloudinaryImage } from '@/lib/api/admin/event.service';
 import { adminGetTicketProfiles } from '@/lib/api/admin/ticket-profile.service';
 import { adminGetTiers } from '@/lib/api/admin/tier.service';
 import { extractApiError } from '@/lib/api/client';
 import { BookingMode, TicketTier, EventStatus } from '@mad/shared';
 import type { TicketProfile } from '@mad/types';
 import { Button, Stepper } from '@mad/ui';
-
-import { 
-  EventBasicInfoSection, 
-  EventScheduleSection, 
-  EventVenueSection, 
-  EventTicketSection, 
-  EventMediaSection, 
-  EventReviewSection,
-  defaultTier, 
-  TicketTierInput, 
-  CloudinaryImage 
-} from './_components';
+import { EventReviewSection } from './_components/EventReviewSection';
 
 const STEPS = [
   'Basic Information',
@@ -238,17 +232,26 @@ export default function CreateEventPage() {
 
       {/* STEP 1: Basic Information */}
       {currentStep === 0 && (
-        <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
-          <EventBasicInfoSection
-            title={title} setTitle={setTitle}
-            category={category} setCategory={setCategory}
-            description={description} setDescription={setDescription}
-            organizerName={organizerName} setOrganizerName={setOrganizerName}
-            highlightsInput={highlightsInput} setHighlightsInput={setHighlightsInput}
-            refundPolicy={refundPolicy} setRefundPolicy={setRefundPolicy}
+        <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-6">
+          <EventBasicInfoCard
+            title={title}
+            setTitle={setTitle}
+            category={category}
+            setCategory={setCategory}
+            venue={venueName}
+            setVenue={setVenueName}
+            description={description}
+            setDescription={setDescription}
             dbCategories={dbCategories}
-            venueField={<EventVenueSection venueName={venueName} setVenueName={setVenueName} />}
-            publishField={null}
+            hideStatus
+          />
+          <EventAdditionalDetailsCard
+            organizerName={organizerName}
+            setOrganizerName={setOrganizerName}
+            highlightsInput={highlightsInput}
+            setHighlightsInput={setHighlightsInput}
+            refundPolicy={refundPolicy}
+            setRefundPolicy={setRefundPolicy}
           />
         </motion.div>
       )}
@@ -256,11 +259,15 @@ export default function CreateEventPage() {
       {/* STEP 2: Schedule */}
       {currentStep === 1 && (
         <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-6">
-          <EventScheduleSection
-            startDate={startDate} setStartDate={setStartDate}
-            endDate={endDate} setEndDate={setEndDate}
-            bookingStartDate={bookingStartDate} setBookingStartDate={setBookingStartDate}
-            bookingEndDate={bookingEndDate} setBookingEndDate={setBookingEndDate}
+          <EventScheduleCard
+            startDate={startDate}
+            setStartDate={setStartDate}
+            endDate={endDate}
+            setEndDate={setEndDate}
+            bookingStartDate={bookingStartDate}
+            setBookingStartDate={setBookingStartDate}
+            bookingEndDate={bookingEndDate}
+            setBookingEndDate={setBookingEndDate}
           />
         </motion.div>
       )}
@@ -268,18 +275,31 @@ export default function CreateEventPage() {
       {/* STEP 3: Ticket Configuration & Requirements */}
       {currentStep === 2 && (
         <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-6">
-          <EventTicketSection
-            ticketingType={ticketingType} setTicketingType={setTicketingType}
-            tiers={tiers} addTier={addTier} removeTier={removeTier} updateTier={updateTier}
-            dbTiers={dbTiers} selectedProfileId={selectedProfileId} setSelectedProfileId={setSelectedProfileId}
-            setOverrides={setOverrides} dbProfiles={dbProfiles} activeProfile={activeProfile}
-            overrides={overrides} handleOverrideChange={handleOverrideChange} title={title}
+          <EventTicketingCard
+            ticketingType={ticketingType}
+            setTicketingType={setTicketingType}
+            tiers={tiers}
+            onAddTier={addTier}
+            onRemoveTier={removeTier}
+            onUpdateTier={updateTier}
+            selectedProfileId={selectedProfileId}
+            setSelectedProfileId={setSelectedProfileId}
+            overrides={overrides}
+            onOverrideChange={handleOverrideChange}
+            dbTiers={dbTiers}
+            dbProfiles={dbProfiles}
+            activeProfile={activeProfile}
+            eventTitle={title}
           />
           <EventRequirementsCard
-            tags={tags} setTags={setTags}
-            requireTerms={requireTerms} setRequireTerms={setRequireTerms}
-            requireAgeConfirmation={requireAgeConfirmation} setRequireAgeConfirmation={setRequireAgeConfirmation}
-            ageRestriction={ageRestriction} setAgeRestriction={setAgeRestriction}
+            tags={tags}
+            setTags={setTags}
+            requireTerms={requireTerms}
+            setRequireTerms={setRequireTerms}
+            requireAgeConfirmation={requireAgeConfirmation}
+            setRequireAgeConfirmation={setRequireAgeConfirmation}
+            ageRestriction={ageRestriction}
+            setAgeRestriction={setAgeRestriction}
           />
         </motion.div>
       )}
@@ -287,10 +307,13 @@ export default function CreateEventPage() {
       {/* STEP 4: Media Uploads */}
       {currentStep === 3 && (
         <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
-          <EventMediaSection
-            coverImage={coverImage} setCoverImage={setCoverImage}
-            posterImage={posterImage} setPosterImage={setPosterImage}
-            galleryImages={galleryImages} setGalleryImages={setGalleryImages}
+          <EventMediaCard
+            bannerImage={coverImage}
+            setBannerImage={setCoverImage}
+            posterImage={posterImage}
+            setPosterImage={setPosterImage}
+            galleryImages={galleryImages}
+            setGalleryImages={setGalleryImages}
           />
         </motion.div>
       )}

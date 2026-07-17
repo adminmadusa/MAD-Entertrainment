@@ -2,7 +2,7 @@ import React from 'react';
 
 import { type AdminCategory } from '@/lib/api/admin/category.service';
 import { EVENT_CATEGORY_LABELS, EventStatus } from '@mad/shared';
-import { FormField } from '@mad/ui';
+import { FormField, Input, Textarea } from '@mad/ui';
 import { EventVenueInput } from './EventVenueInput';
 
 
@@ -24,15 +24,16 @@ export interface EventBasicInfoCardProps {
   setTitle: (val: string) => void;
   category: string;
   setCategory: (val: string) => void;
-  status: EventStatus;
-  setStatus: (val: EventStatus) => void;
+  status?: EventStatus;
+  setStatus?: (val: EventStatus) => void;
   lifecycle?: string;
   venue: string;
   setVenue: (val: string) => void;
   description: string;
   setDescription: (val: string) => void;
   dbCategories: AdminCategory[];
-  statusOptions: EventStatus[];
+  statusOptions?: EventStatus[];
+  hideStatus?: boolean;
 }
 
 export const EventBasicInfoCard = React.memo(function EventBasicInfoCard({
@@ -40,7 +41,7 @@ export const EventBasicInfoCard = React.memo(function EventBasicInfoCard({
   setTitle,
   category,
   setCategory,
-  status,
+  status = EventStatus.PUBLISHED,
   setStatus,
   lifecycle,
   venue,
@@ -48,7 +49,8 @@ export const EventBasicInfoCard = React.memo(function EventBasicInfoCard({
   description,
   setDescription,
   dbCategories,
-  statusOptions,
+  statusOptions = [],
+  hideStatus = false,
 }: EventBasicInfoCardProps) {
   return (
     <div className="glass rounded-2xl border border-border-subtle p-6 space-y-5">
@@ -60,14 +62,13 @@ export const EventBasicInfoCard = React.memo(function EventBasicInfoCard({
           </span>
         )}
       </div>
-      <FormField label="Event Title *" htmlFor="event-title">
-        <input
+      <FormField label="Event Title" htmlFor="event-title" required>
+        <Input
           id="event-title"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="e.g. Sunburn Festival 2025"
           required
-          className={inputCls}
         />
       </FormField>
       <div className="grid grid-cols-2 gap-4">
@@ -91,31 +92,33 @@ export const EventBasicInfoCard = React.memo(function EventBasicInfoCard({
                 ))}
           </select>
         </FormField>
-        <FormField label="Status" htmlFor="event-status">
-          <select
-            id="event-status"
-            value={status}
-            onChange={(e) => setStatus(e.target.value as EventStatus)}
-            className={inputCls}
-          >
-            {statusOptions.map((option) => (
-              <option key={option} value={option} className="bg-background-card">
-                {EVENT_STATUS_LABELS[option] ?? option}
-              </option>
-            ))}
-          </select>
-        </FormField>
+        {!hideStatus && setStatus && (
+          <FormField label="Status" htmlFor="event-status">
+            <select
+              id="event-status"
+              value={status}
+              onChange={(e) => setStatus(e.target.value as EventStatus)}
+              className={inputCls}
+            >
+              {statusOptions.map((option) => (
+                <option key={option} value={option} className="bg-background-card">
+                  {EVENT_STATUS_LABELS[option] ?? option}
+                </option>
+              ))}
+            </select>
+          </FormField>
+        )}
         <EventVenueInput venue={venue} setVenue={setVenue} required />
       </div>
-      <FormField label="Full Description *" htmlFor="event-description">
-        <textarea
+      <FormField label="Full Description" htmlFor="event-description" required>
+        <Textarea
           id="event-description"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           placeholder="Describe the event in detail..."
           required
           rows={5}
-          className={`${inputCls} resize-none`}
+          className="resize-none"
         />
       </FormField>
     </div>
