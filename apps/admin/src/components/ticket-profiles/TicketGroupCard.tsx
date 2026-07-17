@@ -15,6 +15,7 @@ export interface TicketGroupCardProps {
   onRemoveTicket: (gIdx: number, tIdx: number) => void;
   onUpdateTicketField: (gIdx: number, tIdx: number, field: keyof TicketInput, value: unknown) => void;
   dbTiers: AdminTier[];
+  allSelectedTiers: string[];
 }
 
 export const TicketGroupCard = React.memo(function TicketGroupCard({
@@ -27,6 +28,7 @@ export const TicketGroupCard = React.memo(function TicketGroupCard({
   onRemoveTicket,
   onUpdateTicketField,
   dbTiers,
+  allSelectedTiers,
 }: TicketGroupCardProps) {
   return (
     <div className="glass rounded-2xl border border-border-subtle p-6 space-y-6 relative">
@@ -87,6 +89,7 @@ export const TicketGroupCard = React.memo(function TicketGroupCard({
               onRemove={onRemoveTicket}
               onUpdateField={onUpdateTicketField}
               dbTiers={dbTiers}
+              allSelectedTiers={allSelectedTiers}
             />
           ))}
         </div>

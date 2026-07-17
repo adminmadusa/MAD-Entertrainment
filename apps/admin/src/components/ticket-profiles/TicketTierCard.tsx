@@ -14,6 +14,7 @@ export interface TicketTierCardProps {
   onRemove: (gIdx: number, tIdx: number) => void;
   onUpdateField: (gIdx: number, tIdx: number, field: keyof TicketInput, value: unknown) => void;
   dbTiers: AdminTier[];
+  allSelectedTiers: string[];
 }
 
 export const TicketTierCard = React.memo(function TicketTierCard({
@@ -24,6 +25,7 @@ export const TicketTierCard = React.memo(function TicketTierCard({
   onRemove,
   onUpdateField,
   dbTiers,
+  allSelectedTiers,
 }: TicketTierCardProps) {
   return (
     <div className="p-5 bg-white/3 rounded-xl border border-white/5 space-y-4 relative">
@@ -53,16 +55,20 @@ export const TicketTierCard = React.memo(function TicketTierCard({
             className={inputCls}
           >
             {dbTiers.length > 0
-              ? dbTiers.map((t) => (
-                  <option key={t._id} value={t.slug} className="bg-background-card">
-                    {t.name}
-                  </option>
-                ))
-              : Object.values(TicketTier).map((tierVal) => (
-                  <option key={tierVal} value={tierVal} className="bg-background-card">
-                    {tierVal}
-                  </option>
-                ))}
+              ? dbTiers
+                  .filter((t) => t.slug === ticket.tier || !allSelectedTiers.includes(t.slug))
+                  .map((t) => (
+                    <option key={t._id} value={t.slug} className="bg-background-card">
+                      {t.name}
+                    </option>
+                  ))
+              : Object.values(TicketTier)
+                  .filter((tierVal) => tierVal === ticket.tier || !allSelectedTiers.includes(tierVal))
+                  .map((tierVal) => (
+                    <option key={tierVal} value={tierVal} className="bg-background-card">
+                      {tierVal}
+                    </option>
+                  ))}
           </select>
         </div>
         <div className="space-y-1.5 sm:col-span-2">
