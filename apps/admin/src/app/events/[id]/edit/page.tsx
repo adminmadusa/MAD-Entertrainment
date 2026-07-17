@@ -5,7 +5,6 @@ import { useParams, useRouter } from 'next/navigation';
 import React, { useState, useRef } from 'react';
 
 import { EventForm, type EventFormHandle } from '@/components/events/EventForm';
-import { EventAttendanceCard } from '@/components/events/EventAttendanceCard';
 import { adminGetEvent, adminUpdateEvent } from '@/lib/api/admin/event.service';
 import { extractApiError } from '@/lib/api/client';
 import { Button, Stepper } from '@mad/ui';
@@ -113,7 +112,6 @@ export default function EditEventPage() {
         </button>
       </div>
 
-      <EventAttendanceCard event={event} />
 
       <div className="px-4 py-6 bg-surface border border-border-subtle rounded-xl mb-8">
         <Stepper steps={STEPS} currentStep={currentStep} />
