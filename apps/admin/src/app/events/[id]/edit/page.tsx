@@ -8,13 +8,22 @@ import { EventForm, type EventFormHandle } from '@/components/events/EventForm';
 import { EventAttendanceCard } from '@/components/events/EventAttendanceCard';
 import { adminGetEvent, adminUpdateEvent } from '@/lib/api/admin/event.service';
 import { extractApiError } from '@/lib/api/client';
-import { AdminFormActions } from '@mad/ui';
+import { Button, Stepper } from '@mad/ui';
+
+const STEPS = [
+  'Basic Information',
+  'Schedule',
+  'Ticket Configuration',
+  'Media Uploads',
+  'Review & Save'
+];
 
 export default function EditEventPage() {
   const { id } = useParams() as { id: string };
   const router = useRouter();
   const formRef = useRef<EventFormHandle>(null);
 
+  const [currentStep, setCurrentStep] = useState(0);
   const [error, setError] = useState('');
 
   // Fetch Event details
@@ -29,11 +38,25 @@ export default function EditEventPage() {
     onError: (err) => setError(extractApiError(err).message),
   });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleNext = () => {
+    setError('');
+    if (formRef.current?.validateStep(currentStep)) {
+      setCurrentStep((prev) => Math.min(prev + 1, STEPS.length - 1));
+      window.scrollTo(0, 0);
+    }
+  };
+
+  const handlePrev = () => {
+    setCurrentStep((prev) => Math.max(prev - 1, 0));
+    setError('');
+    window.scrollTo(0, 0);
+  };
+
+  const handleSubmit = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     setError('');
 
-    if (formRef.current?.validateAll() && event) {
+    if (formRef.current?.validateStep(4) && event) {
       try {
         const payload = formRef.current.getPayload();
         
@@ -76,7 +99,7 @@ export default function EditEventPage() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6 text-white pb-12">
+    <div className="max-w-3xl mx-auto space-y-6 text-white pb-[calc(6rem+env(safe-area-inset-bottom))]">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-black">Edit Event</h1>
@@ -92,17 +115,45 @@ export default function EditEventPage() {
 
       <EventAttendanceCard event={event} />
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <EventForm ref={formRef} initialValues={event} error={error} />
+      <div className="px-4 py-6 bg-surface border border-border-subtle rounded-xl mb-8">
+        <Stepper steps={STEPS} currentStep={currentStep} />
+      </div>
 
-        <AdminFormActions
-          onCancel={() => router.back()}
-          isPending={updateMutation.isPending}
-          submitLabel="Save Changes"
-          pendingLabel="Saving..."
-          submitId="event-submit"
-        />
-      </form>
+      <EventForm
+        ref={formRef}
+        initialValues={event}
+        activeStep={currentStep}
+        onEditStep={setCurrentStep}
+        error={error}
+      />
+
+      {/* Bottom Navigation Bar */}
+      <div className="fixed bottom-0 left-0 right-0 p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] bg-background border-t border-border z-40 lg:left-64">
+        <div className="max-w-3xl mx-auto flex items-center justify-between">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={currentStep === 0 ? () => router.back() : handlePrev}
+          >
+            {currentStep === 0 ? 'Cancel' : 'Previous'}
+          </Button>
+
+          {currentStep < STEPS.length - 1 ? (
+            <Button type="button" variant="primary" onClick={handleNext}>
+              Next Step
+            </Button>
+          ) : (
+            <Button
+              type="button"
+              variant="primary"
+              onClick={handleSubmit}
+              disabled={updateMutation.isPending}
+            >
+              {updateMutation.isPending ? 'Saving...' : 'Save Changes'}
+            </Button>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
