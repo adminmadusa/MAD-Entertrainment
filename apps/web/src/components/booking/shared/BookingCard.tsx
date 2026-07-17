@@ -5,6 +5,8 @@ import { BookingHeaderCard } from '@/components/booking/shared/BookingHeaderCard
 import { BookingStatus, getBookingLifecycle, buildVenueMapLink, type BookingForLifecycle, type BaseEventForLifecycle } from '@mad/shared';
 import type { Booking, Ticket, Event } from '@mad/types';
 import { formatDate } from '@/utils/date';
+import { formatTicketCount } from '@/utils/booking-calculations';
+import { TicketSummaryItem } from '@/components/booking/shared/TicketSummaryItem';
 
 import { EventCountdown } from './EventCountdown';
 import { PaymentRecoveryBanner } from './PaymentRecoveryBanner';
@@ -214,7 +216,7 @@ export function BookingCard({
             if (!ticketsReady) {
               return (
                 <div className="space-y-3 pt-3 border-t border-border-subtle/30">
-                  <h3 className="text-white font-bold text-sm">Entry Passes</h3>
+                  <h3 className="text-white font-bold text-sm">Your Tickets</h3>
                   {pollsExhausted ? (
                     <div className="glass-strong rounded-2xl border border-border-subtle p-6 text-center text-text-secondary text-sm">
                       Your tickets are being processed and will appear in your email shortly.
@@ -228,7 +230,7 @@ export function BookingCard({
                         </svg>
                         Generating your tickets...
                       </div>
-                      <p className="text-text-muted text-xs">This usually takes a few seconds. Your entry passes will appear here automatically.</p>
+                      <p className="text-text-muted text-xs">This usually takes a few seconds. Your tickets will appear here automatically.</p>
                     </div>
                   )}
                 </div>
@@ -238,7 +240,7 @@ export function BookingCard({
             return (
               <div className="space-y-4 pt-3 border-t border-border-subtle/30">
                 <div className="pb-2">
-                  <h3 className="text-white font-bold text-sm">Entry Passes</h3>
+                  <h3 className="text-white font-bold text-sm">Your Tickets</h3>
                 </div>
                 <EntryPassGrid tickets={tickets} />
               </div>
@@ -256,6 +258,21 @@ export function BookingCard({
 
           return <TicketStatusMessage status={booking.status} />;
         })()}
+
+        {booking.status === BookingStatus.CONFIRMED && booking.tickets && booking.tickets.length > 0 && (
+          <div className="pt-4 border-t border-white/5 space-y-2">
+            <span className="text-[10px] text-text-muted uppercase tracking-wider block font-bold">Your Tickets</span>
+            <div className="space-y-1">
+              {booking.tickets.map((t, index) => (
+                <TicketSummaryItem
+                  key={index}
+                  tierName={t.tierName}
+                  quantity={t.quantity}
+                />
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Metadata Details Grid */}
         <BookingDetailsGrid booking={booking} eventInfo={eventInfo} />
@@ -317,10 +334,10 @@ export function BookingCard({
             </div>
           </button>
 
-          {/* Quick Actions & Pass count container */}
+          {/* Quick Actions & Ticket count container */}
           <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0 ml-2">
             <span className="text-text-secondary text-xs font-semibold whitespace-nowrap bg-white/5 px-2.5 py-1.5 rounded-lg">
-              {booking.totalTickets} {booking.totalTickets === 1 ? 'Pass' : 'Passes'}
+              {formatTicketCount(booking.totalTickets)}
             </span>
 
             {/* Quick Actions */}

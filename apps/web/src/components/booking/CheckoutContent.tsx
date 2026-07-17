@@ -5,7 +5,7 @@ import { AnimatePresence } from 'framer-motion';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 import { useCheckoutViewportController } from '@/hooks/use-checkout-viewport-controller';
 import { useCountdown } from '@/hooks/use-countdown.hook';
@@ -17,9 +17,9 @@ import type { Booking, Event, Ticket } from '@mad/types';
 import { CheckoutDetailsInput } from '@mad/validations';
 
 import { CheckoutForm } from './checkout/CheckoutForm';
-import { CheckoutPayment } from './checkout/CheckoutPayment';
 import { CheckoutPricing } from './checkout/CheckoutPricing';
 import { useCheckoutNavGuard } from './checkout/useCheckoutNavGuard';
+import { TicketSummaryItem } from './shared/TicketSummaryItem';
 
 const LeaveCheckoutModal = dynamic(() => import('./checkout/LeaveCheckoutModal').then(mod => mod.LeaveCheckoutModal), {
   ssr: false,
@@ -45,9 +45,10 @@ interface CheckoutContentProps {
   isModal: boolean;
   onBack: () => void;
   onClose: () => void;
+  onConfirmed?: () => void;
 }
 
-export function CheckoutContent({ bookingId, isModal, onBack, onClose }: CheckoutContentProps) {
+export function CheckoutContent({ bookingId, isModal, onBack, onClose, onConfirmed }: CheckoutContentProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
 
@@ -84,6 +85,21 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
   const booking = details?.booking;
   const currency = booking?.currency || 'USD';
   const event = asEvent((booking as Booking | undefined)?.eventId);
+
+  // Dynamically select gateway based on booking currency (INR -> Razorpay, others -> Stripe)
+  useEffect(() => {
+    if (booking?.currency) {
+      const isINR = booking.currency.toUpperCase() === 'INR';
+      setSelectedGateway(isINR ? 'razorpay' : 'stripe');
+    }
+  }, [booking?.currency]);
+
+  // Trigger onConfirmed when booking status is confirmed
+  useEffect(() => {
+    if (booking && booking.status === BookingStatus.CONFIRMED && onConfirmed) {
+      onConfirmed();
+    }
+  }, [booking, onConfirmed]);
 
   const handleViewTickets = () => {
     allowNavigation();
@@ -266,111 +282,109 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
 
   if (booking && booking.status === BookingStatus.CONFIRMED) {
     return (
-      <div className={isModal ? "relative text-white p-4 sm:p-6 w-full flex flex-col items-center justify-center min-h-[500px]" : "pt-24 pb-24 min-h-screen bg-background text-white relative overflow-x-hidden flex flex-col items-center justify-center w-full px-4"}>
+      <div className={isModal ? "relative text-white p-4 w-full flex flex-col items-center justify-center min-h-[450px]" : "pt-20 pb-20 min-h-screen bg-background text-white relative overflow-x-hidden flex flex-col items-center justify-center w-full px-4"}>
         {!isModal && (
           <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-accent-purple/5 rounded-full blur-[150px] pointer-events-none" />
         )}
 
-        <div className={isModal ? "max-w-md w-full mx-auto text-center space-y-6 relative z-10 animate-in fade-in zoom-in-95 duration-500 ease-out" : "max-w-lg w-full glass rounded-[2.5rem] border border-white/10 p-6 sm:p-8 text-center space-y-6 shadow-glow relative z-10 backdrop-blur-xl bg-gradient-to-b from-white/12 to-white/6 animate-in fade-in zoom-in-95 duration-500 ease-out"}>
-          {/* Glowing Checkmark Animation */}
-          <div className="flex justify-center relative">
-            <div className="absolute inset-0 m-auto w-24 h-24 bg-emerald-500/10 rounded-full blur-xl animate-pulse pointer-events-none" />
-            <div className="relative w-18 h-18 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center text-white text-3xl shadow-[0_0_30px_rgba(16,185,129,0.35)] border-2 border-emerald-400/25 animate-bounce">
-              <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
+        <div className={isModal ? "max-w-md w-full mx-auto text-center space-y-4 relative z-10 animate-in fade-in zoom-in-95 duration-500 ease-out" : "max-w-md w-full glass rounded-[2rem] border border-white/10 p-6 text-center space-y-4 shadow-glow relative z-10 backdrop-blur-xl bg-gradient-to-b from-white/12 to-white/6 animate-in fade-in zoom-in-95 duration-500 ease-out"}>
+          {/* Header checkmark */}
+          <div className="flex items-center justify-center gap-2 text-emerald-400">
+            <div className="w-8 h-8 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center shrink-0">
+              <svg className="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
               </svg>
             </div>
+            <h2 className="text-xl font-black tracking-wide text-white">Booking Confirmed</h2>
           </div>
 
-          <div className="space-y-2">
-            <h2 className="text-2xl sm:text-3xl font-black text-white tracking-wide text-glow-neon">Booking Confirmed!</h2>
-            {event?.title && (
-              <p className="text-accent-cyan font-bold text-base tracking-medium uppercase">{event.title}</p>
-            )}
+          {/* Clean consolidated info details */}
+          <div className="glass rounded-2xl border border-white/5 p-4 text-left space-y-3.5 bg-white/2">
+            {/* Event Name */}
+            <div>
+              <span className="text-[10px] text-text-muted font-bold uppercase tracking-wider block">Event</span>
+              <span className="text-sm font-bold text-white block mt-0.5">{event?.title}</span>
+            </div>
+
+            {/* Date & Time */}
             {event?.startDate && (
-              <p className="text-text-muted text-xs flex items-center justify-center gap-1.5 font-medium">
-                <svg className="w-3.5 h-3.5 text-accent-purple-light" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                {new Date(event.startDate).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
-              </p>
+              <div>
+                <span className="text-[10px] text-text-muted font-bold uppercase tracking-wider block">Date & Time</span>
+                <span className="text-xs text-text-secondary block mt-0.5">
+                  {new Date(event.startDate).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                </span>
+              </div>
             )}
-          </div>
 
-          {/* Reference Card with Copy Action */}
-          <div className="bg-background/50 border border-white/5 rounded-2xl p-4 flex items-center justify-between gap-4 text-left font-mono relative group hover:border-white/10 transition-colors">
-            <div className="flex-1">
-              <div className="text-[10px] text-text-secondary font-medium tracking-wider uppercase font-sans mb-0.5">Booking Reference ID</div>
-              <div className="text-base sm:text-lg font-black text-white tracking-wider select-all">{booking.bookingId}</div>
+            {/* Booking Reference */}
+            <div>
+              <span className="text-[10px] text-text-muted font-bold uppercase tracking-wider block">Booking Reference</span>
+              <div className="flex items-center justify-between mt-0.5 gap-2 bg-background/40 border border-white/5 rounded-xl px-3 py-1.5 font-mono text-sm text-white select-all">
+                <span className="font-bold tracking-wider">{booking.bookingId}</span>
+                <button
+                  onClick={handleCopy}
+                  className={`p-1.5 rounded-lg transition-colors flex items-center justify-center gap-1 ${
+                    copied
+                      ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                      : 'bg-white/5 hover:bg-white/10 text-text-secondary hover:text-white border border-white/5'
+                  }`}
+                  title="Copy Reference"
+                >
+                  {copied ? (
+                    <>
+                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span className="text-[9px] font-sans font-bold pr-0.5">Copied</span>
+                    </>
+                  ) : (
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                    </svg>
+                  )}
+                </button>
+              </div>
             </div>
-            <button
-              onClick={handleCopy}
-              className={`p-2 rounded-xl transition-all duration-300 flex items-center justify-center gap-1 ${
-                copied
-                  ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                  : 'bg-white/5 hover:bg-white/10 text-text-secondary hover:text-white border border-white/5 hover:border-white/10'
-              }`}
-              title="Copy Reference ID"
-            >
-              {copied ? (
-                <>
-                  <svg className="w-4 h-4 animate-in zoom-in-50" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                  </svg>
-                  <span className="text-[10px] font-sans font-bold pr-1">Copied</span>
-                </>
-              ) : (
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
-                </svg>
-              )}
-            </button>
-          </div>
 
-          {/* Ticket Summary Section */}
-          <div className="bg-white/2 border border-white/5 rounded-2xl p-4 sm:p-5 text-left space-y-3">
-            <span className="text-[10px] text-text-muted font-bold uppercase tracking-wider block border-b border-white/5 pb-2">Order Details</span>
-            <div className="space-y-2">
-              {booking.tickets.map((t, index) => (
-                <div key={index} className="flex justify-between items-center text-xs">
-                  <span className="text-text-secondary font-medium">
-                    {t.quantity}x {t.tierName}
-                  </span>
-                  <span className="text-white font-semibold font-mono">
-                    {formatMoney(t.subtotal, currency)}
-                  </span>
-                </div>
-              ))}
+            {/* Tickets Purchased */}
+            <div className="border-t border-white/5 pt-3">
+              <span className="text-[10px] text-text-muted font-bold uppercase tracking-wider block mb-1">Tickets Purchased</span>
+              <div className="space-y-1">
+                {booking.tickets.map((t, index) => (
+                  <TicketSummaryItem
+                    key={index}
+                    tierName={t.tierName}
+                    quantity={t.quantity}
+                    currency={currency}
+                  />
+                ))}
+              </div>
             </div>
-            <div className="flex justify-between items-center text-sm font-bold pt-3 border-t border-white/5">
+
+            {/* Total Paid */}
+            <div className="flex justify-between items-center text-xs font-bold pt-3 border-t border-white/5">
               <span className="text-text-primary">Total Paid</span>
-              <span className="text-accent-cyan font-mono text-base font-black">
+              <span className="text-accent-cyan font-mono text-sm font-black">
                 {formatMoney(booking.totalAmount, currency)}
               </span>
             </div>
           </div>
 
           {/* Emailed Confirmation */}
-          <p className="text-xs text-text-muted leading-relaxed max-w-sm mx-auto">
-            We have sent your confirmation email and tickets to <span className="text-white font-semibold underline decoration-accent-purple/40 decoration-2">{booking.guestEmail || 'your email'}</span>.
+          <p className="text-xs text-text-muted leading-relaxed max-w-xs mx-auto">
+            We have sent your confirmation email and tickets to <span className="text-white font-semibold underline decoration-accent-purple/30">{booking.guestEmail || 'your email'}</span>.
           </p>
 
-          {/* Action Buttons */}
-          <div className="pt-2 flex flex-col sm:flex-row gap-3">
+          {/* Action Button */}
+          <div className="pt-1 w-full">
             <button
               onClick={handleViewTickets}
-              className="flex-1 py-3.5 btn-gradient text-white font-black text-sm rounded-xl shadow-glow transition-all active:scale-[0.98] hover:scale-[1.02] flex items-center justify-center gap-2 group"
+              className="w-full py-3 btn-gradient text-white font-black text-sm rounded-xl shadow-glow transition-all active:scale-[0.98] hover:scale-[1.02] flex items-center justify-center gap-2 group"
             >
-              <svg className="w-4 h-4 group-hover:rotate-6 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+              <svg className="w-4 h-4 group-hover:rotate-6 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
               </svg>
               View Tickets
-            </button>
-            <button
-              onClick={handleContinueBrowsing}
-              className="flex-1 py-3.5 border border-white/10 hover:border-white/20 hover:bg-white/5 text-white/95 font-bold text-sm rounded-xl transition-all active:scale-[0.98]"
-            >
-              Continue Browsing
             </button>
           </div>
         </div>
@@ -480,14 +494,8 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
             </div>
           </div>
 
-          {/* Right Column: Checkout Breakdown, Payment Details, and Actions */}
           <div className="lg:col-span-4 space-y-4">
             <CheckoutPricing booking={booking} />
-
-            <CheckoutPayment
-              selectedGateway={selectedGateway}
-              onChangeGateway={setSelectedGateway}
-            />
 
             {/* Place Order & Terms (Always Visible) */}
             <div className="glass rounded-2xl border border-white/5 p-5 space-y-3">

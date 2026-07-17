@@ -1,5 +1,6 @@
 import type { Booking } from '@mad/types';
 import { formatMoney } from '@mad/shared';
+import { TicketSummaryItem } from '../shared/TicketSummaryItem';
 
 interface CheckoutPricingProps {
   booking: Booking;
@@ -12,7 +13,19 @@ export function CheckoutPricing({ booking }: CheckoutPricingProps) {
 
   return (
     <div className="glass rounded-2xl border border-white/5 p-5 space-y-4">
-      <h2 className="text-white font-bold text-sm uppercase tracking-wider">Payment Details</h2>
+      <h2 className="text-white font-bold text-sm uppercase tracking-wider">Your Tickets</h2>
+
+      <div className="space-y-2 border-b border-white/5 pb-3">
+        {booking.tickets.map((t, index) => (
+          <TicketSummaryItem
+            key={index}
+            tierName={t.tierName}
+            quantity={t.quantity}
+            price={t.subtotal}
+            currency={currency}
+          />
+        ))}
+      </div>
 
       <div className="space-y-2 text-xs border-b border-white/5 pb-3">
         <div className="flex justify-between text-text-secondary">
