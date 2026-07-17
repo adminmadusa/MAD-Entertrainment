@@ -1,5 +1,8 @@
 import { adminApiClient } from '@/lib/api/client';
 import type { PaginatedItemsResponse, PaginationMeta } from '@mad/types';
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger('Booking Service');
 
 export interface AdminBooking {
   _id: string;
@@ -153,7 +156,7 @@ export async function adminGetBookings(params: Record<string, string | number> =
       },
     };
   } catch (error) {
-    console.error('[Booking Service] Failed to fetch bookings, returning safe default NormalizedBookingsResponse:', error);
+    logger.error('Failed to fetch bookings, returning safe default NormalizedBookingsResponse:', error);
     return {
       items: [],
       pagination: {
@@ -215,7 +218,7 @@ export async function adminGetBooking(id: string): Promise<NormalizedBookingDeta
       } : null,
     };
   } catch (error) {
-    console.error('[Booking Detail Service] Failed to fetch booking detail, returning default fallback DTO:', error);
+    logger.error('Failed to fetch booking detail, returning default fallback DTO:', error);
     return {
       booking: null,
       customer: null,
@@ -252,7 +255,7 @@ export async function adminGetRefunds(params: Record<string, string> = {}): Prom
       },
     };
   } catch (error) {
-    console.error('[Booking Service] Failed to fetch refunds, returning safe default NormalizedRefundsResponse:', error);
+    logger.error('Failed to fetch refunds, returning safe default NormalizedRefundsResponse:', error);
     return {
       items: [],
       pagination: {
