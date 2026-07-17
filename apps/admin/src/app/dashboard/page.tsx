@@ -13,11 +13,12 @@ import { adminGetEvents } from '@/lib/api/admin/event.service';
 import { useAdminAuth } from '@/providers/AdminAuthProvider';
 import { AdminRole, EventStatus, BOOKING_REFERENCE_REGEX } from '@mad/shared';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@mad/ui';
+import { Ticket, CalendarDays, Banknote, CreditCard, ShieldCheck, Plus, BarChart2, Scan, Settings } from '@mad/ui/icons';
 import { formatDateTime } from '@mad/utils';
 
 const RevenueChartWidget = dynamic(
   () => import('@/components/dashboard/RevenueChartWidget'),
-  { ssr: false, loading: () => <div className="h-64 flex items-center justify-center animate-pulse bg-white/5 rounded-xl border border-border-subtle text-text-muted text-sm">Loading chart...</div> }
+  { ssr: false, loading: () => <div className="h-64 flex items-center justify-center animate-pulse bg-white/5 rounded-xl border border-border-subtle text-text-secondary text-sm">Loading chart...</div> }
 );
 
 const AttendanceMetricsWidget = dynamic(
@@ -122,35 +123,35 @@ function DashboardContent() {
   const showBookingsSearch = !!admin?.role && [AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER, AdminRole.SUPPORT].includes(admin.role as AdminRole);
 
   const stats = [
-    { label: 'Confirmed Bookings', value: summary?.totalBookings, icon: '🎟️', href: '/bookings' },
-    { label: 'Bookings (Last 30 Days)', value: summary?.recentBookings, icon: '📅', href: '/bookings' },
+    { label: 'Confirmed Bookings', value: summary?.totalBookings, icon: <Ticket className="w-8 h-8 text-accent-purple" />, href: '/bookings' },
+    { label: 'Bookings (Last 30 Days)', value: summary?.recentBookings, icon: <CalendarDays className="w-8 h-8 text-accent-purple" />, href: '/bookings' },
     {
       label: 'Lifetime Gross Revenue',
       value: summary ? `₹${summary.grossRevenue.toLocaleString('en-IN')}` : undefined,
-      icon: '💰',
+      icon: <Banknote className="w-8 h-8 text-accent-purple" />,
       href: '/dashboard',
     },
     {
       label: 'Refund Amount',
       value: summary ? `₹${summary.refundAmount.toLocaleString('en-IN')}` : undefined,
-      icon: '💸',
+      icon: <CreditCard className="w-8 h-8 text-accent-purple" />,
       href: '/refunds',
     },
     {
       label: 'Lifetime Net Revenue',
       value: summary ? `₹${summary.netRevenue.toLocaleString('en-IN')}` : undefined,
-      icon: '🛡️',
+      icon: <ShieldCheck className="w-8 h-8 text-accent-purple" />,
       href: '/dashboard',
     },
   ];
 
   const allQuickLinks = [
-    { label: 'Create Event', href: '/events/new', icon: '🎪', color: 'border-accent-purple/30 hover:border-accent-purple/60', roles: [AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER] },
-    { label: 'View Bookings', href: '/bookings', icon: '🎟️', color: 'border-border-subtle hover:border-white/20', roles: [AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER, AdminRole.SUPPORT] },
-    { label: 'Process Refunds', href: '/refunds', icon: '💸', color: 'border-border-subtle hover:border-white/20', roles: [AdminRole.SUPER_ADMIN, AdminRole.ADMIN] },
-    { label: 'Analytics', href: '/dashboard', icon: '📊', color: 'border-border-subtle hover:border-white/20', roles: [AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER] },
-    { label: 'Scanner Console', href: '/scanner', icon: '📷', color: 'border-border-subtle hover:border-white/20', roles: [AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER, AdminRole.SUPPORT, AdminRole.SCANNER] },
-    { label: 'Diagnostics', href: '/diagnostics', icon: '🔧', color: 'border-border-subtle hover:border-white/20', roles: [AdminRole.SUPER_ADMIN] },
+    { label: 'Create Event', href: '/events/new', icon: <Plus className="w-6 h-6 text-text-secondary group-hover:text-accent-purple transition-colors" />, color: 'border-accent-purple/30 hover:border-accent-purple/60', roles: [AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER] },
+    { label: 'View Bookings', href: '/bookings', icon: <Ticket className="w-6 h-6 text-text-secondary group-hover:text-accent-purple transition-colors" />, color: 'border-border-subtle hover:border-white/20', roles: [AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER, AdminRole.SUPPORT] },
+    { label: 'Process Refunds', href: '/refunds', icon: <CreditCard className="w-6 h-6 text-text-secondary group-hover:text-accent-purple transition-colors" />, color: 'border-border-subtle hover:border-white/20', roles: [AdminRole.SUPER_ADMIN, AdminRole.ADMIN] },
+    { label: 'Analytics', href: '/dashboard', icon: <BarChart2 className="w-6 h-6 text-text-secondary group-hover:text-accent-purple transition-colors" />, color: 'border-border-subtle hover:border-white/20', roles: [AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER] },
+    { label: 'Scanner Console', href: '/scanner', icon: <Scan className="w-6 h-6 text-text-secondary group-hover:text-accent-purple transition-colors" />, color: 'border-border-subtle hover:border-white/20', roles: [AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER, AdminRole.SUPPORT, AdminRole.SCANNER] },
+    { label: 'Diagnostics', href: '/diagnostics', icon: <Settings className="w-6 h-6 text-text-secondary group-hover:text-accent-purple transition-colors" />, color: 'border-border-subtle hover:border-white/20', roles: [AdminRole.SUPER_ADMIN] },
   ];
 
   const quickLinks = allQuickLinks.filter(link => {
@@ -161,12 +162,12 @@ function DashboardContent() {
   if (admin?.role === AdminRole.SCANNER) {
     return (
       <div className="max-w-md mx-auto py-16 text-center space-y-6">
-        <div className="w-20 h-20 rounded-full bg-accent-purple/20 flex items-center justify-center text-accent-purple text-4xl mx-auto shadow-glow-sm">
-          📷
+        <div className="w-20 h-20 rounded-full bg-accent-purple/20 flex items-center justify-center text-accent-purple mx-auto shadow-glow-sm">
+          <Scan className="w-10 h-10" />
         </div>
         <div className="space-y-2">
           <h1 className="text-2xl font-black text-white">Welcome Scanner Console</h1>
-          <p className="text-text-muted text-sm leading-relaxed">
+          <p className="text-text-secondary text-sm leading-relaxed">
             Ready to scan tickets and manage gate volumes. Use the link below to open the scanner console.
           </p>
         </div>
@@ -187,7 +188,7 @@ function DashboardContent() {
         <h1 className="text-2xl font-black text-white">
           Good {getTimeOfDay()}, {admin?.name?.split(' ')[0] ?? 'Admin'} 👋
         </h1>
-        <p className="text-text-muted text-sm mt-1">Here&apos;s what&apos;s happening with MAD Entertrainment.</p>
+        <p className="text-text-secondary text-sm mt-1">Here&apos;s what&apos;s happening with MAD Entertrainment.</p>
       </motion.div>
 
       {/* Stats Cards */}
@@ -195,10 +196,10 @@ function DashboardContent() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5">
           {stats.map((stat, i) => (
             <motion.div key={stat.label} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.07 }}>
-              <Link href={stat.href} className="block glass rounded-2xl border border-border-subtle p-6 hover:border-accent-purple/30 transition-colors group">
-                <div className="text-3xl mb-3">{stat.icon}</div>
-                <p className="text-text-muted text-sm">{stat.label}</p>
-                <p className={`text-2xl font-black mt-1 group-hover:text-gradient transition-all ${isLoading ? 'text-text-muted animate-pulse' : 'text-white'}`}>
+              <Link href={stat.href} className="block glass rounded-2xl border border-border-subtle p-6 hover:border-accent-purple/50 hover:scale-[1.01] hover:shadow-glow-sm cursor-pointer transition-all duration-200 group">
+                <div className="mb-3">{stat.icon}</div>
+                <p className="text-text-secondary text-sm">{stat.label}</p>
+                <p className={`text-2xl font-black mt-1 group-hover:text-gradient transition-all ${isLoading ? 'text-text-secondary animate-pulse' : 'text-white'}`}>
                   {isLoading ? '...' : (stat.value?.toLocaleString?.() ?? stat.value ?? '0')}
                 </p>
               </Link>
@@ -220,7 +221,7 @@ function DashboardContent() {
         <div className="glass rounded-2xl border border-border-subtle p-6 space-y-4">
           <div>
             <h2 className="text-white font-semibold">Global Operational Search</h2>
-            <p className="text-text-muted text-xs mt-0.5">Locate customer bookings instantly by email or reference number</p>
+            <p className="text-text-secondary text-xs mt-0.5">Locate customer bookings instantly by email or reference number</p>
           </div>
 
           <form onSubmit={handleGlobalSearch} className="space-y-2">
@@ -233,7 +234,7 @@ function DashboardContent() {
                   if (globalSearchError) setGlobalSearchError('');
                 }}
                 placeholder="e.g. MAD-2026-XXXXX or customer@gmail.com"
-                className="flex-1 px-4 py-3 rounded-xl bg-background border border-border-subtle text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple transition-colors"
+                className="flex-1 px-4 py-3 rounded-xl bg-background border border-border-subtle text-sm text-text-primary placeholder:text-text-secondary focus:outline-none focus:ring-2 focus:ring-accent-purple/50 focus:border-accent-purple transition-colors"
               />
               <button
                 type="submit"
@@ -292,7 +293,7 @@ function DashboardContent() {
             ) : null}
 
             {isWebhooksLoading || isEmailsLoading ? (
-              <div className="text-text-muted text-xs animate-pulse p-4 bg-white/5 rounded-xl border border-border-subtle">Checking system delivery logs...</div>
+              <div className="text-text-secondary text-xs animate-pulse p-4 bg-white/5 rounded-xl border border-border-subtle">Checking system delivery logs...</div>
             ) : (
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
@@ -328,8 +329,8 @@ function DashboardContent() {
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
           {quickLinks.map((link) => (
             <Link key={link.href} href={link.href}
-              className={`glass rounded-xl border ${link.color} p-4 flex flex-col items-center gap-2 text-center transition-all hover:bg-white/3`}>
-              <span className="text-2xl">{link.icon}</span>
+              className={`glass rounded-xl border ${link.color} p-4 flex flex-col items-center gap-2 text-center hover:bg-white/5 hover:scale-[1.02] hover:shadow-glow-sm cursor-pointer transition-all duration-200 group`}>
+              <span>{link.icon}</span>
               <span className="text-text-secondary text-sm font-medium">{link.label}</span>
             </Link>
           ))}
@@ -343,7 +344,7 @@ function DashboardContent() {
           <div className="px-6 py-4 border-b border-border-subtle flex items-center justify-between">
             <div>
               <h2 className="text-white font-semibold">Happening Today</h2>
-              <p className="text-text-muted text-xs mt-0.5">Today's active event schedules and gate volumes</p>
+              <p className="text-text-secondary text-xs mt-0.5">Today's active event schedules and gate volumes</p>
             </div>
             <span className="text-xs px-2.5 py-1 rounded-full border bg-emerald-500/10 text-emerald-400 border-emerald-500/30 font-medium">
               {todaysEvents.length} Active {todaysEvents.length === 1 ? 'Event' : 'Events'}
@@ -351,10 +352,10 @@ function DashboardContent() {
           </div>
 
           {isEventsLoading ? (
-            <div className="p-8 text-center text-text-muted animate-pulse">Loading active schedule...</div>
+            <div className="p-8 text-center text-text-secondary animate-pulse">Loading active schedule...</div>
           ) : todaysEvents.length === 0 ? (
             <div className="p-12 text-center space-y-3 flex-1 flex flex-col items-center justify-center">
-              <p className="text-text-muted text-sm">No events scheduled for today.</p>
+              <p className="text-text-secondary text-sm">No events scheduled for today.</p>
               <Link href="/events/new" className="inline-block px-4 py-2 bg-white/5 border border-border-subtle rounded-xl text-xs font-semibold text-white hover:bg-white/10 transition-colors">
                 + Schedule Event
               </Link>
@@ -373,7 +374,7 @@ function DashboardContent() {
                         <span className={`w-2 h-2 rounded-full ${event.status === EventStatus.PUBLISHED ? 'bg-green-400 animate-pulse' : 'bg-yellow-400'}`} />
                         <h3 className="text-white font-bold text-base">{event.title}</h3>
                       </div>
-                      <p className="text-text-muted text-xs">{event.venue}</p>
+                      <p className="text-text-secondary text-xs">{event.venue}</p>
                       <p className="text-text-secondary text-xs font-mono">
                         Gates: {formatDateTime(event.startDate, { hour: '2-digit', minute: '2-digit' })}
                       </p>
@@ -403,7 +404,7 @@ function DashboardContent() {
           <div className="glass rounded-2xl border border-border-subtle p-6 space-y-6 flex flex-col justify-between">
             <div>
               <h2 className="text-white font-semibold">Live Attendance Overview</h2>
-              <p className="text-text-muted text-xs mt-0.5">Real-time guest scans and check-in efficiency</p>
+              <p className="text-text-secondary text-xs mt-0.5">Real-time guest scans and check-in efficiency</p>
             </div>
             <div className="flex-1 flex items-center">
               <AttendanceMetricsWidget attendanceSummary={attendanceSummary} isLoading={isAttendanceLoading} />
