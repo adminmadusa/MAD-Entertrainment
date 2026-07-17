@@ -204,7 +204,7 @@ export default function CreateEventPage() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto space-y-8 pb-20">
+    <div className="max-w-3xl mx-auto space-y-8 pb-[calc(6rem+env(safe-area-inset-bottom))]">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-black text-white">Create Event</h1>
@@ -336,7 +336,7 @@ export default function CreateEventPage() {
       )}
 
       {/* Bottom Navigation Bar */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 bg-background border-t border-border z-40 lg:left-64">
+      <div className="fixed bottom-0 left-0 right-0 p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] bg-background border-t border-border z-40 lg:left-64">
         <div className="max-w-3xl mx-auto flex items-center justify-between">
           <Button
             type="button"
