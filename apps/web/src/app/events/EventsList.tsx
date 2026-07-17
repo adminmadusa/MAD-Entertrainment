@@ -70,7 +70,66 @@ export function EventsList() {
           <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 transition-opacity duration-300 ${isFetching ? 'opacity-50' : 'opacity-100'}`}>
             {events.map((event) => {
               let cardAriaLabel = `View details for ${event.title}`;
-              const cta = event.bookingCTA || { text: 'Details', disabled: false, variant: 'primary', action: 'VIEW' };
+
+              // Derive UI mapping from semantic states
+              let badgeElement = null;
+              let ctaText = 'Details';
+              let ctaDisabled = false;
+              let ctaAction = 'VIEW';
+              let overlayText = null;
+
+              if (event.lifecycle === 'COMPLETED') {
+                badgeElement = (
+                  <span className="absolute top-3 right-3 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider bg-black/85 backdrop-blur-md text-text-muted rounded-full border border-white/10">
+                    Ended
+                  </span>
+                );
+                ctaText = 'Happy Moments';
+                ctaDisabled = false;
+                ctaAction = 'GALLERY';
+              } else if (event.lifecycle === 'LIVE') {
+                badgeElement = (
+                  <span className="absolute top-3 right-3 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider bg-black/85 backdrop-blur-md text-emerald-400 rounded-full border border-emerald-500/20 flex items-center gap-1.5 shadow-glow-sm">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                    Live Now
+                  </span>
+                );
+                if (event.booking?.status === 'OPEN') {
+                  ctaText = 'Join Now';
+                  ctaDisabled = false;
+                  ctaAction = 'BOOK';
+                } else {
+                  ctaText = 'In Progress';
+                  ctaDisabled = true;
+                  ctaAction = 'NONE';
+                  overlayText = 'IN PROGRESS';
+                }
+              } else {
+                // UPCOMING
+                if (event.booking?.status === 'OPEN') {
+                  ctaText = 'Book Now';
+                  ctaDisabled = false;
+                  ctaAction = 'BOOK';
+                } else {
+                  ctaDisabled = true;
+                  ctaAction = 'NONE';
+                  if (event.booking?.reason === 'SOLD_OUT' || event.booking?.reason === 'CAPACITY_REACHED') {
+                    ctaText = 'Sold Out';
+                    overlayText = 'SOLD OUT';
+                  } else if (event.booking?.reason === 'BOOKING_NOT_STARTED') {
+                    ctaText = 'Coming Soon';
+                    overlayText = 'COMING SOON';
+                    badgeElement = (
+                      <span className="absolute top-3 right-3 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider bg-black/60 backdrop-blur-md text-accent-purple-light rounded-full border border-accent-purple/20">
+                        Soon
+                      </span>
+                    );
+                  } else {
+                    ctaText = 'Booking Closed';
+                    overlayText = 'BOOKING CLOSED';
+                  }
+                }
+              }
 
               return (
                 <motion.div
@@ -106,9 +165,12 @@ export function EventsList() {
                         {EVENT_CATEGORY_LABELS[event.category as EventCategory] || event.category}
                       </span>
 
-                      {cta.action === 'NONE' && (
+                      {/* Runtime Lifecycle Badge */}
+                      {badgeElement}
+
+                      {overlayText && (
                         <span className="absolute inset-0 bg-black/60 backdrop-blur-[2px] flex items-center justify-center text-white font-bold text-sm tracking-wider">
-                          {cta.text.toUpperCase()}
+                          {overlayText}
                         </span>
                       )}
                     </div>
@@ -139,21 +201,23 @@ export function EventsList() {
                     <button
                       type="button"
                       onClick={() => {
-                        if (cta.action === 'NONE' || cta.disabled) return;
-                        if (cta.action === 'BOOK') {
+                        if (ctaDisabled && ctaAction !== 'GALLERY') return;
+                        if (ctaAction === 'BOOK') {
                           router.push(`/events/${event.slug}?modal=booking`);
+                        } else if (ctaAction === 'GALLERY') {
+                          router.push(`/events/${event.slug}/gallery`);
                         } else {
                           router.push(`/events/${event.slug}`);
                         }
                       }}
-                      disabled={cta.disabled}
+                      disabled={ctaDisabled && ctaAction !== 'GALLERY'}
                       className={`px-3.5 py-2 text-xs font-bold rounded-xl transition-transform text-center ${
-                        cta.disabled
+                        ctaDisabled && ctaAction !== 'GALLERY'
                           ? 'bg-white/5 border border-white/5 text-text-muted cursor-not-allowed'
                           : 'text-white btn-gradient shadow-glow-sm hover:scale-105'
                       }`}
                     >
-                      {cta.text}
+                      {ctaText}
                     </button>
                   </div>
                 </motion.div>

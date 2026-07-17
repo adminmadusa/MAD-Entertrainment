@@ -26,7 +26,10 @@ export const adminIdParamSchema = z.object({
 
 export const listEventsQuerySchema = z.object({
   category: z.nativeEnum(EventCategory).optional(),
-  status: z.nativeEnum(EventStatus).optional(),
+  status: z.string().optional(), // Make status a string for backward compatibility
+  state: z.string().optional(),
+  sort: z.string().optional(),
+  exclude: z.string().optional(),
   search: z.string().max(200).optional(),
   page: z.coerce.number().int().positive().default(1),
   limit: paginationLimitSchema.default(12),

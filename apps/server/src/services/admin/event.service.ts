@@ -1,6 +1,6 @@
-import type { FilterQuery } from 'mongoose';
+import mongoose, { type FilterQuery } from 'mongoose';
 
-import { EventStatus, EVENT_STATUS_TRANSITIONS, type EventLifecycleStatus, type BulkOperationResult } from '@mad/shared';
+import { EventStatus, EVENT_STATUS_TRANSITIONS, type EventLifecycleStatus, type BulkOperationResult, deriveEventCapabilities } from '@mad/shared';
 
 import { AppError } from '../../middleware/error.middleware';
 import { Booking } from '../../models/booking.schema';
@@ -199,10 +199,38 @@ export const getEventById = async (id: string): Promise<EventWithAttendance | nu
     .populate('djOperatorIds', 'name');
   if (!event) return null;
 
+  const eventObj = event.toObject();
+  const [galleryItemCount, gallerySettings] = await Promise.all([
+    mongoose.model('EventGallery').countDocuments({ eventId: event._id }),
+    mongoose.model('EventGallerySettings').findOne({ eventId: event._id }).lean()
+  ]);
+
+  const totalCapacity = eventObj.totalCapacity || eventObj.ticketTiers?.reduce((acc: number, t: any) => acc + (t.totalCapacity || 0), 0) || 0;
+  const ticketsSold = eventObj.soldCount || eventObj.ticketTiers?.reduce((acc: number, t: any) => acc + (t.soldCount || 0), 0) || 0;
+
+  const caps = deriveEventCapabilities({
+    status: eventObj.status,
+    startDate: eventObj.startDate,
+    endDate: eventObj.endDate,
+    bookingStartDate: eventObj.bookingStartDate,
+    bookingEndDate: eventObj.bookingEndDate,
+    isSoldOut: eventObj.isSoldOut,
+    totalCapacity,
+    ticketsSold,
+    galleryPublished: gallerySettings ? (gallerySettings as any).published : false,
+    galleryItemCount,
+    isDeleted: eventObj.isDeleted
+  });
+
   return {
-    ...event.toObject(),
+    ...eventObj,
+    lifecycle: caps.lifecycle,
+    visibility: caps.visibility,
+    booking: caps.booking,
+    gallery: caps.gallery,
+    capabilities: caps.capabilities,
     ...(await getEventAttendanceMetrics(event)),
-  };
+  } as any;
 };
 
 export const updateEvent = async (id: string, data: Partial<IEvent>): Promise<EventWithAttendance | null> => {

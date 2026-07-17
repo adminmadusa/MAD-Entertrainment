@@ -63,6 +63,18 @@ export enum EventState {
   HIDDEN = 'HIDDEN',
 }
 
+export enum EventLifecycle {
+  UPCOMING = 'UPCOMING',
+  LIVE = 'LIVE',
+  COMPLETED = 'COMPLETED',
+}
+
+export enum BookingState {
+  OPEN = 'OPEN',
+  CLOSED = 'CLOSED',
+}
+
+
 // ─── Booking Reason ──────────────────────────────────────────
 export enum BookingReason {
   BOOKABLE = 'BOOKABLE',
