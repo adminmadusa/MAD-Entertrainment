@@ -55,7 +55,7 @@ export const UpcomingEventsSection = memo(function UpcomingEventsSection({ initi
   }, [nextSlide, prevSlide]);
 
   // Mobile Drag / Swipe handling using Framer Motion gesture metadata
-  const handleDragEnd = useCallback((event: unknown, info: PanInfo) => {
+  const handleDragEnd = useCallback((_event: unknown, info: PanInfo) => {
     const threshold = 50; // swipe threshold in pixels
     if (info.offset.x < -threshold) {
       nextSlide();
