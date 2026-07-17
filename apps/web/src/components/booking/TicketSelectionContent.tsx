@@ -282,6 +282,11 @@ export function TicketSelectionContent({
                         <p className="text-xs text-text-muted leading-relaxed">
                           {tier.description || 'General Entry Ticket'}
                         </p>
+                        {tier.groupSize && tier.groupSize > 1 && (
+                          <p className="text-xs text-emerald-400 font-medium mt-1">
+                            ✓ Renders {tier.groupSize} individual entry passes on checkout
+                          </p>
+                        )}
 
                         <div className="flex items-center gap-2">
                           {isFree ? (
