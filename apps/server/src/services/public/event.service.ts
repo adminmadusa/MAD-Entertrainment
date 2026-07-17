@@ -208,9 +208,9 @@ export class PublicEventService {
     ];
 
     if (state === 'active') {
-      pipeline.push({ $match: { lifecycle: { $in: ["LIVE", "UPCOMING"] } } });
+      pipeline.push({ $match: { lifecycle: "UPCOMING" } });
     } else if (state === 'past') {
-      pipeline.push({ $match: { lifecycle: "COMPLETED" } });
+      pipeline.push({ $match: { lifecycle: { $in: ["LIVE", "COMPLETED"] } } });
     }
 
     pipeline.push(

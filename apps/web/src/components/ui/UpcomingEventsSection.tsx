@@ -68,7 +68,7 @@ export const UpcomingEventsSection = memo(function UpcomingEventsSection({ initi
   return (
     <section
       className="pt-8 pb-16 overflow-hidden"
-      aria-label="Upcoming events"
+      aria-label="Active events"
       role="region"
     >
       <div className="container-mad">
@@ -81,7 +81,7 @@ export const UpcomingEventsSection = memo(function UpcomingEventsSection({ initi
                 Don&apos;t Miss Out
               </p>
               <h2 className="text-display-sm font-black text-white">
-                Upcoming Events
+                Active Events
               </h2>
             </div>
             <Link
@@ -113,7 +113,7 @@ export const UpcomingEventsSection = memo(function UpcomingEventsSection({ initi
             style={{ perspective: '1200px' }}
             role="group"
             aria-roledescription="carousel"
-            aria-label="Upcoming events"
+            aria-label="Active events"
             tabIndex={0}
             onKeyDown={handleKeyDown}
           >
