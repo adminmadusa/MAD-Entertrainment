@@ -424,7 +424,7 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose, onConfirm
           <button
             type="button"
             onClick={handleBackClick}
-            className="w-10 h-10 rounded-full hover:bg-white/5 border border-white/10 flex items-center justify-center text-white text-lg transition-colors"
+            className="w-11 h-11 rounded-full hover:bg-white/5 border border-white/10 flex items-center justify-center text-white text-lg transition-colors shrink-0"
             aria-label="Go back"
           >
             ←
@@ -440,7 +440,7 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose, onConfirm
           <button
             type="button"
             onClick={handleCloseClick}
-            className="w-10 h-10 rounded-full hover:bg-white/5 border border-white/10 flex items-center justify-center text-white text-sm transition-colors"
+            className="w-11 h-11 rounded-full hover:bg-white/5 border border-white/10 flex items-center justify-center text-white text-sm transition-colors shrink-0"
             aria-label="Close checkout"
           >
             ✕
