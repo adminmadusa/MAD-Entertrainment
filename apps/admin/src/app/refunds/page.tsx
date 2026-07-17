@@ -4,7 +4,7 @@ import { useState } from 'react';
 
 import { adminGetRefunds, adminProcessRefund, type AdminRefund, type AdminBooking } from '@/lib/api/admin/booking.service';
 import { useAdminAuth } from '@/providers/AdminAuthProvider';
-import { AdminRole, QUERY_KEYS } from '@mad/shared';
+import { AdminRole, QUERY_KEYS, formatMoney } from '@mad/shared';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, Modal, EmptyState, ErrorState } from '@mad/ui';
 import { Receipt, Search } from '@mad/ui/icons';
 import { formatDateTime, formatEventDate } from '@mad/utils';
@@ -120,7 +120,7 @@ export default function AdminRefundsPage() {
         <TableCell className="py-3.5 px-4 font-mono text-xs text-accent-purple">
           {(refund.bookingId as { bookingId?: string })?.bookingId ?? String(refund.bookingId).slice(-8)}
         </TableCell>
-        <TableCell className="py-3.5 px-4 text-white font-semibold">₹{refund.amount.toLocaleString('en-IN')}</TableCell>
+        <TableCell className="py-3.5 px-4 text-white font-semibold">{formatMoney(refund.amount, refund.currency)}</TableCell>
         <TableCell className="py-3.5 px-4 text-text-secondary max-w-40 truncate">{refund.reason ?? '—'}</TableCell>
         <TableCell className="py-3.5 px-4">
           <span className={`text-xs px-2.5 py-1 rounded-full border font-medium ${STATUS_COLORS[refund.status] ?? ''}`}>
@@ -251,7 +251,7 @@ export default function AdminRefundsPage() {
 
                 <div>
                   <span className="text-[10px] text-text-muted uppercase tracking-wider block font-semibold">Payment / Gateway details</span>
-                  <p className="text-white font-medium">₹{payment?.amount?.toLocaleString('en-IN') ?? '—'} via <span className="uppercase text-accent-purple font-mono">{payment?.gateway ?? '—'}</span></p>
+                  <p className="text-white font-medium">{payment ? formatMoney(payment.amount, target.currency) : '—'} via <span className="uppercase text-accent-purple font-mono">{payment?.gateway ?? '—'}</span></p>
                   {payment?.gatewayPaymentId && <p className="text-text-muted font-mono text-[10px] truncate mt-0.5" title={payment.gatewayPaymentId}>ID: {payment.gatewayPaymentId}</p>}
                 </div>
 
@@ -280,13 +280,13 @@ export default function AdminRefundsPage() {
                   <div className="md:hidden block bg-white/3 rounded-xl p-3 text-xs space-y-1">
                     <p className="text-white">Booking: <span className="font-mono font-semibold text-accent-purple">{booking?.bookingId}</span></p>
                     <p className="text-white">Customer: {customer?.name}</p>
-                    <p className="text-white font-medium">Amount: ₹{processTarget.amount.toLocaleString('en-IN')}</p>
+                    <p className="text-white font-medium">Amount: {formatMoney(processTarget.amount, processTarget.currency)}</p>
                     {processTarget.reason && <p className="text-text-secondary italic">Reason: &ldquo;{processTarget.reason}&rdquo;</p>}
                   </div>
 
                   <div className="bg-white/5 border border-white/10 rounded-xl p-3 text-center">
                     <span className="text-xs text-text-muted block">Refund Amount</span>
-                    <span className="text-2xl font-black text-white">₹{processTarget.amount.toLocaleString('en-IN')}</span>
+                    <span className="text-2xl font-black text-white">{formatMoney(processTarget.amount, processTarget.currency)}</span>
                   </div>
 
                   <div className="flex gap-3">
