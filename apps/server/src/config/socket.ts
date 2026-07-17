@@ -87,7 +87,7 @@ export function initSocketIO(httpServer: Server): SocketIOServer {
     if (sessionToken) {
       try {
         socket.data.sessionId = verifySessionToken(sessionToken);
-      } catch (err) {
+      } catch (_err) {
         socket.data.sessionId = socket.id;
       }
     } else {

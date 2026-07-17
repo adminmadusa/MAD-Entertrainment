@@ -196,8 +196,6 @@ export class BookingCreationService {
     let totalGst = 0;
     const finalTickets: any[] = [];
 
-    // Check event ticket sales closure constraints
-    const now = new Date();
     const eligibility = deriveBookingEligibility(event as any);
     if (!eligibility.bookingAllowed) {
       throw AppError.badRequest(`This event is no longer available for booking. Reason: ${eligibility.bookingReason}`);

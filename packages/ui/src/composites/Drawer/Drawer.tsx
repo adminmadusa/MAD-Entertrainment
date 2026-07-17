@@ -1,6 +1,6 @@
 'use client';
 
-import React, { forwardRef } from 'react';
+import { forwardRef } from 'react';
 
 import { useFocusTrap } from '../../hooks/useFocusTrap';
 import { useDelayedUnmount } from '../../hooks/useDelayedUnmount';
@@ -9,7 +9,6 @@ import { X } from '../../icons';
 import { cn } from '../../lib/cn';
 import { IconButton } from '../../primitives/IconButton';
 import {
-  drawerBackdropClasses,
   drawerContentBaseClasses,
   drawerSides,
   drawerHeaderClasses,
@@ -20,7 +19,7 @@ import {
 import type { DrawerProps } from './Drawer.types'
 
 export const Drawer = forwardRef<HTMLDivElement, DrawerProps>(
-  ({ isOpen, onClose, side = 'right', title, children, className, showHeader = true }, ref) => {
+  ({ isOpen, onClose, side = 'right', title, children, className, showHeader = true }, _ref) => {
     const { isRendered, isVisible } = useDelayedUnmount(
       isOpen,
       0,

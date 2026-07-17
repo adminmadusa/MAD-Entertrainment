@@ -17,7 +17,7 @@ export class RoadmapCommand extends Command {
     requiresCleanTree: false,
   };
 
-  async execute(context: ExecutionContext, args: string[]): Promise<OutputModel<RoadmapResult>> {
+  async execute(context: ExecutionContext, _args: string[]): Promise<OutputModel<RoadmapResult>> {
     context.logger.info('Loading workspace milestone roadmaps...');
     try {
       const phases = await context.services.roadmap.loadRoadmap();

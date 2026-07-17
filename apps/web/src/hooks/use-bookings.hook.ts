@@ -7,7 +7,7 @@ import { apiClient, extractApiError } from '@/lib/api/client';
 import { publicGetMyBookings, publicResendTicketEmail } from '@/lib/api/public.service';
 import { useAuth } from '@/providers/AuthProvider';
 import { BookingStatus, QUERY_KEYS, getBookingLifecycle, type BookingForLifecycle } from '@mad/shared';
-import type { Booking, Ticket, Event } from '@mad/types';
+import type { Booking } from '@mad/types';
 
 export function useBookings() {
   const { isAuthenticated } = useAuth();

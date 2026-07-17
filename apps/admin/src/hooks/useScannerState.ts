@@ -222,7 +222,7 @@ export function useScannerState({ initialEventId = '' }: UseScannerStateProps = 
             message: 'Scan saved locally and queued for synchronization.',
           });
           playSuccess();
-        } catch (err) {
+        } catch (_err) {
           setScannerState('Error');
           setLastValidationResult({
             status: 'ERROR',
@@ -269,7 +269,7 @@ export function useScannerState({ initialEventId = '' }: UseScannerStateProps = 
       } else {
         setScannerState('Idle');
       }
-    } catch (err) {
+    } catch (_err) {
       setScannerState('Error');
       setSyncResultSummary('Offline queue synchronization failed due to connection issue.');
     }

@@ -108,7 +108,7 @@ export async function listReservations(req: Request, res: Response, next: NextFu
   }
 }
 
-export async function getSystemDiagnostics(req: Request, res: Response, next: NextFunction): Promise<void> {
+export async function getSystemDiagnostics(_req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     // Accessible to both Admin and SuperAdmin
     const report = await DiagnosticsService.generateReport();

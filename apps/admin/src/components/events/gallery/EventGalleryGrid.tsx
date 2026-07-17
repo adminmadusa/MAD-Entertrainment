@@ -58,7 +58,7 @@ export const EventGalleryGrid = React.memo(function EventGalleryGrid({
 
       return { previousGallery };
     },
-    onError: (err, newOrder, context: any) => {
+    onError: (_err, _newOrder, context: any) => {
       queryClient.setQueryData(['admin-gallery', eventId], context.previousGallery);
     },
     onSettled: refreshGallery,
@@ -80,7 +80,7 @@ export const EventGalleryGrid = React.memo(function EventGalleryGrid({
 
       return { previousGallery };
     },
-    onError: (err, itemId, context: any) => {
+    onError: (_err, _itemId, context: any) => {
       queryClient.setQueryData(['admin-gallery', eventId], context.previousGallery);
     },
     onSettled: () => {

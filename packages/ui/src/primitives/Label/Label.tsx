@@ -1,4 +1,4 @@
-import React, { forwardRef } from 'react';
+import { forwardRef } from 'react';
 
 import { cn } from '../../lib/cn';
 import { labelClasses, requiredClasses, hintClasses } from './Label.styles';

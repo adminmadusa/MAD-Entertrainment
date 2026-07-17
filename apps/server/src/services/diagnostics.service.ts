@@ -113,7 +113,7 @@ export class DiagnosticsService {
       if (conn && conn.readyState === 1 && typeof conn.getClient === 'function') {
         client = conn.getClient();
       }
-    } catch (e) {
+    } catch (_e) {
       // Suppress connection extraction failures
     }
     const topology = client?.topology?.description;

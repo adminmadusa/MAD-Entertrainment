@@ -5,7 +5,6 @@ import { eventCancellationHtml } from '../../lib/email';
 import { Booking } from '../../models/booking.schema';
 import { Event } from '../../models/event.schema';
 import { Notification } from '../../models/notification.schema';
-import { Payment } from '../../models/payment.schema';
 import { Refund } from '../../models/refund.schema';
 import { auditLog } from '../../utils/audit';
 import { logger } from '../../utils/logger';

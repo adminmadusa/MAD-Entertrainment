@@ -13,7 +13,7 @@ type Props = {
 
 export async function generateMetadata(
   { params }: Props,
-  parent: ResolvingMetadata
+  _parent: ResolvingMetadata
 ): Promise<Metadata> {
   const { slug } = await params;
 
@@ -42,7 +42,7 @@ export default async function PublicGalleryPage({ params }: Props) {
   try {
     event = await getCachedEvent(slug);
     gallery = await serverGetGallery(slug);
-  } catch (error) {
+  } catch (_error) {
     // Handle API failures gracefully
   }
 

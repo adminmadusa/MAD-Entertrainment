@@ -34,7 +34,7 @@ export class AuthService {
    */
   static async requestMagicLink(
     email: string,
-    origin: string,
+    _origin: string,
     registrationData?: { firstName?: string; lastName?: string; mobileNumber?: string }
   ): Promise<void> {
     if (!email) {

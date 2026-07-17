@@ -1,4 +1,4 @@
-import React, { forwardRef } from 'react';
+import { forwardRef } from 'react';
 
 import { AlertTriangle } from '../../icons';
 import { cn } from '../../lib/cn';

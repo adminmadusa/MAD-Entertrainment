@@ -7,35 +7,6 @@ import { Button, FormField, Input } from '@mad/ui';
 
 import { useGoogleSignIn } from './hooks/useGoogleSignIn';
 
-interface GoogleCredentialResponse {
-  credential?: string;
-  clientId?: string;
-  select_by?: string;
-}
-
-interface GoogleAccountsId {
-  initialize(config: {
-    client_id: string;
-    callback: (response: GoogleCredentialResponse) => void;
-    auto_select?: boolean;
-  }): void;
-  renderButton(
-    parent: HTMLElement | null,
-    options: {
-      theme?: string;
-      size?: string;
-      width?: string;
-      shape?: string;
-      text?: string;
-    }
-  ): void;
-}
-
-interface GoogleIdentity {
-  accounts: {
-    id: GoogleAccountsId;
-  };
-}
 
 export interface LoginFormProps {
   mode: 'login';

@@ -18,7 +18,7 @@ export class InitCommand extends Command {
     requiresCleanTree: false,
   };
 
-  async execute(context: ExecutionContext, args: string[]): Promise<OutputModel> {
+  async execute(context: ExecutionContext, _args: string[]): Promise<OutputModel> {
     const configPath = join(context.repoRoot, 'governance.config.ts');
     let createdConfig = false;
     let createdTemplates = false;

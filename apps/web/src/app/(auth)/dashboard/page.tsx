@@ -7,7 +7,6 @@ import { ProfileCompletionForm } from '@/components/auth/ProfileCompletionForm';
 import { useBookings } from '@/hooks/use-bookings.hook';
 import { useAuth } from '@/providers/AuthProvider';
 import { BookingStatus } from '@mad/shared';
-import type { Event } from '@mad/types';
 
 import { DashboardTicketsTab, BookingCardSkeleton, DashboardAccountTab, DashboardSupportTab } from './_components';
 

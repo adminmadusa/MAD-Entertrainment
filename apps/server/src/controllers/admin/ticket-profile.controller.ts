@@ -12,7 +12,7 @@ export const createTicketProfile = async (req: Request, res: Response, next: Nex
   }
 };
 
-export const getTicketProfiles = async (req: Request, res: Response, next: NextFunction) => {
+export const getTicketProfiles = async (_req: Request, res: Response, next: NextFunction) => {
   try {
     const profiles = await ticketProfileService.getTicketProfiles();
     res.status(200).json({ success: true, data: { profiles }, message: 'Ticket profiles fetched successfully' });
