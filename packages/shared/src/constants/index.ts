@@ -296,11 +296,14 @@ export enum AdminRole {
 }
 
 // ─── Refund Status ───────────────────────────────────────────
+// NOTE: There is no distinct REJECTED status in the database schema.
+// Admin rejections are stored as FAILED by design — both failed gateway
+// executions and admin rejections share the same terminal state.
+// See rejectRefund() in refund-lifecycle.service.ts.
 export enum RefundStatus {
   REQUESTED = 'requested',
   PROCESSING = 'processing',
   COMPLETED = 'completed',
-  REJECTED = 'rejected',
   FAILED = 'failed',
 }
 
