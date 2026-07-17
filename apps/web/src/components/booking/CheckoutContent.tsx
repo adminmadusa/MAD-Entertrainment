@@ -424,14 +424,14 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose, onConfirm
           <button
             type="button"
             onClick={handleBackClick}
-            className="w-10 h-10 rounded-full hover:bg-white/5 border border-white/10 flex items-center justify-center text-white text-lg transition-colors"
+            className="w-11 h-11 rounded-full hover:bg-white/5 border border-white/10 flex items-center justify-center text-white text-lg transition-colors shrink-0"
             aria-label="Go back"
           >
             ←
           </button>
 
-          <div className="text-center">
-            <h1 id="checkout-modal-title" className="text-sm font-bold text-white tracking-wide">Checkout</h1>
+          <div className="text-center min-w-0 flex-1 px-2">
+            <h1 id="checkout-modal-title" className="text-xs md:text-sm font-bold text-white tracking-wide truncate">Checkout</h1>
             <div className={`text-[10px] font-semibold mt-0.5 ${isExpired ? 'text-red-400' : 'text-accent-cyan animate-pulse'}`}>
               {timeLeft}
             </div>
@@ -440,7 +440,7 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose, onConfirm
           <button
             type="button"
             onClick={handleCloseClick}
-            className="w-10 h-10 rounded-full hover:bg-white/5 border border-white/10 flex items-center justify-center text-white text-sm transition-colors"
+            className="w-11 h-11 rounded-full hover:bg-white/5 border border-white/10 flex items-center justify-center text-white text-sm transition-colors shrink-0"
             aria-label="Close checkout"
           >
             ✕

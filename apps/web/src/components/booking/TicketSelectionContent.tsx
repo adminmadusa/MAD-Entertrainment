@@ -321,7 +321,7 @@ export function TicketSelectionContent({
                           type="button"
                           onClick={() => handleQtyChange(tier.tier, -1)}
                           aria-label={`Decrease ${tier.name} tickets`}
-                          className="w-10 h-10 rounded-lg hover:bg-white/5 flex items-center justify-center text-white text-base font-bold active:scale-90 transition-transform focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple"
+                          className="w-11 h-11 rounded-lg hover:bg-white/5 flex items-center justify-center text-white text-base font-bold active:scale-90 transition-transform focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple"
                         >
                           -
                         </button>
@@ -332,7 +332,7 @@ export function TicketSelectionContent({
                           type="button"
                           onClick={() => handleQtyChange(tier.tier, 1)}
                           aria-label={`Increase ${tier.name} tickets`}
-                          className="w-10 h-10 rounded-lg hover:bg-white/5 flex items-center justify-center text-white text-base font-bold active:scale-90 transition-transform focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple"
+                          className="w-11 h-11 rounded-lg hover:bg-white/5 flex items-center justify-center text-white text-base font-bold active:scale-90 transition-transform focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple"
                         >
                           +
                         </button>
