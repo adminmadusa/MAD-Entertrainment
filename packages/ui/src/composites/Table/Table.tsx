@@ -104,6 +104,7 @@ export const TableHead = forwardRef<HTMLTableCellElement, TableHeadProps>(
   ({ className, sticky, stickyOffset, showStickyDivider, style, ...props }, ref) => (
     <th
       ref={ref}
+      scope="col"
       className={cn(tableHeadClasses, getStickyClasses(sticky, showStickyDivider), className)}
       style={{ ...style, ...getStickyStyle(sticky, stickyOffset) }}
       {...props}
