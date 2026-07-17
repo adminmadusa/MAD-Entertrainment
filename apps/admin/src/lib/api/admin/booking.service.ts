@@ -1,5 +1,8 @@
 import { adminApiClient } from '@/lib/api/client';
 import type { PaginatedItemsResponse, PaginationMeta } from '@mad/types';
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger('Booking Service');
 
 export interface AdminBooking {
   _id: string;
@@ -8,7 +11,7 @@ export interface AdminBooking {
   totalAmount: number;
   currency: string;
   mode: string;
-  eventId?: { _id: string; title: string; startDate: string; coverImage?: { url: string } } | null;
+  eventId?: { _id: string; title: string; startDate: string; venue?: string; coverImage?: { url: string } } | null;
   userId?: {
     _id: string;
     name: string;
@@ -153,7 +156,7 @@ export async function adminGetBookings(params: Record<string, string | number> =
       },
     };
   } catch (error) {
-    console.error('[Booking Service] Failed to fetch bookings, returning safe default NormalizedBookingsResponse:', error);
+    logger.error('Failed to fetch bookings, returning safe default NormalizedBookingsResponse:', error);
     return {
       items: [],
       pagination: {
@@ -215,7 +218,7 @@ export async function adminGetBooking(id: string): Promise<NormalizedBookingDeta
       } : null,
     };
   } catch (error) {
-    console.error('[Booking Detail Service] Failed to fetch booking detail, returning default fallback DTO:', error);
+    logger.error('Failed to fetch booking detail, returning default fallback DTO:', error);
     return {
       booking: null,
       customer: null,
@@ -236,35 +239,23 @@ export async function adminGetRefunds(params: Record<string, string> = {}): Prom
   try {
     const qs = new URLSearchParams(params);
     const { data } = await adminApiClient.get<{
-      data: AdminRefund[] | { refunds: AdminRefund[]; pagination?: { page?: number; limit?: number; total?: number; totalPages?: number } };
-      pagination?: { page?: number; limit?: number; total?: number; totalPages?: number };
+      data: {
+        refunds: AdminRefund[];
+        pagination: { page: number; limit: number; total: number; totalPages: number };
+      };
     }>(`/admin/refunds?${qs}`);
 
-    const paginationSource = (data?.data && typeof data.data === 'object' && 'pagination' in data.data ? data.data.pagination : null) || data?.pagination;
-    let items: AdminRefund[] = [];
-    if (Array.isArray(data?.data)) {
-      items = data.data;
-    } else if (data?.data && typeof data.data === 'object') {
-      if ('refunds' in data.data && Array.isArray(data.data.refunds)) {
-        items = data.data.refunds;
-      } else {
-        const foundArray = Object.values(data.data).find((v): v is AdminRefund[] => Array.isArray(v));
-        if (foundArray) {
-          items = foundArray;
-        }
-      }
-    }
     return {
-      items,
+      items: data?.data?.refunds ?? [],
       pagination: {
-        page: paginationSource?.page ?? 1,
-        limit: paginationSource?.limit ?? 15,
-        total: paginationSource?.total ?? 0,
-        totalPages: paginationSource?.totalPages ?? 1,
+        page: data?.data?.pagination?.page ?? 1,
+        limit: data?.data?.pagination?.limit ?? 15,
+        total: data?.data?.pagination?.total ?? 0,
+        totalPages: data?.data?.pagination?.totalPages ?? 1,
       },
     };
   } catch (error) {
-    console.error('[Booking Service] Failed to fetch refunds, returning safe default NormalizedRefundsResponse:', error);
+    logger.error('Failed to fetch refunds, returning safe default NormalizedRefundsResponse:', error);
     return {
       items: [],
       pagination: {
@@ -277,13 +268,21 @@ export async function adminGetRefunds(params: Record<string, string> = {}): Prom
   }
 }
 
-export async function adminProcessRefund(id: string, action: 'approve' | 'reject', adminNotes?: string, gatewayRefundId?: string): Promise<void> {
-  await adminApiClient.patch(`/admin/refunds/${id}/process`, { action, adminNotes, gatewayRefundId });
-}
-
-export async function adminCreateRefund(payload: { bookingId: string; paymentId: string; amount: number; reason?: string }): Promise<AdminRefund> {
-  const { data } = await adminApiClient.post<{ data: AdminRefund }>('/admin/refunds', payload);
-  return data.data;
+export async function adminProcessRefund(
+  id: string,
+  action: 'approve' | 'reject',
+  adminNotes?: string,
+  gatewayRefundId?: string,
+  manualOverride?: boolean,
+  overrideReason?: string
+): Promise<void> {
+  await adminApiClient.patch(`/admin/refunds/${id}/process`, {
+    action,
+    adminNotes,
+    gatewayRefundId,
+    manualOverride,
+    overrideReason,
+  });
 }
 
 export async function adminCorrectBookingEmail(id: string, newEmail: string, reason: string): Promise<AdminBooking> {

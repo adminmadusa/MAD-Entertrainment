@@ -1,14 +1,24 @@
 'use client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { AnimatePresence, motion } from 'framer-motion';
 import { useState } from 'react';
 
-import { adminGetRefunds, adminProcessRefund, type AdminRefund } from '@/lib/api/admin/booking.service';
+import { adminGetRefunds, adminProcessRefund, type AdminRefund, type AdminBooking } from '@/lib/api/admin/booking.service';
 import { useAdminAuth } from '@/providers/AdminAuthProvider';
-import { AdminRole } from '@mad/shared';
+import { AdminRole, QUERY_KEYS } from '@mad/shared';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, Modal, EmptyState, ErrorState } from '@mad/ui';
 import { Receipt, Search } from '@mad/ui/icons';
 import { formatDateTime, formatEventDate } from '@mad/utils';
+
+
+interface PopulatedAdminRefund extends Omit<AdminRefund, 'bookingId' | 'paymentId'> {
+  bookingId: AdminBooking;
+  paymentId: {
+    _id: string;
+    amount: number;
+    gateway: string;
+    gatewayPaymentId?: string;
+  };
+}
 
 
 export default function AdminRefundsPage() {
@@ -21,6 +31,8 @@ export default function AdminRefundsPage() {
   const [action, setAction] = useState<'approve' | 'reject'>('approve');
   const [adminNotes, setAdminNotes] = useState('');
   const [gatewayId, setGatewayId] = useState('');
+  const [manualOverride, setManualOverride] = useState(false);
+  const [overrideReason, setOverrideReason] = useState('');
   const [sortField, setSortField] = useState<'amount' | 'createdAt' | 'status' | null>(null);
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
@@ -34,7 +46,7 @@ export default function AdminRefundsPage() {
   };
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ['admin-refunds', { page, status: statusFilter, sortField, sortOrder }],
+    queryKey: QUERY_KEYS.admin.refunds.list({ page, status: statusFilter, sortField, sortOrder }),
     queryFn: () => adminGetRefunds({ 
       page: String(page), 
       limit: '15', 
@@ -44,9 +56,27 @@ export default function AdminRefundsPage() {
     }),
   });
 
+  const resetStates = () => {
+    setProcessTarget(null);
+    setAdminNotes('');
+    setGatewayId('');
+    setManualOverride(false);
+    setOverrideReason('');
+  };
+
   const processMutation = useMutation({
-    mutationFn: () => adminProcessRefund(processTarget!._id, action, adminNotes, gatewayId),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['admin-refunds'] }); setProcessTarget(null); setAdminNotes(''); setGatewayId(''); },
+    mutationFn: () => adminProcessRefund(
+      processTarget!._id,
+      action,
+      adminNotes,
+      gatewayId,
+      manualOverride,
+      overrideReason
+    ),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: QUERY_KEYS.admin.refunds.all });
+      resetStates();
+    },
   });
 
   const refunds = data?.items ?? [];
@@ -177,7 +207,7 @@ export default function AdminRefundsPage() {
 
       <Modal
         isOpen={!!processTarget}
-        onClose={() => setProcessTarget(null)}
+        onClose={resetStates}
         size="md"
         showCloseButton={false}
         closeOnBackdropClick={true}
@@ -185,10 +215,11 @@ export default function AdminRefundsPage() {
         className="glass-strong border border-border-subtle p-6 max-w-2xl"
       >
         {processTarget && (() => {
-          const booking = processTarget.bookingId as any;
+          const target = processTarget as unknown as PopulatedAdminRefund;
+          const booking = target.bookingId;
           const customer = booking?.guestInfo ?? booking?.userId;
           const event = booking?.eventId;
-          const payment = processTarget.paymentId as any;
+          const payment = target.paymentId;
 
           return (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 overflow-y-auto max-h-[90vh]">
@@ -238,6 +269,13 @@ export default function AdminRefundsPage() {
                     <p className="text-text-muted text-xs">Authorize or reject refund request</p>
                   </div>
 
+                  {booking?.ticketsScanned !== undefined && booking.ticketsScanned > 0 && (
+                    <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-xl p-3 text-xs text-yellow-300">
+                      <p className="font-semibold mb-1">⚠️ Checked-in Tickets Protection</p>
+                      <p>This booking has {booking.ticketsScanned} scanned ticket(s). Approving this refund requires super_admin manual override.</p>
+                    </div>
+                  )}
+
                   {/* Mobiles-only quick summary */}
                   <div className="md:hidden block bg-white/3 rounded-xl p-3 text-xs space-y-1">
                     <p className="text-white">Booking: <span className="font-mono font-semibold text-accent-purple">{booking?.bookingId}</span></p>
@@ -259,11 +297,58 @@ export default function AdminRefundsPage() {
                       </button>
                     ))}
                   </div>
+
+                  {action === 'approve' && booking?.ticketsScanned !== undefined && booking.ticketsScanned > 0 && (
+                    <div className="space-y-4 border border-white/5 bg-white/3 rounded-xl p-3">
+                      {admin?.role === AdminRole.SUPER_ADMIN ? (
+                        <>
+                          <label className="flex items-center gap-2 text-sm text-text-secondary cursor-pointer select-none">
+                            <input
+                              type="checkbox"
+                              checked={manualOverride}
+                              onChange={(e) => setManualOverride(e.target.checked)}
+                              className="w-4 h-4 rounded bg-background border-border-subtle text-accent-purple focus:ring-accent-purple"
+                            />
+                            <span>Manual Override Refund Check</span>
+                          </label>
+                          {manualOverride && (
+                            <>
+                              <div className="space-y-1.5">
+                                <label className="text-xs text-text-secondary block">Override Reason *</label>
+                                <textarea
+                                  value={overrideReason}
+                                  onChange={(e) => setOverrideReason(e.target.value)}
+                                  placeholder="Provide reason for checked-in ticket override..."
+                                  rows={2}
+                                  className="w-full px-4 py-2 rounded-xl bg-background border border-border-subtle text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple resize-none"
+                                />
+                              </div>
+                              <div className="space-y-1.5">
+                                <label className="text-xs text-text-secondary block">Gateway Refund ID *</label>
+                                <input
+                                  value={gatewayId}
+                                  onChange={(e) => setGatewayId(e.target.value)}
+                                  placeholder="e.g. rfnd_xxx from Razorpay"
+                                  className="w-full px-4 py-2.5 rounded-xl bg-background border border-border-subtle text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple"
+                                />
+                              </div>
+                            </>
+                          )}
+                        </>
+                      ) : (
+                        <p className="text-xs text-red-400 font-medium">
+                          ❌ Only super_admin accounts can override checked-in ticket bookings.
+                        </p>
+                      )}
+                    </div>
+                  )}
+
                   <div className="space-y-1.5">
                     <label className="text-sm text-text-secondary">Admin Notes</label>
                     <input value={adminNotes} onChange={(e) => setAdminNotes(e.target.value)} placeholder="Notes for audit log..." className="w-full px-4 py-2.5 rounded-xl bg-background border border-border-subtle text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple" />
                   </div>
-                  {action === 'approve' && (
+
+                  {action === 'approve' && (booking?.ticketsScanned === undefined || booking.ticketsScanned === 0) && (
                     <div className="space-y-1.5">
                       <label className="text-sm text-text-secondary">Gateway Refund ID (optional)</label>
                       <input value={gatewayId} onChange={(e) => setGatewayId(e.target.value)} placeholder="e.g. rfnd_xxx from Razorpay" className="w-full px-4 py-2.5 rounded-xl bg-background border border-border-subtle text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple" />
@@ -271,9 +356,21 @@ export default function AdminRefundsPage() {
                   )}
                 </div>
                 <div className="flex gap-3 pt-2">
-                  <button type="button" onClick={() => setProcessTarget(null)} className="flex-1 py-2.5 glass border border-border-subtle rounded-xl text-sm text-text-secondary">Cancel</button>
-                  <button type="button" onClick={() => processMutation.mutate()} disabled={processMutation.isPending}
-                    className={`flex-1 py-2.5 rounded-xl text-white text-sm font-medium disabled:opacity-60 ${action === 'approve' ? 'bg-green-600 hover:bg-green-500' : 'bg-red-600 hover:bg-red-500'}`}>
+                  <button type="button" onClick={resetStates} className="flex-1 py-2.5 glass border border-border-subtle rounded-xl text-sm text-text-secondary">Cancel</button>
+                  <button
+                    type="button"
+                    onClick={() => processMutation.mutate()}
+                    disabled={
+                      processMutation.isPending ||
+                      (action === 'approve' && booking?.ticketsScanned !== undefined && booking.ticketsScanned > 0 && (
+                        admin?.role !== AdminRole.SUPER_ADMIN ||
+                        !manualOverride ||
+                        !overrideReason.trim() ||
+                        !gatewayId.trim()
+                      ))
+                    }
+                    className={`flex-1 py-2.5 rounded-xl text-white text-sm font-medium disabled:opacity-60 ${action === 'approve' ? 'bg-green-600 hover:bg-green-500' : 'bg-red-600 hover:bg-red-500'}`}
+                  >
                     {processMutation.isPending ? 'Processing...' : `Confirm ${action}`}
                   </button>
                 </div>

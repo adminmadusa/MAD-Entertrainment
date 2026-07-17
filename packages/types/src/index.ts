@@ -139,6 +139,11 @@ export type Event = {
   showCountdown?: boolean;
   isEarlyBird?: boolean;
   earlyBirdDeadline?: string | Date;
+  countryCode?: string;
+  currency?: string;
+  taxLabel?: string;
+  taxPercentage?: number;
+  locale?: string;
 
   // Booking Eligibility (Single Source of Truth from Backend)
   bookingAllowed?: boolean;
@@ -278,6 +283,10 @@ export type Booking = {
   discount: number;
   totalAmount: number;
   currency: string;
+  countryCode?: string;
+  taxLabel?: string;
+  taxPercentage?: number;
+  locale?: string;
   couponCode?: string;
   couponId?: string;
   status: BookingStatus;

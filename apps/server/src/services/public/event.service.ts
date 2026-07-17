@@ -1,7 +1,8 @@
 import jwt from 'jsonwebtoken';
 import type { FilterQuery } from 'mongoose';
 
-import { EventStatus, SeatStatus, deriveBookingEligibility } from '@mad/shared';
+import { EventStatus, SeatStatus } from '@mad/shared';
+import { deriveBookingEligibility } from '@mad/shared/src/utils/booking-eligibility.engine';
 
 import { getEnv } from '../../config/env';
 import { getRedis } from '../../config/redis';

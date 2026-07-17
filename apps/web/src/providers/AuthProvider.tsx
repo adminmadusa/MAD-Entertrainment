@@ -20,6 +20,7 @@ interface AuthContextValue {
   setOnboardingRequired: (v: boolean) => void;
   login: (token: string, user: AuthUser) => void;
   logout: () => void;
+  updateUser: (updatedFields: Partial<AuthUser>) => void;
 }
 
 const AuthContext = createContext<AuthContextValue>({
@@ -31,6 +32,7 @@ const AuthContext = createContext<AuthContextValue>({
   setOnboardingRequired: () => {},
   login: () => {},
   logout: () => {},
+  updateUser: () => {},
 });
 
 
@@ -165,6 +167,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [queryClient]);
 
+  const updateUser = useCallback((updatedFields: Partial<AuthUser>) => {
+    setUser((prev) => {
+      if (!prev) return null;
+      const updated = { ...prev, ...updatedFields };
+      localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(updated));
+      return updated;
+    });
+  }, []);
 
   const contextValue = useMemo(() => ({
     user,
@@ -175,7 +185,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setOnboardingRequired,
     login,
     logout,
-  }), [user, token, isLoading, onboardingRequired, setOnboardingRequired, login, logout]);
+    updateUser,
+  }), [user, token, isLoading, onboardingRequired, setOnboardingRequired, login, logout, updateUser]);
 
   return (
     <AuthContext.Provider value={contextValue}>

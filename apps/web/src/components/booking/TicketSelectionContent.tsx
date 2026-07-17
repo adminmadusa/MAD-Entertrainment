@@ -7,18 +7,11 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { extractApiError } from '@/lib/api/client';
 import { ensureGuestBookingSession, publicCreateBooking } from '@/lib/api/public.service';
 import type { Event as EventData } from '@mad/types';
-import { Button, Modal } from '@mad/ui';
 import { ReserveTicketsInput } from '@mad/validations';
 
-/**
- * Converts internal ticket identifiers into user-friendly display names.
- * e.g. "early_bird" → "Early Bird", "vip-pass" → "Vip Pass"
- */
-function formatDisplayName(name: string): string {
-  return name
-    .replace(/[_-]/g, ' ')
-    .replace(/\b\w/g, (c) => c.toUpperCase());
-}
+import { PromoCodeForm } from './PromoCodeForm';
+import { BookingStickyFooter } from './BookingStickyFooter';
+import { formatMoney } from '@mad/shared';
 
 interface TicketSelectionContentProps {
   event: EventData;
@@ -53,6 +46,7 @@ export function TicketSelectionContent({
 }: TicketSelectionContentProps) {
   const router = useRouter();
   const eventId = event._id;
+  const currency = event.currency || 'USD';
 
   const totalCapacity = event.totalCapacity || event.ticketTiers?.reduce((acc, t) => acc + (t.quantity || 0), 0) || 0;
   const soldCount = event.soldCount || event.ticketTiers?.reduce((acc, t) => acc + (t.soldCount || 0), 0) || 0;
@@ -88,9 +82,7 @@ export function TicketSelectionContent({
 
   // Booking Mutation (creates temporary hold/reservation)
   const createBookingMutation = useMutation({
-    mutationFn: (payload: ReserveTicketsInput) => publicCreateBooking(payload, sessionToken),
     onSuccess: (booking) => {
-      // Close modal before redirecting
       if (onClose) onClose();
       if (setIsPendingChange) setIsPendingChange(false);
       if (onBookingSuccess) {
@@ -103,7 +95,6 @@ export function TicketSelectionContent({
       const apiError = extractApiError(err).message;
       setError(apiError);
 
-      // If error might be coupon related, clear the success state
       if (apiError.toLowerCase().includes('coupon') || apiError.toLowerCase().includes('promo')) {
         setCouponApplied(false);
         setCouponMessage({ type: 'error', text: '⚠ Unable to apply promo code. Please check and try again.' });
@@ -111,6 +102,7 @@ export function TicketSelectionContent({
 
       if (setIsPendingChange) setIsPendingChange(false);
     },
+    mutationFn: (payload: ReserveTicketsInput) => publicCreateBooking(payload, sessionToken),
   });
 
   const handleQtyChange = useCallback((tier: string, change: number) => {
@@ -144,9 +136,9 @@ export function TicketSelectionContent({
     e.preventDefault();
     if (!couponCode.trim()) return;
     setCouponApplied(true);
-    setCouponMessage(null); // Clear simple message, using detailed block now
+    setCouponMessage(null);
     setShowCelebration(true);
-    setError(''); // Clear general errors if any
+    setError('');
   };
 
   const handleRemoveCoupon = () => {
@@ -186,7 +178,6 @@ export function TicketSelectionContent({
 
     if (setIsPendingChange) setIsPendingChange(true);
 
-    // Only send coupon code if it's explicitly applied
     createBookingMutation.mutate({
       eventId,
       tickets: ticketsPayload,
@@ -194,7 +185,6 @@ export function TicketSelectionContent({
     });
   }, [eventId, quantities, couponCode, couponApplied, sessionToken, setIsPendingChange, createBookingMutation]);
 
-  // Expose the checkout submit method externally (for modal button clicks)
   useEffect(() => {
     if (checkoutTriggerRef) {
       checkoutTriggerRef.current = handleCheckoutSubmit;
@@ -235,7 +225,6 @@ export function TicketSelectionContent({
         </div>
       )}
 
-
       {/* Ticket Tiers List */}
       <div className="space-y-6">
         <h2 className="text-sm font-black uppercase tracking-wider text-text-secondary">Select Tickets</h2>
@@ -267,7 +256,7 @@ export function TicketSelectionContent({
                     >
                       <div className="space-y-2 flex-1">
                         <div className="flex flex-wrap items-center gap-2">
-                          <span className="text-base font-bold text-white">{formatDisplayName(tier.name)}</span>
+                          <span className="text-base font-bold text-white">{tier.name}</span>
                           {tier.groupSize && tier.groupSize > 1 && (
                             <span className="text-[9px] text-emerald-400 font-semibold px-2 py-0.5 bg-emerald-500/10 rounded-full border border-emerald-500/20">
                               Admits {tier.groupSize}
@@ -280,9 +269,9 @@ export function TicketSelectionContent({
                           )}
                           {offer && offer.discountType !== 'none' && (
                             <span className="text-[9px] text-accent-pink font-semibold px-2 py-0.5 bg-accent-pink/10 rounded-full border border-accent-pink/20">
-                              {offer.discountType === 'percentage'
-                                ? `${offer.discountValue}% OFF`
-                                : `₹${offer.discountValue} OFF`}
+                               {offer.discountType === 'percentage'
+                                 ? `${offer.discountValue}% OFF`
+                                 : `${formatMoney(offer.discountValue, currency)} OFF`}
                             </span>
                           )}
                           {offer && offer.buyQty && offer.freeTicketQty && (
@@ -294,6 +283,11 @@ export function TicketSelectionContent({
                         <p className="text-xs text-text-muted leading-relaxed">
                           {tier.description || 'General Entry Ticket'}
                         </p>
+                        {tier.groupSize && tier.groupSize > 1 && (
+                          <p className="text-xs text-emerald-400 font-medium mt-1">
+                            ✓ Renders {tier.groupSize} individual entry passes on checkout
+                          </p>
+                        )}
 
                         <div className="flex items-center gap-2">
                           {isFree ? (
@@ -303,10 +297,10 @@ export function TicketSelectionContent({
                           ) : (
                             <>
                               <span className="text-accent-purple-light font-black text-sm">
-                                ₹{finalPrice}
+                                {formatMoney(finalPrice, currency)}
                               </span>
                               {discount > 0 && (
-                                <span className="text-xs text-text-muted line-through">₹{tier.price}</span>
+                                <span className="text-xs text-text-muted line-through">{formatMoney(tier.price, currency)}</span>
                               )}
                             </>
                           )}
@@ -352,78 +346,27 @@ export function TicketSelectionContent({
         </div>
       </div>
 
-
-      {/* Celebration Modal */}
-      <Modal
-        isOpen={showCelebration}
-        onClose={() => setShowCelebration(false)}
-        size="sm"
-        closeOnBackdropClick={true}
-        ariaLabelledBy="celebration-title"
-        className="bg-bg-card border border-white/10 rounded-3xl p-8 max-w-xs shadow-2xl"
-      >
-        <div className="text-center">
-          <div className="relative w-24 h-24 mx-auto mb-6">
-            {/* Fake confetti effect */}
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-20 h-20 bg-emerald-500/20 rounded-full animate-ping opacity-75" />
-            </div>
-            <div className="w-16 h-16 rounded-full bg-emerald-500/10 border-2 border-emerald-500 flex items-center justify-center mx-auto relative z-10 shadow-[0_0_20px_rgba(16,185,129,0.3)]">
-              <svg className="w-8 h-8 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-              </svg>
-            </div>
-          </div>
-          <h3 id="celebration-title" className="text-white font-black text-xl mb-2">Promo Code Saved</h3>
-          <div className="text-text-secondary text-sm mb-6 space-y-1">
-            <p>Code: <span className="text-white font-mono font-bold">{couponCode}</span></p>
-            <p className="text-[11px] text-text-muted italic">Discount eligibility will be confirmed during checkout.</p>
-          </div>
-          <button
-            type="button"
-            autoFocus
-            onClick={() => setShowCelebration(false)}
-            className="w-full bg-gradient-to-r from-accent-purple to-accent-pink py-3 rounded-xl font-bold text-white shadow-glow hover:scale-[1.02] active:scale-95 transition-all"
-          >
-            OK
-          </button>
-        </div>
-      </Modal>
+      {/* Promo Code Form & Verification */}
+      <PromoCodeForm
+        couponCode={couponCode}
+        couponApplied={couponApplied}
+        couponMessage={couponMessage}
+        showCelebration={showCelebration}
+        setShowCelebration={setShowCelebration}
+        onApplyCoupon={handleApplyCoupon}
+        onRemoveCoupon={handleRemoveCoupon}
+        onCouponChange={handleCouponChange}
+      />
 
       {/* Mobile Sticky bottom footer when not rendered inside modal */}
       {!isModal && (
-        <div className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-lg border-t border-white/10 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] z-50 shadow-2xl">
-          <div className="container-mad max-w-2xl px-4 space-y-3">
-            <div className="flex items-center justify-between">
-              {ticketsLeft <= 50 ? (
-                <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 bg-amber-500/10 border border-amber-500/20 text-amber-400 rounded-md animate-pulse">
-                  <svg className="w-3.5 h-3.5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9.879 16.121A3 3 0 1012.015 11L11 14H9.879z" />
-                  </svg>
-                  Few tickets left
-                </span>
-              ) : (
-                <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-md">
-                  Available
-                </span>
-              )}
-              <div className="text-right">
-                <span className="text-lg font-black text-white">₹{subtotal}</span>
-              </div>
-            </div>
-            <Button
-              type="button"
-              variant="primary"
-              fullWidth
-              onClick={handleCheckoutSubmit}
-              isLoading={createBookingMutation.isPending}
-              className="py-3.5 rounded-xl bg-gradient-to-r from-accent-purple to-accent-pink hover:from-accent-purple-light hover:to-accent-pink/80 text-white font-black text-sm transition-all"
-            >
-              Check out
-            </Button>
-          </div>
-        </div>
+        <BookingStickyFooter
+          ticketsLeft={ticketsLeft}
+          subtotal={subtotal}
+          onCheckoutSubmit={handleCheckoutSubmit}
+          isPending={createBookingMutation.isPending}
+          currency={currency}
+        />
       )}
     </div>
   );

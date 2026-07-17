@@ -7,6 +7,13 @@ import { AuthService } from '../../services/public/auth.service';
 import { clearXsrfCookie, setXsrfCookie } from '../../utils/cookie';
 import { logger } from '../../utils/logger';
 import { requiresOnboarding } from '../../utils/user';
+import { UploadService } from '../../services/admin/upload.service';
+import {
+  validateFilenameAndExtension,
+  validateMagicBytes,
+  generateSecureFilename,
+  extractCloudinaryPublicId,
+} from '../../utils/file-security';
 
 export class AuthController {
   /**
@@ -269,6 +276,86 @@ export class AuthController {
         picture: user.picture,
         isGuest: false,
       },
+    });
+  }
+
+  /**
+   * Uploads and updates the authenticated user's profile photo.
+   */
+  static async uploadProfilePhoto(req: Request, res: Response): Promise<void> {
+    const userId = req.user?.sub;
+    if (!userId) {
+      throw AppError.unauthorized('Authentication required');
+    }
+
+    const user = await UserModel.findById(userId);
+    if (!user || !user.isActive) {
+      throw AppError.unauthorized('User is deactivated or does not exist');
+    }
+
+    if (!req.file) {
+      throw AppError.badRequest('No image file provided');
+    }
+
+    const { originalname, buffer, mimetype } = req.file;
+
+    // Security check: filename & magic bytes validation
+    validateFilenameAndExtension(originalname);
+    validateMagicBytes(buffer, mimetype);
+
+    // Delete old profile picture if present
+    if (user.picture) {
+      const oldPublicId = extractCloudinaryPublicId(user.picture);
+      if (oldPublicId) {
+        try {
+          await UploadService.deleteImage(oldPublicId);
+        } catch (err) {
+          logger.error(`Failed to delete old profile photo: ${err}`);
+        }
+      }
+    }
+
+    // Generate secure filename and upload
+    const secureFilename = generateSecureFilename();
+    const result = await UploadService.uploadImageBuffer(buffer, secureFilename, 'profile-photos');
+
+    user.picture = result.url;
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      data: {
+        picture: user.picture,
+      },
+    });
+  }
+
+  /**
+   * Deletes the authenticated user's profile photo.
+   */
+  static async deleteProfilePhoto(req: Request, res: Response): Promise<void> {
+    const userId = req.user?.sub;
+    if (!userId) {
+      throw AppError.unauthorized('Authentication required');
+    }
+
+    const user = await UserModel.findById(userId);
+    if (!user || !user.isActive) {
+      throw AppError.unauthorized('User is deactivated or does not exist');
+    }
+
+    if (user.picture) {
+      const oldPublicId = extractCloudinaryPublicId(user.picture);
+      if (oldPublicId) {
+        await UploadService.deleteImage(oldPublicId);
+      }
+      user.picture = undefined;
+      await user.save();
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Profile photo deleted successfully',
     });
   }
 }

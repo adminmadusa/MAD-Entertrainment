@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 import { type AdminTier } from '@/lib/api/admin/tier.service';
 
@@ -15,6 +15,7 @@ export interface TicketGroupCardProps {
   onRemoveTicket: (gIdx: number, tIdx: number) => void;
   onUpdateTicketField: (gIdx: number, tIdx: number, field: keyof TicketInput, value: unknown) => void;
   dbTiers: AdminTier[];
+  allSelectedTiers: string[];
 }
 
 export const TicketGroupCard = React.memo(function TicketGroupCard({
@@ -27,7 +28,10 @@ export const TicketGroupCard = React.memo(function TicketGroupCard({
   onRemoveTicket,
   onUpdateTicketField,
   dbTiers,
+  allSelectedTiers,
 }: TicketGroupCardProps) {
+  const [expandedTierIdx, setExpandedTierIdx] = useState<number | null>(0);
+
   return (
     <div className="glass rounded-2xl border border-border-subtle p-6 space-y-6 relative">
       {canRemove && (
@@ -69,7 +73,10 @@ export const TicketGroupCard = React.memo(function TicketGroupCard({
           </h3>
           <button
             type="button"
-            onClick={() => onAddTicket(gIdx)}
+            onClick={() => {
+              onAddTicket(gIdx);
+              setExpandedTierIdx(group.tickets.length);
+            }}
             className="text-accent-purple text-xs font-bold hover:underline"
           >
             + Add Ticket Tier
@@ -84,9 +91,19 @@ export const TicketGroupCard = React.memo(function TicketGroupCard({
               gIdx={gIdx}
               tIdx={tIdx}
               canRemove={group.tickets.length > 1}
-              onRemove={onRemoveTicket}
+              onRemove={(g, t) => {
+                if (expandedTierIdx === t) {
+                  setExpandedTierIdx(0);
+                } else if (expandedTierIdx !== null && expandedTierIdx > t) {
+                  setExpandedTierIdx(expandedTierIdx - 1);
+                }
+                onRemoveTicket(g, t);
+              }}
               onUpdateField={onUpdateTicketField}
               dbTiers={dbTiers}
+              allSelectedTiers={allSelectedTiers}
+              isExpanded={tIdx === expandedTierIdx}
+              onToggleExpand={() => setExpandedTierIdx(tIdx === expandedTierIdx ? null : tIdx)}
             />
           ))}
         </div>

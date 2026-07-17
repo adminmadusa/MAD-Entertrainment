@@ -69,6 +69,12 @@ export interface AdminEvent {
   attendancePercentage?: number;
   noShowCount?: number;
   noShowPercentage?: number;
+  // Localization
+  countryCode?: string;
+  currency?: string;
+  taxLabel?: string;
+  taxPercentage?: number;
+  locale?: string;
 }
 
 export interface EventsResponse {
@@ -102,13 +108,6 @@ export interface EventFilters {
 }
 
 export type AdminEventUpdatePayload = Partial<AdminEvent> & Pick<AdminEvent, 'eventVersion'>;
-
-export interface DuplicateEventRequest {
-  title?: string;
-  date?: string;
-  venue?: string;
-  publish?: boolean;
-}
 
 export async function adminGetEvents(filters: EventFilters = {}): Promise<{ items: AdminEvent[]; pagination: PaginationMeta }> {
   const params = new URLSearchParams();
@@ -152,11 +151,3 @@ export async function adminBulkDeleteEvents(ids: string[]): Promise<any> {
   return data.data;
 }
 
-export async function adminDuplicateEvent(id: string, payload: DuplicateEventRequest, idempotencyKey: string): Promise<AdminEvent> {
-  const { data } = await adminApiClient.post<EventResponse>(`/admin/events/${id}/duplicate`, payload, {
-    headers: {
-      'Idempotency-Key': idempotencyKey,
-    }
-  });
-  return data.data.event;
-}

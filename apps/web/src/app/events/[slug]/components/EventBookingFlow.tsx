@@ -7,6 +7,7 @@ import { CheckoutContent } from '@/components/booking/CheckoutContent';
 import { TicketSelectionContent } from '@/components/booking/TicketSelectionContent';
 import type { Event as EventData } from '@mad/types';
 import { Modal } from '@mad/ui';
+import { formatMoney } from '@mad/shared';
 
 export type EventBookingFlowHandle = {
   openBooking: () => void;
@@ -20,6 +21,7 @@ type EventBookingFlowProps = {
 
 export const EventBookingFlow = forwardRef<EventBookingFlowHandle, EventBookingFlowProps>(
   function EventBookingFlow({ event, showDateTime, ticketsLeft }, ref) {
+    const currency = event.currency || 'USD';
     const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
     const [quantities, setQuantities] = useState<Record<string, number>>({});
     const [subtotal, setSubtotal] = useState(0);
@@ -52,7 +54,7 @@ export const EventBookingFlow = forwardRef<EventBookingFlowHandle, EventBookingF
           <span className="text-xs text-text-muted font-medium">
             {selectedCount} {selectedCount === 1 ? 'ticket' : 'tickets'}
           </span>
-          <span className="text-base font-black text-accent-purple-light">₹{subtotal}</span>
+          <span className="text-base font-black text-accent-purple-light">{formatMoney(subtotal, currency)}</span>
         </div>
       );
     } else if (ticketsLeft <= 50) {
@@ -170,7 +172,7 @@ export const EventBookingFlow = forwardRef<EventBookingFlowHandle, EventBookingF
                                 <span className="font-bold text-white">{qty}x</span>{' '}
                                 <span className="text-text-secondary">{tier.name}</span>
                               </div>
-                              <span className="font-semibold text-accent-purple-light">₹{price * qty}</span>
+                              <span className="font-semibold text-accent-purple-light">{formatMoney(price * qty, currency)}</span>
                             </div>
                           );
                         })}
@@ -182,7 +184,7 @@ export const EventBookingFlow = forwardRef<EventBookingFlowHandle, EventBookingF
                     <div className="border-t border-white/5 pt-4 space-y-2">
                       <div className="flex justify-between text-xs text-text-secondary">
                         <span>Subtotal</span>
-                        <span className="font-semibold text-white">₹{subtotal}</span>
+                        <span className="font-semibold text-white">{formatMoney(subtotal, currency)}</span>
                       </div>
                       <p className="text-[9px] text-text-muted leading-relaxed">
                         Convenience fees, GST, and discounts will be calculated at checkout details stage.

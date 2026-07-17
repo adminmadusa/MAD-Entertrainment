@@ -46,7 +46,7 @@ const mapBookingToAdminDTO = (booking: any, ticketsList: any[], auditLogs: any[]
     bookingId: booking.bookingId,
     status: booking.status,
     totalAmount: booking.totalAmount,
-    currency: booking.currency || 'INR',
+    currency: booking.currency || 'USD',
     mode,
     eventId: booking.eventId ? {
       _id: booking.eventId._id.toString(),
