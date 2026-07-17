@@ -10,7 +10,7 @@ import { Reveal } from '@/components/common/PageTransition';
 import { useMounted, useWindowWidth } from '@/hooks/use-window.hook';
 import { formatEventDate } from '@/utils/date';
 import { getOptimizedImageUrl } from '@/utils/image';
-import { EventCategory, EVENT_CATEGORY_LABELS, formatMoney } from '@mad/shared';
+import { EventCategory, EVENT_CATEGORY_LABELS, formatMoney, deriveBookingEligibility } from '@mad/shared';
 import type { Event } from '@mad/types';
 import { ArrowLeft, ArrowRight, CalendarIcon } from '@mad/ui';
 
@@ -153,7 +153,8 @@ export const UpcomingEventsSection = memo(function UpcomingEventsSection({ initi
                   if (Math.abs(absoluteOffset) > 2) return null;
 
                   let cardAriaLabel = `View details for ${event.title}`;
-                  const cta = event.bookingCTA || { text: 'Details', disabled: false, variant: 'primary', action: 'VIEW' };
+                  const eligibility = deriveBookingEligibility(event);
+                  const cta = eligibility.bookingCTA;
 
                   return (
                     <motion.div
