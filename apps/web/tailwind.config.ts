@@ -24,6 +24,8 @@ const config: Config = {
         // governance-ignore VAL-UI-007: Tailwind config defines design tokens and requires raw hex values; this IS the token definition layer
         'accent-purple-light': '#a78bfa',
         'accent-pink': 'var(--color-accent-pink)',
+        // governance-ignore VAL-UI-007: Tailwind config defines design tokens and requires raw hex values; this IS the token definition layer
+        'accent-pink-light': '#f472b6',
         'accent-cyan': 'var(--color-accent-cyan)',
       },
     },
