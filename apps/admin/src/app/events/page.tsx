@@ -337,7 +337,7 @@ export default function AdminEventsPage() {
 
       {/* Table */}
       <div className="glass rounded-2xl border border-border-subtle overflow-hidden">
-        <Table>
+        <Table className="min-w-[900px]">
           <TableHeader stickyHeader>
             <TableRow>
               <TableHead sticky="start" className="py-3.5 px-5 w-12">
