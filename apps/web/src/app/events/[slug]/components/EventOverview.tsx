@@ -28,7 +28,7 @@ export function EventOverview({ description = '', organizerName }: EventOverview
           <div className="text-sm font-bold text-white">
             {organizerName || 'MAD Organizer'}
           </div>
-          <div className="text-xs text-text-muted mt-0.5">Event Organizer</div>
+          <div className="text-xs text-text-secondary mt-0.5">Event Organizer</div>
         </div>
       </div>
 
@@ -42,7 +42,10 @@ export function EventOverview({ description = '', organizerName }: EventOverview
               type="button"
               onClick={() => setIsOverviewOpen(true)}
               aria-label="Read more about event overview"
-              className="text-accent-cyan hover:text-accent-cyan/80 font-semibold inline-flex items-center gap-1 mt-2 hover:underline"
+              aria-expanded={isOverviewOpen}
+              aria-haspopup="dialog"
+              aria-controls="event-overview-drawer"
+              className="text-accent-cyan hover:text-accent-cyan/80 font-semibold inline-flex items-center gap-1 mt-2 hover:underline cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-cyan/50 rounded min-h-[44px] py-2"
             >
               Read more →
             </button>
@@ -56,6 +59,7 @@ export function EventOverview({ description = '', organizerName }: EventOverview
         onClose={() => setIsOverviewOpen(false)}
         side="right"
         title="Overview"
+        id="event-overview-drawer"
         className="w-full max-w-md bg-background h-full border-l border-white/10 focus:outline-none"
       >
         <div className="flex flex-col h-full justify-between">
@@ -66,7 +70,7 @@ export function EventOverview({ description = '', organizerName }: EventOverview
             <button
               type="button"
               onClick={() => setIsOverviewOpen(false)}
-              className="px-5 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white text-xs font-semibold"
+              className="px-5 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white text-xs font-semibold cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-cyan/50"
             >
               Close Drawer
             </button>
