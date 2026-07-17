@@ -12,6 +12,7 @@ import { ReserveTicketsInput } from '@mad/validations';
 
 import { PromoCodeForm } from './PromoCodeForm';
 import { BookingStickyFooter } from './BookingStickyFooter';
+import { formatMoney } from '@mad/shared';
 
 interface TicketSelectionContentProps {
   event: EventData;
@@ -46,6 +47,7 @@ export function TicketSelectionContent({
 }: TicketSelectionContentProps) {
   const router = useRouter();
   const eventId = event._id;
+  const currency = event.currency || 'USD';
 
   const totalCapacity = event.totalCapacity || event.ticketTiers?.reduce((acc, t) => acc + (t.quantity || 0), 0) || 0;
   const soldCount = event.soldCount || event.ticketTiers?.reduce((acc, t) => acc + (t.soldCount || 0), 0) || 0;
@@ -268,9 +270,9 @@ export function TicketSelectionContent({
                           )}
                           {offer && offer.discountType !== 'none' && (
                             <span className="text-[9px] text-accent-pink font-semibold px-2 py-0.5 bg-accent-pink/10 rounded-full border border-accent-pink/20">
-                              {offer.discountType === 'percentage'
-                                ? `${offer.discountValue}% OFF`
-                                : `₹${offer.discountValue} OFF`}
+                               {offer.discountType === 'percentage'
+                                 ? `${offer.discountValue}% OFF`
+                                 : `${formatMoney(offer.discountValue, currency)} OFF`}
                             </span>
                           )}
                           {offer && offer.buyQty && offer.freeTicketQty && (
@@ -296,10 +298,10 @@ export function TicketSelectionContent({
                           ) : (
                             <>
                               <span className="text-accent-purple-light font-black text-sm">
-                                ₹{finalPrice}
+                                {formatMoney(finalPrice, currency)}
                               </span>
                               {discount > 0 && (
-                                <span className="text-xs text-text-muted line-through">₹{tier.price}</span>
+                                <span className="text-xs text-text-muted line-through">{formatMoney(tier.price, currency)}</span>
                               )}
                             </>
                           )}
@@ -364,6 +366,7 @@ export function TicketSelectionContent({
           subtotal={subtotal}
           onCheckoutSubmit={handleCheckoutSubmit}
           isPending={createBookingMutation.isPending}
+          currency={currency}
         />
       )}
     </div>

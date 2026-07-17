@@ -1,12 +1,14 @@
 'use client';
 
 import { Button } from '@mad/ui';
+import { formatMoney } from '@mad/shared';
 
 interface BookingStickyFooterProps {
   ticketsLeft: number;
   subtotal: number;
   onCheckoutSubmit: () => void;
   isPending: boolean;
+  currency?: string;
 }
 
 export function BookingStickyFooter({
@@ -14,6 +16,7 @@ export function BookingStickyFooter({
   subtotal,
   onCheckoutSubmit,
   isPending,
+  currency = 'USD',
 }: BookingStickyFooterProps) {
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-lg border-t border-white/10 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] z-50 shadow-2xl">
@@ -33,7 +36,7 @@ export function BookingStickyFooter({
             </span>
           )}
           <div className="text-right">
-            <span className="text-lg font-black text-white">₹{subtotal}</span>
+            <span className="text-lg font-black text-white">{formatMoney(subtotal, currency)}</span>
           </div>
         </div>
         <Button

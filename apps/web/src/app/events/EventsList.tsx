@@ -9,7 +9,7 @@ import { useState } from 'react';
 
 import { publicGetEvents } from '@/lib/api/public.service';
 import { formatEventDate } from '@/utils/date';
-import { EventCategory, EVENT_CATEGORY_LABELS } from '@mad/shared';
+import { EventCategory, EVENT_CATEGORY_LABELS, formatMoney } from '@mad/shared';
 import { CalendarIcon, EventGridSkeleton } from '@mad/ui';
 
 
@@ -125,7 +125,7 @@ export function EventsList() {
                     <div>
                       <div className="text-[10px] text-text-muted font-medium">Tickets from</div>
                       <div className="text-white font-black text-sm">
-                        ₹{event.ticketTiers?.length > 0 ? Math.min(...event.ticketTiers.map((t) => t.price)) : 0}
+                        {formatMoney(event.ticketTiers?.length > 0 ? Math.min(...event.ticketTiers.map((t) => t.price)) : 0, event.currency)}
                       </div>
                     </div>
                     <button
