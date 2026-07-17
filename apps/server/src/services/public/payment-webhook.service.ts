@@ -69,8 +69,8 @@ export class PaymentWebhookService {
     eventType: string,
     webhookEventId: string,
     persistence: PaymentWebhookPersistence,
-    amountPaise?: number,
-    currency?: string
+    _amountPaise?: number,
+    _currency?: string
   ): Promise<{ status: 'confirmed' | 'failed' | 'skipped'; bookingId?: string }> {
     this.assertProductionPaymentIntegrity([razorpayOrderId, razorpayPaymentId], {
       paymentId: razorpayPaymentId,

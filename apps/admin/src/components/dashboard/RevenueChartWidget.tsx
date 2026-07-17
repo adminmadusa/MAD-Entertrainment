@@ -15,6 +15,16 @@ interface RevenueChartWidgetProps {
   revenue: RevenuePoint[] | undefined;
 }
 
+const formatYAxisTick = (value: number) => {
+  if (value >= 100000) {
+    return `₹${(value / 100000).toFixed(1).replace(/\.0$/, '')}L`;
+  }
+  if (value >= 1000) {
+    return `₹${(value / 1000).toFixed(1).replace(/\.0$/, '')}K`;
+  }
+  return `₹${value}`;
+};
+
 export default function RevenueChartWidget({ revenue }: RevenueChartWidgetProps) {
   const chartData = revenue?.map((point) => ({
     date: point._id.slice(5),
@@ -45,14 +55,14 @@ export default function RevenueChartWidget({ revenue }: RevenueChartWidgetProps)
           </defs>
           <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" vertical={false} />
           <XAxis dataKey="date" stroke="#ffffff50" fontSize={12} tickLine={false} axisLine={false} />
-          <YAxis stroke="#ffffff50" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `₹${value.toLocaleString('en-IN')}`} />
+          <YAxis stroke="#ffffff50" fontSize={12} tickLine={false} axisLine={false} tickFormatter={formatYAxisTick} />
           <Tooltip
             content={({ active, payload, label }) => {
               if (active && payload && payload.length) {
                 const data = payload[0].payload;
                 return (
                   <div className="bg-bg-card border border-border-subtle p-4 rounded-xl space-y-1.5 shadow-glow-sm">
-                    <p className="text-text-muted text-xs font-semibold">{label}</p>
+                    <p className="text-text-secondary text-xs font-semibold">{label}</p>
                     <p className="text-white text-xs font-medium">
                       Gross: <span className="text-emerald-400 font-semibold">₹{data.dailyGrossRevenue.toLocaleString('en-IN')}</span>
                     </p>

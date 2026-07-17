@@ -25,6 +25,15 @@ export default [
       '@next/next/no-html-link-for-pages': 'off', // <a> tag is required in Error Boundaries to perform a hard reload
 
       // ─── Import/Export & Object Safety ────────────────────────────────────
+      'no-unused-vars': 'off',
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_',
+        },
+      ],
       'react/jsx-no-undef': 'error',
       'react/no-danger': 'warn',
       'no-dupe-keys': 'error',

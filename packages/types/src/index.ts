@@ -93,7 +93,7 @@ export interface EventBookingCTA {
   text: string;
   disabled: boolean;
   variant: 'primary' | 'secondary' | 'disabled';
-  action: 'BOOK' | 'VIEW' | 'NONE';
+  action: 'BOOK' | 'VIEW' | 'NONE' | 'GALLERY';
 }
 
 export type Event = {
@@ -139,12 +139,38 @@ export type Event = {
   showCountdown?: boolean;
   isEarlyBird?: boolean;
   earlyBirdDeadline?: string | Date;
+  countryCode?: string;
+  currency?: string;
+  taxLabel?: string;
+  taxPercentage?: number;
+  locale?: string;
 
   // Booking Eligibility (Single Source of Truth from Backend)
   bookingAllowed?: boolean;
   bookingReason?: string;
   eventState?: string;
   bookingCTA?: EventBookingCTA;
+
+  // Decoupled Status States
+  lifecycle?: string;
+  visibility?: {
+    public: boolean;
+    discoverable: boolean;
+  };
+  booking?: {
+    status: string;
+    reason: string;
+  };
+  gallery?: {
+    status: 'NONE' | 'DRAFT' | 'PUBLISHED';
+    itemCount: number;
+  };
+  capabilities?: {
+    canBook: boolean;
+    canViewGallery: boolean;
+    canUploadGallery: boolean;
+    canPublishGallery: boolean;
+  };
 };
 
 export type Seat = {
@@ -278,6 +304,10 @@ export type Booking = {
   discount: number;
   totalAmount: number;
   currency: string;
+  countryCode?: string;
+  taxLabel?: string;
+  taxPercentage?: number;
+  locale?: string;
   couponCode?: string;
   couponId?: string;
   status: BookingStatus;
@@ -452,6 +482,7 @@ export interface BulkOperationResult {
 
 export interface BulkActionConfig<TId = string> {
   id: string;
+  _unusedType?: TId;
   label: string;
   icon?: unknown;
   variant?: 'default' | 'destructive';

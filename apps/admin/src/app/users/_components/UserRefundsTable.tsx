@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 
+import { formatMoney } from '@mad/shared';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, EmptyState } from '@mad/ui';
 import { Receipt } from '@mad/ui/icons';
 import { formatDateTime } from '@mad/utils';
@@ -78,10 +79,7 @@ export default function UserRefundsTable({
                   {r.processedAt ? formatDateTime(r.processedAt) : 'Pending'}
                 </TableCell>
                 <TableCell sticky="end" showStickyDivider className="py-3.5 px-5 text-right font-semibold text-white">
-                  {new Intl.NumberFormat('en-IN', {
-                    style: 'currency',
-                    currency: r.currency,
-                  }).format(r.amount)}
+                  {formatMoney(r.amount, r.currency)}
                 </TableCell>
               </TableRow>
             ))

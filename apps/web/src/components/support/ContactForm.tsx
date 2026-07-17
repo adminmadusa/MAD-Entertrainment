@@ -28,7 +28,7 @@ export function ContactForm() {
         setStatus('error');
         setErrorMessage(result.message || 'Something went wrong. Please try again.');
       }
-    } catch (err) {
+    } catch (_err) {
       setStatus('error');
       setErrorMessage('Failed to connect to the support server. Please try again later.');
     }

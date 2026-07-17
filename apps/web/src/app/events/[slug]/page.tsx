@@ -126,6 +126,13 @@ function buildEventJsonLd(
   };
 }
 
+function safeJsonLd(data: unknown): string {
+  return JSON.stringify(data)
+    .replace(/</g, '\\u003c')
+    .replace(/>/g, '\\u003e')
+    .replace(/\//g, '\\u002f');
+}
+
 export default async function EventPage({ params }: Props) {
   const { slug } = await params;
 
@@ -148,14 +155,14 @@ export default async function EventPage({ params }: Props) {
             type="application/ld+json"
             // eslint-disable-next-line react/no-danger
             dangerouslySetInnerHTML={{
-              __html: JSON.stringify(buildEventJsonLd(initialEvent, slug)),
+              __html: safeJsonLd(buildEventJsonLd(initialEvent, slug)),
             }}
           />
           <script
             type="application/ld+json"
             // eslint-disable-next-line react/no-danger
             dangerouslySetInnerHTML={{
-              __html: JSON.stringify(
+              __html: safeJsonLd(
                 buildBreadcrumbJsonLd([
                   { name: 'Home', url: SITE_URL },
                   { name: 'Events', url: `${SITE_URL}/events` },

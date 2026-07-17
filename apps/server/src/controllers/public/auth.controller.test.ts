@@ -10,6 +10,13 @@ vi.mock('../../models/user.schema', () => ({
   },
 }));
 
+vi.mock('../../services/admin/upload.service', () => ({
+  UploadService: {
+    uploadImageBuffer: vi.fn(),
+    deleteImage: vi.fn(),
+  },
+}));
+
 vi.mock('../../services/public/auth.service', () => ({
   AuthService: {
     verifyMagicLinkOrOTP: vi.fn(),
@@ -450,6 +457,68 @@ describe('Public Auth Controller - Profile Management Tests', () => {
           onboardingRequired: false,
         },
       });
+    });
+  });
+
+  describe('Profile Photo Management', () => {
+    let mockUser: any;
+
+    beforeEach(() => {
+      mockUser = {
+        _id: 'user-123',
+        picture: 'https://res.cloudinary.com/demo/image/upload/v1570975253/mad-entertrainment/profile-photos/old-photo.webp',
+        isActive: true,
+        save: vi.fn(),
+      };
+    });
+
+    it('uploadProfilePhoto successfully uploads a new photo and deletes the old one', async () => {
+      const { UploadService } = await import('../../services/admin/upload.service');
+      vi.mocked(UserModel.findById).mockResolvedValue(mockUser as any);
+      vi.mocked(UploadService.uploadImageBuffer).mockResolvedValue({
+        url: 'https://cloudinary.com/new-photo.jpg',
+        publicId: 'mad-entertrainment/profile-photos/new-filename',
+        hash: 'mock-hash',
+      });
+      vi.mocked(UploadService.deleteImage).mockResolvedValue(undefined);
+
+      // Create a mock png file buffer (with correct magic bytes for PNG)
+      const pngBuffer = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 0]);
+
+      const req = {
+        user: { sub: 'user-123' },
+        file: {
+          originalname: 'avatar.png',
+          buffer: pngBuffer,
+          mimetype: 'image/png',
+        },
+      } as any;
+      const res = mockResponse();
+
+      await AuthController.uploadProfilePhoto(req, res);
+
+      expect(UserModel.findById).toHaveBeenCalledWith('user-123');
+      expect(UploadService.deleteImage).toHaveBeenCalledWith('mad-entertrainment/profile-photos/old-photo');
+      expect(UploadService.uploadImageBuffer).toHaveBeenCalled();
+      expect(mockUser.picture).toBe('https://cloudinary.com/new-photo.jpg');
+      expect(mockUser.save).toHaveBeenCalled();
+      expect(res.status).toHaveBeenCalledWith(200);
+    });
+
+    it('deleteProfilePhoto deletes the photo and sets user picture to undefined', async () => {
+      const { UploadService } = await import('../../services/admin/upload.service');
+      vi.mocked(UserModel.findById).mockResolvedValue(mockUser as any);
+      vi.mocked(UploadService.deleteImage).mockResolvedValue(undefined);
+
+      const req = mockRequest();
+      const res = mockResponse();
+
+      await AuthController.deleteProfilePhoto(req, res);
+
+      expect(UploadService.deleteImage).toHaveBeenCalledWith('mad-entertrainment/profile-photos/old-photo');
+      expect(mockUser.picture).toBeUndefined();
+      expect(mockUser.save).toHaveBeenCalled();
+      expect(res.status).toHaveBeenCalledWith(200);
     });
   });
 });

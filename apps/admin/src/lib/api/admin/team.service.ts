@@ -1,5 +1,8 @@
 import { adminApiClient } from '@/lib/api/client';
 import type { Admin, PaginatedDataResponse, PaginatedItemsResponse } from '@mad/types';
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger('Team Service');
 
 export type AdminsResponse = PaginatedDataResponse<Admin>;
 
@@ -19,7 +22,7 @@ export async function adminGetAdmins(page = 1, limit = 15): Promise<NormalizedAd
       },
     };
   } catch (error) {
-    console.error('[Team Service] Failed to fetch team members, returning safe default NormalizedAdminsResponse:', error);
+    logger.error('Failed to fetch team members, returning safe default NormalizedAdminsResponse:', error);
     return {
       items: [],
       pagination: {
@@ -37,7 +40,7 @@ export async function adminCreateAdmin(payload: Record<string, unknown>): Promis
     const { data } = await adminApiClient.post<{ data: Admin }>('/admin/team', payload);
     return data.data;
   } catch (error) {
-    console.error('[Team Service] Failed to invite team member:', error);
+    logger.error('Failed to invite team member:', error);
     throw error;
   }
 }
@@ -47,7 +50,7 @@ export async function adminToggleAdminActive(id: string): Promise<{ isActive: bo
     const { data } = await adminApiClient.patch<{ data: { isActive: boolean } }>(`/admin/team/${id}/toggle`);
     return data.data;
   } catch (error) {
-    console.error(`[Team Service] Failed to toggle active status for team member ${id}:`, error);
+    logger.error(`Failed to toggle active status for team member ${id}:`, error);
     throw error;
   }
 }
@@ -57,7 +60,7 @@ export async function adminUpdateAdmin(id: string, payload: { name: string; emai
     const { data } = await adminApiClient.patch<{ data: Admin }>(`/admin/team/${id}`, payload);
     return data.data;
   } catch (error) {
-    console.error(`[Team Service] Failed to update administrative details for ${id}:`, error);
+    logger.error(`Failed to update administrative details for ${id}:`, error);
     throw error;
   }
 }
@@ -67,7 +70,7 @@ export async function adminUpdateAdminRole(id: string, role: string): Promise<Ad
     const { data } = await adminApiClient.patch<{ data: Admin }>(`/admin/team/${id}/role`, { role });
     return data.data;
   } catch (error) {
-    console.error(`[Team Service] Failed to update role for administrative account ${id}:`, error);
+    logger.error(`Failed to update role for administrative account ${id}:`, error);
     throw error;
   }
 }
@@ -77,7 +80,7 @@ export async function adminResetAdminPassword(id: string, payload: Record<string
     const { data } = await adminApiClient.post<{ data: Admin }>(`/admin/team/${id}/reset-password`, payload);
     return data.data;
   } catch (error) {
-    console.error(`[Team Service] Failed to reset password for administrative account ${id}:`, error);
+    logger.error(`Failed to reset password for administrative account ${id}:`, error);
     throw error;
   }
 }

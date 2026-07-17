@@ -40,7 +40,7 @@ export async function processEmailDispatch(
   html: string,
   attachments?: { filename: string; content: string; contentType?: string }[],
   bookingId?: string,
-  eventId?: string,
+  _eventId?: string,
   notificationType?: NotificationType,
   messageId?: string
 ): Promise<void> {

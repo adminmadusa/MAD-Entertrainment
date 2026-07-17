@@ -88,3 +88,12 @@ export function validateMagicBytes(buffer: Buffer, mimetype: string) {
 export function generateSecureFilename() {
   return crypto.randomUUID();
 }
+
+/**
+ * Extracts the Cloudinary public ID from a full secure URL.
+ */
+export function extractCloudinaryPublicId(url: string): string | null {
+  if (!url) return null;
+  const match = url.match(/\/upload\/(?:v\d+\/)?([^.]+)/);
+  return match ? match[1] : null;
+}

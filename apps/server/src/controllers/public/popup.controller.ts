@@ -4,7 +4,7 @@ import { CacheService } from '../../services/cache.service';
 import { PublicPopupService } from '../../services/public/popup.service';
 import { sendSuccess } from '../../utils/response';
 
-export async function getActivePopups(req: Request, res: Response, next: NextFunction): Promise<void> {
+export async function getActivePopups(_req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const cacheKey = 'popups:active';
     const cached = await CacheService.get<any>(cacheKey);

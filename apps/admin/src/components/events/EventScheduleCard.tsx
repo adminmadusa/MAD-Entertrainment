@@ -2,9 +2,9 @@ import React, { useMemo } from 'react';
 import { FormField } from '@mad/ui';
 
 const inputCls =
-  'w-full px-4 py-2.5 rounded-xl bg-background border border-border-subtle text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple transition-colors';
+  'w-full px-4 py-2.5 rounded-xl bg-background border border-border-subtle text-sm text-text-primary placeholder:text-text-secondary focus:outline-none focus:border-accent-purple focus:ring-2 focus:ring-accent-purple/50 transition-colors';
 
-const labelCls = 'text-xs text-text-muted mt-1.5 block';
+const labelCls = 'text-xs text-text-secondary mt-1.5 block';
 
 export interface EventScheduleCardProps {
   startDate: string;
@@ -24,7 +24,7 @@ const formatFriendlyDate = (dateStr: string) => {
       dateStyle: 'medium',
       timeStyle: 'short',
     });
-  } catch (e) {
+  } catch (_e) {
     return '—';
   }
 };
@@ -112,7 +112,7 @@ export const EventScheduleCard = React.memo(function EventScheduleCard({
         <div className="flex items-center justify-between">
           <h2 className="text-white font-semibold">📅 Event Schedule</h2>
           <div className="flex items-center gap-2">
-            <span className="text-xs text-text-muted">Live Preview:</span>
+            <span className="text-xs text-text-secondary">Live Preview:</span>
             <span
               className={`text-xs px-2 py-0.5 rounded-full font-semibold ${
                 statusPreview === 'Completed'
@@ -190,24 +190,24 @@ export const EventScheduleCard = React.memo(function EventScheduleCard({
       {startDate && (
         <div className="p-5 border border-border-subtle rounded-xl bg-surface/50 grid grid-cols-2 gap-4 text-xs">
           <div>
-            <h4 className="text-text-muted font-medium mb-2 uppercase tracking-wider">Event Info</h4>
+            <h4 className="text-text-secondary font-medium mb-2 uppercase tracking-wider">Event Info</h4>
             <p className="text-white text-sm font-semibold">{formatFriendlyDate(startDate)}</p>
             {endDate && (
               <>
-                <p className="text-text-muted my-1">to</p>
+                <p className="text-text-secondary my-1">to</p>
                 <p className="text-white text-sm font-semibold">{formatFriendlyDate(endDate)}</p>
               </>
             )}
             {eventDuration && <p className="text-accent-purple mt-2 font-medium">Duration: {eventDuration}</p>}
           </div>
           <div>
-            <h4 className="text-text-muted font-medium mb-2 uppercase tracking-wider">Booking Info</h4>
+            <h4 className="text-text-secondary font-medium mb-2 uppercase tracking-wider">Booking Info</h4>
             {bookingStartDate ? (
               <p className="text-white text-sm font-semibold">{formatFriendlyDate(bookingStartDate)}</p>
             ) : (
-              <p className="text-text-muted italic">Opens immediately on publish</p>
+              <p className="text-text-secondary italic">Opens immediately on publish</p>
             )}
-            <p className="text-text-muted my-1">to</p>
+            <p className="text-text-secondary my-1">to</p>
             {bookingEndDate ? (
               <p className="text-white text-sm font-semibold">{formatFriendlyDate(bookingEndDate)}</p>
             ) : (

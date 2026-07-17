@@ -156,7 +156,13 @@ export class RefundLifecycleService {
   }
 
   /**
-   * Reject path: Marks the refund request as failed/rejected inside a transaction.
+   * Reject path: Marks the refund request as FAILED inside a transaction.
+   *
+   * Design note: Admin rejections and gateway failures both resolve to
+   * RefundStatus.FAILED ('failed'). There is no distinct 'rejected' value in
+   * the database schema — this is intentional so that both terminal failure
+   * states are queried and reported uniformly. The adminNotes field carries
+   * the human-readable rejection reason for audit purposes.
    */
   static async rejectRefund(
     refund: any,

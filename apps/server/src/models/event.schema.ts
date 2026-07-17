@@ -143,6 +143,12 @@ export interface IEvent extends Document {
   highlights?: string[];
   refundPolicy?: string;
   organizerName?: string;
+
+  countryCode: string;
+  currency: string;
+  taxLabel: string;
+  taxPercentage: number;
+  locale: string;
 }
 
 
@@ -154,6 +160,12 @@ const eventSchema = new Schema<IEvent>(
     category: { type: String, required: true, index: true },
     status: { type: String, enum: Object.values(EventStatus), default: EventStatus.PUBLISHED, index: true },
     bookingMode: { type: String, enum: Object.values(BookingMode), required: true },
+
+    countryCode: { type: String, default: 'US' },
+    currency: { type: String, default: 'USD' },
+    taxLabel: { type: String, default: 'Sales Tax' },
+    taxPercentage: { type: Number, default: 0 },
+    locale: { type: String, default: 'en-US' },
 
     bannerImage: { type: cloudinaryImageSchema, required: true },
     posterImage: cloudinaryImageSchema,

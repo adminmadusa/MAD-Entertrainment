@@ -977,6 +977,7 @@ describe('ConsistencyService - Stuck Processing, Notifications, Optimistic Locki
       bookingId: 'book-orph-1',
       paymentId: 'pay-orph-1',
       amount: 150,
+      status: 'completed',
       processedAt: new Date(),
     };
 
@@ -1027,7 +1028,7 @@ describe('ConsistencyService - Stuck Processing, Notifications, Optimistic Locki
         to: 'guest@example.com',
         notificationType: NotificationType.PARTIAL_REFUND,
       }),
-      'refund-ref-orph-1-retry'
+      expect.stringMatching(/^refund-ref-orph-1-\d+$/)
     );
   });
 

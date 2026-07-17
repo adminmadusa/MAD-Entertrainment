@@ -1,16 +1,16 @@
 import { BookingStatus, NotificationType } from '@mad/shared';
 
 import { getQueueName } from '../../config/queue.config';
-import { fullRefundHtml, partialRefundHtml, eventCancellationHtml } from '../../lib/email';
+import { eventCancellationHtml } from '../../lib/email';
 import { Booking } from '../../models/booking.schema';
 import { Event } from '../../models/event.schema';
 import { Notification } from '../../models/notification.schema';
-import { Payment } from '../../models/payment.schema';
 import { Refund } from '../../models/refund.schema';
 import { auditLog } from '../../utils/audit';
 import { logger } from '../../utils/logger';
 import { createNotificationSafe } from '../notification.service';
 import { QueueService } from '../queue.service';
+import { RefundNotificationService } from '../admin/refund/refund-notification.service';
 
 export class RefundConsistencyService {
   static async countStuckProcessingRefunds(): Promise<number> {
@@ -115,88 +115,7 @@ export class RefundConsistencyService {
           continue;
         }
 
-        const booking = await Booking.findById(refund.bookingId).populate('eventId');
-        if (!booking || !booking.guestEmail) {
-          continue;
-        }
-
-        const event = booking.eventId as any;
-        const totalAmount = booking.totalAmount;
-
-        const allCompleted = await Refund.find({
-          paymentId: refund.paymentId,
-          status: 'completed'
-        });
-        const totalRefunded = allCompleted.reduce((sum, r) => sum + r.amount, 0);
-        const payment = await Payment.findById(refund.paymentId);
-        const isFullRefund = payment ? totalRefunded === payment.amount : false;
-
-        let emailHtml = '';
-        let subject = '';
-        let notificationType: NotificationType;
-
-        if (isFullRefund) {
-          const formattedRefundDate = new Date(refund.processedAt || new Date()).toLocaleDateString('en-IN', {
-            weekday: 'long',
-            day: 'numeric',
-            month: 'long',
-            year: 'numeric',
-          });
-          emailHtml = await fullRefundHtml({
-            customerName: booking.guestName,
-            bookingReference: booking.bookingId,
-            eventTitle: event?.title || 'MAD Event',
-            refundAmount: refund.amount,
-            refundDate: formattedRefundDate,
-            settlementTimeline: '5-7 business days',
-            currency: booking.currency || 'INR',
-          });
-          subject = `Refund Processed for ${booking.bookingId}`;
-          notificationType = NotificationType.FULL_REFUND;
-        } else {
-          emailHtml = await partialRefundHtml({
-            customerName: booking.guestName,
-            bookingReference: booking.bookingId,
-            originalAmount: totalAmount,
-            refundAmount: refund.amount,
-            remainingAmount: Math.max(0, totalAmount - totalRefunded),
-            reason: refund.reason || 'Tier adjustment refund',
-            currency: booking.currency || 'INR',
-          });
-          subject = `Partial Refund Processed for ${booking.bookingId}`;
-          notificationType = NotificationType.PARTIAL_REFUND;
-        }
-
-        const jobId = `refund-${refund._id}-retry`;
-
-        await createNotificationSafe([{
-          jobId,
-          status: 'queued',
-          queuedAt: new Date(),
-          type: notificationType,
-          channel: 'email',
-          recipient: booking.guestEmail,
-          subject,
-          isSent: false,
-          retryCount: 0,
-          bookingId: booking._id,
-          eventId: event?._id
-        }]);
-
-        await QueueService.enqueue(
-          getQueueName('notification-queue'),
-          'email-dispatch',
-          {
-            to: booking.guestEmail,
-            subject,
-            html: emailHtml,
-            notificationType,
-            bookingId: booking._id.toString(),
-            eventId: event?._id?.toString() || booking.eventId.toString() || '',
-          },
-          jobId
-        );
-
+        await RefundNotificationService.sendRefundNotification(refund);
         recoveredCount++;
         logger.info({ refundId: refund._id }, 'Watchdog successfully recovered and enqueued orphaned refund notification.');
       } catch (error) {

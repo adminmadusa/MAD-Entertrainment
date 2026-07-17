@@ -281,8 +281,6 @@ export class PaymentVerifyService {
     if (!event || event.status !== 'published' || event.isDeleted === true) {
       throw AppError.notFound('Event not found or not published');
     }
-
-    const now = new Date();
     // Final validation check for event status and tickets availability
     const eligibility = deriveBookingEligibility(event as any);
     if (!eligibility.bookingAllowed) {

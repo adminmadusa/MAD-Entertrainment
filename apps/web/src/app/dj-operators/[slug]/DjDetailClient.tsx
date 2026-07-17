@@ -139,7 +139,7 @@ function GalleryCarousel({ galleryImages = [] }: { galleryImages?: ImageAsset[] 
     }
   };
 
-  const handleDragEnd = (event: unknown, info: PanInfo) => {
+  const handleDragEnd = (_event: unknown, info: PanInfo) => {
     const threshold = 50;
     if (info.offset.x < -threshold) {
       nextSlide();

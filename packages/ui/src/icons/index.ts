@@ -20,6 +20,7 @@
 
 // Navigation
 export {
+  Home,
   ArrowRight,
   ArrowLeft,
   ArrowUp,

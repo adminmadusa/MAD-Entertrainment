@@ -1,7 +1,6 @@
 'use client';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { useState } from 'react';
 
@@ -180,7 +179,7 @@ export default function AdminTicketProfilesPage() {
 
       {/* Table */}
       <div className="glass rounded-2xl border border-border-subtle overflow-hidden">
-        <Table>
+        <Table className="min-w-[700px]">
           <TableHeader stickyHeader>
             <TableRow>
               <TableHead sticky="start" showStickyDivider className="py-3.5 px-5">Profile Name & Description</TableHead>

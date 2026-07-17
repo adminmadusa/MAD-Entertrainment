@@ -78,10 +78,27 @@ export interface PublicDJsApiResponse {
 
 export type PublicEventsResponse = PaginatedDataResponse<Event>;
 
-export async function publicGetEvents(filters: { page?: number; limit?: number } = {}): Promise<PublicEventsResponse> {
+export async function publicGetEvents(
+  filters: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    category?: string;
+    status?: string;
+    state?: string;
+    sort?: string;
+    exclude?: string;
+  } = {}
+): Promise<PublicEventsResponse> {
   const params = new URLSearchParams();
   if (filters.page) params.set('page', String(filters.page));
   if (filters.limit) params.set('limit', String(filters.limit));
+  if (filters.search) params.set('search', filters.search);
+  if (filters.category) params.set('category', filters.category);
+  if (filters.status) params.set('status', filters.status);
+  if (filters.state) params.set('state', filters.state);
+  if (filters.sort) params.set('sort', filters.sort);
+  if (filters.exclude) params.set('exclude', filters.exclude);
 
   const page = filters.page || 1;
   const limit = filters.limit || 12;
@@ -304,4 +321,20 @@ export async function publicVerifyRecoveredBookingOTP(
     { transactionId, otp }
   );
   return data.data;
+}
+
+export async function publicUploadProfilePhoto(file: File): Promise<{ picture: string }> {
+  const formData = new FormData();
+  formData.append('photo', file);
+  const { data } = await apiClient.post<{ data: { picture: string } }>('/auth/profile/photo', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+  return data.data;
+}
+
+export async function publicDeleteProfilePhoto(): Promise<{ success: boolean; message: string }> {
+  const { data } = await apiClient.delete<{ success: boolean; message: string }>('/auth/profile/photo');
+  return data;
 }

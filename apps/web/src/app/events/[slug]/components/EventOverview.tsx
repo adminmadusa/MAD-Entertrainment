@@ -5,27 +5,17 @@ import { useState, useEffect } from 'react';
 import { Drawer } from '@mad/ui';
 
 type EventOverviewProps = {
-  description: string;
+  description?: string | null;
   organizerName?: string | null;
 };
 
-export function EventOverview({ description, organizerName }: EventOverviewProps) {
+export function EventOverview({ description = '', organizerName }: EventOverviewProps) {
   const [isOverviewOpen, setIsOverviewOpen] = useState(false);
 
-  useEffect(() => {
-    if (!isOverviewOpen) return;
-
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-
-    return () => {
-      document.body.style.overflow = previousOverflow;
-    };
-  }, [isOverviewOpen]);
-
-  const descriptionPreview = description.length > 150
-    ? `${description.substring(0, 150)}...`
-    : description;
+  const safeDescription = description || '';
+  const descriptionPreview = safeDescription.length > 150
+    ? `${safeDescription.substring(0, 150)}...`
+    : safeDescription;
 
   return (
     <>
@@ -47,14 +37,12 @@ export function EventOverview({ description, organizerName }: EventOverviewProps
         <h2 className="text-base font-bold text-white">Overview</h2>
         <div className="text-text-secondary text-sm leading-relaxed">
           <p>{descriptionPreview}</p>
-          {description.length > 150 && (
+          {safeDescription.length > 150 && (
             <button
               type="button"
               onClick={() => setIsOverviewOpen(true)}
-              aria-expanded={isOverviewOpen}
-              aria-haspopup="dialog"
-              aria-controls="event-overview-drawer"
-              className="text-accent-cyan hover:text-accent-cyan/80 font-semibold inline-flex items-center gap-1 mt-2 hover:underline min-h-[44px] py-2"
+              aria-label="Read more about event overview"
+              className="text-accent-cyan hover:text-accent-cyan/80 font-semibold inline-flex items-center gap-1 mt-2 hover:underline"
             >
               Read more →
             </button>
@@ -73,7 +61,7 @@ export function EventOverview({ description, organizerName }: EventOverviewProps
       >
         <div className="flex flex-col h-full justify-between">
           <div className="overflow-y-auto max-h-[72vh] text-text-secondary text-sm leading-relaxed pr-2 custom-scrollbar">
-            {description}
+            {safeDescription}
           </div>
           <div className="pt-4 border-t border-white/10 flex justify-end">
             <button

@@ -1,15 +1,15 @@
 import jwt from 'jsonwebtoken';
-import type { FilterQuery } from 'mongoose';
+import { type FilterQuery, Types } from 'mongoose';
 
-import { EventStatus, SeatStatus, deriveBookingEligibility } from '@mad/shared';
+import { EventStatus, SeatStatus, deriveEventCapabilities } from '@mad/shared';
+import { EventGallery } from '../../models/event-gallery.schema';
+import { EventGallerySettings } from '../../models/event-gallery-settings.schema';
 
 import { getEnv } from '../../config/env';
 import { getRedis } from '../../config/redis';
 import { AppError } from '../../middleware/error.middleware';
 import { Event, IEvent } from '../../models/event.schema';
 import { SeatLayout, ISeatLayout } from '../../models/seat-layout.schema';
-import { auditLog } from '../../utils/audit';
-
 export function verifyPreviewToken(token: string): {
   valid: boolean;
   eventId?: string;
@@ -27,7 +27,7 @@ export function verifyPreviewToken(token: string): {
         expiresAt: decoded.exp ? decoded.exp * 1000 : undefined,
       };
     }
-  } catch (err) {
+  } catch (_err) {
     // Suppress token verification errors and return invalid
   }
   return { valid: false };
@@ -35,104 +35,245 @@ export function verifyPreviewToken(token: string): {
 
 
 export class PublicEventService {
-  static async listEvents(filters: { category?: string; status?: string; search?: string; page?: number; limit?: number; includeTotal?: boolean }) {
+  static async listEvents(filters: {
+    category?: string;
+    state?: string;
+    sort?: string;
+    exclude?: string;
+    search?: string;
+    page?: number;
+    limit?: number;
+    includeTotal?: boolean;
+  }) {
     const page = filters.page || 1;
     const limit = filters.limit || 12;
     const skip = (page - 1) * limit;
-
-    const query: FilterQuery<IEvent> = {
-      isDeleted: { $ne: true },
-    };
-
+    const state = filters.state || 'active';
     const now = new Date();
 
-    if (filters.status) {
-      if (filters.status === 'completed') {
-        // Only events explicitly marked as completed in their lifecycle
-        query.status = EventStatus.COMPLETED;
-      } else if (filters.status === 'published' || filters.status === 'upcoming') {
-        query.status = EventStatus.PUBLISHED;
-        query.$or = [
-          { endDate: { $gte: now } },
-          { endDate: { $exists: false }, startDate: { $gte: now } },
-          { endDate: null, startDate: { $gte: now } },
-        ];
-      } else {
-        query.status = filters.status;
-      }
-    } else {
-      // Default: Only show published and NOT completed (i.e. upcoming / live)
-      query.status = EventStatus.PUBLISHED;
-      query.$or = [
-        { endDate: { $gte: now } },
-        { endDate: { $exists: false }, startDate: { $gte: now } },
-        { endDate: null, startDate: { $gte: now } },
-      ];
-    }
+    const matchStage: FilterQuery<IEvent> = {
+      isDeleted: { $ne: true }
+    };
 
     if (filters.category) {
-      query.category = filters.category;
+      matchStage.category = filters.category;
+    }
+
+    if (filters.exclude) {
+      try {
+        matchStage._id = { $ne: new Types.ObjectId(filters.exclude) };
+      } catch (_err) {
+        // Ignore invalid ObjectId
+      }
     }
 
     if (filters.search) {
-      const searchOr = [
+      matchStage.$or = [
         { title: { $regex: filters.search, $options: 'i' } },
-        { description: { $regex: filters.search, $options: 'i' } },
+        { description: { $regex: filters.search, $options: 'i' } }
       ];
-      
-      if (query.$or) {
-        query.$and = [
-          { $or: query.$or },
-          { $or: searchOr }
-        ];
-        delete query.$or;
-      } else {
-        query.$or = searchOr;
-      }
     }
 
-    const skipCount = filters.includeTotal === false;
-    let events: Partial<IEvent>[];
+    if (state === 'active') {
+      matchStage.status = EventStatus.PUBLISHED;
+    } else if (state === 'past' || state === 'completed') {
+      matchStage.status = { $in: [EventStatus.PUBLISHED, EventStatus.COMPLETED] };
+    } else {
+      matchStage.status = { $in: [EventStatus.PUBLISHED, EventStatus.COMPLETED, EventStatus.POSTPONED] };
+    }
+
+    const durationMs = 4 * 60 * 60 * 1000;
+    const oneDayMs = 24 * 60 * 60 * 1000;
+    const sevenDaysMs = 7 * oneDayMs;
+    const thirtyDaysMs = 30 * oneDayMs;
+
+    const sortWeightCond = filters.sort === 'recommended'
+      ? {
+          $cond: {
+            if: { $eq: ["$lifecycle", "LIVE"] },
+            then: 0,
+            else: {
+              $cond: {
+                if: {
+                  $and: [
+                    { $eq: ["$lifecycle", "UPCOMING"] },
+                    { $lte: ["$startDate", new Date(now.getTime() + sevenDaysMs)] }
+                  ]
+                },
+                then: 1,
+                else: {
+                  $cond: {
+                    if: {
+                      $and: [
+                        { $eq: ["$lifecycle", "UPCOMING"] },
+                        { $lte: ["$startDate", new Date(now.getTime() + thirtyDaysMs)] }
+                      ]
+                    },
+                    then: 2,
+                    else: {
+                      $cond: {
+                        if: { $eq: ["$lifecycle", "UPCOMING"] },
+                        then: 3,
+                        else: 4
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      : {
+          $cond: {
+            if: { $eq: ["$lifecycle", "LIVE"] },
+            then: 0,
+            else: {
+              $cond: {
+                if: { $eq: ["$lifecycle", "UPCOMING"] },
+                then: 1,
+                else: 2
+              }
+            }
+          }
+        };
+
+    const pipeline: any[] = [
+      { $match: matchStage },
+      {
+        $lookup: {
+          from: "eventgallerysettings",
+          localField: "_id",
+          foreignField: "eventId",
+          as: "gallerySettings"
+        }
+      },
+      {
+        $lookup: {
+          from: "eventgalleries",
+          localField: "_id",
+          foreignField: "eventId",
+          as: "galleryItems"
+        }
+      },
+      {
+        $addFields: {
+          galleryPublished: {
+            $ifNull: [{ $arrayElemAt: ["$gallerySettings.published", 0] }, false]
+          },
+          galleryItemCount: { $size: "$galleryItems" },
+          computedEndDate: {
+            $ifNull: [
+              "$endDate",
+              {
+                $ifNull: [
+                  "$bookingEndDate",
+                  { $add: ["$startDate", durationMs] }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      {
+        $addFields: {
+          lifecycle: {
+            $cond: {
+              if: { $eq: ["$status", EventStatus.COMPLETED] },
+              then: "COMPLETED",
+              else: {
+                $cond: {
+                  if: {
+                    $and: [
+                      { $lte: ["$startDate", now] },
+                      { $gte: ["$computedEndDate", now] }
+                    ]
+                  },
+                  then: "LIVE",
+                  else: {
+                    $cond: {
+                      if: { $gt: ["$startDate", now] },
+                      then: "UPCOMING",
+                      else: "COMPLETED"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    ];
+
+    if (state === 'active') {
+      pipeline.push({ $match: { lifecycle: "UPCOMING" } });
+    } else if (state === 'past' || state === 'completed') {
+      pipeline.push({ $match: { lifecycle: { $in: ["LIVE", "COMPLETED"] } } });
+    }
+
+    pipeline.push(
+      { $addFields: { sortWeight: sortWeightCond } },
+      { $sort: { sortWeight: 1, startDate: 1 } }
+    );
+
+    let events: any[] = [];
     let total = 0;
 
-    // 5-second query timeout to prevent Safari streaming stalls
-    const queryOptions = { maxTimeMS: 5000 };
+    const skipCount = filters.includeTotal === false;
 
     if (skipCount) {
-      events = await Event.find(query, null, queryOptions)
-        .sort({ startDate: 1 })
-        .skip(skip)
-        .limit(limit)
-        .select('title slug description category bannerImage startDate endDate ticketTiers.price isSoldOut venue status')
-        .lean<Partial<IEvent>[]>();
+      const pagedPipeline = [...pipeline, { $skip: skip }, { $limit: limit }];
+      events = await Event.aggregate(pagedPipeline).exec();
       total = events.length;
     } else {
-      [events, total] = await Promise.all([
-        Event.find(query, null, queryOptions)
-          .sort({ startDate: 1 })
-          .skip(skip)
-          .limit(limit)
-          .select('title slug description category bannerImage startDate endDate ticketTiers.price isSoldOut venue status')
-          .lean<Partial<IEvent>[]>(),
-        Event.countDocuments(query, queryOptions),
+      const paginationPipeline = [...pipeline, { $skip: skip }, { $limit: limit }];
+      const countPipeline = [...pipeline, { $count: "total" }];
+
+      const [pagedEvents, countResult] = await Promise.all([
+        Event.aggregate(paginationPipeline).exec(),
+        Event.aggregate(countPipeline).exec()
       ]);
+
+      events = pagedEvents;
+      total = countResult[0]?.total || 0;
     }
 
-    return {
-      events: events.map(e => ({
+    const mappedEvents = events.map((e: any) => {
+      const totalCapacity = e.totalCapacity || e.ticketTiers?.reduce((acc: number, t: any) => acc + (t.totalCapacity || 0), 0) || 0;
+      const ticketsSold = e.soldCount || e.ticketTiers?.reduce((acc: number, t: any) => acc + (t.soldCount || 0), 0) || 0;
+
+      const caps = deriveEventCapabilities({
+        status: e.status,
+        startDate: e.startDate,
+        endDate: e.endDate,
+        bookingStartDate: e.bookingStartDate,
+        bookingEndDate: e.bookingEndDate,
+        isSoldOut: e.isSoldOut,
+        totalCapacity,
+        ticketsSold,
+        galleryPublished: e.galleryPublished,
+        galleryItemCount: e.galleryItemCount,
+        isDeleted: e.isDeleted
+      });
+
+      return {
         ...e,
-        ...deriveBookingEligibility(e as any)
-      })),
-      total,
-    } as any;
+        lifecycle: caps.lifecycle,
+        visibility: caps.visibility,
+        booking: caps.booking,
+        gallery: caps.gallery,
+        capabilities: caps.capabilities
+      };
+    });
+
+    return {
+      events: mappedEvents,
+      total
+    };
   }
 
   static async getEventBySlug(slug: string) {
-    // 5-second query timeout to prevent Safari streaming stalls
     const queryOptions = { maxTimeMS: 5000 };
 
-    // Serve both PUBLISHED and COMPLETED events so the event detail page
-    // remains accessible after an event has ended.
     const event = await Event.findOne(
       {
         slug,
@@ -153,9 +294,35 @@ export class PublicEventService {
       event.ticketTiers = event.ticketTiers.filter(tier => tier.isDeleted !== true);
     }
 
+    const [galleryItemCount, gallerySettings] = await Promise.all([
+      EventGallery.countDocuments({ eventId: event._id }),
+      EventGallerySettings.findOne({ eventId: event._id }).lean()
+    ]);
+
+    const totalCapacity = event.totalCapacity || event.ticketTiers?.reduce((acc, t) => acc + (t.totalCapacity || 0), 0) || 0;
+    const ticketsSold = event.soldCount || event.ticketTiers?.reduce((acc, t) => acc + (t.soldCount || 0), 0) || 0;
+
+    const caps = deriveEventCapabilities({
+      status: event.status,
+      startDate: event.startDate,
+      endDate: event.endDate,
+      bookingStartDate: event.bookingStartDate,
+      bookingEndDate: event.bookingEndDate,
+      isSoldOut: event.isSoldOut,
+      totalCapacity,
+      ticketsSold,
+      galleryPublished: gallerySettings ? gallerySettings.published : false,
+      galleryItemCount,
+      isDeleted: event.isDeleted
+    });
+
     return {
       ...event,
-      ...deriveBookingEligibility(event as any)
+      lifecycle: caps.lifecycle,
+      visibility: caps.visibility,
+      booking: caps.booking,
+      gallery: caps.gallery,
+      capabilities: caps.capabilities
     } as any;
   }
 

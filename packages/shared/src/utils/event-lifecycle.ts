@@ -1,4 +1,4 @@
-import { EventStatus } from '../constants';
+import { EventStatus, DEFAULT_EVENT_DURATION_HOURS } from '../constants';
 
 export type EventLifecycleState = 
   | 'draft'
@@ -18,6 +18,20 @@ export interface BaseEventForLifecycle {
 }
 
 /**
+ * Resolves the end date of an event using the preferred order of fallback values.
+ */
+export function getEventEndDate(event: BaseEventForLifecycle): Date {
+  if (event.endDate) {
+    return new Date(event.endDate);
+  }
+  if (event.bookingEndDate) {
+    return new Date(event.bookingEndDate);
+  }
+  const durationHours = (event as any).duration ?? DEFAULT_EVENT_DURATION_HOURS;
+  return new Date(new Date(event.startDate).getTime() + durationHours * 60 * 60 * 1000);
+}
+
+/**
  * Derives the effective lifecycle state of an event based on its administrative status and dates.
  */
 export function deriveEventLifecycleState(event: BaseEventForLifecycle): EventLifecycleState {
@@ -33,22 +47,18 @@ export function deriveEventLifecycleState(event: BaseEventForLifecycle): EventLi
     return status as EventLifecycleState;
   }
 
-  // If status is PUBLISHED (or COMPLETED as legacy), we calculate based on dates
+  // Treat explicit COMPLETED status as legacy override
+  if (status === EventStatus.COMPLETED) {
+    return 'completed';
+  }
+
   const now = new Date().getTime();
   const start = new Date(event.startDate).getTime();
-  
-  if (event.endDate) {
-    const end = new Date(event.endDate).getTime();
-    if (now > end) return 'completed';
-    if (now >= start && now <= end) return 'live';
-    return 'upcoming';
-  } else {
-    // If no endDate, we just rely on startDate
-    // Technically an event without an endDate doesn't have a defined "live" window,
-    // but typically it means it starts and ends roughly around the same time.
-    if (now >= start) return 'live';
-    return 'upcoming';
-  }
+  const end = getEventEndDate(event).getTime();
+
+  if (now > end) return 'completed';
+  if (now >= start && now <= end) return 'live';
+  return 'upcoming';
 }
 
 /**

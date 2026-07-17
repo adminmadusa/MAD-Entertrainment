@@ -98,7 +98,7 @@ export function createApp(): Application {
   // ─── Body Parsers (Payload size hardening) ────────────────
   app.use(express.json({
     limit: '100kb',
-    verify: (req: any, res, buf) => {
+    verify: (req: any, _res, buf) => {
       if (req.originalUrl && req.originalUrl.includes('/webhook/')) {
         req.rawBody = buf;
       }

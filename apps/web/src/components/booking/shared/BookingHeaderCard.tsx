@@ -1,6 +1,7 @@
 import { formatEventDate } from '@/utils/date';
 import { getBookingStatusMeta, type BookingStatusTone } from '@mad/shared';
 import type { Booking, Event } from '@mad/types';
+import { formatTicketCount } from '@/utils/booking-calculations';
 
 interface BookingHeaderCardProps {
   booking: Booking;
@@ -67,7 +68,7 @@ export function BookingHeaderCard({ booking, isFetching, pollCount }: BookingHea
         </div>
         <div>
           <span className="text-[10px] text-text-muted uppercase block">Total Tickets</span>
-          <span className="text-white font-semibold">{booking.totalTickets} Ticket(s)</span>
+          <span className="text-white font-semibold">{formatTicketCount(booking.totalTickets)}</span>
         </div>
         <div className="col-span-2 sm:col-span-1">
           <span className="text-[10px] text-text-muted uppercase block">Reference ID</span>

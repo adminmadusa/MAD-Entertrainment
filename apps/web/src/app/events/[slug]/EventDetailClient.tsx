@@ -7,8 +7,8 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
 import { publicGetEventBySlug } from '@/lib/api/public.service';
-import { QUERY_KEYS } from '@mad/shared';
-import type { Event as EventData } from '@mad/types';
+import { QUERY_KEYS, formatMoney } from '@mad/shared';
+import type { Event as EventData, EventBookingCTA } from '@mad/types';
 
 import type { EventBookingFlowHandle } from './components/EventBookingFlow';
 import { EventOverview } from './components/EventOverview';
@@ -67,7 +67,56 @@ export default function EventDetailClient({ slug, initialEvent }: EventDetailCli
     initialDataUpdatedAt: initialEvent ? Date.now() : undefined,
   });
 
-  const cta = event?.bookingCTA || { text: 'Book Now', disabled: false, variant: 'primary', action: 'BOOK' };
+  let cta: EventBookingCTA = { text: 'Book Now', disabled: false, variant: 'primary', action: 'BOOK' };
+  
+  if (event) {
+    if (event.lifecycle === 'COMPLETED') {
+      cta = {
+        text: 'Happy Moments',
+        disabled: false,
+        variant: 'secondary',
+        action: 'GALLERY'
+      };
+    } else if (event.lifecycle === 'LIVE') {
+      if (event.booking?.status === 'OPEN') {
+        cta = {
+          text: 'Join Now',
+          disabled: false,
+          variant: 'primary',
+          action: 'BOOK'
+        };
+      } else {
+        cta = {
+          text: 'In Progress',
+          disabled: true,
+          variant: 'disabled',
+          action: 'NONE'
+        };
+      }
+    } else {
+      if (event.booking?.status === 'OPEN') {
+        cta = {
+          text: 'Book Now',
+          disabled: false,
+          variant: 'primary',
+          action: 'BOOK'
+        };
+      } else {
+        let text = 'Booking Closed';
+        if (event.booking?.reason === 'SOLD_OUT' || event.booking?.reason === 'CAPACITY_REACHED') {
+          text = 'Sold Out';
+        } else if (event.booking?.reason === 'BOOKING_NOT_STARTED') {
+          text = 'Coming Soon';
+        }
+        cta = {
+          text,
+          disabled: true,
+          variant: 'disabled',
+          action: 'NONE'
+        };
+      }
+    }
+  }
 
   useEffect(() => {
     if (searchParams.get('modal') === 'booking' && cta.action === 'BOOK') {
@@ -111,7 +160,10 @@ export default function EventDetailClient({ slug, initialEvent }: EventDetailCli
   const prices = event.ticketTiers?.map((t) => t.price - (t.discount || 0)) || [];
   const minPrice = prices.length > 0 ? Math.min(...prices) : 0;
   const maxPrice = prices.length > 0 ? Math.max(...prices) : 0;
-  const priceDisplay = minPrice === maxPrice ? `₹${minPrice}` : `₹${minPrice} - ₹${maxPrice}`;
+  const currency = event.currency || 'USD';
+  const priceDisplay = minPrice === maxPrice
+    ? formatMoney(minPrice, currency)
+    : `${formatMoney(minPrice, currency)} - ${formatMoney(maxPrice, currency)}`;
 
   const totalCapacity =
     event.totalCapacity ||
@@ -128,7 +180,7 @@ export default function EventDetailClient({ slug, initialEvent }: EventDetailCli
     <div className="min-h-screen bg-background text-white relative overflow-x-hidden">
 
       {/* ── FULL-BLEED CINEMATIC HERO ─────────────────────────── */}
-      <div className="relative w-full h-[58vh] min-h-[400px] overflow-hidden">
+      <div className="relative w-full h-[38vh] min-h-[220px] md:h-[58vh] md:min-h-[400px] overflow-hidden">
         {/* Background glow */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-accent-purple/5 rounded-full blur-[180px] pointer-events-none" />
 
@@ -159,17 +211,28 @@ export default function EventDetailClient({ slug, initialEvent }: EventDetailCli
         {/* Side fades for wide screens */}
         <div className="absolute inset-0 bg-gradient-to-r from-background/20 via-transparent to-background/20" />
 
-        {/* Category badge anchored to hero bottom */}
-        {event.category && (
-          <div className="absolute bottom-6 left-4 md:left-8 flex items-center gap-2 z-20">
+        {/* Category & Lifecycle badges anchored to hero bottom */}
+        <div className="absolute bottom-6 left-4 md:left-8 flex items-center gap-2 z-20">
+          {event.category && (
             <span className="inline-flex items-center gap-1.5 text-[10px] uppercase font-bold tracking-widest px-3 py-1.5 glass border border-white/10 text-text-secondary rounded-full">
               <svg className="w-3 h-3 text-text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
               </svg>
               {event.category}
             </span>
-          </div>
-        )}
+          )}
+          {event.lifecycle === 'LIVE' && (
+            <span className="inline-flex items-center gap-1.5 text-[10px] uppercase font-black tracking-widest px-3 py-1.5 bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 rounded-full shadow-glow-sm">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              Live Now
+            </span>
+          )}
+          {event.lifecycle === 'COMPLETED' && (
+            <span className="inline-flex items-center gap-1.5 text-[10px] uppercase font-bold tracking-widest px-3 py-1.5 bg-white/5 border border-white/10 text-text-muted rounded-full">
+              Ended
+            </span>
+          )}
+        </div>
       </div>
 
       {/* ── CONTENT BELOW HERO ───────────────────────────────── */}
@@ -228,7 +291,7 @@ export default function EventDetailClient({ slug, initialEvent }: EventDetailCli
         </div>
 
         {/* ── TWO-COLUMN GRID ──────────────────────────────────── */}
-        <div className="pt-8 pb-32 lg:pb-16 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        <div className="pt-5 pb-20 lg:pb-16 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
 
           {/* ── MAIN COLUMN ────────────────────────────────────── */}
           <div className="lg:col-span-7 space-y-8">
@@ -281,19 +344,9 @@ export default function EventDetailClient({ slug, initialEvent }: EventDetailCli
 
             {/* Location */}
             <div className="glass rounded-2xl border border-white/5 p-5 space-y-4 hover:border-white/10 transition-colors">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <h2 className="text-base font-bold text-white">Location</h2>
-                  <div className="text-sm text-text-secondary mt-1">{event.venue}</div>
-                </div>
-                <a
-                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.venue || '')}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex-shrink-0 flex items-center gap-1.5 text-xs font-semibold text-accent-cyan hover:text-accent-cyan/80 transition-colors"
-                >
-                  ↗ Maps
-                </a>
+              <div>
+                <h2 className="text-base font-bold text-white">Location</h2>
+                <div className="text-sm text-text-secondary mt-1">{event.venue}</div>
               </div>
 
               <a
@@ -306,13 +359,19 @@ export default function EventDetailClient({ slug, initialEvent }: EventDetailCli
               </a>
             </div>
 
-            {/* Mobile spacer above sticky footer */}
-            <div className="h-24 lg:hidden" aria-hidden="true" />
+            {/* Mobile spacer above sticky footer — kept minimal */}
+            <div className="h-6 lg:hidden" aria-hidden="true" />
           </div>
 
           <EventStickyCTA
             priceLabel={priceDisplay}
-            onGetTickets={() => bookingFlowRef.current?.openBooking()}
+            onGetTickets={() => {
+              if (cta.action === 'BOOK') {
+                bookingFlowRef.current?.openBooking();
+              } else if (cta.action === 'GALLERY') {
+                router.push(`/events/${slug}/gallery`);
+              }
+            }}
             cta={cta}
           />
 

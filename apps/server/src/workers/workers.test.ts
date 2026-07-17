@@ -98,7 +98,7 @@ describe('Asynchronous Workers', () => {
 
     beforeEach(() => {
       ticketsStore = [];
-      vi.mocked(Ticket.findOneAndUpdate).mockImplementation(async (query: any, update: any, options: any) => {
+      vi.mocked(Ticket.findOneAndUpdate).mockImplementation(async (query: any, update: any, _options: any) => {
         const ticketId = query.ticketId;
         const existing = ticketsStore.find(t => t.ticketId === ticketId);
         if (existing) {
