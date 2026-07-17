@@ -1,4 +1,5 @@
 import { Metadata } from 'next';
+import Link from 'next/link';
 
 import { ContactForm } from '@/components/support/ContactForm';
 
@@ -10,10 +11,27 @@ export const metadata: Metadata = {
   },
 };
 
-export default function ContactPage() {
+export default async function ContactPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ from?: string }>;
+}) {
+  const resolvedParams = await searchParams;
+  const from = resolvedParams.from;
+
   return (
     <div className="container-mad pt-32 pb-20 min-h-screen">
       <div className="max-w-3xl mx-auto">
+        {from === 'dashboard' && (
+          <div className="mb-6 flex justify-start">
+            <Link
+              href="/dashboard?tab=support"
+              className="flex items-center gap-2 text-text-secondary hover:text-white transition-all text-sm font-semibold"
+            >
+              <span>←</span> Back to Dashboard
+            </Link>
+          </div>
+        )}
         <header className="text-center mb-12">
           <h1 className="text-white font-bold text-4xl sm:text-5xl tracking-tight mb-4">Contact Support</h1>
           <p className="text-text-secondary text-lg">

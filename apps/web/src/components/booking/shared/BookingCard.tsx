@@ -1,6 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
+import Link from 'next/link';
 import { BookingHeaderCard } from '@/components/booking/shared/BookingHeaderCard';
 import { BookingStatus, getBookingLifecycle, buildVenueMapLink, type BookingForLifecycle, type BaseEventForLifecycle } from '@mad/shared';
 import type { Booking, Ticket, Event } from '@mad/types';
@@ -192,8 +193,8 @@ export function BookingCard({
 
     // Cancelled / Refunded
     return (
-      <a
-        href="mailto:support@mad-entertainment.com"
+      <Link
+        href="/contact?from=dashboard"
         onClick={(e) => e.stopPropagation()}
         className={`px-3 py-1.5 text-[10px] sm:text-xs font-bold rounded-lg border min-h-[36px] flex items-center justify-center transition-all ${
           lifecycle === 'cancelled'
@@ -202,7 +203,7 @@ export function BookingCard({
         }`}
       >
         Support
-      </a>
+      </Link>
     );
   };
 
@@ -216,7 +217,6 @@ export function BookingCard({
             if (!ticketsReady) {
               return (
                 <div className="space-y-3 pt-3 border-t border-border-subtle/30">
-                  <h3 className="text-white font-bold text-sm">Your Tickets</h3>
                   {pollsExhausted ? (
                     <div className="glass-strong rounded-2xl border border-border-subtle p-6 text-center text-text-secondary text-sm">
                       Your tickets are being processed and will appear in your email shortly.
@@ -239,9 +239,6 @@ export function BookingCard({
 
             return (
               <div className="space-y-4 pt-3 border-t border-border-subtle/30">
-                <div className="pb-2">
-                  <h3 className="text-white font-bold text-sm">Your Tickets</h3>
-                </div>
                 <EntryPassGrid tickets={tickets} />
               </div>
             );
@@ -285,12 +282,22 @@ export function BookingCard({
 
     return (
       <div id={`booking-accordion-${booking.bookingId}`} className={cardStyleClasses}>
-        <div className="p-3 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div
+          onClick={!isLapsed ? onToggleExpand : undefined}
+          className={`p-3 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${
+            !isLapsed ? 'cursor-pointer' : ''
+          }`}
+        >
           {/* Main Info section — toggles expansion */}
           <button
             type="button"
             id={`booking-header-${booking.bookingId}`}
-            onClick={!isLapsed ? onToggleExpand : undefined}
+            onClick={(e) => {
+              if (!isLapsed) {
+                e.stopPropagation();
+                onToggleExpand?.();
+              }
+            }}
             aria-expanded={showExpanded}
             aria-disabled={isLapsed}
             aria-controls={`booking-content-${booking.bookingId}`}
@@ -321,9 +328,7 @@ export function BookingCard({
                 {eventInfo?.startDate && (
                   <span>{formatDate(eventInfo.startDate, { dateStyle: 'medium' })}</span>
                 )}
-                {eventInfo?.venue && (
-                  <span className="truncate max-w-[120px] sm:max-w-none">| {eventInfo.venue}</span>
-                )}
+
                 {eventInfo && (
                   <>
                     <span className="text-white/20">|</span>
@@ -344,18 +349,6 @@ export function BookingCard({
             <div className="flex items-center gap-1.5">
               {renderQuickActions()}
             </div>
-
-            {!isLapsed && (
-              <button
-                type="button"
-                onClick={onToggleExpand}
-                aria-label={isExpanded ? 'Collapse Details' : 'Expand Details'}
-                className="text-text-secondary text-xs transition-transform duration-300 w-9 h-9 flex items-center justify-center rounded-xl bg-white/5 hover:bg-white/10 min-w-[36px] min-h-[36px]"
-                style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0)' }}
-              >
-                ▼
-              </button>
-            )}
           </div>
         </div>
 
