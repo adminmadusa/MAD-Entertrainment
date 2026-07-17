@@ -87,7 +87,7 @@ export default function TeamTable({
         <TableCell sticky="start" showStickyDivider className="py-4 px-5">
           <div>
             <p className="text-text-primary font-medium">{admin.name}</p>
-            <p className="text-text-muted text-xs">{admin.email}</p>
+            <p className="text-text-secondary text-xs">{admin.email}</p>
           </div>
         </TableCell>
         <TableCell className="py-4 px-4">

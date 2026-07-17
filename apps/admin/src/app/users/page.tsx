@@ -152,7 +152,7 @@ export default function UsersDirectoryPage() {
         <TableCell className="py-4 px-5">
           <div>
             <p className="text-text-primary font-medium">{user.name}</p>
-            <p className="text-text-muted text-xs font-mono">{user.email}</p>
+            <p className="text-text-secondary text-xs font-mono">{user.email}</p>
           </div>
         </TableCell>
         <TableCell className="py-4 px-4 text-text-secondary hidden lg:table-cell font-mono text-xs">
@@ -314,7 +314,7 @@ export default function UsersDirectoryPage() {
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
             placeholder="Search name, email, phone..."
-            className="w-full pl-9 pr-8 py-2.5 rounded-xl bg-background-card border border-border-subtle text-xs text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple transition-colors"
+            className="w-full pl-9 pr-8 py-2.5 rounded-xl bg-background-card border border-border-subtle text-xs text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent-purple/50 focus:border-accent-purple transition-colors"
           />
           <svg className="absolute left-3 top-3 h-4 w-4 text-text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
             <circle cx="11" cy="11" r="8" /><line x1="21" x2="16.65" y1="21" y2="16.65" />

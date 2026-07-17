@@ -91,7 +91,7 @@ export default function BookingsTable({
           <TableCell sticky="start" showStickyDivider className="py-4 px-5 font-mono text-xs text-accent-purple">{booking.bookingId}</TableCell>
           <TableCell className="py-4 px-4">
             <p className="text-text-primary text-sm">{customerName}</p>
-            <p className="text-text-muted text-xs">{customerEmail}</p>
+            <p className="text-text-secondary text-xs">{customerEmail}</p>
           </TableCell>
           <TableCell className="py-4 px-4 text-text-secondary text-sm max-w-40 truncate">
             {(booking.eventId as { title?: string })?.title ?? '—'}
