@@ -77,37 +77,6 @@ export enum BookingReason {
   EVENT_ARCHIVED = 'EVENT_ARCHIVED',
 }
 
-// ─── Event Duplication Policy ────────────────────────────────
-export const EVENT_DUPLICATION_POLICY = {
-  copied: [
-    'title', // Title is copied but modified by naming strategy
-    'description',
-    'category',
-    'bookingMode',
-    'bannerImage',
-    'posterImage',
-    'startDate',
-    'endDate',
-    'doorsOpenTime',
-    'showTime',
-    'venue',
-    'djOperatorIds',
-    'ticketTiers',
-    'bookingStartDate',
-    'bookingEndDate',
-  ],
-  reset: [
-    '_id',
-    'slug',
-    'createdAt',
-    'updatedAt',
-    'eventVersion',
-  ],
-  regenerated: [
-    'status', // Defaults to PUBLISHED
-  ]
-} as const;
-
 export type EventStatusTone = 'success' | 'warning' | 'danger' | 'info' | 'neutral';
 
 export type EventStatusMeta = {

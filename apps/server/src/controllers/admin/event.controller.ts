@@ -15,45 +15,6 @@ export const createEvent = async (req: Request, res: Response, next: NextFunctio
   }
 };
 
-export const duplicateEvent = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const adminId = (req as any).user?.id; // Assuming auth middleware sets req.user
-    if (!adminId) {
-      throw AppError.unauthorized('User not authenticated');
-    }
-    
-    // Check idempotency key
-    const idempotencyKey = req.headers['idempotency-key'] || req.headers['requestid'];
-    if (!idempotencyKey) {
-      throw AppError.badRequest('Idempotency key is required');
-    }
-
-    const { title, date, venue, publish } = req.body;
-    
-    const event = await eventService.duplicateEvent({
-      sourceEventId: req.params.id,
-      title,
-      date,
-      venue,
-      publish,
-      adminId,
-    });
-    
-    // Focused response shape
-    const responsePayload = {
-      id: event._id,
-      title: event.title,
-      status: event.status,
-      slug: event.slug,
-      editUrl: `/events/${event._id}/edit` // Helpful reference for the frontend
-    };
-
-    res.status(201).json({ success: true, data: { event: responsePayload }, message: 'Event duplicated successfully' });
-  } catch (error) {
-    next(error);
-  }
-};
-
 export const getEvents = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const page = Number(req.query.page) || 1;
