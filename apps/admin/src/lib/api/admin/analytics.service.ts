@@ -1,4 +1,7 @@
 import { adminApiClient } from '@/lib/api/client';
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger('Analytics Service');
 
 export interface DashboardSummary {
   totalBookings: number;
@@ -35,7 +38,7 @@ export async function adminGetDashboardSummary(): Promise<DashboardSummary> {
       pendingRefundsCount: summary?.pendingRefundsCount ?? 0,
     };
   } catch (error) {
-    console.error('[Analytics Service] Failed to fetch dashboard summary, returning default DTO:', error);
+    logger.error('Failed to fetch dashboard summary, returning default DTO:', error);
     return {
       totalBookings: 0,
       recentBookings: 0,
@@ -54,7 +57,7 @@ export async function adminGetRevenueChart(days = 30): Promise<RevenuePoint[]> {
     const { data } = await adminApiClient.get<{ data: RevenuePoint[] }>(`/admin/analytics/revenue?days=${days}`);
     return Array.isArray(data?.data) ? data.data : (data?.data && Object.values(data.data).find(v => Array.isArray(v)) || []);
   } catch (error) {
-    console.error('[Analytics Service] Failed to fetch revenue chart, returning empty list:', error);
+    logger.error('Failed to fetch revenue chart, returning empty list:', error);
     return [];
   }
 }
@@ -95,7 +98,7 @@ export async function adminGetAttendanceSummary(): Promise<AttendanceSummary> {
       noShowRate: summary?.noShowRate ?? 0,
     };
   } catch (error) {
-    console.error('[Analytics Service] Failed to fetch attendance summary, returning default DTO:', error);
+    logger.error('Failed to fetch attendance summary, returning default DTO:', error);
     return { totalEvents: 0, totalTicketsSold: 0, totalCheckIns: 0, attendanceRate: 0, noShowRate: 0 };
   }
 }
@@ -108,7 +111,7 @@ export async function adminGetAttendanceRankings(): Promise<AttendanceRankings> 
       lowestAttendance: Array.isArray(data?.data?.lowestAttendance) ? data.data.lowestAttendance : [],
     };
   } catch (error) {
-    console.error('[Analytics Service] Failed to fetch attendance rankings, returning empty lists:', error);
+    logger.error('Failed to fetch attendance rankings, returning empty lists:', error);
     return { topAttended: [], lowestAttendance: [] };
   }
 }

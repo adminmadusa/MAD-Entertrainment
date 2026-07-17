@@ -1,5 +1,8 @@
 import { adminApiClient } from '@/lib/api/client';
 import type { Notification, PaginatedDataResponse, PaginatedItemsResponse } from '@mad/types';
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger('Notification Service');
 
 export type NotificationsResponse = PaginatedDataResponse<Notification>;
 
@@ -32,7 +35,7 @@ export async function adminGetNotifications(filters: NotificationFilters = {}): 
       },
     };
   } catch (error) {
-    console.error('[Notification Service] Failed to fetch notifications, returning safe default NormalizedNotificationsResponse:', error);
+    logger.error('Failed to fetch notifications, returning safe default NormalizedNotificationsResponse:', error);
     return {
       items: [],
       pagination: {
@@ -50,7 +53,7 @@ export async function adminRetryNotification(id: string): Promise<Notification |
     const { data } = await adminApiClient.post<{ data: Notification }>(`/admin/notifications/${id}/retry`);
     return data.data;
   } catch (error) {
-    console.error(`[Notification Service] Failed to retry notification ${id}:`, error);
+    logger.error(`Failed to retry notification ${id}:`, error);
     return null;
   }
 }
