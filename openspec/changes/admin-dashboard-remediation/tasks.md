@@ -107,27 +107,27 @@ Findings: UI-003, PERF-001, PERF-002, GOV-003, GOV-004, UX-001
 Finding: GOV-002
 **Pre-condition:** PR 2 merged & verified. Behavioral parity confirmed.
 
-- [ ] **[Pre-condition] Verify pagination behavioral parity**
+- [x] **[Pre-condition] Verify pagination behavioral parity**
   - Confirm all three tables (bookings, users, team) use offset-based pagination
   - Confirm identical `onPageChange` signatures and no divergent selection/reset behavior
 
-- [ ] **[packages/ui] Create shared `TablePagination` component**
+- [x] **[packages/ui] Create shared `TablePagination` component**
   - New file: `packages/ui/src/composites/Pagination/Pagination.tsx`
   - Export from `@mad/ui` barrel
 
-- [ ] **[BookingsTable] Replace inline pagination** (GOV-002)
+- [x] **[BookingsTable] Replace inline pagination** (GOV-002)
   - File: `apps/admin/src/app/bookings/_components/BookingsTable.tsx`
   - Replace lines 185–207 with `<TablePagination>` import
 
-- [ ] **[Users] Replace inline pagination** (GOV-002)
+- [x] **[Users] Replace inline pagination** (GOV-002)
   - File: `apps/admin/src/app/users/page.tsx`
   - Replace lines 364–387 with `<TablePagination>` import
 
-- [ ] **[TeamTable] Replace inline pagination** (GOV-002)
+- [x] **[TeamTable] Replace inline pagination** (GOV-002)
   - File: `apps/admin/src/app/team/_components/TeamTable.tsx`
   - Replace lines 180–202 with `<TablePagination>` import
 
-- [ ] **[PR 4] Commit and verify**
+- [x] **[PR 4] Commit and verify**
   - Run: `pnpm run type-check && pnpm run lint && pnpm test && pnpm build`
   - Verify pagination at first, middle, and last pages on all three tables
   - Commit message: `refactor(ui): extract shared TablePagination component from admin tables (GOV-002)`
