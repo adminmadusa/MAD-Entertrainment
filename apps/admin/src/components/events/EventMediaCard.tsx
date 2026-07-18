@@ -2,7 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 
-import { EventGalleryUpload } from '@/components/EventGalleryUpload';
+import { UnifiedMediaUpload } from '@/components/UnifiedMediaUpload';
 import { type CloudinaryImage } from '@/lib/api/admin/event.service';
 
 export interface EventMediaCardProps {
@@ -27,7 +27,7 @@ export const EventMediaCard = React.memo(function EventMediaCard({
   return (
     <div className="glass rounded-2xl border border-border-subtle p-6 space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-white font-semibold">Event Media (Banner, Poster, & Gallery)</h2>
+        <h2 className="text-white font-semibold">Event Media (Unified Gallery)</h2>
         {id && (
           <Link
             href={`/events/${id}/gallery`}
@@ -38,7 +38,7 @@ export const EventMediaCard = React.memo(function EventMediaCard({
         )}
       </div>
 
-      <EventGalleryUpload
+      <UnifiedMediaUpload
         bannerImage={bannerImage}
         posterImage={posterImage}
         galleryImages={galleryImages}

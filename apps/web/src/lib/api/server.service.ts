@@ -120,7 +120,7 @@ export async function safeServerFetch<T>(
 
 export async function serverGetUpcomingEvents(limit: number = 6): Promise<Event[]> {
   const payload = await safeServerFetch<{ events: Event[] }>(
-    `/events?page=1&limit=${limit}`,
+    `/events?page=1&limit=${limit}&bookableOnly=true`,
     {
       fallback: { events: [] },
       revalidate: 60,

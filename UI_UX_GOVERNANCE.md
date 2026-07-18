@@ -40,6 +40,24 @@ No UI standard may be introduced in a skill or AGENTS.md without first being add
 
 ---
 
+## Section 0.5 — 4-Layer UI Governance Model
+
+All UI development must adhere to the 4-layer architecture. Components must not skip layers or redefine lower-layer responsibilities.
+
+### Layer 1: Design Tokens
+The foundational visual design variables (colors, typography, spacing, radii, shadows). Defined exclusively in `packages/ui/src/tailwind/preset.ts`. No hardcoded hex codes, arbitrary pixel values, or ad-hoc style values are permitted in any application.
+
+### Layer 2: UI Primitives
+The lowest-level functional building blocks (Button, Input, Checkbox, Badge). Found in `packages/ui/src/primitives`. They have no business logic and rely entirely on Layer 1 tokens for styling.
+
+### Layer 3: UI Composites
+Combinations of UI Primitives that form reusable patterns (Modal, Drawer, Table, FormField, ErrorState). Found in `packages/ui/src/composites`. These components manage their own internal UI state but remain domain-agnostic.
+
+### Layer 4: Features & Pages
+Application-specific layouts, pages, and smart components. Found in `apps/web` or `apps/admin`. These assemble Layer 3 Composites and Layer 2 Primitives, inject business logic, fetch data, and manage application state.
+
+---
+
 ## Section 0 — Implementation Gate (Mandatory)
 
 > **No UI implementation may begin until the proposed user flow and layout have been reviewed and approved.**

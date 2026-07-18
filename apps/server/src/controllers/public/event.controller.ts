@@ -22,8 +22,9 @@ export async function listEvents(req: Request, res: Response, next: NextFunction
 
     const sort = typeof req.query.sort === 'string' ? req.query.sort : undefined;
     const exclude = typeof req.query.exclude === 'string' ? req.query.exclude : undefined;
+    const bookableOnly = req.query.bookableOnly === 'true';
 
-    const cacheKey = `events:list:${category || 'all'}:${state}:${sort || 'none'}:${exclude || 'none'}:${search || 'none'}:${page}:${limit}:${includeTotal}`;
+    const cacheKey = `events:list:${category || 'all'}:${state}:${sort || 'none'}:${exclude || 'none'}:${search || 'none'}:${page}:${limit}:${includeTotal}:${bookableOnly}`;
     const startTime = performance.now();
 
     const cached = await CacheService.get<PublicEventListResult>(cacheKey);
@@ -35,7 +36,7 @@ export async function listEvents(req: Request, res: Response, next: NextFunction
     }
 
     const queryStartTime = performance.now();
-    const result = await PublicEventService.listEvents({ category, state, sort, exclude, search, page, limit, includeTotal });
+    const result = await PublicEventService.listEvents({ category, state, sort, exclude, search, page, limit, includeTotal, bookableOnly });
     const queryDuration = performance.now() - queryStartTime;
 
     // Cache for 60 seconds (1 minute)
