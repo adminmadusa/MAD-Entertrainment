@@ -12,6 +12,7 @@ import { formatDateTime, formatEventDate } from '@mad/utils';
 
 interface PopulatedAdminRefund extends Omit<AdminRefund, 'bookingId' | 'paymentId'> {
   bookingId: AdminBooking;
+  ticketIds?: string[];
   paymentId: {
     _id: string;
     amount: number;
@@ -125,7 +126,10 @@ export default function AdminRefundsPage() {
     return refunds.map((refund) => (
       <TableRow key={refund._id} className="border-b border-border-subtle/40 hover:bg-white/2">
         <TableCell className="py-3.5 px-4 font-mono text-xs text-accent-purple">
-          {(refund.bookingId as { bookingId?: string })?.bookingId ?? String(refund.bookingId).slice(-8)}
+          <div>{(refund.bookingId as { bookingId?: string })?.bookingId ?? String(refund.bookingId).slice(-8)}</div>
+          {refund.ticketIds && refund.ticketIds.length > 0 && (
+            <div className="text-[10px] text-text-muted mt-0.5">{refund.ticketIds.length} tickets</div>
+          )}
         </TableCell>
         <TableCell className="py-3.5 px-4 text-white font-semibold">{formatMoney(refund.amount, refund.currency)}</TableCell>
         <TableCell className="py-3.5 px-4 text-text-secondary max-w-40 truncate">{refund.reason ?? '—'}</TableCell>
@@ -234,6 +238,16 @@ export default function AdminRefundsPage() {
                 <div>
                   <span className="text-[10px] text-text-muted uppercase tracking-wider block font-semibold">Booking ID</span>
                   <span className="text-accent-purple font-mono font-bold">{booking?.bookingId ?? '—'}</span>
+                  {target.ticketIds && target.ticketIds.length > 0 && (
+                    <div className="mt-2">
+                      <span className="text-[10px] text-text-muted uppercase tracking-wider block font-semibold">Selected Tickets</span>
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {target.ticketIds.map(tid => (
+                          <span key={tid} className="text-[10px] font-mono bg-white/5 border border-white/10 px-1.5 py-0.5 rounded text-text-secondary">{tid}</span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div>
@@ -274,113 +288,132 @@ export default function AdminRefundsPage() {
                     <p className="text-text-muted text-xs">Authorize or reject refund request</p>
                   </div>
 
-                  {booking?.ticketsScanned !== undefined && booking.ticketsScanned > 0 && (
-                    <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-xl p-3 text-xs text-yellow-300">
-                      <p className="font-semibold mb-1">⚠️ Checked-in Tickets Protection</p>
-                      <p>This booking has {booking.ticketsScanned} scanned ticket(s). Approving this refund requires super_admin manual override.</p>
-                    </div>
-                  )}
+
 
                   {/* Mobiles-only quick summary */}
                   <div className="md:hidden block bg-white/3 rounded-xl p-3 text-xs space-y-1">
                     <p className="text-white">Booking: <span className="font-mono font-semibold text-accent-purple">{booking?.bookingId}</span></p>
+                    {processTarget.ticketIds && processTarget.ticketIds.length > 0 && (
+                      <p className="text-white">Tickets: <span className="font-mono text-text-secondary">{processTarget.ticketIds.length}</span></p>
+                    )}
                     <p className="text-white">Customer: {customer?.name}</p>
                     <p className="text-white font-medium">Amount: {formatMoney(processTarget.amount, processTarget.currency)}</p>
                     {processTarget.reason && <p className="text-text-secondary italic">Reason: &ldquo;{processTarget.reason}&rdquo;</p>}
                   </div>
 
-                  <div className="bg-white/5 border border-white/10 rounded-xl p-3 text-center">
-                    <span className="text-xs text-text-muted block">Refund Amount</span>
-                    <span className="text-2xl font-black text-white">{formatMoney(processTarget.amount, processTarget.currency)}</span>
-                  </div>
+                  {(() => {
+                    const threeHoursAgo = new Date(Date.now() - 3 * 60 * 60 * 1000);
+                    const isLockedByTime = new Date(processTarget.createdAt) > threeHoursAgo;
+                    const hasScannedTickets = booking?.ticketsScanned !== undefined && booking.ticketsScanned > 0;
+                    const needsOverride = isLockedByTime || hasScannedTickets;
 
-                  <div className="flex gap-3">
-                    {(['approve', 'reject'] as const).map((a) => (
-                      <button key={a} type="button" onClick={() => setAction(a)}
-                        className={`flex-1 py-2 rounded-xl text-sm font-medium border transition-all capitalize ${getActionClass(a)}`}>
-                        {a}
-                      </button>
-                    ))}
-                  </div>
+                    return (
+                      <>
+                        {hasScannedTickets && (
+                          <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-xl p-3 text-xs text-yellow-300">
+                            <p className="font-semibold mb-1">⚠️ Checked-in Tickets Protection</p>
+                            <p>This booking has {booking.ticketsScanned} scanned ticket(s). Approving this refund requires super_admin manual override.</p>
+                          </div>
+                        )}
+                        {isLockedByTime && (
+                          <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-3 text-xs text-blue-300">
+                            <p className="font-semibold mb-1">🕒 3-Hour Verification Lock</p>
+                            <p>This refund request was made recently. It must wait 3 hours before processing to allow for check-in sync. Approving now requires super_admin manual override.</p>
+                          </div>
+                        )}
+                        <div className="bg-white/5 border border-white/10 rounded-xl p-3 text-center mt-4">
+                          <span className="text-xs text-text-muted block">Refund Amount</span>
+                          <span className="text-2xl font-black text-white">{formatMoney(processTarget.amount, processTarget.currency)}</span>
+                        </div>
 
-                  {action === 'approve' && booking?.ticketsScanned !== undefined && booking.ticketsScanned > 0 && (
-                    <div className="space-y-4 border border-white/5 bg-white/3 rounded-xl p-3">
-                      {admin?.role === AdminRole.SUPER_ADMIN ? (
-                        <>
-                          <label className="flex items-center gap-2 text-sm text-text-secondary cursor-pointer select-none">
-                            <input
-                              type="checkbox"
-                              checked={manualOverride}
-                              onChange={(e) => setManualOverride(e.target.checked)}
-                              className="w-4 h-4 rounded bg-background border-border-subtle text-accent-purple focus:ring-accent-purple"
-                            />
-                            <span>Manual Override Refund Check</span>
-                          </label>
-                          {manualOverride && (
-                            <>
-                              <div className="space-y-1.5">
-                                <label className="text-xs text-text-secondary block">Override Reason *</label>
-                                <textarea
-                                  value={overrideReason}
-                                  onChange={(e) => setOverrideReason(e.target.value)}
-                                  placeholder="Provide reason for checked-in ticket override..."
-                                  rows={2}
-                                  className="w-full px-4 py-2 rounded-xl bg-background border border-border-subtle text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple resize-none"
-                                />
-                              </div>
-                              <div className="space-y-1.5">
-                                <label className="text-xs text-text-secondary block">Gateway Refund ID *</label>
-                                <input
-                                  value={gatewayId}
-                                  onChange={(e) => setGatewayId(e.target.value)}
-                                  placeholder="e.g. rfnd_xxx from Razorpay"
-                                  className="w-full px-4 py-2.5 rounded-xl bg-background border border-border-subtle text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple"
-                                />
-                              </div>
-                            </>
-                          )}
-                        </>
-                      ) : (
-                        <p className="text-xs text-red-400 font-medium">
-                          ❌ Only super_admin accounts can override checked-in ticket bookings.
-                        </p>
-                      )}
-                    </div>
-                  )}
+                        <div className="flex gap-3 mt-4">
+                          {(['approve', 'reject'] as const).map((a) => (
+                            <button key={a} type="button" onClick={() => setAction(a)}
+                              className={`flex-1 py-2 rounded-xl text-sm font-medium border transition-all capitalize ${getActionClass(a)}`}>
+                              {a}
+                            </button>
+                          ))}
+                        </div>
 
-                  <div className="space-y-1.5">
-                    <label className="text-sm text-text-secondary">Admin Notes</label>
-                    <input value={adminNotes} onChange={(e) => setAdminNotes(e.target.value)} placeholder="Notes for audit log..." className="w-full px-4 py-2.5 rounded-xl bg-background border border-border-subtle text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple" />
-                  </div>
-
-                  {action === 'approve' && (booking?.ticketsScanned === undefined || booking.ticketsScanned === 0) && (
-                    <div className="space-y-1.5">
-                      <label className="text-sm text-text-secondary">Gateway Refund ID (optional)</label>
-                      <input value={gatewayId} onChange={(e) => setGatewayId(e.target.value)} placeholder="e.g. rfnd_xxx from Razorpay" className="w-full px-4 py-2.5 rounded-xl bg-background border border-border-subtle text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple" />
-                    </div>
-                  )}
-                </div>
-                <div className="flex gap-3 pt-2">
-                  <button type="button" onClick={resetStates} className="flex-1 py-2.5 glass border border-border-subtle rounded-xl text-sm text-text-secondary">Cancel</button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (isSubmitting.current) return;
-                      processMutation.mutate();
-                    }}
-                    disabled={
-                      processMutation.isPending ||
-                      (action === 'approve' && booking?.ticketsScanned !== undefined && booking.ticketsScanned > 0 && (
-                        admin?.role !== AdminRole.SUPER_ADMIN ||
-                        !manualOverride ||
-                        !overrideReason.trim() ||
-                        !gatewayId.trim()
-                      ))
-                    }
-                    className={`flex-1 py-2.5 rounded-xl text-white text-sm font-medium disabled:opacity-60 ${action === 'approve' ? 'bg-green-600 hover:bg-green-500' : 'bg-red-600 hover:bg-red-500'}`}
-                  >
-                    {processMutation.isPending ? 'Processing...' : `Confirm ${action}`}
-                  </button>
+                        {action === 'approve' && needsOverride && (
+                          <div className="space-y-4 border border-white/5 bg-white/3 rounded-xl p-3 mt-4">
+                            {admin?.role === AdminRole.SUPER_ADMIN ? (
+                              <>
+                                <label className="flex items-center gap-2 text-sm text-text-secondary cursor-pointer select-none">
+                                  <input
+                                    type="checkbox"
+                                    checked={manualOverride}
+                                    onChange={(e) => setManualOverride(e.target.checked)}
+                                    className="w-4 h-4 rounded bg-background border-border-subtle text-accent-purple focus:ring-accent-purple"
+                                  />
+                                  <span>Manual Override Refund Check</span>
+                                </label>
+                                {manualOverride && (
+                                  <>
+                                    <div className="space-y-1.5">
+                                      <label className="text-xs text-text-secondary block">Override Reason *</label>
+                                      <textarea
+                                        value={overrideReason}
+                                        onChange={(e) => setOverrideReason(e.target.value)}
+                                        placeholder="Provide reason for override..."
+                                        rows={2}
+                                        className="w-full px-4 py-2 rounded-xl bg-background border border-border-subtle text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple resize-none"
+                                      />
+                                    </div>
+                                    <div className="space-y-1.5">
+                                      <label className="text-xs text-text-secondary block">Gateway Refund ID *</label>
+                                      <input
+                                        value={gatewayId}
+                                        onChange={(e) => setGatewayId(e.target.value)}
+                                        placeholder="e.g. rfnd_xxx from Razorpay"
+                                        className="w-full px-4 py-2.5 rounded-xl bg-background border border-border-subtle text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple"
+                                      />
+                                    </div>
+                                  </>
+                                )}
+                              </>
+                            ) : (
+                              <p className="text-xs text-red-400 font-medium">
+                                ❌ Only super_admin accounts can override this security lock.
+                              </p>
+                            )}
+                          </div>
+                        )}
+                        <div className="space-y-1.5 mt-4">
+                          <label className="text-sm text-text-secondary">Admin Notes</label>
+                          <input value={adminNotes} onChange={(e) => setAdminNotes(e.target.value)} placeholder="Notes for audit log..." className="w-full px-4 py-2.5 rounded-xl bg-background border border-border-subtle text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple" />
+                        </div>
+                        {action === 'approve' && !needsOverride && (
+                          <div className="space-y-1.5 mt-4">
+                            <label className="text-sm text-text-secondary">Gateway Refund ID (optional)</label>
+                            <input value={gatewayId} onChange={(e) => setGatewayId(e.target.value)} placeholder="e.g. rfnd_xxx from Razorpay" className="w-full px-4 py-2.5 rounded-xl bg-background border border-border-subtle text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple" />
+                          </div>
+                        )}
+                        <div className="flex gap-3 pt-4">
+                          <button type="button" onClick={resetStates} className="flex-1 py-2.5 glass border border-border-subtle rounded-xl text-sm text-text-secondary">Cancel</button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (isSubmitting.current) return;
+                              processMutation.mutate();
+                            }}
+                            disabled={
+                              processMutation.isPending ||
+                              (action === 'approve' && needsOverride && (
+                                admin?.role !== AdminRole.SUPER_ADMIN ||
+                                !manualOverride ||
+                                !overrideReason.trim() ||
+                                !gatewayId.trim()
+                              ))
+                            }
+                            className={`flex-1 py-2.5 rounded-xl text-white text-sm font-medium disabled:opacity-60 ${action === 'approve' ? 'bg-green-600 hover:bg-green-500' : 'bg-red-600 hover:bg-red-500'}`}
+                          >
+                            {processMutation.isPending ? 'Processing...' : `Confirm ${action}`}
+                          </button>
+                        </div>
+                      </>
+                    );
+                  })()}
                 </div>
               </div>
             </div>

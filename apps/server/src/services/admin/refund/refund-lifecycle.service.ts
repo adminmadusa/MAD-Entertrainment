@@ -6,6 +6,7 @@ import { Payment } from '../../../models/payment.schema';
 import { Refund, IRefund } from '../../../models/refund.schema';
 import { Ticket } from '../../../models/ticket.schema';
 import { runInTransaction } from '../../../utils/transaction';
+import { BookingLifecycleService } from '../../public/booking/booking-lifecycle.service';
 import { cancelBooking } from '../booking.service';
 import { RefundValidationService } from './refund-validation.service';
 
@@ -22,6 +23,7 @@ export class RefundLifecycleService {
     origin?: string;
     recoveryReason?: string;
     cancelTickets?: boolean;
+    ticketIds?: string[];
   }): Promise<IRefund> {
     return await runInTransaction(async (session) => {
       const payment = await Payment.findById(data.paymentId).session(session);
@@ -80,6 +82,7 @@ export class RefundLifecycleService {
         origin: data.origin || 'manual',
         recoveryReason: data.recoveryReason,
         cancelTickets: data.cancelTickets || false,
+        ticketIds: data.ticketIds,
       });
       return await refund.save({ session });
     });
@@ -131,7 +134,11 @@ export class RefundLifecycleService {
       );
 
       // Fetch dynamic ticket/refund count state
-      const scannedTickets = await Ticket.find({ bookingId: booking._id, scannedAt: { $ne: null } }).session(session as any);
+      const ticketQuery: any = { bookingId: booking._id, scannedAt: { $ne: null } };
+      if (refund.ticketIds && refund.ticketIds.length > 0) {
+        ticketQuery._id = { $in: refund.ticketIds };
+      }
+      const scannedTickets = await Ticket.find(ticketQuery).session(session as any);
       const scannedTicketsCount = scannedTickets.length;
 
       const existingRefunds = await Refund.find({
@@ -248,15 +255,27 @@ export class RefundLifecycleService {
         }
       } else if (cancelTickets) {
         if (freshBooking.status === BookingStatus.CONFIRMED) {
-          const cancelResult = await cancelBooking(
-            bookingId,
-            adminNotes || 'Admin Refund Processed',
-            session,
-            BookingStatus.CANCELLED,
-            actor
-          );
-          if (cancelResult && cancelResult.postCommitPayload) {
-            cancelPostCommitPayload = cancelResult.postCommitPayload;
+          if (refund.ticketIds && refund.ticketIds.length > 0) {
+            const cancelResult = await BookingLifecycleService.cancelSpecificTickets(
+              bookingId,
+              refund.ticketIds,
+              actor,
+              session
+            );
+            if (cancelResult && cancelResult.postCommitPayload) {
+              cancelPostCommitPayload = cancelResult.postCommitPayload;
+            }
+          } else {
+            const cancelResult = await cancelBooking(
+              bookingId,
+              adminNotes || 'Admin Refund Processed',
+              session,
+              BookingStatus.CANCELLED,
+              actor
+            );
+            if (cancelResult && cancelResult.postCommitPayload) {
+              cancelPostCommitPayload = cancelResult.postCommitPayload;
+            }
           }
         }
       }

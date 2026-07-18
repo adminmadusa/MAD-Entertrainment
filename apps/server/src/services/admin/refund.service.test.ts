@@ -1166,7 +1166,7 @@ describe('Admin Refund Service Tests', () => {
       };
       const mockPayment = { _id: 'payment-scan-001', amount: 500, status: PaymentStatus.PAID };
       const mockBooking = { _id: 'booking-scan-001', status: BookingStatus.CONFIRMED };
-
+      vi.mocked(Payment.findById).mockReturnValue({ session: vi.fn().mockResolvedValue(mockPayment) } as any);
       vi.mocked(Refund.findOneAndUpdate).mockReturnValue(createMockQuery(mockRefund));
       vi.mocked(Payment.findById).mockReturnValue({ session: vi.fn().mockResolvedValue(mockPayment) } as any);
       vi.mocked(Booking.findById).mockReturnValue({ session: vi.fn().mockResolvedValue(mockBooking) } as any);
@@ -1174,8 +1174,8 @@ describe('Admin Refund Service Tests', () => {
       vi.mocked(Ticket.find).mockReturnValueOnce(mockScannedQuery());
 
       await expect(
-        processRefund('refund-scan-001', 'approve', 'Admin notes', 'gate-ref-123')
-      ).rejects.toThrow('Refund blocked: Booking contains checked-in tickets');
+        processRefund('refund-scan-001', 'approve', 'Admin notes', 'gatewayId', false, undefined, { id: 'admin1', role: 'admin' })
+      ).rejects.toThrow('Refund blocked: Selected tickets or booking contains checked-in tickets');
     });
 
     it('should block refund with 403 if actor is not super_admin and manualOverride is true', async () => {

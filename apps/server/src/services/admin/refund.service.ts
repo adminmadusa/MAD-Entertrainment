@@ -19,6 +19,7 @@ export const createRefund = async (data: {
   origin?: 'manual' | 'auto_recovery';
   recoveryReason?: 'AMOUNT_MISMATCH' | 'BOOKING_REFERENCE_MISMATCH' | 'BOOKING_ID_MISMATCH' | 'CURRENCY_MISMATCH' | 'PAYMENT_VALIDATION_FAILURE';
   cancelTickets?: boolean;
+  ticketIds?: string[];
 }): Promise<IRefund> => {
   // 1. Service-Level positive amount check (Defense in depth)
   if (data.amount <= 0) {
@@ -37,6 +38,7 @@ export const createRefund = async (data: {
       origin: data.origin,
       recoveryReason: data.recoveryReason,
       cancelTickets: data.cancelTickets,
+      ticketIds: data.ticketIds,
     });
     return result;
   } catch (err: any) {

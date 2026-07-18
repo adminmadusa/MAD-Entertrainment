@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 
 import * as bookingService from '../../services/admin/booking.service';
+import * as refundService from '../../services/admin/refund.service';
 
 /**
  * Fetch paginated list of bookings with optional search and status filters.
@@ -53,9 +54,33 @@ export const getBookingById = async (req: Request, res: Response, next: NextFunc
  */
 export const cancelBooking = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { reason } = req.body;
+    const { reason, refundAmount, ticketIds } = req.body;
     // PRICING-003: Extract verified admin identity for scan-protection RBAC and audit trail
     const actor = { id: req.admin?.sub || 'system', role: req.admin?.role || 'unknown' };
+    
+    if (refundAmount && Number(refundAmount) > 0) {
+      const booking = await bookingService.getBookingById(req.params.id) as any;
+      if (!booking || !booking.paymentId) {
+        return res.status(400).json({ success: false, message: 'Cannot request refund for booking without payment' });
+      }
+      
+      const refund = await refundService.createRefund({
+        bookingId: req.params.id,
+        paymentId: booking.paymentId.toString(),
+        amount: Number(refundAmount),
+        reason,
+        origin: 'manual',
+        cancelTickets: true,
+        ticketIds,
+      });
+      
+      return res.status(201).json({
+        success: true,
+        data: refund,
+        message: 'Refund requested successfully. Tickets will be cancelled upon refund approval.',
+      });
+    }
+
     const booking = await bookingService.cancelBooking(req.params.id, reason, undefined, undefined, actor);
     res.status(200).json({
       success: true,
