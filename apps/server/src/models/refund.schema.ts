@@ -13,6 +13,8 @@ export interface IRefund extends Document {
   origin: 'manual' | 'auto_recovery';
   recoveryReason?: 'AMOUNT_MISMATCH' | 'BOOKING_REFERENCE_MISMATCH' | 'BOOKING_ID_MISMATCH' | 'CURRENCY_MISMATCH' | 'PAYMENT_VALIDATION_FAILURE' | 'EXPIRED_BOOKING_CAPACITY_UNAVAILABLE';
   cancelTickets: boolean;
+  ticketIds?: Types.ObjectId[];
+
   processedAt?: Date;
   gatewayRefundStatus?: string;
   reconciledAt?: Date;
@@ -62,6 +64,11 @@ const refundSchema = new Schema<IRefund>(
       type: Boolean,
       default: false,
     },
+    ticketIds: {
+      type: [Schema.Types.ObjectId],
+      ref: 'Ticket',
+    },
+
   },
   { timestamps: true }
 );
@@ -82,6 +89,19 @@ refundSchema.index(
   { gatewayRefundId: 1 },
   { sparse: true, name: 'idx_refund_gateway_refund_id' }
 );
+
+refundSchema.index(
+  { ticketIds: 1 },
+  {
+    unique: true,
+    partialFilterExpression: {
+      status: { $in: ['requested', 'processing', 'completed'] },
+      ticketIds: { $exists: true }
+    },
+    name: 'idx_refund_ticket_id_unique'
+  }
+);
+
 
 refundSchema.index({ amount: 1 });
 refundSchema.index({ status: 1, createdAt: -1 });

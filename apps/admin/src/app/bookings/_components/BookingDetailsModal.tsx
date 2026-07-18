@@ -1,5 +1,5 @@
 'use client';
-
+import React from 'react';
 import { AdminBooking } from '@/lib/api/admin/booking.service';
 import { BookingStatus, getBookingStatusLabel } from '@mad/shared';
 import { Modal } from '@mad/ui';
@@ -30,7 +30,7 @@ export interface BookingDetailsModalProps {
   onEditEmailClick: () => void;
   onResendTickets: () => void;
   isResending: boolean;
-  onCancelClick: () => void;
+  onCancelClick: (ticketIds?: string[]) => void;
   successToast: string | null;
   errorToast: string | null;
 }
@@ -47,12 +47,29 @@ export default function BookingDetailsModal({
   successToast,
   errorToast,
 }: BookingDetailsModalProps) {
+  const [selectedTicketIds, setSelectedTicketIds] = React.useState<string[]>([]);
+  
   if (!isOpen) return null;
   const customer = booking.userId ?? booking.guestInfo;
   const email = customer?.email ?? '—';
   const phone = customer?.phone || '—';
   const keepUpdated = customer?.keepUpdated ? 'Yes' : 'No';
   const sendBestEvents = customer?.sendBestEvents ? 'Yes' : 'No';
+  
+  const handleTicketToggle = (ticketId: string) => {
+    setSelectedTicketIds(prev => 
+      prev.includes(ticketId) ? prev.filter(id => id !== ticketId) : [...prev, ticketId]
+    );
+  };
+  
+  const handleSelectAllActive = () => {
+    const activeTicketIds = (booking.individualTickets || []).filter(t => t.status === 'active').map(t => t.ticketId);
+    if (selectedTicketIds.length === activeTicketIds.length) {
+      setSelectedTicketIds([]);
+    } else {
+      setSelectedTicketIds(activeTicketIds);
+    }
+  };
 
   return (
     <Modal
@@ -224,12 +241,32 @@ export default function BookingDetailsModal({
 
         {booking.individualTickets && booking.individualTickets.length > 0 && (
           <div className="border-t border-white/5 pt-3 space-y-2">
-            <h4 className="text-text-muted font-medium text-xs uppercase tracking-wider">Individual Tickets & QR Status</h4>
+            <div className="flex items-center justify-between">
+              <h4 className="text-text-muted font-medium text-xs uppercase tracking-wider">Individual Tickets & QR Status</h4>
+              {canMutateBookings && booking.status === BookingStatus.CONFIRMED && (
+                <button 
+                  onClick={handleSelectAllActive}
+                  className="text-[10px] text-accent-purple hover:text-white transition-colors uppercase font-semibold"
+                >
+                  Select All Active
+                </button>
+              )}
+            </div>
             <div className="space-y-1.5">
               {booking.individualTickets.map((t, idx) => (
                 <div key={idx} className="bg-white/5 rounded-xl p-2.5 text-[11px] space-y-1 border border-white/5">
                   <div className="flex justify-between items-center">
-                    <span className="text-white font-mono font-semibold">{t.ticketId}</span>
+                    <div className="flex items-center gap-2">
+                      {t.status === 'active' && canMutateBookings && (
+                        <input 
+                          type="checkbox" 
+                          checked={selectedTicketIds.includes(t.ticketId)}
+                          onChange={() => handleTicketToggle(t.ticketId)}
+                          className="w-3.5 h-3.5 rounded border-border-subtle bg-background/50 accent-accent-purple"
+                        />
+                      )}
+                      <span className="text-white font-mono font-semibold">{t.ticketId}</span>
+                    </div>
                     <span className={`px-1.5 py-0.2 rounded text-[8px] font-bold uppercase ${t.status === 'active' ? 'bg-green-500/10 text-green-400 border border-green-500/20' : t.status === 'replaced' ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20' : 'bg-red-500/10 text-red-400 border border-red-500/20'}`}>{t.status}</span>
                   </div>
                   <div className="text-[10px] text-text-muted space-y-0.5">
@@ -253,10 +290,20 @@ export default function BookingDetailsModal({
           </button>
           {canMutateBookings && booking.status === BookingStatus.CONFIRMED && (
             <button
-              onClick={onCancelClick}
-              className="px-4 py-2 bg-error/80 hover:bg-error rounded-xl text-white text-xs font-semibold transition-colors"
+              onClick={() => {
+                if (selectedTicketIds.length > 0) {
+                  onCancelClick(selectedTicketIds);
+                } else {
+                  onCancelClick();
+                }
+              }}
+              className={`flex-1 py-2 rounded-xl text-xs font-semibold text-white transition-all ${
+                selectedTicketIds.length > 0 
+                  ? 'bg-yellow-500/80 hover:bg-yellow-500 shadow-[0_0_15px_rgba(234,179,8,0.3)]' 
+                  : 'bg-error/80 hover:bg-error shadow-[0_0_15px_rgba(239,68,68,0.3)]'
+              }`}
             >
-              Cancel Booking
+              {selectedTicketIds.length > 0 ? `Cancel ${selectedTicketIds.length} Selected Tickets` : 'Cancel Entire Booking'}
             </button>
           )}
         </div>

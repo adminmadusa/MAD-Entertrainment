@@ -40,6 +40,7 @@ function BookingsContent() {
   const [page, setPage] = useState(1);
   const [selectedBooking, setSelectedBooking] = useState<AdminBooking | null>(null);
   const [cancelTarget, setCancelTarget] = useState<AdminBooking | null>(null);
+  const [cancelTicketIds, setCancelTicketIds] = useState<string[] | undefined>(undefined);
   const [sortField, setSortField] = useState<'bookingId' | 'totalAmount' | 'createdAt' | null>(null);
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
@@ -93,10 +94,11 @@ function BookingsContent() {
 
   // Mutations
   const cancelMutation = useMutation({
-    mutationFn: ({ id, reason }: { id: string; reason: string }) => adminCancelBooking(id, reason),
+    mutationFn: ({ id, reason, ticketIds, refundAmount }: { id: string; reason: string; ticketIds?: string[]; refundAmount?: number }) => adminCancelBooking(id, reason, ticketIds, refundAmount),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['admin-bookings'] });
       setCancelTarget(null);
+      setCancelTicketIds(undefined);
     },
   });
 
@@ -190,9 +192,10 @@ function BookingsContent() {
           <CancelBookingModal
             key={cancelTarget._id}
             booking={cancelTarget}
+            ticketIds={cancelTicketIds}
             isOpen={!!cancelTarget}
-            onClose={() => setCancelTarget(null)}
-            onSubmit={(reason) => cancelMutation.mutate({ id: cancelTarget._id, reason })}
+            onClose={() => { setCancelTarget(null); setCancelTicketIds(undefined); }}
+            onSubmit={(reason, ticketIds, refundAmount) => cancelMutation.mutate({ id: cancelTarget._id, reason, ticketIds, refundAmount })}
             isPending={cancelMutation.isPending}
           />
         )}
@@ -210,7 +213,7 @@ function BookingsContent() {
             onEditEmailClick={() => setIsEditEmailOpen(true)}
             onResendTickets={() => resendTicketsMutation.mutate(selectedBooking._id)}
             isResending={resendTicketsMutation.isPending}
-            onCancelClick={() => { setCancelTarget(selectedBooking); setSelectedBooking(null); }}
+            onCancelClick={(ticketIds) => { setCancelTarget(selectedBooking); setCancelTicketIds(ticketIds); setSelectedBooking(null); }}
             successToast={successToast}
             errorToast={errorToast}
           />

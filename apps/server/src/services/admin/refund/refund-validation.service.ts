@@ -219,10 +219,18 @@ export class RefundValidationService {
     if (!isAutoRecovery) {
       if (scannedTicketsCount > 0) {
         if (!manualOverride) {
-          throw AppError.badRequest('Refund blocked: Booking contains checked-in tickets');
+          throw AppError.badRequest('Refund blocked: Selected tickets or booking contains checked-in tickets');
         }
         if (!actor || actor.role !== 'super_admin') {
           throw AppError.forbidden('Only super_admin can override refunds for bookings with checked-in tickets');
+        }
+      }
+
+      // Enforce 3-hour minimum wait time constraint for manual refunds
+      if (refund.createdAt) {
+        const threeHoursAgo = new Date(Date.now() - 3 * 60 * 60 * 1000);
+        if (new Date(refund.createdAt) > threeHoursAgo) {
+          throw AppError.badRequest('Refund request is locked: Must wait 3 hours before processing');
         }
       }
     }

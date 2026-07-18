@@ -63,6 +63,7 @@ export interface AdminRefund {
   _id: string;
   bookingId: { _id: string; bookingId: string } | string;
   paymentId: { _id: string; amount: number; gateway: string } | string;
+  ticketIds?: string[];
   amount: number;
   currency: string;
   reason?: string;
@@ -229,8 +230,8 @@ export async function adminGetBooking(id: string): Promise<NormalizedBookingDeta
   }
 }
 
-export async function adminCancelBooking(id: string, reason?: string): Promise<void> {
-  await adminApiClient.patch(`/admin/bookings/${id}/cancel`, { reason });
+export async function adminCancelBooking(id: string, reason?: string, ticketIds?: string[], refundAmount?: number): Promise<void> {
+  await adminApiClient.patch(`/admin/bookings/${id}/cancel`, { reason, ticketIds, refundAmount });
 }
 
 export type NormalizedRefundsResponse = PaginatedItemsResponse<AdminRefund>;
