@@ -44,6 +44,7 @@ export class PublicEventService {
     page?: number;
     limit?: number;
     includeTotal?: boolean;
+    bookableOnly?: boolean;
   }) {
     const page = filters.page || 1;
     const limit = filters.limit || 12;
@@ -80,6 +81,28 @@ export class PublicEventService {
       matchStage.status = { $in: [EventStatus.PUBLISHED, EventStatus.COMPLETED] };
     } else {
       matchStage.status = { $in: [EventStatus.PUBLISHED, EventStatus.COMPLETED, EventStatus.POSTPONED] };
+    }
+
+    if (filters.bookableOnly) {
+      matchStage.$and = matchStage.$and || [];
+      
+      // 1. Must not be closed (bookingEndDate > now, OR fallback to startDate > now)
+      matchStage.$and.push({
+        $or: [
+          { bookingEndDate: { $exists: true, $ne: null, $gt: now } },
+          { bookingEndDate: { $exists: false }, startDate: { $exists: true, $ne: null, $gt: now } },
+          { bookingEndDate: null, startDate: { $exists: true, $ne: null, $gt: now } }
+        ]
+      });
+
+      // 2. Must be open (bookingStartDate <= now, OR absent)
+      matchStage.$and.push({
+        $or: [
+          { bookingStartDate: { $exists: false } },
+          { bookingStartDate: null },
+          { bookingStartDate: { $lte: now } }
+        ]
+      });
     }
 
     const durationMs = 4 * 60 * 60 * 1000;

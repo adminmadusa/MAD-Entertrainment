@@ -234,6 +234,7 @@ const eventSchema = new Schema<IEvent>(
 eventSchema.index({ startDate: 1, status: 1 });
 eventSchema.index({ category: 1, status: 1, startDate: 1 });
 eventSchema.index({ isDeleted: 1, status: 1, startDate: 1 });
+eventSchema.index({ status: 1, bookingEndDate: 1, startDate: 1 });
 eventSchema.index({ title: 1 });
 eventSchema.index({ title: 'text', description: 'text', tags: 'text' });
 
