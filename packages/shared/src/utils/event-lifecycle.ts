@@ -1,4 +1,4 @@
-import { EventStatus } from '../constants';
+import { EventStatus, DEFAULT_EVENT_DURATION_HOURS } from '../constants';
 
 export type EventLifecycleState = 
   | 'draft'
@@ -13,8 +13,22 @@ export interface BaseEventForLifecycle {
   status: string;
   startDate: Date | string;
   endDate?: Date | string | null;
-  ticketSalesCloseMode?: string;
-  ticketSalesCloseDate?: Date | string | null;
+  bookingStartDate?: Date | string | null;
+  bookingEndDate?: Date | string | null;
+}
+
+/**
+ * Resolves the end date of an event using the preferred order of fallback values.
+ */
+export function getEventEndDate(event: BaseEventForLifecycle): Date {
+  if (event.endDate) {
+    return new Date(event.endDate);
+  }
+  if (event.bookingEndDate) {
+    return new Date(event.bookingEndDate);
+  }
+  const durationHours = (event as any).duration ?? DEFAULT_EVENT_DURATION_HOURS;
+  return new Date(new Date(event.startDate).getTime() + durationHours * 60 * 60 * 1000);
 }
 
 /**
@@ -33,22 +47,18 @@ export function deriveEventLifecycleState(event: BaseEventForLifecycle): EventLi
     return status as EventLifecycleState;
   }
 
-  // If status is PUBLISHED (or COMPLETED as legacy), we calculate based on dates
+  // Treat explicit COMPLETED status as legacy override
+  if (status === EventStatus.COMPLETED) {
+    return 'completed';
+  }
+
   const now = new Date().getTime();
   const start = new Date(event.startDate).getTime();
-  
-  if (event.endDate) {
-    const end = new Date(event.endDate).getTime();
-    if (now > end) return 'completed';
-    if (now >= start && now <= end) return 'live';
-    return 'upcoming';
-  } else {
-    // If no endDate, we just rely on startDate
-    // Technically an event without an endDate doesn't have a defined "live" window,
-    // but typically it means it starts and ends roughly around the same time.
-    if (now >= start) return 'live';
-    return 'upcoming';
-  }
+  const end = getEventEndDate(event).getTime();
+
+  if (now > end) return 'completed';
+  if (now >= start && now <= end) return 'live';
+  return 'upcoming';
 }
 
 /**
@@ -64,22 +74,19 @@ export function canBook(event: BaseEventForLifecycle): boolean {
     return false;
   }
 
-  // Check ticket sales close policy
   const now = new Date().getTime();
-  const mode = event.ticketSalesCloseMode || 'EVENT_START';
 
-  switch (mode) {
-    case 'EVENT_END':
-      if (!event.endDate) return true;
-      return now < new Date(event.endDate).getTime();
-      
-    case 'CUSTOM_DATE':
-      if (!event.ticketSalesCloseDate) return true;
-      return now < new Date(event.ticketSalesCloseDate).getTime();
-      
-    case 'EVENT_START':
-    default:
-      if (!event.startDate) return true;
-      return now < new Date(event.startDate).getTime();
+  if (event.bookingStartDate && now < new Date(event.bookingStartDate).getTime()) {
+    return false;
   }
+
+  const closeTime = event.bookingEndDate
+    ? new Date(event.bookingEndDate).getTime()
+    : (event.startDate ? new Date(event.startDate).getTime() : null);
+
+  if (closeTime && now >= closeTime) {
+    return false;
+  }
+
+  return true;
 }

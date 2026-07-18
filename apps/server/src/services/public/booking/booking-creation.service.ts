@@ -2,7 +2,7 @@ import crypto from 'crypto';
 
 import { Types } from 'mongoose';
 
-import { BookingStatus, BookingMode, ReservationStatus, SeatStatus } from '@mad/shared';
+import { BookingStatus, BookingMode, ReservationStatus, SeatStatus, getCountryConfig } from '@mad/shared';
 
 import { getRedis } from '../../../config/redis';
 import { emitToAdmin, emitToEvent } from '../../../config/socket';
@@ -16,7 +16,7 @@ import { auditLog } from '../../../utils/audit';
 import { logger } from '../../../utils/logger';
 import { runInTransaction } from '../../../utils/transaction';
 import { ReservationService } from '../../reservation.service';
-import { canBook } from '@mad/shared';
+import { deriveBookingEligibility } from '@mad/shared';
 import { BookingAccessService } from './booking-access.service';
 import type { CreateBookingRequest, SaveCheckoutRequest } from './booking.types';
 
@@ -196,10 +196,9 @@ export class BookingCreationService {
     let totalGst = 0;
     const finalTickets: any[] = [];
 
-    // Check event ticket sales closure constraints
-    const now = new Date();
-    if (!canBook(event as any)) {
-      throw AppError.badRequest('This event is no longer available for booking.');
+    const eligibility = deriveBookingEligibility(event as any);
+    if (!eligibility.bookingAllowed) {
+      throw AppError.badRequest(`This event is no longer available for booking. Reason: ${eligibility.bookingReason}`);
     }
 
     // Validate Tiers and Quantities
@@ -238,8 +237,10 @@ export class BookingCreationService {
       const tierPriceAfterDiscount = Math.max(0, tierConfig.price - (tierConfig.discount || 0));
       const tierSubtotal = tierPriceAfterDiscount * ticketReq.quantity;
 
-      // Calculate Tier-specific GST
-      const tierTaxPercent = tierConfig.taxPercent ?? 18;
+      // Calculate Tier-specific tax based on event localization country
+      const eventCountry = event.countryCode || 'US';
+      const countryConfig = getCountryConfig(eventCountry);
+      const tierTaxPercent = tierConfig.taxPercent ?? event.taxPercentage ?? countryConfig.defaultTax;
       const tierGst = Math.round((tierSubtotal * tierTaxPercent) / 100);
 
       subtotal += tierSubtotal;
@@ -292,7 +293,7 @@ export class BookingCreationService {
       }
     }
 
-    // Pricing calculations (₹30 per ticket convenience fee, 18% GST on convenience fee + subtotal GST)
+    // Pricing calculations (fixed convenience fee per ticket + event tax applied on subtotal)
     const convenienceFee = 30 * totalTicketsCount;
     const convenienceFeeGst = Math.round((convenienceFee * 18) / 100);
     const gst = totalGst + convenienceFeeGst;
@@ -316,7 +317,9 @@ export class BookingCreationService {
       }
 
       if (coupon.minOrderAmount && subtotal < coupon.minOrderAmount) {
-        throw AppError.badRequest(`Minimum subtotal order amount of ₹${coupon.minOrderAmount} is required for this coupon`);
+        const eventCountry = event.countryCode || 'US';
+        const countryConfig = getCountryConfig(eventCountry);
+        throw AppError.badRequest(`Minimum subtotal order amount of ${countryConfig.symbol}${coupon.minOrderAmount} is required for this coupon`);
       }
 
       // Scope checks
@@ -356,6 +359,9 @@ export class BookingCreationService {
     // Deferred physical TTL cleanup (30 days) to allow webhook recoveries
     const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
 
+    const eventCountry = event.countryCode || 'US';
+    const countryConfig = getCountryConfig(eventCountry);
+
     // Create pending booking
     const booking = new Booking({
       eventId: event._id,
@@ -371,7 +377,11 @@ export class BookingCreationService {
       gst,
       discount,
       totalAmount,
-      currency: 'INR',
+      currency: event.currency || countryConfig.currency,
+      countryCode: event.countryCode || countryConfig.countryCode,
+      taxLabel: event.taxLabel || countryConfig.taxLabel,
+      taxPercentage: event.taxPercentage !== undefined ? event.taxPercentage : countryConfig.defaultTax,
+      locale: event.locale || countryConfig.locale,
       couponCode: data.couponCode ? data.couponCode.toUpperCase() : undefined,
       couponId,
       status: BookingStatus.AWAITING_PAYMENT,

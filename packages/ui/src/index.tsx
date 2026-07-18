@@ -40,6 +40,7 @@ export * from './composites/Modal';
 export * from './composites/Drawer';
 export * from './composites/Tooltip';
 export * from './composites/Table';
+export * from './composites/Pagination';
 export * from './composites/EmptyState';
 export * from './composites/ErrorState';
 export * from './composites/LoadingState';

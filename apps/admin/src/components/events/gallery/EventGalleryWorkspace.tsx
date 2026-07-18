@@ -10,10 +10,17 @@ import { EventGalleryUploadZone } from './EventGalleryUploadZone';
 
 export interface EventGalleryWorkspaceProps {
   eventId: string;
+  capabilities?: {
+    canBook: boolean;
+    canViewGallery: boolean;
+    canUploadGallery: boolean;
+    canPublishGallery: boolean;
+  };
 }
 
 export const EventGalleryWorkspace = React.memo(function EventGalleryWorkspace({
   eventId,
+  capabilities,
 }: EventGalleryWorkspaceProps) {
   const {
     data,
@@ -37,8 +44,18 @@ export const EventGalleryWorkspace = React.memo(function EventGalleryWorkspace({
 
   return (
     <div className="space-y-6">
+      {capabilities && !capabilities.canUploadGallery && (
+        <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 text-sm flex items-center gap-2">
+          <span>⚠️ Gallery uploads and publishing settings are locked until the event starts and completes.</span>
+        </div>
+      )}
+
       {/* Upload Section Full Width */}
-      <EventGalleryUploadZone eventId={eventId} onUploadComplete={() => refetch()} />
+      <EventGalleryUploadZone
+        eventId={eventId}
+        onUploadComplete={() => refetch()}
+        disabled={capabilities && !capabilities.canUploadGallery}
+      />
 
       <div className="flex flex-col lg:flex-row gap-6 items-start">
         {/* Left Column: Grid */}
@@ -48,7 +65,12 @@ export const EventGalleryWorkspace = React.memo(function EventGalleryWorkspace({
 
         {/* Right Column: Settings */}
         <div className="w-full lg:w-1/3">
-          <EventGallerySettingsPanel eventId={eventId} settings={settings} mediaCount={items.length} />
+          <EventGallerySettingsPanel
+            eventId={eventId}
+            settings={settings}
+            mediaCount={items.length}
+            disabled={capabilities && !capabilities.canPublishGallery}
+          />
         </div>
       </div>
     </div>

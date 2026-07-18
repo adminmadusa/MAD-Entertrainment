@@ -1,20 +1,13 @@
 import type { Metadata } from 'next';
-import dynamic from 'next/dynamic';
 import Link from 'next/link';
-import { Suspense } from 'react';
 
 import { Reveal, StaggerContainer, StaggerItem } from '@/components/common/PageTransition';
-import { FeaturedEventsSkeleton } from '@/components/ui/HomeSkeletons';
-import { serverGetFeaturedEvents, serverGetCompletedEvents } from '@/lib/api/server.service';
+import { SectionBoundary } from '@/components/common/SectionBoundary';
+import { CompletedEventsSection } from '@/components/ui/CompletedEventsSection';
+import { UpcomingEventsSkeleton, CompletedEventsSkeleton } from '@/components/ui/HomeSkeletons';
+import { UpcomingEventsSection } from '@/components/ui/UpcomingEventsSection';
+import { serverGetUpcomingEvents, serverGetCompletedEvents } from '@/lib/api/server.service';
 import { ArrowRight } from '@mad/ui';
-
-const FeaturedEventsSection = dynamic(() => import('@/components/ui/FeaturedEventsSection').then(mod => mod.FeaturedEventsSection), {
-  ssr: true,
-});
-
-const CompletedEventsSection = dynamic(() => import('@/components/ui/CompletedEventsSection').then(mod => mod.CompletedEventsSection), {
-  ssr: true,
-});
 
 export const metadata: Metadata = {
   title: 'MAD Entertrainment — Book Shows, Events & DJ Nights',
@@ -41,9 +34,9 @@ export const revalidate = 60;
 
 // ─── Parallel Server Data Loaders ─────────────────────────────────
 
-async function FeaturedEventsServerSection() {
-  const events = await serverGetFeaturedEvents();
-  return <FeaturedEventsSection initialEvents={events} />;
+async function UpcomingEventsServerSection() {
+  const events = await serverGetUpcomingEvents(6);
+  return <UpcomingEventsSection initialEvents={events} />;
 }
 
 async function CompletedEventsServerSection() {
@@ -73,15 +66,15 @@ export default function HomePage() {
       {/* ─── Hero Section ─────────────────────────────────── */}
       <HeroSection />
 
-      {/* ─── Featured Events (Streamed) ────────────────────── */}
-      <Suspense fallback={<FeaturedEventsSkeleton />}>
-        <FeaturedEventsServerSection />
-      </Suspense>
+      {/* ─── Upcoming Events (Streamed) ────────────────────── */}
+      <SectionBoundary loadingFallback={<UpcomingEventsSkeleton />}>
+        <UpcomingEventsServerSection />
+      </SectionBoundary>
 
       {/* ─── Completed Events & Moments (Streamed) ──────────── */}
-      <Suspense fallback={<FeaturedEventsSkeleton />}>
+      <SectionBoundary loadingFallback={<CompletedEventsSkeleton />}>
         <CompletedEventsServerSection />
-      </Suspense>
+      </SectionBoundary>
 
       {/* ─── How It Works ─────────────────────────────────── */}
       <HowItWorksSection />

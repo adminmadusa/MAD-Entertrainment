@@ -27,13 +27,13 @@ export function DashboardSupportTab() {
         </p>
         <div className="pt-2 flex flex-wrap gap-3">
           <Link
-            href="/contact"
+            href="/contact?from=dashboard"
             className="px-6 py-2.5 bg-accent-purple hover:bg-accent-purple-light text-white text-xs font-bold rounded-xl transition-all shadow-md inline-block"
           >
             Contact Support
           </Link>
           <Link
-            href="/support"
+            href="/support?from=dashboard"
             className="px-6 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 text-white text-xs font-bold rounded-xl transition-all inline-block"
           >
             Support Hub

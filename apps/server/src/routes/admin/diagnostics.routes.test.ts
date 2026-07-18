@@ -144,7 +144,7 @@ describe('diagnostics.routes.ts', () => {
 
     it('denies access for standard Admin/Unauthenticated (behavioral)', async () => {
       const handlers = getHandlers('get', '/system');
-      vi.mocked(requireSuperAdmin).mockImplementationOnce((req: any, res: any, next: any) => {
+      vi.mocked(requireSuperAdmin).mockImplementationOnce((_req: any, res: any, _next: any) => {
         res.status(403).json({ success: false, message: 'Super admin access required' });
       });
       const req: any = {};
@@ -164,7 +164,7 @@ describe('diagnostics.routes.ts', () => {
 
     it('denies access for standard Admin/Unauthenticated (behavioral)', async () => {
       const handlers = getHandlers('get', '/dlq');
-      vi.mocked(requireSuperAdmin).mockImplementationOnce((req: any, res: any, next: any) => {
+      vi.mocked(requireSuperAdmin).mockImplementationOnce((_req: any, res: any, _next: any) => {
         res.status(403).json({ success: false, message: 'Super admin access required' });
       });
       const req: any = {};
@@ -211,7 +211,7 @@ describe('diagnostics.routes.ts', () => {
 
     it('denies access for standard Admin/Unauthenticated (behavioral)', async () => {
       const handlers = getHandlers('get', '/queues');
-      vi.mocked(requireSuperAdmin).mockImplementationOnce((req: any, res: any, next: any) => {
+      vi.mocked(requireSuperAdmin).mockImplementationOnce((_req: any, res: any, _next: any) => {
         res.status(403).json({ success: false, message: 'Super admin access required' });
       });
       const req: any = {};

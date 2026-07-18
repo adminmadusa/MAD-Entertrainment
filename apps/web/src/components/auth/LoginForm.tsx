@@ -3,39 +3,10 @@
 import Link from 'next/link';
 import React, { useEffect, useRef } from 'react';
 
-import { Button, Alert, FormField, Input } from '@mad/ui';
+import { Button, FormField, Input } from '@mad/ui';
 
 import { useGoogleSignIn } from './hooks/useGoogleSignIn';
 
-interface GoogleCredentialResponse {
-  credential?: string;
-  clientId?: string;
-  select_by?: string;
-}
-
-interface GoogleAccountsId {
-  initialize(config: {
-    client_id: string;
-    callback: (response: GoogleCredentialResponse) => void;
-    auto_select?: boolean;
-  }): void;
-  renderButton(
-    parent: HTMLElement | null,
-    options: {
-      theme?: string;
-      size?: string;
-      width?: string;
-      shape?: string;
-      text?: string;
-    }
-  ): void;
-}
-
-interface GoogleIdentity {
-  accounts: {
-    id: GoogleAccountsId;
-  };
-}
 
 export interface LoginFormProps {
   mode: 'login';
@@ -89,27 +60,17 @@ export function LoginForm({
         </p>
       </div>
 
-      {/* Alert Banners */}
+      {/* Cooldown Banners */}
       {requestCooldownRemaining > 0 && (
-        <Alert variant="info" role="status" className="animate-in fade-in duration-300">
+        <p role="status" className="text-xs text-center text-purple-300/80 animate-in fade-in duration-300">
           Verification code sent. New code available in {formatTime(requestCooldownRemaining)}.
-        </Alert>
+        </p>
       )}
       {verifyCooldownRemaining > 0 && (
-        <Alert variant="danger" className="animate-in fade-in duration-300">
-          <div className="space-y-1">
-            <p className="font-bold">For your security, verification attempts are temporarily paused.</p>
-            <p>Please try again in:</p>
-            <p className="font-mono text-lg font-black tracking-wider text-amber-400">
-              {formatTime(verifyCooldownRemaining)}
-            </p>
-          </div>
-        </Alert>
-      )}
-      {verifyCooldownRemaining <= 0 && error && (
-        <Alert variant="danger" className="animate-in fade-in duration-300">
-          {error}
-        </Alert>
+        <p role="alert" className="text-xs text-center text-amber-400 font-semibold animate-in fade-in duration-300">
+          For your security, verification attempts are temporarily paused.<br />
+          Please try again in: <span className="font-mono font-black tracking-wider">{formatTime(verifyCooldownRemaining)}</span>
+        </p>
       )}
 
       <form onSubmit={onSubmit} className="space-y-4 sm:space-y-5">
@@ -124,6 +85,11 @@ export function LoginForm({
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
             />
+            {verifyCooldownRemaining <= 0 && error && (
+              <p role="alert" className="mt-1.5 text-xs text-red-400 animate-in fade-in duration-200">
+                {error}
+              </p>
+            )}
           </FormField>
 
           <Button

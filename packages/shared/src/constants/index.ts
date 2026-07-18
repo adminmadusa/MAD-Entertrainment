@@ -46,34 +46,48 @@ export const EVENT_STATUS_TRANSITIONS: Readonly<Record<EventLifecycleStatus, rea
   [EventStatus.CANCELLED]: [],
 };
 
-// ─── Event Duplication Policy ────────────────────────────────
-export const EVENT_DUPLICATION_POLICY = {
-  copied: [
-    'title', // Title is copied but modified by naming strategy
-    'description',
-    'category',
-    'bookingMode',
-    'bannerImage',
-    'posterImage',
-    'startDate',
-    'endDate',
-    'doorsOpenTime',
-    'showTime',
-    'venue',
-    'djOperatorIds',
-    'ticketTiers',
-  ],
-  reset: [
-    '_id',
-    'slug',
-    'createdAt',
-    'updatedAt',
-    'eventVersion',
-  ],
-  regenerated: [
-    'status', // Defaults to DRAFT
-  ]
-} as const;
+// ─── Event State (Frontend UI Mapping) ───────────────────────
+export enum EventState {
+  DRAFT = 'DRAFT',
+  PENDING = 'PENDING',
+  PUBLISHED = 'PUBLISHED',
+  UPCOMING = 'UPCOMING',
+  LIVE = 'LIVE',
+  BOOKING_NOT_STARTED = 'BOOKING_NOT_STARTED',
+  BOOKING_CLOSED = 'BOOKING_CLOSED',
+  SOLD_OUT = 'SOLD_OUT',
+  COMPLETED = 'COMPLETED',
+  CANCELLED = 'CANCELLED',
+  EXPIRED = 'EXPIRED',
+  ARCHIVED = 'ARCHIVED',
+  HIDDEN = 'HIDDEN',
+}
+
+export enum EventLifecycle {
+  UPCOMING = 'UPCOMING',
+  LIVE = 'LIVE',
+  COMPLETED = 'COMPLETED',
+}
+
+export enum BookingState {
+  OPEN = 'OPEN',
+  CLOSED = 'CLOSED',
+}
+
+
+// ─── Booking Reason ──────────────────────────────────────────
+export enum BookingReason {
+  BOOKABLE = 'BOOKABLE',
+  EVENT_COMPLETED = 'EVENT_COMPLETED',
+  EVENT_CANCELLED = 'EVENT_CANCELLED',
+  BOOKING_CLOSED = 'BOOKING_CLOSED',
+  BOOKING_NOT_STARTED = 'BOOKING_NOT_STARTED',
+  SOLD_OUT = 'SOLD_OUT',
+  CAPACITY_REACHED = 'CAPACITY_REACHED',
+  TICKET_DISABLED = 'TICKET_DISABLED',
+  EVENT_UNPUBLISHED = 'EVENT_UNPUBLISHED',
+  EVENT_ARCHIVED = 'EVENT_ARCHIVED',
+}
 
 export type EventStatusTone = 'success' | 'warning' | 'danger' | 'info' | 'neutral';
 
@@ -251,12 +265,6 @@ export enum PaymentMethod {
   STRIPE_CARD = 'stripe_card',
 }
 
-// ─── Ticket Sales Close Mode ─────────────────────────────────
-export enum TicketSalesCloseMode {
-  EVENT_START = 'EVENT_START',
-  EVENT_END = 'EVENT_END',
-  CUSTOM_DATE = 'CUSTOM_DATE',
-}
 
 // ─── Ticket Tier ─────────────────────────────────────────────
 export enum TicketTier {
@@ -300,11 +308,14 @@ export enum AdminRole {
 }
 
 // ─── Refund Status ───────────────────────────────────────────
+// NOTE: There is no distinct REJECTED status in the database schema.
+// Admin rejections are stored as FAILED by design — both failed gateway
+// executions and admin rejections share the same terminal state.
+// See rejectRefund() in refund-lifecycle.service.ts.
 export enum RefundStatus {
   REQUESTED = 'requested',
   PROCESSING = 'processing',
   COMPLETED = 'completed',
-  REJECTED = 'rejected',
   FAILED = 'failed',
 }
 
@@ -362,6 +373,9 @@ export const MAX_MEMORIES_GALLERY_LIMIT = 50;
 // ─── Popup Cooldown ──────────────────────────────────────────
 export const POPUP_COOLDOWN_HOURS = 24;
 export const POPUP_SESSION_KEY_PREFIX = 'mad_popup_';
+
+// ─── Default Event Duration ──────────────────────────────────
+export const DEFAULT_EVENT_DURATION_HOURS = 4;
 
 // ─── API Routes ──────────────────────────────────────────────
 export const API_ROUTES = {

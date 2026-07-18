@@ -7,6 +7,7 @@ import { CheckoutContent } from '@/components/booking/CheckoutContent';
 import { TicketSelectionContent } from '@/components/booking/TicketSelectionContent';
 import type { Event as EventData } from '@mad/types';
 import { Modal } from '@mad/ui';
+import { formatMoney } from '@mad/shared';
 
 export type EventBookingFlowHandle = {
   openBooking: () => void;
@@ -20,6 +21,7 @@ type EventBookingFlowProps = {
 
 export const EventBookingFlow = forwardRef<EventBookingFlowHandle, EventBookingFlowProps>(
   function EventBookingFlow({ event, showDateTime, ticketsLeft }, ref) {
+    const currency = event.currency || 'USD';
     const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
     const [quantities, setQuantities] = useState<Record<string, number>>({});
     const [subtotal, setSubtotal] = useState(0);
@@ -29,6 +31,7 @@ export const EventBookingFlow = forwardRef<EventBookingFlowHandle, EventBookingF
 
     const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false);
     const [checkoutBookingId, setCheckoutBookingId] = useState<string | null>(null);
+    const [isConfirmed, setIsConfirmed] = useState(false);
 
     useImperativeHandle(ref, () => ({
       openBooking: () => setIsBookingModalOpen(true),
@@ -52,7 +55,7 @@ export const EventBookingFlow = forwardRef<EventBookingFlowHandle, EventBookingF
           <span className="text-xs text-text-muted font-medium">
             {selectedCount} {selectedCount === 1 ? 'ticket' : 'tickets'}
           </span>
-          <span className="text-base font-black text-accent-purple-light">₹{subtotal}</span>
+          <span className="text-base font-black text-accent-purple-light">{formatMoney(subtotal, currency)}</span>
         </div>
       );
     } else if (ticketsLeft <= 50) {
@@ -170,7 +173,7 @@ export const EventBookingFlow = forwardRef<EventBookingFlowHandle, EventBookingF
                                 <span className="font-bold text-white">{qty}x</span>{' '}
                                 <span className="text-text-secondary">{tier.name}</span>
                               </div>
-                              <span className="font-semibold text-accent-purple-light">₹{price * qty}</span>
+                              <span className="font-semibold text-accent-purple-light">{formatMoney(price * qty, currency)}</span>
                             </div>
                           );
                         })}
@@ -182,7 +185,7 @@ export const EventBookingFlow = forwardRef<EventBookingFlowHandle, EventBookingF
                     <div className="border-t border-white/5 pt-4 space-y-2">
                       <div className="flex justify-between text-xs text-text-secondary">
                         <span>Subtotal</span>
-                        <span className="font-semibold text-white">₹{subtotal}</span>
+                        <span className="font-semibold text-white">{formatMoney(subtotal, currency)}</span>
                       </div>
                       <p className="text-[9px] text-text-muted leading-relaxed">
                         Convenience fees, GST, and discounts will be calculated at checkout details stage.
@@ -200,17 +203,23 @@ export const EventBookingFlow = forwardRef<EventBookingFlowHandle, EventBookingF
             setIsPending(false);
             setIsCheckoutModalOpen(false);
             setCheckoutBookingId(null);
+            setIsConfirmed(false);
           }}
-          size="lg"
+          size={isConfirmed ? "sm" : "lg"}
           showCloseButton={false}
           presentation="bottom-sheet"
           closeOnBackdropClick={true}
           ariaLabelledBy="checkout-modal-title"
-          className="md:max-h-[95vh] max-w-4xl bg-background md:rounded-2xl border border-white/10 overflow-y-auto shadow-2xl relative z-10 p-6 custom-scrollbar focus:outline-none"
+          className={
+            isConfirmed
+              ? "max-w-md bg-background md:rounded-2xl border border-white/10 shadow-2xl relative z-10 p-6 focus:outline-none animate-in fade-in zoom-in-95 duration-300"
+              : "md:max-h-[95vh] max-w-4xl bg-background md:rounded-2xl border border-white/10 overflow-y-auto shadow-2xl relative z-10 p-6 custom-scrollbar focus:outline-none"
+          }
         >
               <CheckoutContent
                 bookingId={checkoutBookingId}
                 isModal={true}
+                onConfirmed={() => setIsConfirmed(true)}
                 onBack={() => {
                   setIsPending(false);
                   setIsCheckoutModalOpen(false);
@@ -220,6 +229,7 @@ export const EventBookingFlow = forwardRef<EventBookingFlowHandle, EventBookingF
                   setIsPending(false);
                   setIsCheckoutModalOpen(false);
                   setCheckoutBookingId(null);
+                  setIsConfirmed(false);
                 }}
               />
         </Modal>

@@ -12,7 +12,7 @@ vi.mock('bullmq', () => {
 
   class MockWorker {
     name: string;
-    constructor(name: string, processor: any, options: any) {
+    constructor(name: string, _processor: any, _options: any) {
       this.name = name;
     }
     on(event: string, callback: Function) {

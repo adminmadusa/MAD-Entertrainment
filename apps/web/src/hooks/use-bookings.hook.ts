@@ -6,8 +6,8 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { apiClient, extractApiError } from '@/lib/api/client';
 import { publicGetMyBookings, publicResendTicketEmail } from '@/lib/api/public.service';
 import { useAuth } from '@/providers/AuthProvider';
-import { BookingStatus, QUERY_KEYS } from '@mad/shared';
-import type { Booking, Ticket, Event } from '@mad/types';
+import { BookingStatus, QUERY_KEYS, getBookingLifecycle, type BookingForLifecycle } from '@mad/shared';
+import type { Booking } from '@mad/types';
 
 export function useBookings() {
   const { isAuthenticated } = useAuth();
@@ -126,41 +126,35 @@ export function useBookings() {
     return bookings.filter((b) => b.status !== BookingStatus.FAILED && b.status !== BookingStatus.EXPIRED);
   }, [bookings]);
 
-  const { upcomingBookings, pastBookings, cancelledBookings } = useMemo(() => {
-    const now = new Date();
+  const { upcomingBookings, liveBookings, pastBookings, cancelledBookings, refundedBookings } = useMemo(() => {
     const upcoming: Booking[] = [];
+    const live: Booking[] = [];
     const past: Booking[] = [];
     const cancelled: Booking[] = [];
+    const refunded: Booking[] = [];
 
     filteredBookings.forEach((b) => {
-      const eventInfo = b.eventId as unknown as Partial<Event>;
-      const startDate = eventInfo?.startDate ? new Date(eventInfo.startDate) : null;
-
-      const isCancelledStatus = [BookingStatus.CANCELLED, BookingStatus.REFUNDED].includes(b.status as BookingStatus);
-      if (isCancelledStatus) {
+      // Cast the populated eventInfo to BaseEventForLifecycle
+      const lifecycle = getBookingLifecycle(b as unknown as BookingForLifecycle);
+      if (lifecycle === 'upcoming') {
+        upcoming.push(b);
+      } else if (lifecycle === 'live') {
+        live.push(b);
+      } else if (lifecycle === 'past') {
+        past.push(b);
+      } else if (lifecycle === 'cancelled') {
         cancelled.push(b);
-      } else {
-        const isUpcomingStatus = [BookingStatus.CONFIRMED, BookingStatus.PENDING, BookingStatus.AWAITING_PAYMENT].includes(b.status as BookingStatus);
-        if (isUpcomingStatus) {
-          if (!startDate || startDate >= now) {
-            upcoming.push(b);
-          } else {
-            past.push(b);
-          }
-        } else if (b.status === BookingStatus.CONFIRMED) {
-          if (!startDate || startDate >= now) {
-            upcoming.push(b);
-          } else {
-            past.push(b);
-          }
-        }
+      } else if (lifecycle === 'refunded') {
+        refunded.push(b);
       }
     });
 
     return {
       upcomingBookings: upcoming,
+      liveBookings: live,
       pastBookings: past,
       cancelledBookings: cancelled,
+      refundedBookings: refunded,
     };
   }, [filteredBookings]);
 
@@ -182,7 +176,9 @@ export function useBookings() {
     handleDownloadPDF,
     handleResendTickets,
     upcomingBookings,
+    liveBookings,
     pastBookings,
     cancelledBookings,
+    refundedBookings,
   };
 }

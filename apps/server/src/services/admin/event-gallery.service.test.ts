@@ -35,7 +35,13 @@ describe('AdminEventGalleryService', () => {
     
     (Event.findById as any).mockReturnValue({
       select: vi.fn().mockReturnValue({
-        lean: vi.fn().mockResolvedValue({ _id: eventId })
+        lean: vi.fn().mockResolvedValue({
+          _id: eventId,
+          status: 'published',
+          startDate: new Date('2026-07-10T12:00:00.000Z'),
+          endDate: new Date('2026-07-10T16:00:00.000Z'),
+          bookingEndDate: new Date('2026-07-10T12:00:00.000Z'),
+        })
       })
     });
   });

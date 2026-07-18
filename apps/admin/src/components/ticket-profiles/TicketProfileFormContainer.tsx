@@ -35,13 +35,13 @@ export function TicketProfileFormContainer({ mode, profileId }: TicketProfileFor
   // 3. Mutations
   const createMutation = useMutation({
     mutationFn: adminCreateTicketProfile,
-    onSuccess: () => router.push('/ticket-profiles'),
+    onSuccess: () => router.push('/ticket-management'),
     onError: (err) => setError(extractApiError(err).message),
   });
 
   const updateMutation = useMutation({
     mutationFn: (payload: any) => adminUpdateTicketProfile(profileId!, payload),
-    onSuccess: () => router.push('/ticket-profiles'),
+    onSuccess: () => router.push('/ticket-management'),
     onError: (err) => setError(extractApiError(err).message),
   });
 

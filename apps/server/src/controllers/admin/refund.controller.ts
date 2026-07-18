@@ -26,12 +26,14 @@ export const getRefunds = async (req: Request, res: Response, next: NextFunction
     const result = await refundService.getRefunds(page, limit, status, sortField, sortOrder);
     res.status(200).json({
       success: true,
-      data: result.refunds,
-      pagination: {
-        total: result.total,
-        page,
-        limit,
-        totalPages: result.totalPages,
+      data: {
+        refunds: result.refunds,
+        pagination: {
+          total: result.total,
+          page,
+          limit,
+          totalPages: result.totalPages,
+        },
       },
       message: 'Refunds fetched successfully',
     });

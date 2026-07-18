@@ -37,6 +37,10 @@ export interface IBooking extends Document {
   discount: number;
   totalAmount: number;
   currency: string;
+  countryCode: string;
+  taxLabel: string;
+  taxPercentage: number;
+  locale: string;
   couponCode?: string;
   couponId?: Types.ObjectId;
   status: BookingStatus;
@@ -93,12 +97,16 @@ const bookingSchema = new Schema<IBooking>(
       },
     ],
     totalTickets: { type: Number, required: true, min: 1 },
-    subtotal: { type: Number, required: true, min: 0 },
+    subtotal: { type: Number, min: 0, default: 0 },
     convenienceFee: { type: Number, default: 0 },
     gst: { type: Number, default: 0 },
     discount: { type: Number, default: 0 },
     totalAmount: { type: Number, required: true, min: 0 },
-    currency: { type: String, default: 'INR' },
+    currency: { type: String, default: 'USD' },
+    countryCode: { type: String, default: 'US' },
+    taxLabel: { type: String, default: 'Sales Tax' },
+    taxPercentage: { type: Number, default: 0 },
+    locale: { type: String, default: 'en-US' },
     couponCode: String,
     couponId: { type: Schema.Types.ObjectId, ref: 'Coupon' },
     status: {

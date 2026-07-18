@@ -18,7 +18,7 @@ export class WalkthroughCommand extends Command {
     requiresCleanTree: false,
   };
 
-  async execute(context: ExecutionContext, args: string[]): Promise<OutputModel> {
+  async execute(context: ExecutionContext, _args: string[]): Promise<OutputModel> {
     const defaultBranch = context.config.repository.defaultBranch;
     const branchName = await context.git.getCurrentBranch();
 

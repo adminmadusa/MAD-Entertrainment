@@ -372,7 +372,7 @@ describe('stripeWebhook — audit trail preservation', () => {
     vi.clearAllMocks();
   });
 
-  function makeStripeRequest(stripeEventId: string) {
+  function makeStripeRequest(_stripeEventId: string) {
     return {
       headers: { 'stripe-signature': 'sig_test' },
       rawBody: Buffer.from('{}'),
@@ -534,7 +534,7 @@ describe('stripeWebhook — refund reconciliation routing', () => {
     vi.clearAllMocks();
   });
 
-  function makeStripeRequest(stripeEventId: string) {
+  function makeStripeRequest(_stripeEventId: string) {
     return {
       headers: { 'stripe-signature': 'sig_test' },
       rawBody: Buffer.from('{}'),

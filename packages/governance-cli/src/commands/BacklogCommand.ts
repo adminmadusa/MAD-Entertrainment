@@ -25,7 +25,7 @@ export class BacklogCommand extends Command {
     requiresCleanTree: false,
   };
 
-  async execute(context: ExecutionContext, args: string[]): Promise<OutputModel> {
+  async execute(context: ExecutionContext, _args: string[]): Promise<OutputModel> {
     const backlogConfigPath = context.config.documentation.backlog;
     const backlogMdPath = join(context.repoRoot, backlogConfigPath);
     const backlogJsonPath = backlogMdPath.replace(/\.md$/, '.json');

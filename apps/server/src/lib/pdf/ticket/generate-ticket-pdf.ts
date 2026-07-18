@@ -58,7 +58,7 @@ export async function generateTicketPDF(
         status: "active",
       }).sort({ createdAt: 1 });
     }
-  } catch (err) {
+  } catch (_err) {
     // Graceful fallback to empty list
   }
 

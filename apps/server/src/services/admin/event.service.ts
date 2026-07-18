@@ -1,6 +1,6 @@
-import type { FilterQuery } from 'mongoose';
+import mongoose, { type FilterQuery } from 'mongoose';
 
-import { EventStatus, EVENT_STATUS_TRANSITIONS, type EventLifecycleStatus, type BulkOperationResult, EVENT_DUPLICATION_POLICY } from '@mad/shared';
+import { EventStatus, EVENT_STATUS_TRANSITIONS, type EventLifecycleStatus, type BulkOperationResult, deriveEventCapabilities } from '@mad/shared';
 
 import { AppError } from '../../middleware/error.middleware';
 import { Booking } from '../../models/booking.schema';
@@ -59,7 +59,6 @@ const isEventLifecycleStatus = (status: EventStatus): status is EventLifecycleSt
   Object.prototype.hasOwnProperty.call(EVENT_STATUS_TRANSITIONS, status);
 
 const INITIAL_EVENT_STATUSES: readonly EventStatus[] = [
-  EventStatus.DRAFT,
   EventStatus.PUBLISHED,
 ];
 
@@ -200,10 +199,38 @@ export const getEventById = async (id: string): Promise<EventWithAttendance | nu
     .populate('djOperatorIds', 'name');
   if (!event) return null;
 
+  const eventObj = event.toObject();
+  const [galleryItemCount, gallerySettings] = await Promise.all([
+    mongoose.model('EventGallery').countDocuments({ eventId: event._id }),
+    mongoose.model('EventGallerySettings').findOne({ eventId: event._id }).lean()
+  ]);
+
+  const totalCapacity = eventObj.totalCapacity || eventObj.ticketTiers?.reduce((acc: number, t: any) => acc + (t.totalCapacity || 0), 0) || 0;
+  const ticketsSold = eventObj.soldCount || eventObj.ticketTiers?.reduce((acc: number, t: any) => acc + (t.soldCount || 0), 0) || 0;
+
+  const caps = deriveEventCapabilities({
+    status: eventObj.status,
+    startDate: eventObj.startDate,
+    endDate: eventObj.endDate,
+    bookingStartDate: eventObj.bookingStartDate,
+    bookingEndDate: eventObj.bookingEndDate,
+    isSoldOut: eventObj.isSoldOut,
+    totalCapacity,
+    ticketsSold,
+    galleryPublished: gallerySettings ? (gallerySettings as any).published : false,
+    galleryItemCount,
+    isDeleted: eventObj.isDeleted
+  });
+
   return {
-    ...event.toObject(),
+    ...eventObj,
+    lifecycle: caps.lifecycle,
+    visibility: caps.visibility,
+    booking: caps.booking,
+    gallery: caps.gallery,
+    capabilities: caps.capabilities,
     ...(await getEventAttendanceMetrics(event)),
-  };
+  } as any;
 };
 
 export const updateEvent = async (id: string, data: Partial<IEvent>): Promise<EventWithAttendance | null> => {
@@ -316,115 +343,6 @@ export const deleteEvent = async (id: string): Promise<IEvent | null> => {
   }
   await CacheService.delPattern('events:*');
   return deleted;
-};
-
-export interface DuplicateEventOptions {
-  sourceEventId: string;
-  title?: string;
-  date?: string;
-  venue?: string;
-  publish?: boolean;
-  adminId: string;
-}
-
-export const duplicateEvent = async (options: DuplicateEventOptions): Promise<IEvent> => {
-  const { sourceEventId, title, date, venue, publish, adminId } = options;
-
-  const originalEvent = await Event.findById(String(sourceEventId)).lean();
-  if (!originalEvent) {
-    throw AppError.notFound('Source event not found');
-  }
-
-  // Clone using policy
-  const newEventData: Partial<IEvent> = {};
-  
-  EVENT_DUPLICATION_POLICY.copied.forEach((field) => {
-    if (originalEvent[field as keyof typeof originalEvent] !== undefined) {
-      // Deep clone to avoid reference issues (esp for arrays like ticketTiers, images)
-      (newEventData as any)[field] = JSON.parse(JSON.stringify(originalEvent[field as keyof typeof originalEvent]));
-    }
-  });
-
-  // Apply overrides
-  newEventData.title = title || `${originalEvent.title} (Copy)`;
-  if (date) {
-    newEventData.startDate = new Date(date);
-    // If original had endDate, try to maintain duration, otherwise leave unset or just don't copy
-    if (originalEvent.endDate && originalEvent.startDate) {
-      const duration = new Date(originalEvent.endDate).getTime() - new Date(originalEvent.startDate).getTime();
-      newEventData.endDate = new Date(newEventData.startDate.getTime() + duration);
-    }
-  }
-  if (venue) {
-    newEventData.venue = venue;
-  }
-
-  newEventData.status = publish ? EventStatus.PUBLISHED : EventStatus.DRAFT;
-  newEventData.slug = newEventData.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-
-  // Ensure unique slug
-  let slug = newEventData.slug.toLowerCase().trim();
-  let isUnique = false;
-  let count = 0;
-  while (!isUnique) {
-    const currentSlug = count === 0 ? slug : `${slug}-${count}`;
-    const existing = await Event.findOne({ slug: currentSlug, isDeleted: { $ne: true } });
-    if (!existing) {
-      newEventData.slug = currentSlug;
-      isUnique = true;
-    } else {
-      count++;
-    }
-  }
-
-  // Reset ticket tier sold counts
-  if (newEventData.ticketTiers) {
-    newEventData.ticketTiers = newEventData.ticketTiers.map(tier => ({
-      ...tier,
-      soldCount: 0,
-    }));
-  }
-
-  // Start transaction
-  const session = await Event.startSession();
-  session.startTransaction();
-  try {
-    const duplicatedEvent = new Event(newEventData);
-    await duplicatedEvent.save({ session });
-
-    auditLog({
-      action: 'DUPLICATE_EVENT',
-      actor: { type: 'admin', id: adminId },
-      status: 'success',
-      metadata: { 
-        sourceEventId, 
-        newEventId: duplicatedEvent._id,
-        options
-      },
-    });
-
-    await session.commitTransaction();
-    session.endSession();
-
-    await CacheService.delPattern('events:*');
-    return duplicatedEvent;
-  } catch (error) {
-    await session.abortTransaction();
-    session.endSession();
-    
-    auditLog({
-      action: 'DUPLICATE_EVENT',
-      actor: { type: 'admin', id: adminId },
-      status: 'failure',
-      metadata: { 
-        sourceEventId, 
-        options,
-        error: error instanceof Error ? error.message : 'Unknown error'
-      },
-    });
-
-    throw error;
-  }
 };
 
 export const bulkDeleteEvents = async (ids: string[], adminId: string): Promise<BulkOperationResult> => {

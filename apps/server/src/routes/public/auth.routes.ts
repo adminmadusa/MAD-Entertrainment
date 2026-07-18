@@ -3,6 +3,7 @@ import { Router } from 'express';
 import { AuthController } from '../../controllers/public/auth.controller';
 import { csrfProtection } from '../../middleware/security/csrf.middleware';
 import { requireAuth } from '../../middleware/auth.middleware';
+import { uploadMiddleware } from '../../middleware/upload.middleware';
 import { authLimiter } from '../../middleware/rate.middleware';
 import { validateBody } from '../../middleware/validation.middleware';
 import {
@@ -40,5 +41,9 @@ router.get('/me', requireAuth, AuthController.getMe);
 
 // Update currently logged-in user profile details safely
 router.patch('/profile', requireAuth, validateBody(updateProfileSchema), AuthController.updateProfile);
+
+// Profile photo management routes
+router.post('/profile/photo', requireAuth, uploadMiddleware.single('photo'), AuthController.uploadProfilePhoto);
+router.delete('/profile/photo', requireAuth, AuthController.deleteProfilePhoto);
 
 export default router;

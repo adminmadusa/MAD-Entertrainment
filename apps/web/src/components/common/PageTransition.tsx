@@ -1,6 +1,6 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 
 // ─── Section Reveal Animation ─────────────────────────────────
@@ -31,6 +31,7 @@ const directionVariants = {
 export function Reveal({ children, delay = 0, direction = 'up', className = '', trigger = 'scroll' }: RevealProps) {
   const isScroll = trigger === 'scroll';
   const [mounted, setMounted] = useState(false);
+  const prefersReducedMotion = useReducedMotion();
 
   useEffect(() => {
     setMounted(true);
@@ -44,15 +45,17 @@ export function Reveal({ children, delay = 0, direction = 'up', className = '', 
     );
   }
 
+  const initialVariant = prefersReducedMotion ? { opacity: 0 } : directionVariants[direction];
+
   return (
     <motion.div
-      initial={directionVariants[direction]}
+      initial={initialVariant}
       animate={!isScroll ? { x: 0, y: 0, opacity: 1 } : undefined}
       whileInView={isScroll ? { x: 0, y: 0, opacity: 1 } : undefined}
       viewport={isScroll ? { once: true, margin: '-20px' } : undefined}
       transition={{
-        duration: 0.6,
-        delay,
+        duration: prefersReducedMotion ? 0.15 : 0.6,
+        delay: prefersReducedMotion ? 0 : delay,
         ease: [0.4, 0, 0.2, 1],
       }}
       className={className}
@@ -93,11 +96,20 @@ export function StaggerContainer({ children, className = '', staggerDelay = 0.08
 }
 
 export function StaggerItem({ children, className = '' }: { children: React.ReactNode; className?: string }) {
+  const prefersReducedMotion = useReducedMotion();
+
   return (
     <motion.div
       variants={{
-        hidden: { opacity: 0, y: 20 },
-        visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.4, 0, 0.2, 1] } },
+        hidden: { opacity: 0, y: prefersReducedMotion ? 0 : 20 },
+        visible: {
+          opacity: 1,
+          y: 0,
+          transition: {
+            duration: prefersReducedMotion ? 0.15 : 0.5,
+            ease: [0.4, 0, 0.2, 1],
+          },
+        },
       }}
       className={className}
     >

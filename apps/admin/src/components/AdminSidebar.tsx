@@ -105,7 +105,7 @@ export function AdminSidebar({ collapsed, onToggle, mobileOpen = false, onMobile
         {mobileOpen && (
           <button
             onClick={onMobileClose}
-            className="md:hidden w-11 h-11 flex items-center justify-center rounded-xl text-text-muted hover:text-white hover:bg-white/5 transition-all -mr-2"
+            className="md:hidden w-11 h-11 flex items-center justify-center rounded-xl text-text-secondary hover:text-white hover:bg-white/5 transition-all -mr-2"
             aria-label="Close navigation menu"
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -132,7 +132,7 @@ export function AdminSidebar({ collapsed, onToggle, mobileOpen = false, onMobile
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="text-text-muted text-[10px] font-semibold uppercase tracking-widest px-2 mb-2"
+                    className="text-text-secondary text-[10px] font-semibold uppercase tracking-widest px-2 mb-2"
                   >
                     {group.title}
                   </motion.p>
@@ -160,7 +160,7 @@ export function AdminSidebar({ collapsed, onToggle, mobileOpen = false, onMobile
                                 className="text-sm font-medium whitespace-nowrap overflow-hidden flex items-center gap-2"
                               >
                                 {item.label}
-                                <span className="text-[9px] font-bold tracking-wider uppercase px-1 py-0.5 rounded bg-white/10 text-text-muted">
+                                <span className="text-[9px] font-bold tracking-wider uppercase px-1 py-0.5 rounded bg-white/10 text-text-secondary">
                                   Soon
                                 </span>
                               </motion.span>
@@ -220,7 +220,7 @@ export function AdminSidebar({ collapsed, onToggle, mobileOpen = false, onMobile
       <div className="hidden md:block p-2 border-t border-border-subtle">
         <button
           onClick={onToggle}
-          className="w-full flex items-center justify-center p-2 rounded-xl text-text-muted hover:text-text-primary hover:bg-white/5 transition-colors"
+          className="w-full flex items-center justify-center p-2 rounded-xl text-text-secondary hover:text-text-primary hover:bg-white/5 transition-colors"
           aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
           <motion.div animate={{ rotate: collapsed ? 180 : 0 }} transition={{ duration: 0.2 }}>

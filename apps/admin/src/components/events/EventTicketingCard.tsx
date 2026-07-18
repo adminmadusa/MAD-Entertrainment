@@ -2,7 +2,7 @@ import React from 'react';
 
 import { type AdminTier } from '@/lib/api/admin/tier.service';
 import type { TicketProfile } from '@mad/types';
-import { FormField } from '@mad/ui';
+import { FormField, Input } from '@mad/ui';
 
 
 const TICKET_TIER_NAMES = [
@@ -21,7 +21,7 @@ const TICKET_TIER_NAMES = [
 ];
 
 const inputCls =
-  'w-full px-4 py-2.5 rounded-xl bg-background border border-border-subtle text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple transition-colors';
+  'w-full px-4 py-2.5 rounded-xl bg-background border border-border-subtle text-sm text-text-primary placeholder:text-text-secondary focus:outline-none focus:border-accent-purple focus:ring-2 focus:ring-accent-purple/50 transition-colors';
 
 
 export interface TicketTierInput {
@@ -29,6 +29,12 @@ export interface TicketTierInput {
   price: number | '';
   capacity: number | '';
 }
+
+export const defaultTier = (): TicketTierInput => ({
+  name: 'general',
+  price: '',
+  capacity: '',
+});
 
 export interface EventTicketingCardProps {
   ticketingType: 'custom' | 'profile';
@@ -145,7 +151,7 @@ export const EventTicketingCard = React.memo(function EventTicketingCard({
                   </select>
                 </FormField>
                 <FormField label="Price (₹)" htmlFor={`tier-price-${i}`}>
-                  <input
+                  <Input
                     id={`tier-price-${i}`}
                     type="number"
                     min="0"
@@ -155,13 +161,12 @@ export const EventTicketingCard = React.memo(function EventTicketingCard({
                     }
                     placeholder="0"
                     required
-                    className={inputCls}
                   />
                 </FormField>
               </div>
               <div className="grid grid-cols-2 gap-4">
-                <FormField label="Capacity *" htmlFor={`tier-capacity-${i}`}>
-                  <input
+                <FormField label="Capacity" htmlFor={`tier-capacity-${i}`} required>
+                  <Input
                     id={`tier-capacity-${i}`}
                     type="number"
                     min="1"
@@ -171,7 +176,6 @@ export const EventTicketingCard = React.memo(function EventTicketingCard({
                     }
                     placeholder="100"
                     required
-                    className={inputCls}
                   />
                 </FormField>
               </div>
@@ -180,7 +184,7 @@ export const EventTicketingCard = React.memo(function EventTicketingCard({
         </div>
       ) : (
         <div className="space-y-4">
-          <FormField label="Select Ticket Profile *" htmlFor="profile-select">
+          <FormField label="Select Ticket Profile" htmlFor="profile-select" required>
             <select
               id="profile-select"
               value={selectedProfileId}
@@ -205,7 +209,7 @@ export const EventTicketingCard = React.memo(function EventTicketingCard({
               {activeProfile.groups?.map((group, gIdx) => (
                 <div key={`${group.slug}-${gIdx}`} className="space-y-3 p-4 bg-white/3 rounded-xl border border-white/5">
                   <h4 className="text-accent-purple-light font-bold text-sm">{group.name}</h4>
-                  <p className="text-text-muted text-xs">{group.description}</p>
+                  <p className="text-text-secondary text-xs">{group.description}</p>
 
                   <div className="space-y-3 pt-2">
                     {group.tickets?.map((ticket, tIdx) => {
@@ -219,15 +223,15 @@ export const EventTicketingCard = React.memo(function EventTicketingCard({
                             <span className="text-sm font-bold text-white block">
                               {ticket.name.replace(/\{eventName\}/g, eventTitle || 'Event')}
                             </span>
-                            <span className="text-xs text-text-muted">
+                            <span className="text-xs text-text-secondary">
                               Tier: <strong className="text-text-secondary">{ticket.tier}</strong> &bull; Price:{' '}
                               <strong className="text-text-secondary">₹{ticket.price}</strong>
                             </span>
                           </div>
                           <div className="flex flex-wrap items-center gap-4">
                             <div className="space-y-1">
-                              <label className="text-[10px] text-text-muted uppercase block">Capacity</label>
-                              <input
+                              <label className="text-[10px] text-text-secondary uppercase block">Capacity</label>
+                              <Input
                                 type="number"
                                 min={1}
                                 value={override.totalCapacity !== undefined ? override.totalCapacity : ''}
@@ -239,7 +243,7 @@ export const EventTicketingCard = React.memo(function EventTicketingCard({
                                     e.target.value === '' ? undefined : Number(e.target.value)
                                   )
                                 }
-                                className="w-28 px-3 py-1.5 rounded-lg bg-background-card border border-border-subtle text-xs text-text-primary focus:outline-none focus:border-accent-purple"
+                                className="w-28 text-xs py-1.5"
                               />
                             </div>
                             <div className="space-y-1 pt-4">

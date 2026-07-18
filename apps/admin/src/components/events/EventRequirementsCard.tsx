@@ -3,7 +3,7 @@ import React from 'react';
 import { FormField } from '@mad/ui';
 
 const inputCls =
-  'w-full px-4 py-2.5 rounded-xl bg-background border border-border-subtle text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple transition-colors';
+  'w-full px-4 py-2.5 rounded-xl bg-background border border-border-subtle text-sm text-text-primary placeholder:text-text-secondary focus:outline-none focus:border-accent-purple focus:ring-2 focus:ring-accent-purple/50 transition-colors';
 
 export interface EventRequirementsCardProps {
   requireTerms: boolean;
@@ -14,8 +14,6 @@ export interface EventRequirementsCardProps {
   setAgeRestriction: (val: number | '') => void;
   tags: string;
   setTags: (val: string) => void;
-  isFeatured: boolean;
-  setIsFeatured: (val: boolean) => void;
 }
 
 export const EventRequirementsCard = React.memo(function EventRequirementsCard({
@@ -27,8 +25,6 @@ export const EventRequirementsCard = React.memo(function EventRequirementsCard({
   setAgeRestriction,
   tags,
   setTags,
-  isFeatured,
-  setIsFeatured,
 }: EventRequirementsCardProps) {
   return (
     <>
@@ -44,19 +40,6 @@ export const EventRequirementsCard = React.memo(function EventRequirementsCard({
             className={inputCls}
           />
         </FormField>
-
-        <div className="flex flex-wrap gap-6">
-          <label htmlFor="event-is-featured" className="flex items-center gap-3 cursor-pointer select-none">
-            <input
-              id="event-is-featured"
-              type="checkbox"
-              checked={isFeatured}
-              onChange={(e) => setIsFeatured(e.target.checked)}
-              className="w-4 h-4 accent-accent-purple rounded"
-            />
-            <span className="text-text-secondary text-sm">Feature on homepage</span>
-          </label>
-        </div>
       </div>
 
       {/* Registration Requirements */}
@@ -90,7 +73,7 @@ export const EventRequirementsCard = React.memo(function EventRequirementsCard({
                 id="event-age-restriction"
                 value={ageRestriction}
                 onChange={(e) => setAgeRestriction(e.target.value === '' ? '' : Number(e.target.value))}
-                className="px-4 py-2 bg-background border border-white/10 rounded-xl text-white focus:outline-none focus:border-accent-purple"
+                className="px-4 py-2 bg-background border border-white/10 rounded-xl text-white focus:outline-none focus:border-accent-purple focus:ring-2 focus:ring-accent-purple/50"
               >
                 <option value={18}>18</option>
                 <option value={21}>21</option>
@@ -108,7 +91,7 @@ export const EventRequirementsCard = React.memo(function EventRequirementsCard({
                   onBlur={(e) => {
                     if (e.target.value) setAgeRestriction(Number(e.target.value));
                   }}
-                  className="w-full px-4 py-2 mt-2 bg-background border border-white/10 rounded-xl text-white focus:outline-none focus:border-accent-purple"
+                  className="w-full px-4 py-2 mt-2 bg-background border border-white/10 rounded-xl text-white focus:outline-none focus:border-accent-purple focus:ring-2 focus:ring-accent-purple/50"
                 />
               )}
             </div>

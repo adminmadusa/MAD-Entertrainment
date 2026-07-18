@@ -8,7 +8,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { adminGetUsers } from '@/lib/api/admin/user.service';
 import { useAdminAuth } from '@/providers/AdminAuthProvider';
 import { AdminRole } from '@mad/shared';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, ErrorState, EmptyState } from '@mad/ui';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, ErrorState, EmptyState, TablePagination } from '@mad/ui';
 import { Users, Search } from '@mad/ui/icons';
 import { formatDateTime } from '@mad/utils';
 
@@ -152,7 +152,7 @@ export default function UsersDirectoryPage() {
         <TableCell className="py-4 px-5">
           <div>
             <p className="text-text-primary font-medium">{user.name}</p>
-            <p className="text-text-muted text-xs font-mono">{user.email}</p>
+            <p className="text-text-secondary text-xs font-mono">{user.email}</p>
           </div>
         </TableCell>
         <TableCell className="py-4 px-4 text-text-secondary hidden lg:table-cell font-mono text-xs">
@@ -314,7 +314,7 @@ export default function UsersDirectoryPage() {
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
             placeholder="Search name, email, phone..."
-            className="w-full pl-9 pr-8 py-2.5 rounded-xl bg-background-card border border-border-subtle text-xs text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple transition-colors"
+            className="w-full pl-9 pr-8 py-2.5 rounded-xl bg-background-card border border-border-subtle text-xs text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent-purple/50 focus:border-accent-purple transition-colors"
           />
           <svg className="absolute left-3 top-3 h-4 w-4 text-text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
             <circle cx="11" cy="11" r="8" /><line x1="21" x2="16.65" y1="21" y2="16.65" />
@@ -333,7 +333,7 @@ export default function UsersDirectoryPage() {
       {/* Main Grid View */}
       {/* Desktop/Tablet Table Grid */}
       <div className="hidden md:block glass rounded-2xl border border-border-subtle overflow-hidden">
-        <Table>
+        <Table className="min-w-[900px]">
           <TableHeader>
             <TableRow className="bg-white/[0.01]">
               <TableHead
@@ -361,29 +361,14 @@ export default function UsersDirectoryPage() {
           <TableBody>{renderTableRows()}</TableBody>
         </Table>
 
-        {/* Desktop Pagination */}
         {pagination && pagination.totalPages > 1 && (
-          <div className="flex items-center justify-between px-5 py-3 border-t border-border-subtle bg-white/[0.01]">
-            <p className="text-text-muted text-xs">
-              Page {pagination.page} of {pagination.totalPages} · Total {pagination.total} records
-            </p>
-            <div className="flex gap-2">
-              <button
-                onClick={() => updateUrlParams({ page: Math.max(1, pageParam - 1) })}
-                disabled={pageParam === 1}
-                className="px-3 py-1.5 text-xs glass border border-border-subtle rounded-lg disabled:opacity-40 text-text-secondary hover:text-white transition-all"
-              >
-                ← Prev
-              </button>
-              <button
-                onClick={() => updateUrlParams({ page: pageParam + 1 })}
-                disabled={pageParam >= pagination.totalPages}
-                className="px-3 py-1.5 text-xs glass border border-border-subtle rounded-lg disabled:opacity-40 text-text-secondary hover:text-white transition-all"
-              >
-                Next →
-              </button>
-            </div>
-          </div>
+          <TablePagination
+            currentPage={pageParam}
+            totalPages={pagination.totalPages}
+            onPageChange={(page) => updateUrlParams({ page })}
+            totalRecords={pagination.total}
+            recordsLabel="records"
+          />
         )}
       </div>
 

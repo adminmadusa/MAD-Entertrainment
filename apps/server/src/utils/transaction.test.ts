@@ -131,8 +131,8 @@ describe('runInTransaction utility', () => {
 
   // Test 4: Nested transaction safety
   it('should execute normally under nested runs without regressions', async () => {
-    const callbackOuter = vi.fn().mockImplementation(async (sessionOuter) => {
-      const resultInner = await runInTransaction(async (sessionInner) => {
+    const callbackOuter = vi.fn().mockImplementation(async (_sessionOuter) => {
+      const resultInner = await runInTransaction(async (_sessionInner) => {
         return 'inner';
       });
       return `outer-${resultInner}`;

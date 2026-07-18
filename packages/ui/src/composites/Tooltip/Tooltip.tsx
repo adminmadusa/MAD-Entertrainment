@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, forwardRef } from 'react';
+import { useState, forwardRef } from 'react';
 
 import { cn } from '../../lib/cn';
 import {

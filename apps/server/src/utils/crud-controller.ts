@@ -24,7 +24,7 @@ export function createCrudController<T>(
       }
     },
 
-    getAll: async (req: Request, res: Response, next: NextFunction) => {
+    getAll: async (_req: Request, res: Response, next: NextFunction) => {
       try {
         const result = await service.getAll();
         res.status(200).json({

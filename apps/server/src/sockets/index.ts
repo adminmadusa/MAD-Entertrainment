@@ -445,7 +445,7 @@ export function registerSocketHandlers(socket: Socket): void {
           'ActiveCheckout'
         );
         hasAccess = true;
-      } catch (err) {
+      } catch (_err) {
         hasAccess = false;
       }
 

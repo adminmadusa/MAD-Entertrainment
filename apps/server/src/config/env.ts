@@ -246,7 +246,7 @@ export function validateEnv(): Readonly<Env> {
       Sentry.captureException(new Error(errorMsg), {
         tags: { type: 'MOCK_PAYMENTS_PRODUCTION_BLOCKED' },
       });
-    } catch (err) {
+    } catch (_err) {
       // Ignore
     }
 
@@ -258,7 +258,7 @@ export function validateEnv(): Readonly<Env> {
         status: 'failure',
         description: errorMsg,
       });
-    } catch (err) {
+    } catch (_err) {
       // Ignore
     }
 

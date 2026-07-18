@@ -1,6 +1,6 @@
 import { Schema, model, Document, Types } from 'mongoose';
 
-import { EventCategory, BookingMode, EventStatus, TicketTier, TicketSalesCloseMode } from '@mad/shared';
+import { EventCategory, BookingMode, EventStatus, TicketTier } from '@mad/shared';
 
 const cloudinaryImageSchema = new Schema(
   {
@@ -73,8 +73,8 @@ export interface IEvent extends Document {
   doorsOpenTime?: string;
   showTime?: string;
   venue: string;
-  ticketSalesCloseMode: TicketSalesCloseMode;
-  ticketSalesCloseDate?: Date;
+  bookingStartDate?: Date;
+  bookingEndDate?: Date;
 
   djOperatorIds?: Types.ObjectId[];
   ticketTiers: {
@@ -124,7 +124,6 @@ export interface IEvent extends Document {
   soldCount: number;
   reservedCount: number;
   eventVersion: number;
-  isFeatured: boolean;
   isSoldOut: boolean;
   seatLayoutId?: Types.ObjectId;
   tags?: string[];
@@ -144,6 +143,12 @@ export interface IEvent extends Document {
   highlights?: string[];
   refundPolicy?: string;
   organizerName?: string;
+
+  countryCode: string;
+  currency: string;
+  taxLabel: string;
+  taxPercentage: number;
+  locale: string;
 }
 
 
@@ -153,8 +158,14 @@ const eventSchema = new Schema<IEvent>(
     slug: { type: String, required: true, unique: true, lowercase: true, index: true },
     description: { type: String, required: true, maxlength: 5000 },
     category: { type: String, required: true, index: true },
-    status: { type: String, enum: Object.values(EventStatus), default: EventStatus.DRAFT, index: true },
+    status: { type: String, enum: Object.values(EventStatus), default: EventStatus.PUBLISHED, index: true },
     bookingMode: { type: String, enum: Object.values(BookingMode), required: true },
+
+    countryCode: { type: String, default: 'US' },
+    currency: { type: String, default: 'USD' },
+    taxLabel: { type: String, default: 'Sales Tax' },
+    taxPercentage: { type: Number, default: 0 },
+    locale: { type: String, default: 'en-US' },
 
     bannerImage: { type: cloudinaryImageSchema, required: true },
     posterImage: cloudinaryImageSchema,
@@ -163,8 +174,8 @@ const eventSchema = new Schema<IEvent>(
     endDate: Date,
     doorsOpenTime: String,
     showTime: String,
-    ticketSalesCloseMode: { type: String, enum: Object.values(TicketSalesCloseMode), default: TicketSalesCloseMode.EVENT_START },
-    ticketSalesCloseDate: Date,
+    bookingStartDate: Date,
+    bookingEndDate: Date,
 
     venue: { type: String, required: true, index: true },
 
@@ -191,7 +202,6 @@ const eventSchema = new Schema<IEvent>(
     soldCount: { type: Number, default: 0, min: 0 },
     reservedCount: { type: Number, default: 0, min: 0 },
     eventVersion: { type: Number, default: 1, min: 1 },
-    isFeatured: { type: Boolean, default: false, index: true },
     isSoldOut: { type: Boolean, default: false },
 
     seatLayoutId: { type: Schema.Types.ObjectId, ref: 'SeatLayout' },
@@ -223,7 +233,6 @@ const eventSchema = new Schema<IEvent>(
 // ─── Indexes ──────────────────────────────────────────────────
 eventSchema.index({ startDate: 1, status: 1 });
 eventSchema.index({ category: 1, status: 1, startDate: 1 });
-eventSchema.index({ isFeatured: 1, status: 1 });
 eventSchema.index({ isDeleted: 1, status: 1, startDate: 1 });
 eventSchema.index({ title: 1 });
 eventSchema.index({ title: 'text', description: 'text', tags: 'text' });

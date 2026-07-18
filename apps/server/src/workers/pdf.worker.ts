@@ -21,7 +21,7 @@ export async function processPDFGenerate(
   bookingId: string,
   eventId: string,
   recipientEmail: string,
-  guestName: string,
+  _guestName: string,
   isResend?: boolean,
   resendId?: string
 ): Promise<void> {
@@ -129,7 +129,7 @@ export async function processPDFGenerate(
   logger.info({ bookingId }, 'PDF Ticket compiled successfully and enqueued SMTP dispatch.');
 }
 
-async function handleJobExecution(jobId: string, data: any): Promise<void> {
+async function handleJobExecution(_jobId: string, data: any): Promise<void> {
   await Sentry.startSpan(
     {
       op: 'queue.process',

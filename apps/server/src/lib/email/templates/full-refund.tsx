@@ -1,5 +1,4 @@
 import { Section, Text } from "@react-email/components";
-import * as React from "react";
 
 import { renderTemplate } from "../render-template";
 import { EmailBase, emailSharedStyles } from "./components/EmailBase";

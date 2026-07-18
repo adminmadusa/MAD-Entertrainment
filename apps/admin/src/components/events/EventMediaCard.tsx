@@ -28,12 +28,14 @@ export const EventMediaCard = React.memo(function EventMediaCard({
     <div className="glass rounded-2xl border border-border-subtle p-6 space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-white font-semibold">Event Media (Banner, Poster, & Gallery)</h2>
-        <Link
-          href={`/events/${id}/gallery`}
-          className="px-4 py-2 bg-accent-purple/10 text-accent-purple hover:bg-accent-purple/20 transition-colors rounded-lg text-sm font-medium"
-        >
-          Manage Advanced Gallery
-        </Link>
+        {id && (
+          <Link
+            href={`/events/${id}/gallery`}
+            className="px-4 py-2 bg-accent-purple/10 text-accent-purple hover:bg-accent-purple/20 transition-colors rounded-lg text-sm font-medium"
+          >
+            Manage Advanced Gallery
+          </Link>
+        )}
       </div>
 
       <EventGalleryUpload

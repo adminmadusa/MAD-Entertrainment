@@ -16,7 +16,7 @@ export class VersionCommand extends Command {
     requiresCleanTree: false,
   };
 
-  async execute(context: ExecutionContext, args: string[]): Promise<OutputModel> {
+  async execute(_context: ExecutionContext, _args: string[]): Promise<OutputModel> {
     return {
       type: 'version',
       success: true,

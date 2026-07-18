@@ -133,6 +133,27 @@ export type Event = {
     isEarlyBird?: boolean;
     earlyBirdDeadline?: string | Date;
     memories?: EventMemoryConfig | null;
+    
+    // Decoupled Status States
+    lifecycle?: string;
+    visibility?: {
+        public: boolean;
+        discoverable: boolean;
+    };
+    booking?: {
+        status: string;
+        reason: string;
+    };
+    gallery?: {
+        status: 'NONE' | 'DRAFT' | 'PUBLISHED';
+        itemCount: number;
+    };
+    capabilities?: {
+        canBook: boolean;
+        canViewGallery: boolean;
+        canUploadGallery: boolean;
+        canPublishGallery: boolean;
+    };
 };
 export type Seat = {
     seatId: string;
@@ -424,6 +445,7 @@ export interface BulkOperationResult {
 }
 export interface BulkActionConfig<TId = string> {
     id: string;
+    _unusedType?: TId;
     label: string;
     icon?: unknown;
     variant?: 'default' | 'destructive';

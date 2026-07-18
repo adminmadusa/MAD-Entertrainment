@@ -23,7 +23,7 @@ export function validateReturnTo(url: string | null | undefined): string | null 
     }
 
     return cleanUrl;
-  } catch (e) {
+  } catch (_e) {
     // If URL decoding fails, treat as unsafe
     return null;
   }

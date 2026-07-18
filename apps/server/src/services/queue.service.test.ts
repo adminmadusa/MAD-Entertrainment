@@ -26,7 +26,7 @@ vi.mock('bullmq', () => {
   class MockQueue {
     name: string;
     options: any;
-    add = vi.fn().mockImplementation(async (jobName, data, opts) => {
+    add = vi.fn().mockImplementation(async (_jobName, _data, _opts) => {
       if (queueShouldThrow) {
         throw new Error('Redis connection lost');
       }
@@ -57,7 +57,7 @@ vi.mock('bullmq', () => {
       }
       return false;
     });
-    getJobCounts = vi.fn().mockImplementation(async (...types) => {
+    getJobCounts = vi.fn().mockImplementation(async (..._types) => {
       if (queueShouldThrow) {
         throw new Error('Redis connection lost');
       }

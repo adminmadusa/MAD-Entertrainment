@@ -1,10 +1,10 @@
 'use client';
 
-import Image from 'next/image';
 import Link from 'next/link';
 import { memo } from 'react';
 import { motion } from 'framer-motion';
 
+import { ImageWrapper } from '@/components/common/ImageWrapper';
 import { Reveal } from '@/components/common/PageTransition';
 import { formatEventDate } from '@/utils/date';
 import { getOptimizedImageUrl } from '@/utils/image';
@@ -19,9 +19,7 @@ interface CompletedEventsSectionProps {
 export const CompletedEventsSection = memo(function CompletedEventsSection({
   initialEvents = [],
 }: CompletedEventsSectionProps) {
-  const events = initialEvents;
-
-  if (events.length === 0) {
+  if (initialEvents.length === 0) {
     return null;
   }
 
@@ -30,7 +28,7 @@ export const CompletedEventsSection = memo(function CompletedEventsSection({
       <div className="container-mad">
         <Reveal>
           <div className="mb-10">
-            <p className="text-accent-pink text-sm font-semibold uppercase tracking-wider mb-2">
+            <p className="text-accent-pink-light text-sm font-semibold uppercase tracking-wider mb-2">
               Relive the Magic
             </p>
             <h2 className="text-display-sm font-black text-white">
@@ -40,7 +38,7 @@ export const CompletedEventsSection = memo(function CompletedEventsSection({
         </Reveal>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {events.map((event, index) => {
+          {initialEvents.map((event, index) => {
             return (
               <Reveal key={event._id} delay={index * 100}>
                 <motion.div
@@ -57,7 +55,7 @@ export const CompletedEventsSection = memo(function CompletedEventsSection({
                     {/* Banner Image with desaturation */}
                     <div className="aspect-[4/3] w-full overflow-hidden relative bg-white/5 flex-shrink-0">
                       {event.bannerImage?.url ? (
-                        <Image
+                        <ImageWrapper
                           src={getOptimizedImageUrl(event.bannerImage.url, 600)}
                           alt={`Poster for ${event.title}`}
                           fill
@@ -87,11 +85,11 @@ export const CompletedEventsSection = memo(function CompletedEventsSection({
 
                     {/* Card Content */}
                     <div className="p-4 sm:p-5 flex flex-col flex-grow bg-black/10">
-                      <div className="text-text-muted text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                        <CalendarIcon className="w-3.5 h-3.5 text-accent-pink" />
+                      <div className="text-text-secondary text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                        <CalendarIcon className="w-3.5 h-3.5 text-accent-pink-light" />
                         {formatEventDate(event.startDate)}
                       </div>
-                      <h3 className="text-white font-bold text-sm sm:text-base line-clamp-1 mb-2 group-hover:text-accent-pink transition-colors">
+                      <h3 className="text-white font-bold text-sm sm:text-base line-clamp-1 mb-2 group-hover:text-accent-pink-light transition-colors">
                         {event.title}
                       </h3>
                       <p className="text-text-secondary text-[11px] sm:text-xs line-clamp-2 leading-relaxed flex-grow">

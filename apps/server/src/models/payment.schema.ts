@@ -25,7 +25,7 @@ const paymentSchema = new Schema<IPayment>(
     gateway: { type: String, enum: ['stripe', 'razorpay', 'free'], required: true },
     status: { type: String, enum: Object.values(PaymentStatus), default: PaymentStatus.PENDING, index: true },
     amount: { type: Number, required: true, min: 0 },
-    currency: { type: String, default: 'INR' },
+    currency: { type: String, default: 'USD' },
     couponId: { type: Schema.Types.ObjectId, ref: 'Coupon' },
     gatewayOrderId: { type: String },
     gatewayPaymentId: { type: String, index: true },
