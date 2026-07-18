@@ -7,7 +7,7 @@
 ## 2. Admin Backend API Updates
 
 - [x] 2.1 Update the `adminCreateRefundRequest` controller/service (or equivalent initiation API) to accept an array of `ticketIds` and persist them into the `Refund` record with status `requested`.
-- [ ] 2.2 Ensure the cancellation process automatically creates the `Refund` request rather than expecting a disconnected manual request.
+- [x] 2.2 Ensure the cancellation process automatically creates the `Refund` request rather than expecting a disconnected manual request.
 - [x] 2.3 Modify the gateway refund execution logic in `RefundGatewayService` to correctly handle partial refunds without attempting to cancel untargeted tickets.
 
 ## 3. UI Dashboard Updates (Frontend)
