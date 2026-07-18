@@ -95,6 +95,8 @@ export {
 export {
   FileText,
   Image,
+  Images,
+  Camera,
   Music,
   Video,
   MapPin,
