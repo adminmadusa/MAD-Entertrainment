@@ -295,7 +295,7 @@ export class BookingCreationService {
     }
 
     // Pricing calculations (fixed convenience fee per ticket + event tax applied on subtotal)
-    const baseFee = countryConfig.defaultConvenienceFee;
+    const baseFee = event.convenienceFee !== undefined ? event.convenienceFee : countryConfig.defaultConvenienceFee;
     const convenienceFee = baseFee * totalTicketsCount;
     const taxPercentage = event.taxPercentage !== undefined ? event.taxPercentage : countryConfig.defaultTax;
     const convenienceFeeGst = Math.round((convenienceFee * taxPercentage) / 100);
