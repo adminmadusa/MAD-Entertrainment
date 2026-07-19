@@ -107,24 +107,8 @@ export class BookingCreationService {
     const existingBooking = await Booking.findOne(query);
 
     if (existingBooking) {
-      // Compute fingerprint if missing (for legacy bookings)
-      const existingFingerprint = existingBooking.selectionFingerprint ||
-        BookingCreationService.generateSelectionFingerprint({
-          eventId: existingBooking.eventId.toString(),
-          tickets: existingBooking.tickets.map((t: any) => ({
-            tier: t.tier,
-            quantity: t.quantity,
-            seats: t.seats || [],
-          })),
-          couponCode: existingBooking.couponCode,
-        });
-
-      if (existingFingerprint === requestFingerprint) {
+      if (existingBooking.selectionFingerprint === requestFingerprint) {
         logger.info({ bookingId: existingBooking._id, eventId: data.eventId, userId, sessionId }, 'Identical retry detected, reusing existing booking.');
-        if (!existingBooking.selectionFingerprint) {
-          existingBooking.selectionFingerprint = existingFingerprint;
-          await existingBooking.save().catch(() => {});
-        }
         (existingBooking as any).isReused = true;
         return existingBooking;
       } else {
@@ -503,19 +487,7 @@ export class BookingCreationService {
         );
         const winningBooking = await Booking.findOne(query);
         if (winningBooking) {
-          const winningFingerprint =
-            winningBooking.selectionFingerprint ||
-            BookingCreationService.generateSelectionFingerprint({
-              eventId: winningBooking.eventId?.toString() || event._id.toString(),
-              tickets: winningBooking.tickets.map((t: any) => ({
-                tier: t.tier,
-                quantity: t.quantity,
-                seats: t.seats || [],
-              })),
-              couponCode: winningBooking.couponCode,
-            });
-
-          if (winningFingerprint === requestFingerprint) {
+          if (winningBooking.selectionFingerprint === requestFingerprint) {
             (winningBooking as any).isReused = true;
             return winningBooking;
           }
