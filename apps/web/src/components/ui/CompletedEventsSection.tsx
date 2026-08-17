@@ -28,7 +28,7 @@ export const CompletedEventsSection = memo(function CompletedEventsSection({
       <div className="container-mad">
         <Reveal>
           <div className="mb-10">
-            <p className="text-accent-pink-light text-sm font-semibold uppercase tracking-wider mb-2">
+            <p className="text-accent-pink-light text-xs sm:text-sm font-semibold uppercase tracking-wider mb-2">
               Relive the Magic
             </p>
             <h2 className="text-display-sm font-black text-white">
@@ -50,7 +50,7 @@ export const CompletedEventsSection = memo(function CompletedEventsSection({
                 <motion.div
                   whileHover={{ y: -4 }}
                   transition={{ duration: 0.3 }}
-                  className="group relative glass rounded-2xl border border-border-subtle overflow-hidden hover:border-accent-pink/40 hover:shadow-glow-pink-sm transition-all duration-300 flex flex-col h-[400px] sm:h-[450px]"
+                  className="group relative glass rounded-2xl border border-border-subtle overflow-hidden hover:border-accent-pink/40 hover:shadow-glow-pink-sm transition-all duration-300 flex flex-col h-full"
                 >
                   <Link
                     href={destinationUrl}
@@ -63,7 +63,7 @@ export const CompletedEventsSection = memo(function CompletedEventsSection({
                     }
                   >
                     {/* Banner Image */}
-                    <div className="aspect-[4/3] w-full overflow-hidden relative bg-white/5 flex-shrink-0">
+                    <div className="aspect-[16/10] sm:aspect-[4/3] w-full overflow-hidden relative bg-white/5 flex-shrink-0">
                       {event.bannerImage?.url ? (
                         <ImageWrapper
                           src={getOptimizedImageUrl(event.bannerImage.url, 600)}
@@ -102,12 +102,12 @@ export const CompletedEventsSection = memo(function CompletedEventsSection({
                     </div>
 
                     {/* Card Content */}
-                    <div className="p-4 sm:p-5 flex flex-col flex-grow bg-black/10">
-                      <div className="text-text-secondary text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                    <div className="p-3.5 sm:p-5 flex flex-col flex-grow bg-black/10">
+                      <div className="text-text-secondary text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
                         <CalendarIcon className="w-3.5 h-3.5 text-accent-pink-light" />
                         {formatEventDate(event.startDate)}
                       </div>
-                      <h3 className="text-white font-bold text-sm sm:text-base line-clamp-1 mb-2 group-hover:text-accent-pink-light transition-colors">
+                      <h3 className="text-white font-bold text-sm sm:text-base line-clamp-1 mb-1.5 group-hover:text-accent-pink-light transition-colors">
                         {event.title}
                       </h3>
                       <p className="text-text-secondary text-[11px] sm:text-xs line-clamp-2 leading-relaxed flex-grow">
@@ -116,11 +116,11 @@ export const CompletedEventsSection = memo(function CompletedEventsSection({
                     </div>
 
                     {/* Action Panel */}
-                    <div className="px-4 pb-4 sm:px-5 sm:pb-5 pt-3 border-t border-border-subtle/30 flex items-center justify-between mt-auto bg-black/35 w-full">
+                    <div className="px-3.5 pb-3.5 sm:px-5 sm:pb-5 pt-3 border-t border-border-subtle/30 flex items-center justify-between mt-auto bg-black/35 w-full">
                       <span className="text-[10px] sm:text-xs font-semibold text-accent-pink-light italic">
                         {hasPublishedGallery ? 'Happy Moments' : 'Event Recap'}
                       </span>
-                      <div className="px-3.5 py-2 text-[10px] sm:text-xs font-bold text-accent-pink bg-accent-pink/10 border border-accent-pink/30 rounded-xl text-center group-hover:bg-accent-pink/20 transition-colors">
+                      <div className="min-h-[44px] px-3.5 py-2 text-xs font-bold text-accent-pink bg-accent-pink/10 border border-accent-pink/30 rounded-xl flex items-center justify-center text-center group-hover:bg-accent-pink/20 transition-colors">
                         {hasPublishedGallery ? 'View Gallery →' : 'View Details →'}
                       </div>
                     </div>

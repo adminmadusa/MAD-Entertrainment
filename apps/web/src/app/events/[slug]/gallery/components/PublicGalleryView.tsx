@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Calendar, MapPin, ArrowLeft, Image as ImageIcon } from 'lucide-react';
+import { formatMoney } from '@mad/shared';
 import type { Event, EventGalleryItem, EventGallerySettings } from '@mad/types';
 import { Lightbox } from './Lightbox';
 import { useQuery } from '@tanstack/react-query';
@@ -215,7 +216,7 @@ function RecommendedEventsSection({ currentEvent }: { currentEvent: Event }) {
                 <div className="mt-auto pt-2 flex items-center justify-between text-xs border-t border-white/5">
                   <span className="text-text-secondary">Tickets from</span>
                   <span className="text-white font-bold">
-                    {new Intl.NumberFormat('en-US', { style: 'currency', currency: recEvent.currency || 'USD' }).format(minPrice)}
+                    {formatMoney(minPrice, recEvent.currency)}
                   </span>
                 </div>
               </div>

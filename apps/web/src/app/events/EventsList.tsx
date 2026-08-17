@@ -10,7 +10,7 @@ import { useState } from 'react';
 import { publicGetEvents } from '@/lib/api/public.service';
 import { formatEventDate } from '@/utils/date';
 import { getOptimizedImageUrl } from '@/utils/image';
-import { EventCategory, EVENT_CATEGORY_LABELS, formatMoney } from '@mad/shared';
+import { EventCategory, EVENT_CATEGORY_LABELS, formatMoney, deriveBookingEligibility } from '@mad/shared';
 import { CalendarIcon, EventGridSkeleton } from '@mad/ui';
 
 
@@ -55,7 +55,7 @@ export function EventsList() {
             <div className="text-center py-20 glass rounded-2xl border border-border-subtle">
               <div className="flex justify-center mb-4 text-accent-purple/60 animate-pulse" aria-hidden="true">
                 <svg className="w-14 h-14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 110 4V7a2 2 0 00-2-2H5z" />
                 </svg>
               </div>
               <h2 className="text-white font-bold text-lg">No Events Found</h2>
@@ -69,24 +69,17 @@ export function EventsList() {
         return (
           <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 transition-opacity duration-300 ${isFetching ? 'opacity-50' : 'opacity-100'}`}>
             {events.map((event) => {
-              let cardAriaLabel = `View details for ${event.title}`;
+              const cardAriaLabel = `View details for ${event.title}`;
+              const eligibility = deriveBookingEligibility(event);
+              const cta = eligibility.bookingCTA;
 
-              // Derive UI mapping from semantic states
               let badgeElement = null;
-              let ctaText: string;
-              let ctaDisabled = false;
-              let ctaAction: 'VIEW' | 'BOOK' | 'NONE' | 'GALLERY';
-              let overlayText = null;
-
               if (event.lifecycle === 'COMPLETED') {
                 badgeElement = (
                   <span className="absolute top-3 right-3 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider bg-black/85 backdrop-blur-md text-text-muted rounded-full border border-white/10">
                     Ended
                   </span>
                 );
-                ctaText = 'Happy Moments';
-                ctaDisabled = false;
-                ctaAction = 'GALLERY';
               } else if (event.lifecycle === 'LIVE') {
                 badgeElement = (
                   <span className="absolute top-3 right-3 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider bg-black/85 backdrop-blur-md text-emerald-400 rounded-full border border-emerald-500/20 flex items-center gap-1.5 shadow-glow-sm">
@@ -94,41 +87,12 @@ export function EventsList() {
                     Live Now
                   </span>
                 );
-                if (event.booking?.status === 'OPEN') {
-                  ctaText = 'Join Now';
-                  ctaDisabled = false;
-                  ctaAction = 'BOOK';
-                } else {
-                  ctaText = 'In Progress';
-                  ctaDisabled = true;
-                  ctaAction = 'NONE';
-                  overlayText = 'IN PROGRESS';
-                }
-              } else {
-                // UPCOMING
-                if (event.booking?.status === 'OPEN') {
-                  ctaText = 'Book Now';
-                  ctaDisabled = false;
-                  ctaAction = 'BOOK';
-                } else {
-                  ctaDisabled = true;
-                  ctaAction = 'NONE';
-                  if (event.booking?.reason === 'SOLD_OUT' || event.booking?.reason === 'CAPACITY_REACHED') {
-                    ctaText = 'Sold Out';
-                    overlayText = 'SOLD OUT';
-                  } else if (event.booking?.reason === 'BOOKING_NOT_STARTED') {
-                    ctaText = 'Coming Soon';
-                    overlayText = 'COMING SOON';
-                    badgeElement = (
-                      <span className="absolute top-3 right-3 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider bg-black/60 backdrop-blur-md text-accent-purple-light rounded-full border border-accent-purple/20">
-                        Soon
-                      </span>
-                    );
-                  } else {
-                    ctaText = 'Booking Closed';
-                    overlayText = 'BOOKING CLOSED';
-                  }
-                }
+              } else if (event.booking?.reason === 'BOOKING_NOT_STARTED') {
+                badgeElement = (
+                  <span className="absolute top-3 right-3 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider bg-black/60 backdrop-blur-md text-accent-purple-light rounded-full border border-accent-purple/20">
+                    Soon
+                  </span>
+                );
               }
 
               return (
@@ -145,7 +109,7 @@ export function EventsList() {
                     aria-label={cardAriaLabel}
                   >
                     {/* Banner Image */}
-                    <div className="aspect-[4/3] w-full overflow-hidden relative bg-white/5 flex-shrink-0">
+                    <div className="aspect-[16/10] sm:aspect-[4/3] w-full overflow-hidden relative bg-white/5 flex-shrink-0">
                       {event.bannerImage?.url ? (
                         <Image
                           src={getOptimizedImageUrl(event.bannerImage.url, 400)}
@@ -168,56 +132,56 @@ export function EventsList() {
                       {/* Runtime Lifecycle Badge */}
                       {badgeElement}
 
-                      {overlayText && (
+                      {cta.action === 'NONE' && (
                         <span className="absolute inset-0 bg-black/60 backdrop-blur-[2px] flex items-center justify-center text-white font-bold text-sm tracking-wider">
-                          {overlayText}
+                          {cta.text.toUpperCase()}
                         </span>
                       )}
                     </div>
 
                     {/* Card Content */}
-                    <div className="p-5 flex flex-col flex-grow">
-                      <div className="text-text-muted text-[11px] font-semibold uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                    <div className="p-3.5 sm:p-5 flex flex-col flex-grow">
+                      <div className="text-text-muted text-[11px] font-semibold uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
                         <CalendarIcon className="w-3.5 h-3.5 text-accent-purple-light" />
                         {formatEventDate(event.startDate)}
                       </div>
-                      <h2 className="text-white font-bold text-base line-clamp-1 mb-2 group-hover:text-accent-purple-light transition-colors">
+                      <h2 className="text-white font-bold text-sm sm:text-base line-clamp-1 mb-1.5 group-hover:text-accent-purple-light transition-colors">
                         {event.title}
                       </h2>
-                      <p className="text-text-secondary text-xs line-clamp-2 mb-6 flex-grow leading-relaxed">
+                      <p className="text-text-secondary text-xs line-clamp-2 mb-4 flex-grow leading-relaxed">
                         {event.description}
                       </p>
                     </div>
                   </Link>
 
                   {/* Card Footer Action Block */}
-                  <div className="px-5 pb-5 pt-4 border-t border-border-subtle/40 flex items-center justify-between mt-auto bg-black/10 w-full">
+                  <div className="px-3.5 pb-3.5 sm:px-5 sm:pb-5 pt-3 border-t border-border-subtle/40 flex items-center justify-between mt-auto bg-black/10 w-full">
                     <div>
                       <div className="text-[10px] text-text-muted font-medium">Tickets from</div>
-                      <div className="text-white font-black text-sm">
+                      <div className="text-white font-black text-xs sm:text-sm">
                         {formatMoney(event.ticketTiers?.length > 0 ? Math.min(...event.ticketTiers.map((t) => t.price)) : 0, event.currency)}
                       </div>
                     </div>
                     <button
                       type="button"
                       onClick={() => {
-                        if (ctaDisabled && ctaAction !== 'GALLERY') return;
-                        if (ctaAction === 'BOOK') {
+                        if (cta.disabled && cta.action !== 'GALLERY') return;
+                        if (cta.action === 'BOOK') {
                           router.push(`/events/${event.slug}?modal=booking`);
-                        } else if (ctaAction === 'GALLERY') {
+                        } else if (cta.action === 'GALLERY') {
                           router.push(`/events/${event.slug}/gallery`);
                         } else {
                           router.push(`/events/${event.slug}`);
                         }
                       }}
-                      disabled={ctaDisabled && ctaAction !== 'GALLERY'}
-                      className={`px-3.5 py-2 text-xs font-bold rounded-xl transition-transform text-center ${
-                        ctaDisabled && ctaAction !== 'GALLERY'
+                      disabled={cta.disabled && cta.action !== 'GALLERY'}
+                      className={`min-h-[44px] px-3.5 py-2 text-xs font-bold rounded-xl transition-all flex items-center justify-center text-center ${
+                        cta.disabled && cta.action !== 'GALLERY'
                           ? 'bg-white/5 border border-white/5 text-text-muted cursor-not-allowed'
-                          : 'text-white btn-gradient shadow-glow-sm hover:scale-105'
+                          : 'text-white btn-gradient shadow-glow-sm hover:scale-105 active:scale-95'
                       }`}
                     >
-                      {ctaText}
+                      {cta.text}
                     </button>
                   </div>
                 </motion.div>

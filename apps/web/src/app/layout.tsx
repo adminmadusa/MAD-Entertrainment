@@ -9,9 +9,6 @@ import { Providers } from '@/providers';
 
 import '@/styles/globals.css';
 
-// Referenced to satisfy VAL-UI-017 for next.config.ts custom loader:
-// import '@/utils/image-loader';
-
 // ─── Fonts ────────────────────────────────────────────────────
 
 const outfit = Outfit({
