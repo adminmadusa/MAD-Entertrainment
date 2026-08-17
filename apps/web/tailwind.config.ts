@@ -14,10 +14,10 @@ const config: Config = {
     extend: {
       // ─── Custom Font Sizes ────────────────────────
       fontSize: {
-        'display-xl': ['clamp(3.5rem, 9vw, 6rem)', { lineHeight: '1.05' }],
-        'display-lg': ['clamp(2.8rem, 7vw, 5rem)', { lineHeight: '1.02' }],
-        'display-md': ['clamp(2.2rem, 5vw, 3.5rem)', { lineHeight: '1.05' }],
-        'display-sm': ['clamp(1.8rem, 4vw, 2.5rem)', { lineHeight: '1.1' }],
+        'display-xl': ['clamp(2.25rem, 6vw, 5rem)', { lineHeight: '1.08' }],
+        'display-lg': ['clamp(1.85rem, 5vw, 4rem)', { lineHeight: '1.1' }],
+        'display-md': ['clamp(1.5rem, 4vw, 3rem)', { lineHeight: '1.15' }],
+        'display-sm': ['clamp(1.25rem, 3vw, 2.25rem)', { lineHeight: '1.2' }],
       },
       colors: {
         'accent-purple': 'var(--color-accent-purple)',
