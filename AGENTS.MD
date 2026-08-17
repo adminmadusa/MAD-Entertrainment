@@ -2,18 +2,24 @@
 
 - **Owner**: Repository Governance Owner
 - **Status**: Mandatory
-- **Version**: 1.0
+- **Version**: 2.0
 - **Review Cycle**: Quarterly
-- **Last Updated**: 2026-06-25
+- **Last Updated**: 2026-08-17
 - **Related Documents:**
   - [REPOSITORY_GOVERNANCE.md](REPOSITORY_GOVERNANCE.md)
+  - [ARCHITECTURE.md](ARCHITECTURE.md)
+  - [API_CONTRACTS.md](API_CONTRACTS.md)
+  - [DEPLOYMENT_MAP.md](DEPLOYMENT_MAP.md)
+  - [RUNBOOK.md](RUNBOOK.md)
+  - [TESTING.md](TESTING.md)
+  - [CHANGELOG.md](CHANGELOG.md)
+  - [Architecture Decisions Index](docs/decisions/README.md)
 
 ---
 
 # MAD Entertrainment Engineering Governance & AI Agent Operating System
 
 Applies To:
-
 * Human Developers
 * AI Coding Agents
 * Code Review Agents
@@ -24,535 +30,261 @@ Applies To:
 ---
 
 ## Relationship to Repository Governance Policy
-The repository governance policies (roles, matrices, branch and PR policies) are canonically defined in [REPOSITORY_GOVERNANCE.md](REPOSITORY_GOVERNANCE.md). This file (`AGENTS.md`) serves as the operational instructions and guidelines for human and AI agents implementing those policies in the codebase.
+The repository governance policies (roles, matrices, branch and PR policies) are canonically defined in [REPOSITORY_GOVERNANCE.md](REPOSITORY_GOVERNANCE.md). This file (`AGENTS.md`) serves as the operational Single Source of Truth (SSOT) and instructions for human and AI agents implementing those policies in the codebase.
 
 ---
 
-# PURPOSE
+# 1. PURPOSE & CORE PRINCIPLES
 
+## Purpose
 This document defines how all engineering work must be performed in the MAD Entertrainment repository.
 
 The goals are:
-
 * Maintain a Single Source of Truth (SSOT)
-* Prevent duplicate logic
-* Prevent duplicate UI
-* Prevent dead code
+* Prevent duplicate logic and UI
+* Prevent dead, zombie, and orphan code
 * Prevent legacy code accumulation
-* Prevent orphan APIs
-* Prevent orphan UI
-* Maintain repository hygiene
+* Prevent orphan APIs and routes
+* Maintain strict repository hygiene
 * Maintain frontend/backend alignment
 * Protect production systems
-* Maintain long-term maintainability
+* Guarantee long-term maintainability
 
 Failure to follow these rules is considered a governance violation.
 
----
-
-# CORE PRINCIPLES
-
+## Core Principles
 Every change must satisfy:
+1. **Correctness**
+2. **Security**
+3. **Maintainability**
+4. **Scalability**
+5. **Simplicity**
+6. **Traceability**
+7. **Reversibility**
 
-1. Correctness
-2. Security
-3. Maintainability
-4. Scalability
-5. Simplicity
-6. Traceability
-7. Reversibility
-
----
-
-# ONE TASK RULE
-
+## One Task Rule
 Only one active implementation task may exist at a time.
-
 A task is not complete until:
-
 * Implementation Complete
 * Verification Complete
-* PR Approved
-* Merge Complete
+* PR Approved & Merged
 * Branch Cleanup Complete
 * Develop Sync Complete
 
-Do not begin a second implementation stream until the first is fully completed.
+Do not begin a second implementation stream until the first is fully completed. New findings must be added to the backlog. Never interrupt active implementation.
 
-New findings must be added to backlog.
-
-Never interrupt active implementation.
-
----
-
-# HARD SAFETY RULE
-
-Audit-only means:
-
-NO:
-
-* Editing
-* Refactoring
-* Deleting
-* Installing packages
-* Staging
-* Committing
-* Pushing
-* Merging
-* Rebasing
-* Branch deletion
-
-without explicit approval.
-
-Never modify code first.
-
-Always audit first.
+## Hard Safety Rule
+Audit-only means **NO**: editing, refactoring, deleting, installing packages, staging, committing, pushing, merging, rebasing, or deleting branches without explicit user approval. Never modify code first; always audit first.
 
 ---
 
-# SINGLE SOURCE OF TRUTH (SSOT)
+# 2. SINGLE SOURCE OF TRUTH (SSOT) & OWNERSHIP
 
 Every business rule must have exactly one owner.
 
-Ownership Matrix:
+### Ownership Matrix
 
-Auth → Server
+| Domain | Canonical Owner | Rule |
+|---|---|---|
+| **Auth** | Server | Session, token verification, permission checks |
+| **Payments** | Server | Payment intents, webhooks, verification |
+| **Bookings** | Server | Booking lifecycle, expiry, reservations |
+| **Ticket Status** | Server | Issuance, transfers, invalidations |
+| **Pricing** | Server | Tier calculations, discounts, taxes |
+| **Availability** | Server | Capacity, inventory calculations |
+| **Seat Locking** | Server | Redis locks, distributed mutexes |
+| **RBAC** | Server | Role permissions, access gates |
+| **Notifications** | Server | Email, SMS, push delivery |
+| **UI State** | Frontend | Form inputs, modal visibility, client selections |
+| **UI Presentation**| Frontend | Rendering, responsiveness, layout, styling |
 
-Payments → Server
+*Frontend must never own business rules or duplicate backend validation decisions.*
 
-Bookings → Server
+### Shared Ownership Rule
+Reusable cross-cutting logic must live in shared packages:
+* `packages/shared` — Shared schemas, constants, business contracts
+* `packages/ui` — Reusable presentation components and design primitives
+* `packages/types` — TypeScript type definitions
+* `packages/utils` — Domain-agnostic utilities and helpers
+* `packages/validations` — Zod and validation schemas
 
-Ticket Status → Server
+Before creating any utility, type, schema, constant, or validation, search the repository first. Reuse existing implementations. Do not create duplicates.
 
-Pricing → Server
+### Frontend-Backend Contract Governance
+Every UI feature must trace:
+$$\text{Page} \longrightarrow \text{API} \longrightarrow \text{Service} \longrightarrow \text{Database}$$
 
-Availability → Server
-
-Seat Locking → Server
-
-RBAC → Server
-
-Notifications → Server
-
-UI State → Frontend
-
-UI Presentation → Frontend
-
-Frontend must never own business rules.
-
-Frontend must never duplicate backend decisions.
-
-Repository Governance SSOT → REPOSITORY_GOVERNANCE.md
-
-Architecture Decisions (ADRs) → docs/decisions/README.md
-
-For policy rules, branch/PR standards, and document ownership, refer to the [REPOSITORY_GOVERNANCE.md](REPOSITORY_GOVERNANCE.md). For details on why technical and architectural decisions are made, refer to the Architecture Decision Records (ADR) system at [docs/decisions/README.md](docs/decisions/README.md). All automated agents and human developers must review and adhere to the approved decisions.
-
----
-
-# SHARED OWNERSHIP RULE
-
-Reusable logic must live in:
-
-packages/shared
-
-packages/ui
-
-packages/types
-
-packages/utils
-
-packages/validations
-
-Before creating:
-
-* Utility
-* Type
-* Schema
-* Constant
-* Validation
-
-Search repository first.
-
-Reuse existing implementations.
-
-Do not create duplicates.
+Before implementation, identify: Endpoint, Request Schema, Response Schema, Error Schema, Auth Rules, and Ownership. Frontend assumptions must match backend responses exactly. Shared schemas are mandatory.
 
 ---
 
-# FRONTEND BACKEND CONTRACT GOVERNANCE
+# 3. GLOBAL IMPLEMENTATION DECISION GATE
 
-Every UI must trace:
+No implementation or file modification may begin until the Implementation Readiness Audit has concluded with one of the approved outcomes.
 
-Page
-→ API
-→ Service
-→ Database
+```text
+Request
+   ↓
+Issue Created
+   ↓
+Implementation Readiness Audit
+   ↓
+Repository Search
+   ↓
+Implementation Decision Gate
+   ↓
+Approved?
+   ├── Already Implemented → Close/Document
+   ├── Partially Implemented → Extend Existing
+   ├── Rejected → Close Request
+   └── Not Implemented → Create Branch → Implement
+```
 
-Before implementation identify:
-
-* Endpoint
-* Request Schema
-* Response Schema
-* Error Schema
-* Auth Rules
-* Ownership Rules
-
-Frontend assumptions must match backend responses exactly.
-
-No frontend-only business logic.
-
-No duplicated validation.
-
-Shared schemas are mandatory.
-
----
-
-# ORPHAN PREVENTION POLICY
-
-Every page must have:
-
-* Route
-* Owner
-* Consumer
-* Purpose
-
-Every API must have:
-
-* Consumer
-* Owner
-* Purpose
-
-Every component must have:
-
-* Consumer
-* Purpose
-
-Every service must have:
-
-* Caller
-
-If no consumer exists:
-
-Do not create it.
+Every request must end with exactly one decision:
+* [ ] **Outcome A — Already Implemented**: Feature exists, behavior matches requirements, and tests pass. STOP. Do NOT implement. Reject any implementation PR. Create documentation updates only if required. Close or convert the issue.
+* [ ] **Outcome B — Partially Implemented**: Feature exists but is incomplete. Extend the existing implementation. Reuse existing architecture. Do not duplicate logic.
+* [ ] **Outcome C — Not Implemented**: Feature does not exist. Proceed with implementation following the approved 13-phase workflow on a dedicated task branch.
+* [ ] **Outcome D — Rejected**: Duplicate issue, duplicate feature, invalid request, architecture conflict, superseded by another issue, or out of scope. Close the request immediately.
 
 ---
 
-# DUPLICATE CODE PREVENTION
+# 4. 13-PHASE EXECUTION PROTOCOL
 
-Before adding code:
+Before modifying any code, documentation, scripts, or configurations, execute and document the following 13 phases:
 
-Search repository.
-
-Review:
-
-* Components
-* Services
-* Hooks
-* Utilities
-* Validators
-* Contracts
-
-Never duplicate:
-
-* Validation
-* Pricing
-* Status Logic
-* Permissions
-* API Wrappers
-* Formatting Functions
-* Error Handling Patterns
-
-Reuse existing implementation.
+1. **Phase 1 — Task Classification**: State category (Bug Fix, Feature, Refactor, etc.), primary objective, scope (apps/packages), and risk level (Low/Medium/High).
+2. **Phase 2 — Skill Selection**: Select primary and supporting skills under `.agents/skills/` with justification.
+3. **Phase 3 — Repository Discovery**: Search the workspace for existing components, helpers, utilities, or hooks.
+4. **Phase 4 — Existing Solution Search**: Align naming, structure, and design tokens with existing repository patterns.
+5. **Phase 5 — Dependency Impact Analysis**: Map downstream consumers and evaluate regression risk.
+6. **Phase 6 — Git Status & Branch Analysis**: Ensure working tree is clean and branch name matches naming rules.
+7. **Phase 7 — Root Cause Analysis**: For bugs, isolate root causes using verified facts and evidence before writing code.
+8. **Phase 8 — Implementation Plan**: Document planned changes file-by-file with trade-off analysis.
+9. **Phase 9 — Validation Plan**: Define automated tests, build commands, and manual verification steps.
+10. **Phase 10 — Execution**: Implement changes incrementally in logical commits.
+11. **Phase 11 — Post-Implementation Verification**: Run `pnpm run build`, `pnpm run lint`, `pnpm run type-check`, and test suites.
+12. **Phase 12 — Repository Cleanup**: Remove temporary scratch files, debug logs, unused imports, or trailing whitespaces.
+13. **Phase 13 — PR Readiness Review**: Clear the 11-question quality gate and UI merge gate.
 
 ---
 
-# DEAD CODE POLICY
+# 5. INVESTIGATION WORKFLOW (GOV-INV)
 
-Every created or modified file must be completely free of unused imports, unused variables, and unused types to prevent static analysis (e.g. CodeQL / GitHub Advanced Security) alert triggers.
+## GOV-INV-001 — Root Cause Investigation Standard
+> **Core Principle: A plausible explanation is never a verified root cause.**
+> No hypothesis may be promoted to a root cause until it survives independent verification and repeated attempts at falsification.
 
-Before every PR:
+### Mandatory Workflow:
+1. **Observe**: Collect facts only (symptoms, logs, stack traces, screenshots, versions). Do not jump to conclusions.
+2. **Generate Multiple Hypotheses**: Formulate at least three independent hypotheses.
+3. **Search Upstream First**: Check framework release notes, changelogs, and known limitations before runtime instrumentation.
+4. **Create Minimal Reproduction**: Reproduce in isolation whenever possible.
+5. **Perform Falsification**: Design experiments to prove hypotheses wrong, not just confirm them.
+6. **Evidence Classification**: Explicitly classify findings per GOV-INV-002.
+7. **Assign Confidence**: Mark confidence as High, Medium, or Low.
+8. **Stop Conditions**: Exit per GOV-INV-003 once root cause is established with high confidence.
 
-Review:
+## GOV-INV-002 — Claims Must Match Evidence
+Every major conclusion must be explicitly labeled as:
+* **Verified Fact** — Supported by at least two independent evidence categories.
+* **Experimental Result** — Output of an isolated test or benchmark.
+* **Inference** — Logical deduction derived from verified facts.
+* **Hypothesis** — Proposed explanation awaiting falsification.
+* **Unknown** — Unverified or unmeasured state.
 
-* Unused imports
-* Unused functions
-* Unused hooks
-* Unused state
-* Unused interfaces
-* Unused types
-* Unused constants
-* Unused files
-* Unused routes
-
-If verified unused:
-
-Delete it.
-
-Do not keep:
-
-"for future use"
-
-code.
-
----
-
-# LEGACY CODE POLICY
-
-Legacy code requires:
-
-LEGACY
-Reason
-Owner
-Ticket
-Removal Plan
-
-Example:
-
-LEGACY
-Reason: Checkout V1 compatibility
-Owner: Platform Team
-Ticket: BUG-401
-
-Undocumented legacy code is technical debt.
+## GOV-INV-003 — Investigation Exit Criteria
+Stop investigation when:
+1. Root cause has High confidence.
+2. Remaining uncertainties do not change the engineering decision.
+3. Additional steps produce confirmation rather than new evidence.
+4. Practical remediation is identified.
 
 ---
 
-# FILE SIZE GOVERNANCE
+# 6. UI/UX GOVERNANCE & STANDARDS
 
-Preferred Limits
+Canonical reference: [UI_UX_GOVERNANCE.md](UI_UX_GOVERNANCE.md) (UI-001).
 
-Component:
-0-300 lines
+## Authority Order
+1. Repository Source Code
+2. `UI_UX_GOVERNANCE.md`
+3. `.agents/skills/ui-ux/SKILL.md`
+4. `AGENTS.md`
+5. External Best Practices
 
-Hook:
-0-250 lines
+## UI Design & Accessibility Principles
+* **Mobile-First & Responsive**: Zero horizontal scroll on viewports `320px`, `375px`, `768px`, `1024px`, `1440px`.
+* **Touch Targets**: Minimum `44px` (e.g. `min-h-[44px]` / `w-11 h-11`) for all interactive elements.
+* **WCAG AA Conformance**: High contrast, semantic HTML (`<main>`, `<section>`, `<button>`), descriptive `aria-label`s, logical keyboard tab order, and Escape-key dismiss on modals.
+* **Required Boundary States**: Data containers must implement Loading (skeletons), Empty, Error, Offline, and Success states.
+* **Modals & Drawers**: Use responsive drawers for mobile viewports and dialog modals for desktop viewports.
 
-Schema:
-0-300 lines
+## 15-Point Standardized UI/UX Audit Structure
+1. Executive Summary | 2. UX Health Score | 3. Repository Context | 4. Component Inventory | 5. User Journey Audit | 6. Feature-Specific Audit | 7. Accessibility Audit | 8. Mobile Audit | 9. Performance Audit | 10. Cognitive Load Assessment | 11. Verified Findings | 12. Do Not Change | 13. Implementation Roadmap | 14. Regression Checklist | 15. Final Readiness.
 
-Controller:
-0-200 lines
+## UI PR Merge Gate Checklist
+Every UI PR description must include:
+```markdown
+UI-001 Pull Request Checklist
 
-Service:
-0-500 lines
-
-Review Required
-
-Component:
-301-500
-
-Service:
-501-700
-
-Refactor Required
-
-701+
-
-PR Blocked
-
-1000+
-
-No exceptions.
-
----
-
-# CODE QUALITY RULES
-
-Every file must satisfy:
-
-* Single Responsibility Principle
-* Clear Naming
-* Low Coupling
-* High Cohesion
-* Minimal Complexity
-* Readability
-* Maintainability
-
-Avoid:
-
-* Magic Numbers
-* Magic Strings
-* Nested Conditions
-* Duplicated Error Handling
-* Duplicated Validation
-
-Prefer:
-
-* Shared Constants
-* Shared Types
-* Shared Schemas
-* Shared Utilities
+[ ] Mobile-first layout implemented
+[ ] Responsive at all required breakpoints (320px, 375px, 768px, 1024px, 1440px)
+[ ] Tabs used instead of deep menus where appropriate
+[ ] Buttons aligned consistently
+[ ] Consistent spacing applied
+[ ] No horizontal scrolling
+[ ] Loading state implemented
+[ ] Empty state implemented
+[ ] Error state implemented
+[ ] Accessibility verified (WCAG AA)
+[ ] Shared components reused (packages/ui searched first)
+[ ] Desktop screenshot attached
+[ ] Tablet screenshot attached
+[ ] Mobile screenshot attached
+[ ] All UI-001 merge gate conditions cleared
+```
 
 ---
 
-# REPOSITORY HYGIENE
+# 7. TASK COMPLETION EVIDENCE GATE & GIT PROTOCOL
 
-Disallowed Folder Names:
+Marking a task as **Complete** is strictly forbidden unless verified repository evidence is provided for each state transition:
 
-temp
-temp2
-misc
-old
-backup
-new-folder
-final
-test2
+```mermaid
+stateDiagram-v2
+    PLANNED --> APPROVED : Plan Approved
+    APPROVED --> BRANCH_CREATED : Branch Checked Out
+    BRANCH_CREATED --> IMPLEMENTING : Code Modified
+    IMPLEMENTING --> TESTED : Tests Passed
+    TESTED --> COMMITTED : Staged & Committed
+    COMMITTED --> PUSHED : Pushed to Remote
+    PUSHED --> PR_CREATED : PR Opened
+    PR_CREATED --> CI_PASSED : CI Checks Green
+    CI_PASSED --> MERGED : PR Merged
+    MERGED --> BRANCH_CLEANUP : Local & Remote Deleted
+    BRANCH_CLEANUP --> DEVELOP_SYNCED : develop Synced
+    DEVELOP_SYNCED --> COMPLETED : Complete
+```
 
-Every folder requires ownership.
+## Branch Safety & Naming
+Protected branches: `develop`, `live`. Never commit directly.
+Allowed branch prefixes: `feat/*`, `fix/*`, `refactor/*`, `audit/*`, `docs/*`, `test/*`, `chore/*`, `seo/*`.
 
-Every file requires ownership.
+## RULE-GIT-001 — Branch Cleanup Protocol
+1. Verify working tree clean (`git status`).
+2. Synchronize develop: `git checkout develop && git pull origin develop`.
+3. Confirm PR merged on GitHub.
+4. Verify reachability: `git merge-base --is-ancestor feature-branch develop`.
+5. Safe delete local branch: `git branch -d feature-branch` (or `-D` if merge commit verified).
+6. Delete remote branch: `git push origin --delete feature-branch`.
+7. Prune references: `git fetch --prune`.
+8. Final verification: `git status` shows clean tree on `develop`.
 
-Avoid dumping unrelated utilities into generic folders.
+## RULE-GIT-002 — No Branch Cleanup with Local Changes
+Never delete or switch away from a feature branch with unstaged or uncommitted changes.
 
-* **Governance Cache**: The `.governance/` folder is exclusively local. It is listed in `.gitignore` and must remain untracked by Git at all times. If `.governance/` files appear in `git status`, run `git rm -r --cached .governance/` immediately to untrack them and prevent commit noise.
-
----
-
-# BRANCH SAFETY
-
-Protected Branches:
-
-develop
-
-live
-
-Never commit directly.
-
-Always create task branches.
-
-Allowed:
-
-feat/<name>
-
-fix/<name>
-
-refactor/<name>
-
-audit/<name>
-
-docs/<name>
-
-test/<name>
-
-chore/<name>
-
-seo/<name>
-
-Examples:
-
-feat/ticket-dashboard
-
-fix/payment-verification
-
-audit/ui-005-review
-
-refactor/auth-hook
-
----
-
-# BRANCH HYGIENE
-
-Before new work:
-
-git checkout develop
-
-git pull origin develop
-
-git status
-
-Verify:
-
-* Working tree clean
-* develop == origin/develop
-* Previous task completed
-* Previous branch merged
-* Previous branch cleaned
-
-Do not stack implementation branches.
-
----
-
-# BRANCH LIFECYCLE MANAGEMENT
-
-Mandatory branch lifecycle rules:
-
-## 1. Audit Branches (audit/*)
-* Used for discovery, diagnostics, and evidence gathering only.
-* No production edits, commits, or deployments are allowed.
-* Once the audit is completed or an issue is created, the branch must be deleted immediately.
-
-## 2. Workstream Branches (feat/*, fix/*, refactor/*, etc.)
-* Strict boundary: 1 Issue = 1 Branch = 1 PR.
-* Reusing merged branches or combining multiple issues is forbidden.
-* Immediately after a PR is merged and verified in staging/production, delete both the local and remote branches in accordance with **RULE-GIT-001** and **RULE-GIT-002**.
-
-## 3. RULE-GIT-001 — Branch Cleanup Verification Protocol
-* **Preconditions**:
-  * PR is merged.
-  * Working tree is clean.
-  * No uncommitted changes.
-  * All CI/CD checks passed.
-* **Step 1 — Verify Working Tree**:
-  `git status` must show `nothing to commit, working tree clean`.
-* **Step 2 — Synchronize Develop**:
-  ```bash
-  git checkout develop
-  git pull origin develop
-  ```
-* **Step 3 — Verify PR Merge**:
-  Confirm the pull request has been merged on GitHub.
-* **Step 4 — Verify Merge Strategy & Commit Reachability**:
-  Run:
-  ```bash
-  git merge-base --is-ancestor feature-branch develop
-  ```
-  If true: Continue.
-  If false: Run:
-  ```bash
-  git cherry develop feature-branch
-  ```
-  Expected:
-  ```
-  -
-  -
-  -
-  ```
-  Only `-` entries indicate patch-equivalent commits already exist on `develop`. Any `+` entry means the branch still contains unique work. Stop immediately.
-* **Step 5 — Delete Local Branch**:
-  Safe delete: `git branch -d feature-branch`.
-  Only if PR is merged and patch equivalence is verified, you may run: `git branch -D feature-branch`.
-* **Step 6 — Delete Remote Branch**:
-  `git push origin --delete feature-branch`.
-* **Step 7 — Prune References**:
-  `git fetch --prune`.
-* **Step 8 — Final Verification**:
-  Ensure `git status`, `git branch`, and `git branch -r` confirm:
-  * Clean working tree.
-  * Feature branch removed locally.
-  * Feature branch removed remotely.
-
-## 4. RULE-GIT-002 — No Branch Cleanup with Local Changes
-* A feature branch **must not** be deleted while the repository contains uncommitted or unstaged changes.
-* Verification: `git status` must be clean.
-* If the working tree is not clean, one of the following must occur before cleanup:
-  * Commit the changes.
-  * Stash the changes.
-  * Discard the changes.
-
-## 5. Stale Branch Policy
-* Any branch behind develop by > 30 commits is stale.
-* Stale branches must be rebased and continued, or closed and deleted.
-
-## 6. Weekly Cleanup Schedule
-* Human developers and AI agents must review local and remote branches weekly to prune stale or merged branches.
-
----
-
-# MANUAL VERIFICATION GATE
-
-Before editing show:
-
+## Manual Verification Gate
+Before editing, present:
 * Current Branch
 * Git Status
 * Files To Change
@@ -561,590 +293,75 @@ Before editing show:
 * Patch Summary
 * Verification Plan
 * Rollback Plan
-
-Wait for approval.
-
-Required approval:
-
-Approved to edit:
-
-<file>
-
-<file>
-
-Without approval:
-
-Stop.
+* **Wait for explicit user approval before modifying code.**
 
 ---
 
-# HIGH RISK AREAS
+# 8. REPOSITORY HYGIENE, FILE SIZES & SECURITY RULES
 
-Require explicit approval:
+## File Size Governance
+* **Component**: 0–300 lines (301–500: Review Required, 701+: Refactor Required, 1000+: PR Blocked)
+* **Hook**: 0–250 lines
+* **Schema**: 0–300 lines
+* **Controller**: 0–200 lines
+* **Service**: 0–500 lines (501–700: Review Required, 701+: Refactor Required)
 
-* Payment Logic
-* Auth Logic
-* Upload Logic
-* Security Logic
-* Database Schema
-* Migrations
-* CI/CD
-* Deployment
-* Environment Variables
-* Socket Handlers
+## Code Cleanliness (Zero Tolerance)
+The repository must remain clean after every implementation. The following are strictly forbidden:
+* Unused variables, imports, exports, functions, types, hooks, or React state
+* Dead, commented-out, or unreachable code
+* Tracked build artifacts (`dist/`, `.next/`, `*.d.ts` in `src/`, `*.js.map` in `src/`)
+* Tracked bytecode (`*.pyc`, `__pycache__/`)
+* Disallowed folder names (`temp`, `tmp`, `misc`, `old`, `backup`, `new-folder`, `final`)
+* Temporary logging (`console.log`, `console.debug`, `console.trace`) in production code
 
-Never refactor high-risk systems without tests.
-
----
-
-# VISUAL, UX & ACCESSIBILITY GOVERNANCE
-
-## Design Principles
-- **Mobile-First & Responsive**: Design layouts to scale gracefully. No horizontal scrolling is permitted on supported mobile viewports.
-- **Accessibility-First**: Ensure all visual elements are accessible from design inception. Follow WCAG AA conformance guidelines.
-- **Visual Consistency**: Use the project's approved design tokens for spacing, typography, colors, and elevation. Avoid hardcoded values.
-- **Reuse Existing Components**: Prioritize composition and customization of existing components over creating custom overrides.
-- **Technology Alignment**: Prefer existing repository UI components, reuse approved design system primitives, and use shared design tokens. Introduce new components only when existing primitives cannot satisfy the requirement. (For MAD Entertrainment, this currently means shadcn/ui and Radix UI).
-
-## Responsive & Tailwind Standards
-- **Breakpoint System**: Utilize standard responsive breakpoints consistently across pages.
-- **Layout Containers**: Use standard page spacing, consistent margin containers, and layout grids.
-- **Flexbox & Grid Layouts**: Enforce flexbox/grid containers to handle overflow, wrapping, and text truncation cleanly.
-
-## Component & State Standards
-- **Touch Target Sizes**: Minimum 44px for all interactive buttons, links, and form fields.
-- **Accessible Focus**: Focus indicators must be highly visible when navigating via keyboard.
-- **Standard States**: Interactive elements must support and visually distinguish:
-  - Default / Hover / Active
-  - Focus Visible / Keyboard Navigation
-  - Disabled / Readonly
-  - Loading / Skeletons / Transition states
-- **Boundary UI States**: Every data-driven container must implement fallback templates for:
-  - Loading state
-  - Empty state
-  - Error state
-  - Offline state
-  - Unauthorized state
-  - Success state
-
-## Accessibility Requirements (WCAG AA)
-- **Semantic HTML**: Use appropriate HTML5 tags (e.g., `<main>`, `<section>`, `<article>`, `<nav>`, `<button>`).
-- **ARIA & Screen Readers**: Provide descriptive `aria-label` tags for icon buttons, and maintain correct role mappings.
-- **Keyboard Navigation**: Keep focus order logical and trap focus properly within modals/drawers. Implement Escape-key handling to close overlays.
-- **Contrast**: Text and interactive components must satisfy WCAG AA contrast ratio requirements.
-
-## UI Performance
-- Minimize layout shift (CLS).
-- Lazy-load large content where appropriate.
-- Avoid unnecessary client-side rendering.
-- Prefer skeletons over spinners for longer loads.
-- Avoid blocking animations.
-- Optimize images and media.
-
-## Repository UI Rules
-- **Modals & Drawers**: Use responsive drawers for mobile viewports and dialog modals for desktop screens.
-- **Navigation Consistency**: Align navbars, menus, and footers across the user web application and back-office admin portals.
-- **Form Controls**: Use explicit form labels, helper descriptions, error alerts, and native validation states.
-
+## Secrets & Security
+**NEVER** hardcode or commit API keys, passwords, JWT secrets, database connection strings, Cloudinary credentials, Stripe/Razorpay keys, or access tokens. All secrets must come from validated environment variables.
 
 ---
 
-# TESTING GOVERNANCE
+# 9. SKILL SELECTION & PROMPT INTELLIGENCE
 
-Before merge run:
-
-pnpm lint
-
-pnpm test
-
-pnpm build
-
-Failures must be resolved.
-
-Never ignore failures.
+Before executing any request:
+1. **Analyze Objective**: Identify business context, technical context, affected domain, risk level, and expected outcome.
+2. **Select Skills**: Identify relevant skills under `.agents/skills/` (Core, Domain, Infrastructure).
+3. **Justify Skills**: State why each skill applies, risks evaluated, and evidence collected.
+4. **Identify Applicable Rules**: Note specific governance rules (`VAL-UI-*`, `VAL-HYG-*`, `VAL-DOC-*`, `VAL-SEC-*`).
+5. **Isolate Root Causes**: Determine what, why, where, and how with repository evidence before providing solutions.
 
 ---
 
-# TOOLING GOVERNANCE
+# 10. RELEASE GOVERNANCE & FINAL QUALITY GATE
 
-Before adding tooling:
-
-Review existing tooling.
-
-Avoid overlap.
-
-Avoid duplicate tools.
-
-Do not install dependencies without approval.
-
----
-
-# DOCUMENTATION GOVERNANCE
-
-Changes affecting:
-
-* Payments
-* Auth
-* Bookings
-* Tickets
-* APIs
-* Infrastructure
-* Deployments
-
-must update documentation.
-
-Required documents:
-
-AGENTS.md
-
-ARCHITECTURE.md
-
-API_CONTRACTS.md
-
-RUNBOOK.md
-
-TESTING.md
-
-DEPLOYMENT_MAP.md
-
-CHANGELOG.md
-
-docs/decisions/README.md
-
-REPOSITORY_GOVERNANCE.md
-
----
-
-# AUDIT REQUIREMENTS
-
-Every audit must review:
-
-* Functionality
-* Security
-* Performance
-* Maintainability
-* Dead Code
-* Duplicate Code
-* Legacy Code
-* Unused Files
-* Repository Hygiene
-* Frontend Backend Alignment
-* Future Risk
-
-No assumptions.
-
-Evidence required.
-
-No implementation or file modification may begin until the Implementation Readiness Audit has concluded with one of the approved outcomes.
-
-Every new feature, function, button, link, API, database change, bug fix, refactor, or enhancement must first have a GitHub issue created, then undergo a repository audit to verify whether the requested functionality already exists or is partially implemented.
-
-Every request must end with exactly one decision:
-
-* Already Implemented
-* Partially Implemented
-* Not Implemented
-* Rejected
-
-Only the "Not Implemented" outcome permits proceeding with new implementation, testing, pull request creation, review, and merge.
-
-"Partially Implemented" permits extending the existing implementation only (reusing existing architecture, no duplicate logic).
-
-"Already Implemented" requires no production code changes; the request must be rejected or closed.
-
-"Rejected" closes the request immediately without implementation.
-
-## IMPLEMENTATION DECISION GATE
-
-After the Implementation Readiness Audit, exactly one outcome is permitted:
-
-### Outcome A — Already Implemented
-* **Conditions**: Feature exists, behaviour matches requirements, and tests pass.
-* **Action**: Do NOT implement. Reject any implementation PR. Create documentation updates only if required. Close or convert the issue.
-
-### Outcome B — Partially Implemented
-* **Conditions**: Feature exists but is incomplete.
-* **Action**: Extend the existing implementation. Reuse existing architecture. Do not duplicate logic.
-
-### Outcome C — Not Implemented
-* **Conditions**: Feature does not exist.
-* **Action**: Proceed with implementation following the approved governance workflow.
-
-### Outcome D — Rejected
-* **Conditions**: Duplicate issue, duplicate feature, invalid request, architecture conflict, superseded by another issue, or out of scope.
-* **Action**: Close the request immediately without implementation.
-
-## FINAL APPROVAL CHECKLIST
-Before ending the audit, human developers and AI agents must complete this checklist:
-
-* [ ] Already Implemented
-* [ ] Partially Implemented
-* [ ] Not Implemented
-* [ ] Rejected
-
-* If **Already Implemented**: STOP. Do not write code. Do not create duplicate services. Do not refactor. Recommend documentation updates only (if necessary).
-* If **Partially Implemented**: Implement only the missing functionality.
-* If **Not Implemented**: Proceed to the implementation planning phase.
-* If **Rejected**: Close the request without implementation.
-
----
-
-# IMPLEMENTATION WORKFLOW
-
-PHASE 1
-
-Audit
-
-PHASE 2
-
-Plan
-
-PHASE 3
-
-Approval
-
-PHASE 4
-
-Implementation
-
-PHASE 5
-
-Verification
-
-PHASE 6
-
-Approval
-
-PHASE 7
-
-Commit
-
-PHASE 8
-
-Push
-
-PHASE 9
-
-PR
-
-PHASE 10
-
-Merge
-
-PHASE 11
-
-Cleanup
-
-PHASE 12
-
-Develop Sync
-
----
-
-# PR QUALITY GATE
-
-Before merge answer:
-
+## PR Quality Gate (11 Questions)
+Before merging any PR, confirm:
 1. Is there a single source of truth?
-
-2. Did we add duplicate logic?
-
-3. Did we add duplicate validation?
-
-4. Did we add duplicate UI?
-
-5. Did we create dead code?
-
-6. Did we create legacy code?
-
-7. Did we create orphan UI?
-
-8. Did we create orphan APIs?
-
+2. Did we avoid adding duplicate logic?
+3. Did we avoid adding duplicate validation?
+4. Did we avoid adding duplicate UI?
+5. Did we avoid creating dead code?
+6. Did we avoid creating legacy code?
+7. Did we avoid creating orphan UI?
+8. Did we avoid creating orphan APIs?
 9. Are frontend and backend aligned?
-
 10. Are file size limits respected?
-
 11. Can a new developer understand this in ten minutes?
 
-If any answer is NO:
-
-Do not merge.
-
----
-
-# RELEASE GOVERNANCE
-
-Before merging develop → live:
-
-Verify:
-
-* Build Passes
-* Tests Pass
-* Contracts Valid
-* No Critical Findings
-* Rollback Plan Exists
-
-Release only after explicit approval.
-
-DEPLOYMENT PARITY CHECK (MANDATORY)
-
-Before auditing any issue:
-
-- Verify frontend environment.
-- Verify frontend branch.
-- Verify backend environment.
-- Verify backend branch.
-- Verify deployment completion.
-
-MAD currently uses:
-
-Frontend:
-- Vercel Production → live
-- Vercel Test → develop
-
-Backend:
-- Render → live only
-
-Test environments share the same Render backend.
-
-A bug is not considered reproducible until deployment parity has been verified.
----
-
-# SKILL SELECTION & PROMPT INTELLIGENCE RULES
-
-## Mandatory Prompt Understanding
-
-Before responding to any request, thoroughly analyze the prompt to determine its actual objective.
-
-Do not produce immediate implementation steps or generic responses.
-
-First identify:
-
-* Primary objective
-* Business context
-* Technical context
-* Affected domain
-* Technologies involved
-* Risk level
-* Repository area
-* Expected outcome
-
-If the prompt is ambiguous, ask clarifying questions instead of making assumptions.
-
----
-
-## Intelligent Skill Selection (Mandatory)
-
-Every response must begin by determining which skills are required.
-
-Never answer without selecting the appropriate skills.
-
-Possible skill categories include:
-
-### Core Skills
-
-* Architecture Review
-* Repository Governance
-* Code Quality Audit
-* TypeScript Audit
-* React Audit
-* Security Audit
-* Performance Audit
-* Accessibility Audit
-* API Contract Audit
-* Database Integrity Audit
-* Testing Strategy
-* Documentation Review
-
-### Domain Skills
-
-* Authentication Audit
-* Authorization (RBAC) Audit
-* OTP Flow Audit
-* Booking Audit
-* Payment Audit
-* Webhook Audit
-* Ticket Audit
-* QR Validation Audit
-* Notification Audit
-* Queue & Worker Audit
-* Event Management Audit
-* Checkout Audit
-* Dashboard Audit
-* Admin Audit
-* Scanner Audit
-
-### Infrastructure Skills
-
-* Deployment Audit
-* Environment Audit
-* CI/CD Audit
-* Docker Audit
-* Redis Audit
-* MongoDB Audit
-* BullMQ Audit
-* Cloud Storage Audit
-
----
-
-## Skill Justification (Required)
-
-For every selected skill, explain:
-
-* Why it was selected.
-* Which part of the prompt triggered it.
-* What risks it will evaluate.
-* What evidence it will collect.
-* What outcome it is expected to produce.
-
-Do not list unnecessary skills.
-
-Only use skills that directly relate to the problem.
-
----
-
-## Rule Selection (Mandatory)
-
-Automatically identify the governance and engineering rules that apply.
-
-Examples include:
-
-* Repository Governance Rules
-* Architecture Rules
-* Security Rules
-* API Contract Rules
-* Authentication Rules
-* Authorization Rules
-* Payment Integrity Rules
-* Transaction Integrity Rules
-* Data Integrity Rules
-* Accessibility Standards
-* Performance Standards
-* Code Quality Standards
-* Testing Standards
-* Deployment Verification Rules
-
-Explain why each rule applies.
-
----
-
-## Evidence-Driven Analysis
-
-Never rely on assumptions.
-
-Every recommendation must be supported by:
-
-* Repository evidence
-* Existing implementation
-* Architecture
-* Existing patterns
-* Technology stack
-* Governance standards
-* Relevant documentation
-* Test evidence (where available)
-
-If evidence is unavailable, clearly state what additional information is required.
-
----
-
-## Recommended Additional Skills
-
-If the prompt reveals related concerns, recommend additional skills that should also be executed.
-
-For each recommendation include:
-
-* Skill name
-* Reason
-* Expected benefit
-* Priority (Critical / High / Medium / Low)
-
-Example:
-
-Current Request: Authentication Issue
-
-Automatically Recommend:
-
-* Authentication Audit
-* Security Audit
-* API Contract Audit
-* Performance Audit
-* Testing Strategy
-
-Reason: Authentication changes affect security, API contracts, session management, and regression risk.
-
----
-
-## Root Cause Before Solution
-
-Never jump directly to implementation.
-
-Always determine:
-
-* What is happening?
-* Why is it happening?
-* Where is it happening?
-* Which systems are affected?
-* What is the root cause?
-* What evidence supports the conclusion?
-
-Only after completing this analysis should implementation recommendations be provided.
-
----
-
-## No Blind Responses
-
-The following are prohibited:
-
-* Generic advice without context.
-* Assumption-based recommendations.
-* Copy-paste framework guidance.
-* Suggesting refactoring without repository evidence.
-* Recommending libraries without justification.
-* Ignoring existing architecture or governance.
-
-Every response must be specific to the repository, architecture, and evidence.
-
----
-
-## Final Output Requirements
-
-Every technical response should include:
-
-1. Prompt Understanding
-2. Selected Skills
-3. Skill Justification
-4. Applicable Rules & Standards
-5. Root Cause Analysis
-6. Evidence Reviewed
-7. Risk Assessment
-8. Recommended Solution
-9. Alternative Solutions
-10. Testing & Validation Strategy
-11. Additional Recommended Skills
-12. Follow-up Recommendations
-13. Backlog Items (Out of Scope)
-
-Do not implement code until the analysis, skill selection, and governance review are complete.
+## Release Governance
+Before merging `develop` $\longrightarrow$ `live`:
+* Build Passes (`pnpm run build`)
+* Tests Pass (`pnpm run test`)
+* Lint Passes (`pnpm run lint`)
+* Governance Gating Passes (`pnpm run governance:docs`)
+* Deployment Parity Verified (Render backend + Vercel frontend)
+* Rollback Plan Documented
 
 ---
 
 # FINAL MAD GOLDEN RULE
 
-Do not optimize for speed.
-
-Optimize for:
-
-Correctness
-
-Maintainability
-
-Safety
-
-Consistency
-
-Traceability
-
-Long-Term Repository Health
-
-The cleanest code is the code that never needs to be rewritten.
+> **Do not optimize for speed. Optimize for:**
+> 
+> **Correctness • Maintainability • Safety • Consistency • Traceability • Long-Term Health**
+> 
+> *The cleanest code is the code that never needs to be rewritten.*
