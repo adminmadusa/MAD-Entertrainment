@@ -145,11 +145,18 @@ export default function RootLayout({ children }: RootLayoutProps) {
           dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
         />
         <ChunkRecoveryClear />
-        {/* Ambient Entertainment Backdrop (Phase 4) */}
+        {/* Ambient Entertainment Backdrop (Optimized static gradients, 0 GPU compositing overhead) */}
         <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden" aria-hidden="true">
-          <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] rounded-full bg-accent-purple/8 blur-[160px] animate-ambient-shift-1" />
-          <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] rounded-full bg-accent-pink/6 blur-[160px] animate-ambient-shift-2" />
-          <div className="absolute top-[40%] left-[50%] -translate-x-1/2 w-[50%] h-[50%] rounded-full bg-accent-cyan/4 blur-[130px] animate-ambient-shift-3" />
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundImage: `
+                radial-gradient(circle at 15% 15%, rgba(124, 58, 237, 0.08) 0%, transparent 55%),
+                radial-gradient(circle at 85% 85%, rgba(236, 72, 153, 0.06) 0%, transparent 55%),
+                radial-gradient(circle at 50% 45%, rgba(6, 182, 212, 0.04) 0%, transparent 50%)
+              `,
+            }}
+          />
           <div className="absolute inset-0 noise-overlay opacity-[0.25]" />
         </div>
 
