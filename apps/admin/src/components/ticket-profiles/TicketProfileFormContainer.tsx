@@ -7,6 +7,7 @@ import { useState } from 'react';
 import { adminGetTicketProfile, adminCreateTicketProfile, adminUpdateTicketProfile } from '@/lib/api/admin/ticket-profile.service';
 import { adminGetTiers } from '@/lib/api/admin/tier.service';
 import { extractApiError } from '@/lib/api/client';
+import { Spinner } from '@mad/ui';
 
 import { TicketProfileForm } from './TicketProfileForm';
 
@@ -50,7 +51,7 @@ export function TicketProfileFormContainer({ mode, profileId }: TicketProfileFor
   if (mode === 'edit' && isLoadingProfile) {
     return (
       <div className="py-12 flex justify-center items-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-accent-purple" />
+        <Spinner size="lg" className="text-accent-purple" aria-label="Loading ticket profile" />
       </div>
     );
   }

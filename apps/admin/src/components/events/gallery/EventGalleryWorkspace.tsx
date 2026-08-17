@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import React from 'react';
 
 import { adminGetGallery } from '@/lib/api/admin/event-gallery.service';
+import { Spinner } from '@mad/ui';
 import { EventGalleryGrid } from './EventGalleryGrid';
 import { EventGallerySettingsPanel } from './EventGallerySettingsPanel';
 import { EventGalleryUploadZone } from './EventGalleryUploadZone';
@@ -34,7 +35,7 @@ export const EventGalleryWorkspace = React.memo(function EventGalleryWorkspace({
   if (isLoading) {
     return (
       <div className="py-12 flex justify-center items-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-accent-purple" />
+        <Spinner size="lg" className="text-accent-purple" aria-label="Loading gallery" />
       </div>
     );
   }
