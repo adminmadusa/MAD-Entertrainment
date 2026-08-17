@@ -268,7 +268,7 @@ export class FindingManager {
     let closedCount = 0;
     const now = new Date().toISOString();
 
-    for (const [id, finding] of this.findings.entries()) {
+    for (const finding of this.findings.values()) {
       // Only close active findings
       if (
         finding.status === 'CLOSED' ||
