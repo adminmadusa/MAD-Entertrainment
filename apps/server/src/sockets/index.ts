@@ -5,8 +5,9 @@ import { Socket } from 'socket.io';
 
 import { SeatStatus } from '@mad/shared';
 
-import { getRedis } from '../config/redis';
+import { getRedis, isRedisConnected } from '../config/redis';
 import { Booking } from '../models/booking.schema';
+import { Event } from '../models/event.schema';
 import { SeatLayout } from '../models/seat-layout.schema';
 import { PublicBookingService } from '../services/public/booking.service';
 import { auditLog } from '../utils/audit';
@@ -218,7 +219,6 @@ export function registerSocketHandlers(socket: Socket): void {
     }
 
     try {
-      const { Event } = require('../models/event.schema');
       const exists = await Event.exists({ _id: eventId });
       if (!exists) {
         socket.emit('event:join:status', { success: false, eventId, message: 'Event not found' });
@@ -301,7 +301,6 @@ export function registerSocketHandlers(socket: Socket): void {
       }
       socket.data.sessionId = sessionId;
 
-      const { isRedisConnected } = require('../config/redis');
       let success = false;
 
       if (isRedisConnected()) {
@@ -372,7 +371,6 @@ export function registerSocketHandlers(socket: Socket): void {
         return;
       }
 
-      const { isRedisConnected } = require('../config/redis');
       let releasedSeatIds: string[] = seatIds;
 
       if (isRedisConnected()) {

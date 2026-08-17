@@ -190,7 +190,7 @@ export const BOOKING_STATUS_META: Record<BookingStatus, BookingStatusMeta> = {
   },
 };
 
-function toDisplayLabel(status: string): string {
+export function toDisplayLabel(status: string): string {
   return status
     .replace(/[_-]+/g, ' ')
     .trim()

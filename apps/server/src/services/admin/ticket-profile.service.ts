@@ -1,5 +1,5 @@
-
-import { EventStatus, type EventLifecycleStatus, type BulkOperationResult } from '@mad/shared';
+import { EventStatus, type EventLifecycleStatus } from '@mad/shared';
+import type { BulkOperationResult } from '@mad/types';
 
 import { AppError } from '../../middleware/error.middleware';
 import { Booking } from '../../models/booking.schema';

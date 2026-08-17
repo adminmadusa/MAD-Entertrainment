@@ -6,6 +6,7 @@ export type ApiError = {
   code?: string;
   details?: unknown;
   errors?: Record<string, string[]>;
+  retryAfter?: number;
 };
 
 export type ImageAsset = {

@@ -93,3 +93,12 @@ git-mcp/
 .agents/skills/caveman-review/
 .agents/skills/caveman-stats/
 skills-lock.json
+
+# Local agent and report artifacts
+.agent/
+reports/
+openspec/changes/unified-media-upload/
+openspec/changes/archive/2026-07-17-pdf-ticket-redesign/
+openspec/specs/pdf-ticket-*
+apps/server/src/lib/pdf/ticket/fonts/
+.agents/skills/code-clean/
