@@ -118,10 +118,10 @@ export function CompletedEventsSkeleton() {
           {Array.from({ length: COMPLETED_EVENTS_SKELETON_COUNT }).map((_, index) => (
             <div
               key={index}
-              className="flex flex-col h-[400px] sm:h-[450px] bg-white/2 border border-white/5 rounded-2xl overflow-hidden pointer-events-none"
+              className="flex flex-col h-full bg-white/2 border border-white/5 rounded-2xl overflow-hidden pointer-events-none"
             >
               {/* Image Banner Shimmer */}
-              <div className="aspect-[4/3] w-full relative bg-white/5 flex-shrink-0">
+              <div className="aspect-[16/10] sm:aspect-[4/3] w-full relative bg-white/5 flex-shrink-0">
                 <Skeleton className="absolute inset-0" rounded={false} />
                 {/* Ended Indicator */}
                 <Skeleton className="absolute top-3 left-3" width={48} height={20} rounded="rounded-full" />
@@ -130,14 +130,14 @@ export function CompletedEventsSkeleton() {
               </div>
 
               {/* Card Details Shimmer */}
-              <div className="p-4 sm:p-5 flex-grow flex flex-col justify-between bg-black/10">
-                <div className="space-y-3">
+              <div className="p-3.5 sm:p-5 flex-grow flex flex-col justify-between bg-black/10">
+                <div className="space-y-2.5">
                   {/* Date */}
                   <Skeleton width={96} height={12} />
                   {/* Title */}
-                  <Skeleton width={192} height={20} />
+                  <Skeleton width={192} height={18} />
                   {/* Description */}
-                  <div className="space-y-2">
+                  <div className="space-y-1.5">
                     <Skeleton className="w-full" height={12} />
                     <Skeleton className="w-5/6" height={12} />
                   </div>
@@ -145,9 +145,9 @@ export function CompletedEventsSkeleton() {
               </div>
 
               {/* Action Panel Shimmer */}
-              <div className="px-4 pb-4 sm:px-5 sm:pb-5 pt-3 border-t border-white/5 flex justify-between items-center bg-black/40">
+              <div className="px-3.5 pb-3.5 sm:px-5 sm:pb-5 pt-3 border-t border-white/5 flex justify-between items-center bg-black/40">
                 <Skeleton width={80} height={12} />
-                <Skeleton width={72} height={28} rounded="rounded-xl" />
+                <Skeleton width={110} height={36} rounded="rounded-xl" />
               </div>
             </div>
           ))}
