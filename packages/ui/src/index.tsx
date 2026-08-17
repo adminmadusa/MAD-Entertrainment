@@ -41,6 +41,8 @@ export * from './composites/Drawer';
 export * from './composites/Tooltip';
 export * from './composites/Table';
 export * from './composites/Pagination';
+export * from './composites/SearchInput';
+export * from './composites/NumericStepper';
 export * from './composites/EmptyState';
 export * from './composites/ErrorState';
 export * from './composites/LoadingState';
