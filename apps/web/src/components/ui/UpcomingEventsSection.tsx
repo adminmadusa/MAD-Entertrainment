@@ -90,27 +90,27 @@ export const UpcomingEventsSection = memo(function UpcomingEventsSection({
   if (loading) {
     sectionContent = (
       <div
-        className="w-full max-w-6xl mx-auto h-[420px] sm:h-[480px] mt-6 sm:mt-8 flex items-center justify-center gap-4 overflow-hidden"
+        className="w-full max-w-6xl mx-auto h-[340px] xs:h-[380px] sm:h-[440px] md:h-[470px] mt-6 sm:mt-8 flex items-center justify-center gap-4 overflow-hidden"
         aria-busy="true"
         aria-label="Loading events"
       >
-        <div className="hidden sm:block w-[280px] h-[380px] glass rounded-2xl border border-border-subtle/30 opacity-40 p-4 flex flex-col">
+        <div className="hidden sm:block w-[260px] md:w-[280px] h-[350px] md:h-[380px] glass rounded-2xl border border-border-subtle/30 opacity-40 p-4 flex flex-col">
           <Skeleton className="w-full aspect-[16/9] rounded-xl mb-4" />
           <Skeleton className="w-24 h-4 rounded mb-2" />
           <Skeleton className="w-3/4 h-5 rounded mb-2" />
           <Skeleton className="w-full h-12 rounded mt-auto" />
         </div>
-        <div className="w-[270px] sm:w-[320px] h-[360px] sm:h-[430px] glass rounded-2xl border border-accent-purple/30 p-4 flex flex-col shadow-glow">
-          <Skeleton className="w-full aspect-[16/9] rounded-xl mb-4" />
-          <Skeleton className="w-28 h-4 rounded mb-2" />
-          <Skeleton className="w-5/6 h-6 rounded mb-3" />
-          <Skeleton className="w-full h-10 rounded mb-4" />
-          <div className="mt-auto pt-3 border-t border-border-subtle/40 flex items-center justify-between">
-            <Skeleton className="w-20 h-6 rounded" />
-            <Skeleton className="w-24 h-10 rounded-xl" />
+        <div className="w-[230px] xs:w-[260px] sm:w-[300px] md:w-[320px] h-[310px] xs:h-[350px] sm:h-[400px] md:h-[430px] glass rounded-2xl border border-accent-purple/30 p-3.5 sm:p-4 flex flex-col shadow-glow">
+          <Skeleton className="w-full aspect-[16/9] rounded-xl mb-3 sm:mb-4" />
+          <Skeleton className="w-24 sm:w-28 h-3.5 sm:h-4 rounded mb-2" />
+          <Skeleton className="w-5/6 h-5 sm:h-6 rounded mb-2 sm:mb-3" />
+          <Skeleton className="w-full h-8 sm:h-10 rounded mb-3 sm:mb-4" />
+          <div className="mt-auto pt-2.5 sm:pt-3 border-t border-border-subtle/40 flex items-center justify-between">
+            <Skeleton className="w-16 sm:w-20 h-5 sm:h-6 rounded" />
+            <Skeleton className="w-20 sm:w-24 h-8 sm:h-10 rounded-xl" />
           </div>
         </div>
-        <div className="hidden sm:block w-[280px] h-[380px] glass rounded-2xl border border-border-subtle/30 opacity-40 p-4 flex flex-col">
+        <div className="hidden sm:block w-[260px] md:w-[280px] h-[350px] md:h-[380px] glass rounded-2xl border border-border-subtle/30 opacity-40 p-4 flex flex-col">
           <Skeleton className="w-full aspect-[16/9] rounded-xl mb-4" />
           <Skeleton className="w-24 h-4 rounded mb-2" />
           <Skeleton className="w-3/4 h-5 rounded mb-2" />
@@ -136,7 +136,7 @@ export const UpcomingEventsSection = memo(function UpcomingEventsSection({
     sectionContent = (
       <div
         ref={containerRef}
-        className="relative w-full max-w-6xl mx-auto h-[420px] sm:h-[480px] mt-6 sm:mt-8 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-4 focus-visible:ring-offset-background rounded-2xl"
+        className="relative w-full max-w-6xl mx-auto h-[340px] xs:h-[380px] sm:h-[440px] md:h-[470px] mt-4 sm:mt-8 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-4 focus-visible:ring-offset-background rounded-2xl"
         style={{ perspective: '1200px' }}
         role="group"
         aria-roledescription="carousel"
@@ -164,7 +164,7 @@ export const UpcomingEventsSection = memo(function UpcomingEventsSection({
               // Safe server default (1024 width) prevents layout shifts
               const currentWidth = mounted ? windowWidth : 1024;
               const isMobileViewport = currentWidth < 640;
-              const spread = isMobileViewport ? 120 : 160;
+              const spread = isMobileViewport ? 80 : 160;
 
               // Cover flow 3D math
               const x = absoluteOffset * spread;
@@ -222,7 +222,9 @@ export const UpcomingEventsSection = memo(function UpcomingEventsSection({
                     position: 'absolute',
                     transformStyle: enable3D ? 'preserve-3d' : 'flat',
                   }}
-                  className={`pointer-events-auto w-[270px] sm:w-[320px] h-[360px] sm:h-[430px] group glass rounded-2xl border ${
+                  className={`${
+                    isActive ? 'pointer-events-auto' : 'pointer-events-none sm:pointer-events-auto'
+                  } w-[230px] xs:w-[260px] sm:w-[300px] md:w-[320px] h-[310px] xs:h-[350px] sm:h-[400px] md:h-[430px] group glass rounded-2xl border ${
                     isActive
                       ? 'border-accent-purple/50 shadow-glow'
                       : 'border-border-subtle cursor-pointer'
@@ -242,6 +244,7 @@ export const UpcomingEventsSection = memo(function UpcomingEventsSection({
                     aria-label={`View details for ${event.title}`}
                     tabIndex={isActive ? 0 : -1}
                   >
+
                     {/* Banner Image with 16:9 ratio */}
                     <div className="aspect-[16/9] w-full overflow-hidden relative bg-white/5 flex-shrink-0">
                       {event.bannerImage?.url ? (
