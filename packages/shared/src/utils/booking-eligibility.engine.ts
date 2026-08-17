@@ -88,4 +88,3 @@ export function deriveBookingEligibility(event: BaseEventForBooking): EventBooki
     bookingCTA: cta
   };
 }
-

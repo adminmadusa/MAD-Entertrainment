@@ -171,4 +171,3 @@ export async function adminBulkDeleteEvents(ids: string[]): Promise<any> {
   const { data } = await adminApiClient.post('/admin/events/bulk/delete', { ids });
   return data.data;
 }
-

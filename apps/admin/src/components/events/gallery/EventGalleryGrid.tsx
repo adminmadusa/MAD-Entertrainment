@@ -4,6 +4,7 @@ import Image from 'next/image';
 import React, { useRef, useState } from 'react';
 
 import type { EventGalleryItem } from '@mad/types';
+
 import { EventGalleryLightbox } from './EventGalleryLightbox';
 
 export interface EventGalleryGridProps {
