@@ -69,4 +69,19 @@ describe('public query validation schemas', () => {
       expect(result.data.includeTotal).toBe(expected);
     }
   });
+
+  it.each([
+    ['string false', { bookableOnly: 'false' }, 'false'],
+    ['boolean false', { bookableOnly: false }, 'false'],
+    ['string true', { bookableOnly: 'true' }, 'true'],
+    ['boolean true', { bookableOnly: true }, 'true'],
+  ])('coerces bookableOnly while preserving controller-compatible string output for %s', (_name, payload, expected) => {
+    const result = expectAccepted(listEventsQuerySchema, payload);
+
+    if (result.success) {
+      expect(result.data.bookableOnly).toBe(expected);
+    }
+  });
 });
+
+

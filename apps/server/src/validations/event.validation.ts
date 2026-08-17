@@ -35,6 +35,7 @@ export const listEventsQuerySchema = z.object({
   page: z.coerce.number().int().positive().default(1),
   limit: paginationLimitSchema.default(12),
   includeTotal: booleanQuerySchema.optional(),
+  bookableOnly: booleanQuerySchema.optional(),
 }).strict();
 
 export const getEventSeatLayoutParamSchema = z.object({
