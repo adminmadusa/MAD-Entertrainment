@@ -63,7 +63,7 @@ export const CompletedEventsSection = memo(function CompletedEventsSection({
                     }
                   >
                     {/* Banner Image */}
-                    <div className="aspect-[16/10] sm:aspect-[4/3] w-full overflow-hidden relative bg-white/5 flex-shrink-0">
+                    <div className="aspect-[16/9] w-full overflow-hidden relative bg-white/5 flex-shrink-0">
                       {event.bannerImage?.url ? (
                         <ImageWrapper
                           src={getOptimizedImageUrl(event.bannerImage.url, 600)}

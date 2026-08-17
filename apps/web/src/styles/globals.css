@@ -246,57 +246,7 @@
   100% { transform: translateX(-50%); }
 }
 
-/* ─── Ambient Background Animations (web-only) ──────────────── */
-@keyframes ambient-shift-1 {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  33% { transform: translate(10%, 15%) scale(1.1); }
-  66% { transform: translate(-5%, -10%) scale(0.95); }
-}
-
-@keyframes ambient-shift-2 {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  33% { transform: translate(-15%, -10%) scale(0.9); }
-  66% { transform: translate(5%, 15%) scale(1.08); }
-}
-
-@keyframes ambient-shift-3 {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  50% { transform: translate(-10%, 10%) scale(1.15); }
-}
-
-.animate-ambient-shift-1 {
-  animation: ambient-shift-1 50s infinite alternate ease-in-out;
-  will-change: transform;
-  transform: translate3d(0, 0, 0);
-  -webkit-transform: translate3d(0, 0, 0);
-}
-
-.animate-ambient-shift-2 {
-  animation: ambient-shift-2 60s infinite alternate ease-in-out;
-  will-change: transform;
-  transform: translate3d(0, 0, 0);
-  -webkit-transform: translate3d(0, 0, 0);
-}
-
-.animate-ambient-shift-3 {
-  animation: ambient-shift-3 40s infinite alternate ease-in-out;
-  will-change: transform;
-  transform: translate3d(0, 0, 0);
-  -webkit-transform: translate3d(0, 0, 0);
-}
-
-@media (max-width: 768px) {
-  .animate-ambient-shift-1,
-  .animate-ambient-shift-2,
-  .animate-ambient-shift-3 {
-    animation: none !important;
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .animate-ambient-shift-1,
-  .animate-ambient-shift-2,
-  .animate-ambient-shift-3,
   .animate-float,
   .animate-scroll-dot {
     animation: none !important;
