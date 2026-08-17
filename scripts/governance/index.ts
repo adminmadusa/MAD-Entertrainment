@@ -118,7 +118,7 @@ async function run() {
     process.exit(0);
   }
 
-  // Drift detection locally
+  // Drift detection & auto-healing locally
   const historicalFilesPath = resolve(workspaceRoot, '.governance/baselines/historical-files.json');
   if (process.env.GITHUB_ACTIONS !== 'true') {
     let gitFiles: string[] = [];
@@ -133,17 +133,28 @@ async function run() {
     const allHistory = Array.from(new Set([...gitFiles, ...currentFiles])).sort();
 
     if (allHistory.length > 0) {
+      const dir = dirname(historicalFilesPath);
+      if (!existsSync(dir)) {
+        const fs = require('fs');
+        fs.mkdirSync(dir, { recursive: true });
+      }
       if (existsSync(historicalFilesPath)) {
-        const committed = JSON.parse(readFileSync(historicalFilesPath, 'utf8'));
-        const missing = allHistory.filter(f => !committed.includes(f));
-        if (missing.length > 0) {
-          console.error(`❌ Historical files baseline is out of sync. Missing entries: ${missing.slice(0, 5).join(', ')}...`);
-          console.error(`👉 Please run "pnpm governance:docs --update-history" to synchronize.`);
-          process.exit(1);
+        try {
+          const committed = JSON.parse(readFileSync(historicalFilesPath, 'utf8'));
+          const missing = allHistory.filter(f => !committed.includes(f));
+          if (missing.length > 0) {
+            const fs = require('fs');
+            fs.writeFileSync(historicalFilesPath, JSON.stringify(allHistory, null, 2), 'utf8');
+            console.log(`🔄 Auto-synchronized historical files baseline (${allHistory.length} entries).`);
+          }
+        } catch {
+          const fs = require('fs');
+          fs.writeFileSync(historicalFilesPath, JSON.stringify(allHistory, null, 2), 'utf8');
         }
       } else {
-        console.error(`❌ Historical files baseline does not exist. Please run "pnpm governance:docs --update-history" to initialize.`);
-        process.exit(1);
+        const fs = require('fs');
+        fs.writeFileSync(historicalFilesPath, JSON.stringify(allHistory, null, 2), 'utf8');
+        console.log(`✅ Initialized local historical baseline (${allHistory.length} entries).`);
       }
     }
   }

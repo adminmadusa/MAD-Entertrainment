@@ -63,11 +63,10 @@ jobs:
       - name: Run CI Governance Abstraction Checks (Blocking)
         run: npx tsx scripts/ci-governance-check.ts
 
-      - name: Run CI Governance Documentation Validation (Advisory)
+      - name: Run CI Governance Documentation Validation (Blocking)
         run: pnpm run governance:docs --incremental
-        continue-on-error: true
         env:
-          GOVERNANCE_MIN_HEALTH_SCORE: 50
+          GOVERNANCE_MIN_HEALTH_SCORE: 80
 
 
       - name: Build Workspace
