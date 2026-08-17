@@ -117,7 +117,7 @@ export function CloudinaryUpload({
       {value?.url ? (
         <div className={`relative ${aspectRatio} rounded-xl overflow-hidden border border-border-subtle group`}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={value.url} alt={value.alt ?? 'Uploaded image'} className="w-full h-full object-cover" />
+          <img src={value.url} alt={value.alt ?? 'Uploaded image'} width={400} height={300} className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
             <button
               type="button"

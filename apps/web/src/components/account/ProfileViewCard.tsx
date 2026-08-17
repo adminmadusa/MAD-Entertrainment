@@ -82,6 +82,8 @@ export function ProfileViewCard({ user, onEditClick }: ProfileViewCardProps) {
                   <img
                     src={user.picture}
                     alt={userName}
+                    width={64}
+                    height={64}
                     className="w-full h-full object-cover"
                   />
                 ) : (

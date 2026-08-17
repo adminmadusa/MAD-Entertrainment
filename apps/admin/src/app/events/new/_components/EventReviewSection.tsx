@@ -207,7 +207,7 @@ export const EventReviewSection: React.FC<EventReviewSectionProps> = ({
             <span className="text-text-muted block mb-2">Cover Image</span>
             {coverImage ? (
               /* eslint-disable-next-line @next/next/no-img-element */
-              <img src={coverImage.url} alt="Cover" className="w-full h-32 object-cover rounded-lg border border-border" />
+              <img src={coverImage.url} alt="Cover" width={320} height={128} className="w-full h-32 object-cover rounded-lg border border-border" />
             ) : (
               <div className="w-full h-32 bg-surface-elevated rounded-lg flex items-center justify-center text-text-muted">No Image</div>
             )}
@@ -216,7 +216,7 @@ export const EventReviewSection: React.FC<EventReviewSectionProps> = ({
             <span className="text-text-muted block mb-2">Poster Image</span>
             {posterImage ? (
               /* eslint-disable-next-line @next/next/no-img-element */
-              <img src={posterImage.url} alt="Poster" className="w-full h-32 object-cover rounded-lg border border-border" />
+              <img src={posterImage.url} alt="Poster" width={320} height={128} className="w-full h-32 object-cover rounded-lg border border-border" />
             ) : (
               <div className="w-full h-32 bg-surface-elevated rounded-lg flex items-center justify-center text-text-muted">No Image</div>
             )}
