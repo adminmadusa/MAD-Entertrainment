@@ -1,15 +1,22 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { EventStatus } from '@mad/shared';
+import { EventStatus, DEFAULT_EVENT_DURATION_HOURS } from '@mad/shared';
 
 import { Event } from '../models/event.schema';
 import { auditLog } from '../utils/audit';
 import { logger } from '../utils/logger';
+import { CacheService } from './cache.service';
 import { EventLifecycleService } from './event-lifecycle.service';
 
 vi.mock('../models/event.schema', () => ({
   Event: {
     updateMany: vi.fn(),
+  },
+}));
+
+vi.mock('./cache.service', () => ({
+  CacheService: {
+    delPattern: vi.fn().mockResolvedValue(undefined),
   },
 }));
 
@@ -29,9 +36,12 @@ describe('EventLifecycleService', () => {
     vi.clearAllMocks();
   });
 
-  it('archives old events that ended more than 30 days ago', async () => {
+  it('archives old events that ended more than 30 days ago (with and without explicit endDate)', async () => {
     const now = new Date('2026-06-22T12:00:00.000Z');
     const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    const defaultDurationMs = DEFAULT_EVENT_DURATION_HOURS * 60 * 60 * 1000;
+    const thirtyDaysPlusDurationAgo = new Date(thirtyDaysAgo.getTime() - defaultDurationMs);
+
     vi.mocked(Event.updateMany).mockResolvedValue({ matchedCount: 2, modifiedCount: 2 } as any);
 
     const result = await EventLifecycleService.archiveOldEvents(now);
@@ -39,14 +49,19 @@ describe('EventLifecycleService', () => {
     expect(Event.updateMany).toHaveBeenCalledWith(
       {
         status: { $in: [EventStatus.PUBLISHED, EventStatus.COMPLETED] },
-        endDate: { $exists: true, $lt: thirtyDaysAgo },
         isDeleted: { $ne: true },
+        $or: [
+          { endDate: { $exists: true, $ne: null, $lt: thirtyDaysAgo } },
+          { endDate: null, startDate: { $lt: thirtyDaysPlusDurationAgo } },
+          { endDate: { $exists: false }, startDate: { $lt: thirtyDaysPlusDurationAgo } },
+        ],
       },
       {
         $set: { status: EventStatus.ARCHIVED },
         $inc: { eventVersion: 1 },
       }
     );
+    expect(CacheService.delPattern).toHaveBeenCalledWith('events:*');
     expect(result).toEqual({ matchedCount: 2, modifiedCount: 2, evaluatedAt: now });
     expect(logger.info).toHaveBeenCalledWith(
       { matchedCount: 2, modifiedCount: 2, evaluatedAt: now.toISOString() },
@@ -73,6 +88,7 @@ describe('EventLifecycleService', () => {
     await EventLifecycleService.archiveOldEvents(now);
 
     expect(Event.updateMany).toHaveBeenCalled();
+    expect(CacheService.delPattern).not.toHaveBeenCalled();
     expect(logger.info).not.toHaveBeenCalled();
     expect(auditLog).not.toHaveBeenCalled();
   });
@@ -89,11 +105,14 @@ describe('EventLifecycleService', () => {
     expect(firstRun.modifiedCount).toBe(1);
     expect(secondRun.modifiedCount).toBe(0);
     expect(Event.updateMany).toHaveBeenCalledTimes(2);
+    expect(CacheService.delPattern).toHaveBeenCalledTimes(1);
   });
 
   describe('completeEndedEvents', () => {
-    it('marks ended published events as completed', async () => {
+    it('marks ended published events as completed and invalidates event cache', async () => {
       const now = new Date('2026-06-22T12:00:00.000Z');
+      const defaultDurationMs = DEFAULT_EVENT_DURATION_HOURS * 60 * 60 * 1000;
+
       vi.mocked(Event.updateMany).mockResolvedValue({ matchedCount: 3, modifiedCount: 3 } as any);
 
       const result = await EventLifecycleService.completeEndedEvents(now);
@@ -101,14 +120,19 @@ describe('EventLifecycleService', () => {
       expect(Event.updateMany).toHaveBeenCalledWith(
         {
           status: EventStatus.PUBLISHED,
-          endDate: { $exists: true, $lt: now },
           isDeleted: { $ne: true },
+          $or: [
+            { endDate: { $exists: true, $ne: null, $lt: now } },
+            { endDate: null, startDate: { $lt: new Date(now.getTime() - defaultDurationMs) } },
+            { endDate: { $exists: false }, startDate: { $lt: new Date(now.getTime() - defaultDurationMs) } },
+          ],
         },
         {
           $set: { status: EventStatus.COMPLETED },
           $inc: { eventVersion: 1 },
         }
       );
+      expect(CacheService.delPattern).toHaveBeenCalledWith('events:*');
       expect(result).toEqual({ matchedCount: 3, modifiedCount: 3 });
       expect(logger.info).toHaveBeenCalledWith(
         { matchedCount: 3, modifiedCount: 3, evaluatedAt: now.toISOString() },
@@ -128,13 +152,14 @@ describe('EventLifecycleService', () => {
       );
     });
 
-    it('does not log or audit if no events were modified', async () => {
+    it('does not log or audit or invalidate cache if no events were modified', async () => {
       const now = new Date('2026-06-22T12:00:00.000Z');
       vi.mocked(Event.updateMany).mockResolvedValue({ matchedCount: 0, modifiedCount: 0 } as any);
 
       const result = await EventLifecycleService.completeEndedEvents(now);
 
       expect(result).toEqual({ matchedCount: 0, modifiedCount: 0 });
+      expect(CacheService.delPattern).not.toHaveBeenCalled();
       expect(logger.info).not.toHaveBeenCalled();
       expect(auditLog).not.toHaveBeenCalled();
     });

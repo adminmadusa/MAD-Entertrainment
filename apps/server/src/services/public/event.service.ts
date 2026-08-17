@@ -230,12 +230,17 @@ export class PublicEventService {
     if (state === 'active') {
       pipeline.push({ $match: { lifecycle: "UPCOMING" } });
     } else if (state === 'past' || state === 'completed') {
-      pipeline.push({ $match: { lifecycle: { $in: ["LIVE", "COMPLETED"] } } });
+      pipeline.push({ $match: { lifecycle: "COMPLETED" } });
     }
+
+    const isPastState = state === 'past' || state === 'completed';
+    const sortStage = isPastState
+      ? { $sort: { startDate: -1 as const } }
+      : { $sort: { sortWeight: 1 as const, startDate: 1 as const } };
 
     pipeline.push(
       { $addFields: { sortWeight: sortWeightCond } },
-      { $sort: { sortWeight: 1, startDate: 1 } }
+      sortStage
     );
 
     let events: any[] = [];

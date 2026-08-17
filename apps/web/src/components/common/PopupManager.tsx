@@ -18,7 +18,7 @@ import { FloatingCountdown } from './FloatingCountdown';
 // This is an additive gate — it does NOT change the semantics of an
 // empty showOnPages[] array (which still means "all eligible pages").
 // Adding new marketing routes here makes them eligible automatically.
-export const POPUP_ELIGIBLE_PREFIXES = ['/', '/events', '/past-events', '/gallery'];
+export const POPUP_ELIGIBLE_PREFIXES = ['/', '/events'];
 
 function isEligibleRoute(pathname: string): boolean {
   return POPUP_ELIGIBLE_PREFIXES.some(

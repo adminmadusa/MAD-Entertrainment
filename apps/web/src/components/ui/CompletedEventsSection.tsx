@@ -40,6 +40,10 @@ export const CompletedEventsSection = memo(function CompletedEventsSection({
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {initialEvents.map((event, index) => {
             const photoCount = event.gallery?.itemCount ?? 0;
+            const hasPublishedGallery = event.gallery?.status === 'PUBLISHED' && photoCount > 0;
+            const destinationUrl = hasPublishedGallery
+              ? `/events/${event.slug}/gallery`
+              : `/events/${event.slug}`;
 
             return (
               <Reveal key={event._id} delay={index * 100}>
@@ -49,10 +53,14 @@ export const CompletedEventsSection = memo(function CompletedEventsSection({
                   className="group relative glass rounded-2xl border border-border-subtle overflow-hidden hover:border-accent-pink/40 hover:shadow-glow-pink-sm transition-all duration-300 flex flex-col h-[400px] sm:h-[450px]"
                 >
                   <Link
-                    href={`/events/${event.slug}/gallery`}
+                    href={destinationUrl}
                     id={`completed-event-card-${event.slug}`}
                     className="flex flex-col h-full focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-pink"
-                    aria-label={`View Happy Moments gallery for ${event.title}`}
+                    aria-label={
+                      hasPublishedGallery
+                        ? `View Happy Moments gallery for ${event.title}`
+                        : `View details for ${event.title}`
+                    }
                   >
                     {/* Banner Image */}
                     <div className="aspect-[4/3] w-full overflow-hidden relative bg-white/5 flex-shrink-0">
@@ -85,7 +93,7 @@ export const CompletedEventsSection = memo(function CompletedEventsSection({
                       </span>
 
                       {/* Photo Count Badge */}
-                      {photoCount > 0 && (
+                      {hasPublishedGallery && (
                         <span className="absolute bottom-3 right-3 px-2.5 py-1 text-[10px] font-bold bg-accent-pink/90 backdrop-blur-md text-white rounded-full flex items-center gap-1">
                           <Images className="w-3 h-3" aria-hidden="true" />
                           {photoCount} Photos
@@ -110,10 +118,10 @@ export const CompletedEventsSection = memo(function CompletedEventsSection({
                     {/* Action Panel */}
                     <div className="px-4 pb-4 sm:px-5 sm:pb-5 pt-3 border-t border-border-subtle/30 flex items-center justify-between mt-auto bg-black/35 w-full">
                       <span className="text-[10px] sm:text-xs font-semibold text-accent-pink-light italic">
-                        Happy Moments
+                        {hasPublishedGallery ? 'Happy Moments' : 'Event Recap'}
                       </span>
                       <div className="px-3.5 py-2 text-[10px] sm:text-xs font-bold text-accent-pink bg-accent-pink/10 border border-accent-pink/30 rounded-xl text-center group-hover:bg-accent-pink/20 transition-colors">
-                        View Gallery →
+                        {hasPublishedGallery ? 'View Gallery →' : 'View Details →'}
                       </div>
                     </div>
                   </Link>

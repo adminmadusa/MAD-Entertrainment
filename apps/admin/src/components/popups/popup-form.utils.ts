@@ -1,10 +1,8 @@
 import type { ImageAsset, PopupCampaign } from '@mad/types';
 
 export const POPUP_PAGE_OPTIONS = [
-  { value: '/',            label: 'Home Page' },
-  { value: '/events',      label: 'Events Listing' },
-  { value: '/past-events', label: 'Past Events' },
-  { value: '/gallery',     label: 'Gallery' },
+  { value: '/',       label: 'Home Page' },
+  { value: '/events', label: 'Events Listing' },
 ];
 
 export interface PopupFormState {
