@@ -1,7 +1,7 @@
-import mongoose, { Types } from 'mongoose';
+import { Types } from 'mongoose';
 
 import { deriveEventCapabilities } from '@mad/shared';
-import { AddGalleryItemsInput, ReorderGalleryItemsInput, UpdateGalleryItemInput, UpdateGallerySettingsInput } from '@mad/validations';
+import { AddGalleryItemsInput, UpdateGallerySettingsInput } from '@mad/validations';
 
 import { AppError } from '../../middleware/error.middleware';
 import { EventGallerySettings } from '../../models/event-gallery-settings.schema';
@@ -31,7 +31,8 @@ export class AdminEventGalleryService {
   }
 
   /**
-   * Updates the gallery settings (heading, publication state, etc.)
+   * Updates the gallery publication state.
+   * Once published, the gallery cannot be un-published.
    */
   static async updateSettings(eventId: string, data: UpdateGallerySettingsInput, adminId: string) {
     const event = await Event.findById(eventId).select('_id status startDate endDate bookingStartDate bookingEndDate').lean();
@@ -46,7 +47,7 @@ export class AdminEventGalleryService {
     });
 
     if (!caps.capabilities.canPublishGallery) {
-      throw new AppError('Galleries can only be modified once booking is closed', 400);
+      throw new AppError('Galleries can only be published once the event is completed', 400);
     }
 
     let settings = await EventGallerySettings.findOne({ eventId });
@@ -54,16 +55,15 @@ export class AdminEventGalleryService {
       settings = new EventGallerySettings({ eventId });
     }
 
-    if (data.heading !== undefined) settings.heading = data.heading;
-    if (data.thankYouMessage !== undefined) settings.thankYouMessage = data.thankYouMessage;
-    if (data.highlights !== undefined) settings.highlights = data.highlights;
+    // Hard lock: once published it stays published
+    if (settings.published) {
+      throw new AppError('Gallery is already published and cannot be modified', 400);
+    }
 
-    if (data.published !== undefined && settings.published !== data.published) {
-      settings.published = data.published;
-      if (data.published) {
-        settings.publishedAt = new Date();
-        settings.publishedBy = new Types.ObjectId(adminId);
-      }
+    if (data.published) {
+      settings.published = true;
+      settings.publishedAt = new Date();
+      settings.publishedBy = new Types.ObjectId(adminId);
     }
 
     await settings.save();
@@ -72,6 +72,7 @@ export class AdminEventGalleryService {
 
   /**
    * Uploads/registers new gallery items.
+   * Blocked once the gallery is published (final-state lock).
    */
   static async addItems(eventId: string, data: AddGalleryItemsInput, adminId: string) {
     const event = await Event.findById(eventId).select('_id status startDate endDate bookingStartDate bookingEndDate').lean();
@@ -86,7 +87,13 @@ export class AdminEventGalleryService {
     });
 
     if (!caps.capabilities.canUploadGallery) {
-      throw new AppError('Galleries can only be modified once booking is closed', 400);
+      throw new AppError('Galleries can only be uploaded once booking is closed', 400);
+    }
+
+    // Hard lock: prevent uploads once gallery is published
+    const existingSettings = await EventGallerySettings.findOne({ eventId }).lean();
+    if (existingSettings?.published) {
+      throw new AppError('Modifications are locked: Gallery is already published', 400);
     }
 
     // Prevent duplicates by publicId
@@ -103,7 +110,7 @@ export class AdminEventGalleryService {
 
     const docsToInsert = newItems.map((item, index) => {
       const isCover = !hasCover && index === 0;
-      if (isCover) hasCover = true; // Only first item gets cover if none exists
+      if (isCover) hasCover = true;
 
       return {
         ...item,
@@ -123,138 +130,5 @@ export class AdminEventGalleryService {
         id: doc._id ? doc._id.toString() : '',
       };
     });
-  }
-
-  /**
-   * Deletes a gallery item and reassigns cover if necessary.
-   */
-  static async deleteItem(eventId: string, itemId: string) {
-    const session = await mongoose.startSession();
-    session.startTransaction();
-    try {
-      const item = await EventGallery.findOne({ _id: itemId, eventId }).session(session);
-      if (!item) throw new AppError('Gallery item not found', 404);
-
-      const wasCover = item.isCover;
-      await EventGallery.deleteOne({ _id: itemId }).session(session);
-
-      if (wasCover) {
-        // Find next candidate for cover
-        const nextCandidate = await EventGallery.findOne({ eventId })
-          .sort({ sortOrder: 1, createdAt: 1 })
-          .session(session);
-
-        if (nextCandidate) {
-          nextCandidate.isCover = true;
-          await nextCandidate.save({ session });
-        }
-      }
-
-      await this.normalizeSortOrders(eventId, session);
-      await session.commitTransaction();
-    } catch (error) {
-      await session.abortTransaction();
-      throw error;
-    } finally {
-      session.endSession();
-    }
-  }
-
-  /**
-   * Sets a specific item as the cover image.
-   */
-  static async setCover(eventId: string, itemId: string) {
-    const session = await mongoose.startSession();
-    session.startTransaction();
-    try {
-      const newCover = await EventGallery.findOne({ _id: itemId, eventId }).session(session);
-      if (!newCover) throw new AppError('Gallery item not found', 404);
-      if (newCover.isCover) {
-        await session.abortTransaction();
-        const obj = newCover.toObject();
-        return { ...obj, id: newCover._id ? newCover._id.toString() : '' };
-      }
-
-      // Unset previous cover
-      await EventGallery.updateMany(
-        { eventId, isCover: true },
-        { $set: { isCover: false } }
-      ).session(session);
-
-      // Set new cover
-      newCover.isCover = true;
-      await newCover.save({ session });
-
-      await session.commitTransaction();
-      const obj = newCover.toObject();
-      return { ...obj, id: newCover._id ? newCover._id.toString() : '' };
-    } catch (error) {
-      await session.abortTransaction();
-      throw error;
-    } finally {
-      session.endSession();
-    }
-  }
-
-  /**
-   * Updates basic properties of a gallery item.
-   */
-  static async updateItem(eventId: string, itemId: string, data: UpdateGalleryItemInput) {
-    const item = await EventGallery.findOne({ _id: itemId, eventId });
-    if (!item) throw new AppError('Gallery item not found', 404);
-
-    if (data.caption !== undefined) item.caption = data.caption;
-    if (data.visibility !== undefined) item.visibility = data.visibility;
-
-    await item.save();
-    const obj = item.toObject();
-    return {
-      ...obj,
-      id: item._id ? item._id.toString() : '',
-    };
-  }
-
-  /**
-   * Bulk reorders gallery items and normalizes their sortOrder.
-   */
-  static async reorderItems(eventId: string, data: ReorderGalleryItemsInput) {
-    const session = await mongoose.startSession();
-    session.startTransaction();
-    try {
-      const items = await EventGallery.find({ eventId }).session(session);
-      const itemMap = new Map(items.map(i => [i.id, i]));
-
-      for (const update of data.items) {
-        const item = itemMap.get(update.id);
-        if (item) {
-          item.sortOrder = update.sortOrder;
-          await item.save({ session });
-        }
-      }
-
-      await this.normalizeSortOrders(eventId, session);
-      await session.commitTransaction();
-    } catch (error) {
-      await session.abortTransaction();
-      throw error;
-    } finally {
-      session.endSession();
-    }
-  }
-
-  /**
-   * Internal helper to ensure sortOrder is contiguous (0, 1, 2, 3...)
-   */
-  private static async normalizeSortOrders(eventId: string, session: mongoose.ClientSession) {
-    const items = await EventGallery.find({ eventId })
-      .sort({ sortOrder: 1, createdAt: 1 })
-      .session(session);
-
-    for (let i = 0; i < items.length; i++) {
-      if (items[i].sortOrder !== i) {
-        items[i].sortOrder = i;
-        await items[i].save({ session });
-      }
-    }
   }
 }

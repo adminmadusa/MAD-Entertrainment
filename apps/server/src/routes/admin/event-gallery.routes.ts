@@ -3,10 +3,7 @@ import { Router } from 'express';
 import { AdminRole } from '@mad/shared';
 import {
   addGalleryItemsSchema,
-  updateGalleryItemSchema,
-  reorderGalleryItemsSchema,
-  updateGallerySettingsSchema,
-  setCoverImageSchema
+  updateGallerySettingsSchema
 } from '@mad/validations';
 
 import * as eventGalleryController from '../../controllers/admin/event-gallery.controller';
@@ -21,14 +18,6 @@ router.use(requireRole(AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER
 router.get('/', eventGalleryController.getGallery);
 
 router.post('/items', validate(addGalleryItemsSchema), eventGalleryController.addItems);
-
-router.patch('/items/order', validate(reorderGalleryItemsSchema), eventGalleryController.reorderItems);
-
-router.patch('/items/:itemId/cover', validate(setCoverImageSchema), eventGalleryController.setCover);
-
-router.patch('/items/:itemId', validate(updateGalleryItemSchema), eventGalleryController.updateItem);
-
-router.delete('/items/:itemId', eventGalleryController.deleteItem);
 
 router.patch('/settings', validate(updateGallerySettingsSchema), eventGalleryController.updateSettings);
 

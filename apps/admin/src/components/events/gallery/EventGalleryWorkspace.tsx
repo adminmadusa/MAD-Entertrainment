@@ -1,14 +1,14 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import React from 'react';
 
-import { adminGetGallery } from '@/lib/api/admin/event-gallery.service';
+import { adminAddGalleryItems, adminGetGallery } from '@/lib/api/admin/event-gallery.service';
+import { UnifiedMediaUpload } from '@/components/UnifiedMediaUpload';
 import { Spinner } from '@mad/ui';
 
 import { EventGalleryGrid } from './EventGalleryGrid';
 import { EventGallerySettingsPanel } from './EventGallerySettingsPanel';
-import { EventGalleryUploadZone } from './EventGalleryUploadZone';
 
 export interface EventGalleryWorkspaceProps {
   eventId: string;
@@ -18,11 +18,13 @@ export interface EventGalleryWorkspaceProps {
     canUploadGallery: boolean;
     canPublishGallery: boolean;
   };
+  readOnly?: boolean;
 }
 
 export const EventGalleryWorkspace = React.memo(function EventGalleryWorkspace({
   eventId,
   capabilities,
+  readOnly = false,
 }: EventGalleryWorkspaceProps) {
   const {
     data,
@@ -31,6 +33,11 @@ export const EventGalleryWorkspace = React.memo(function EventGalleryWorkspace({
   } = useQuery({
     queryKey: ['admin-gallery', eventId],
     queryFn: () => adminGetGallery(eventId),
+  });
+
+  const addItemsMutation = useMutation({
+    mutationFn: (items: any[]) => adminAddGalleryItems(eventId, items),
+    onSuccess: () => refetch(),
   });
 
   if (isLoading) {
@@ -46,23 +53,38 @@ export const EventGalleryWorkspace = React.memo(function EventGalleryWorkspace({
 
   return (
     <div className="space-y-6">
-      {capabilities && !capabilities.canUploadGallery && (
-        <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 text-sm flex items-center gap-2">
-          <span>⚠️ Gallery uploads and publishing settings are locked until the event starts and completes.</span>
-        </div>
-      )}
-
       {/* Upload Section Full Width */}
-      <EventGalleryUploadZone
-        eventId={eventId}
-        onUploadComplete={() => refetch()}
-        disabled={capabilities && !capabilities.canUploadGallery}
-      />
+      {readOnly ? (
+        <div className="border border-border-subtle bg-surface-elevated/40 opacity-70 rounded-2xl p-6 sm:p-8 text-center cursor-not-allowed">
+          <div className="text-3xl sm:text-4xl mb-3">🔒</div>
+          <h3 className="text-white font-medium text-sm sm:text-base mb-1">Gallery Locked (Published)</h3>
+          <p className="text-text-muted text-xs sm:text-sm">Published galleries cannot be modified</p>
+        </div>
+      ) : !capabilities?.canUploadGallery ? (
+        <div className="border border-border-subtle bg-surface-elevated/40 opacity-40 rounded-2xl p-6 sm:p-8 text-center cursor-not-allowed">
+          <div className="text-3xl sm:text-4xl mb-3">🔒</div>
+          <h3 className="text-white font-medium text-sm sm:text-base mb-1">Gallery Uploads Locked</h3>
+          <p className="text-text-muted text-xs sm:text-sm">This event has not completed yet</p>
+        </div>
+      ) : (
+        <UnifiedMediaUpload
+          triggerOnly
+          disabled={addItemsMutation.isPending}
+          onUploadsSuccess={(assets) => {
+            const payload = assets.map((asset) => ({
+              url: asset.url,
+              publicId: asset.publicId,
+              mediaType: 'IMAGE' as any,
+            }));
+            addItemsMutation.mutate(payload);
+          }}
+        />
+      )}
 
       <div className="flex flex-col lg:flex-row gap-6 items-start">
         {/* Left Column: Grid */}
         <div className="w-full lg:w-2/3">
-          <EventGalleryGrid eventId={eventId} items={items} />
+          <EventGalleryGrid eventId={eventId} items={items} readOnly={readOnly} />
         </div>
 
         {/* Right Column: Settings */}
@@ -71,7 +93,7 @@ export const EventGalleryWorkspace = React.memo(function EventGalleryWorkspace({
             eventId={eventId}
             settings={settings}
             mediaCount={items.length}
-            disabled={capabilities && !capabilities.canPublishGallery}
+            disabled={capabilities && (!capabilities.canPublishGallery || readOnly)}
           />
         </div>
       </div>

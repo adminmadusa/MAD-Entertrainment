@@ -49,7 +49,7 @@ export default function EventGalleryPage() {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-border-subtle pb-4">
         <div>
           <h1 className="text-xl sm:text-2xl font-black text-white">Manage Gallery</h1>
-          <p className="text-text-muted text-xs sm:text-sm mt-0.5">Manage event media, cover images, and visibility</p>
+          <p className="text-text-muted text-xs sm:text-sm mt-0.5">Upload and publish event photos</p>
         </div>
         <Link
           href={`/events/${id}/edit`}
@@ -59,7 +59,11 @@ export default function EventGalleryPage() {
         </Link>
       </div>
 
-      <EventGalleryWorkspace eventId={id} capabilities={event.capabilities} />
+      <EventGalleryWorkspace
+        eventId={id}
+        capabilities={event.capabilities}
+        readOnly={event.gallery?.status === 'PUBLISHED'}
+      />
     </div>
   );
 }

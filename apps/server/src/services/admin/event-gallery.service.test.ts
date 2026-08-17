@@ -1,8 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { AdminEventGalleryService } from './event-gallery.service';
-import { EventGallery, MediaVisibility } from '../../models/event-gallery.schema';
+import { EventGallery } from '../../models/event-gallery.schema';
+import { EventGallerySettings } from '../../models/event-gallery-settings.schema';
 import { Event } from '../../models/event.schema';
-import mongoose, { Types } from 'mongoose';
+import { Types } from 'mongoose';
 
 vi.mock('../../config/env', () => ({
   getEnv: vi.fn().mockReturnValue({
@@ -16,14 +17,6 @@ vi.mock('../../config/env', () => ({
 vi.mock('../../models/event-gallery.schema');
 vi.mock('../../models/event-gallery-settings.schema');
 vi.mock('../../models/event.schema');
-
-// Mock mongoose transactions
-vi.spyOn(mongoose, 'startSession').mockResolvedValue({
-  startTransaction: vi.fn(),
-  commitTransaction: vi.fn(),
-  abortTransaction: vi.fn(),
-  endSession: vi.fn(),
-} as any);
 
 describe('AdminEventGalleryService', () => {
   const eventId = new Types.ObjectId().toString();
@@ -42,6 +35,11 @@ describe('AdminEventGalleryService', () => {
           bookingEndDate: new Date('2026-07-10T12:00:00.000Z'),
         })
       })
+    });
+
+    // Default: gallery not yet published
+    (EventGallerySettings.findOne as any).mockReturnValue({
+      lean: vi.fn().mockResolvedValue(null),
     });
   });
 
@@ -72,65 +70,30 @@ describe('AdminEventGalleryService', () => {
       ]);
       expect(items).toHaveLength(2);
     });
-  });
 
-  describe('updateItem', () => {
-    it('should update caption and visibility', async () => {
-      const mockItem = {
-        _id: '1',
-        caption: 'old',
-        visibility: MediaVisibility.PUBLIC,
-        save: vi.fn().mockResolvedValue(true),
-        toObject: function() { return this; }
-      };
-
-      (EventGallery.findOne as any).mockResolvedValue(mockItem);
-
-      await AdminEventGalleryService.updateItem(eventId, '1', {
-        caption: 'new',
-        visibility: MediaVisibility.PRIVATE
+    it('should reject uploads if the gallery is already published (hard lock)', async () => {
+      (EventGallerySettings.findOne as any).mockReturnValue({
+        lean: vi.fn().mockResolvedValue({ published: true }),
       });
 
-      expect(mockItem.caption).toBe('new');
-      expect(mockItem.visibility).toBe(MediaVisibility.PRIVATE);
-      expect(mockItem.save).toHaveBeenCalled();
+      await expect(
+        AdminEventGalleryService.addItems(eventId, {
+          items: [{ url: 'url1', publicId: 'p1', mediaType: 'IMAGE' as any, assetProvider: 'cloudinary' }]
+        }, adminId)
+      ).rejects.toThrow('Modifications are locked: Gallery is already published');
     });
   });
 
-  describe('setCover', () => {
-    it('should unset previous cover and set new cover', async () => {
-      const mockNewCover = {
-        _id: '2',
-        isCover: false,
-        save: vi.fn().mockResolvedValue(true),
-        toObject: function() { return this; }
-      };
-
-      const mockSession = {
-        startTransaction: vi.fn(),
-        commitTransaction: vi.fn(),
-        abortTransaction: vi.fn(),
-        endSession: vi.fn(),
-      };
-      (mongoose.startSession as any).mockResolvedValue(mockSession);
-
-      (EventGallery.findOne as any).mockReturnValue({
-        session: vi.fn().mockResolvedValue(mockNewCover)
+  describe('updateSettings', () => {
+    it('should reject publish toggle if gallery is already published (one-way lock)', async () => {
+      (EventGallerySettings.findOne as any).mockResolvedValue({
+        published: true,
+        save: vi.fn(),
       });
 
-      (EventGallery.updateMany as any).mockReturnValue({
-        session: vi.fn().mockResolvedValue({ modifiedCount: 1 })
-      });
-
-      await AdminEventGalleryService.setCover(eventId, '2');
-
-      expect(EventGallery.updateMany).toHaveBeenCalledWith(
-        { eventId, isCover: true },
-        { $set: { isCover: false } }
-      );
-      expect(mockNewCover.isCover).toBe(true);
-      expect(mockNewCover.save).toHaveBeenCalledWith({ session: mockSession });
-      expect(mockSession.commitTransaction).toHaveBeenCalled();
+      await expect(
+        AdminEventGalleryService.updateSettings(eventId, { published: true }, adminId)
+      ).rejects.toThrow('Gallery is already published and cannot be modified');
     });
   });
 });
