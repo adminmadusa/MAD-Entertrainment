@@ -38,8 +38,5 @@
     "typescript": "^5.9.3",
     "vitest": "^4.1.7",
     "ts-node": "^10.9.2"
-  },
-  "dependencies": {
-    "socket.io-client": "^4.8.1"
   }
 }
