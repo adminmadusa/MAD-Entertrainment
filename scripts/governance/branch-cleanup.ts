@@ -8,12 +8,12 @@
  * 2. Protects core branches (develop, live, main, master).
  * 3. Synchronizes develop with origin/develop.
  * 4. Verifies merge reachability / tree-equivalence to prevent deleting unmerged work.
- * 5. Safely deletes local and remote task branches.
+ * 5. Safely deletes local and remote task branches using direct binary execution (no shell interpolation).
  * 6. Prunes stale remote tracking references.
  * 7. Emits structured report.
  */
 
-import { execSync } from 'child_process';
+import { execFileSync } from 'child_process';
 import { resolve } from 'path';
 
 const PROTECTED_BRANCHES = new Set(['develop', 'live', 'main', 'master']);
@@ -29,8 +29,8 @@ interface CleanupResult {
   errors: string[];
 }
 
-function runGit(cmd: string, cwd: string = workspaceRoot): string {
-  return execSync(cmd, { cwd, encoding: 'utf-8' }).trim();
+function runGit(args: string[], cwd: string = workspaceRoot): string {
+  return execFileSync('git', args, { cwd, encoding: 'utf-8' }).trim();
 }
 
 function printUsage() {
@@ -79,7 +79,7 @@ export async function cleanupBranch(
     }
 
     // 2. Verify clean working tree (RULE-GIT-002)
-    const status = runGit('git status --porcelain');
+    const status = runGit(['status', '--porcelain']);
     if (status.length > 0) {
       throw new Error(
         'RULE-GIT-002 Violation: Working tree has uncommitted changes. Stash or commit them first.'
@@ -88,12 +88,12 @@ export async function cleanupBranch(
     console.log('✓ Working tree is clean.');
 
     // 3. Inspect existing branches
-    const localBranches = runGit('git branch --format="%(refname:short)"')
+    const localBranches = runGit(['branch', '--format=%(refname:short)'])
       .split('\n')
       .map((b) => b.trim())
       .filter(Boolean);
 
-    const remoteBranches = runGit('git branch -r --format="%(refname:short)"')
+    const remoteBranches = runGit(['branch', '-r', '--format=%(refname:short)'])
       .split('\n')
       .map((b) => b.trim())
       .filter(Boolean);
@@ -110,24 +110,24 @@ export async function cleanupBranch(
     }
 
     // 4. Switch to develop and synchronize
-    const currentBranch = runGit('git rev-parse --abbrev-ref HEAD');
+    const currentBranch = runGit(['rev-parse', '--abbrev-ref', 'HEAD']);
     if (currentBranch !== 'develop') {
       console.log('→ Switching to develop...');
       if (!result.dryRun) {
-        runGit('git checkout develop');
+        runGit(['checkout', 'develop']);
       }
     }
 
     console.log('→ Synchronizing develop with origin/develop...');
     if (!result.dryRun) {
-      runGit('git pull origin develop');
+      runGit(['pull', 'origin', 'develop']);
     }
 
     // 5. Reachability and safety checks
     if (hasLocal) {
       let isAncestor = false;
       try {
-        runGit(`git merge-base --is-ancestor ${branchName} develop`);
+        runGit(['merge-base', '--is-ancestor', branchName, 'develop']);
         isAncestor = true;
       } catch {
         isAncestor = false;
@@ -135,7 +135,7 @@ export async function cleanupBranch(
 
       if (!isAncestor) {
         // Fallback: Tree-equivalence diff check
-        const diff = runGit(`git diff develop...${branchName}`);
+        const diff = runGit(['diff', `develop...${branchName}`]);
         if (diff.length > 0) {
           throw new Error(
             `Safety Check Failed: Branch '${branchName}' contains unmerged work not reachable from develop.`
@@ -149,7 +149,7 @@ export async function cleanupBranch(
         console.log(`[DRY RUN] Would delete local branch: git branch -D ${branchName}`);
         result.localDeleted = true;
       } else {
-        runGit(`git branch -D ${branchName}`);
+        runGit(['branch', '-D', branchName]);
         console.log(`✓ Deleted local branch '${branchName}'.`);
         result.localDeleted = true;
       }
@@ -164,7 +164,7 @@ export async function cleanupBranch(
         result.remoteDeleted = true;
       } else {
         try {
-          runGit(`git push origin --delete ${branchName}`);
+          runGit(['push', 'origin', '--delete', branchName]);
           console.log(`✓ Deleted remote branch 'origin/${branchName}'.`);
           result.remoteDeleted = true;
         } catch (err: unknown) {
@@ -176,7 +176,7 @@ export async function cleanupBranch(
 
     // 8. Prune remote tracking references
     if (!result.dryRun) {
-      runGit('git fetch --prune');
+      runGit(['fetch', '--prune']);
       console.log('✓ Pruned remote references.');
       result.pruned = true;
     } else {
