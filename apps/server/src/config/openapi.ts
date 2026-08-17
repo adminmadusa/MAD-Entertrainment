@@ -9,10 +9,6 @@ import {
   paymentVerificationSchema,
   adminDlqRetrySchema,
   addGalleryItemsSchema,
-  updateGalleryItemSchema,
-  setCoverImageSchema,
-  updateGalleryVisibilitySchema,
-  reorderGalleryItemsSchema,
   updateGallerySettingsSchema,
 } from '@mad/validations';
 
@@ -23,10 +19,6 @@ const checkoutModel = registry.register('CheckoutInput', checkoutSchema);
 const paymentVerificationModel = registry.register('PaymentVerificationInput', paymentVerificationSchema);
 registry.register('AdminDlqRetryInput', adminDlqRetrySchema);
 registry.register('AddGalleryItemsInput', addGalleryItemsSchema);
-registry.register('UpdateGalleryItemInput', updateGalleryItemSchema);
-registry.register('SetCoverImageInput', setCoverImageSchema);
-registry.register('UpdateGalleryVisibilityInput', updateGalleryVisibilitySchema);
-registry.register('ReorderGalleryItemsInput', reorderGalleryItemsSchema);
 registry.register('UpdateGallerySettingsInput', updateGallerySettingsSchema);
 
 // ─── Register REST API Routes ────────────────────────────────
@@ -243,55 +235,6 @@ registry.registerPath({
     body: {
       content: { 'application/json': { schema: addGalleryItemsSchema } }
     }
-  },
-  responses: { 200: { description: 'Success' } }
-});
-
-registry.registerPath({
-  method: 'patch',
-  path: '/api/admin/events/{eventId}/gallery/items/order',
-  summary: 'Admin: Bulk reorder gallery items',
-  request: {
-    params: z.object({ eventId: z.string() }),
-    body: {
-      content: { 'application/json': { schema: reorderGalleryItemsSchema } }
-    }
-  },
-  responses: { 200: { description: 'Success' } }
-});
-
-registry.registerPath({
-  method: 'patch',
-  path: '/api/admin/events/{eventId}/gallery/items/{itemId}/cover',
-  summary: 'Admin: Set cover image',
-  request: {
-    params: z.object({ eventId: z.string(), itemId: z.string() }),
-    body: {
-      content: { 'application/json': { schema: setCoverImageSchema } }
-    }
-  },
-  responses: { 200: { description: 'Success' } }
-});
-
-registry.registerPath({
-  method: 'patch',
-  path: '/api/admin/events/{eventId}/gallery/items/{itemId}',
-  summary: 'Admin: Update gallery item',
-  request: {
-    params: z.object({ eventId: z.string(), itemId: z.string() }),
-    body: {
-      content: { 'application/json': { schema: updateGalleryItemSchema } }
-    }
-  },
-  responses: { 200: { description: 'Success' } }
-});
-
-registry.registerPath({
-  method: 'delete',
-  path: '/api/admin/events/{eventId}/gallery/items/{itemId}',
-  summary: 'Admin: Delete gallery item',
-  request: {
-    params: z.object({ eventId: z.string(), itemId: z.string() })
   },
   responses: { 200: { description: 'Success' } }
 });

@@ -8,7 +8,7 @@ import {
 
 import * as eventGalleryController from '../../controllers/admin/event-gallery.controller';
 import { requireRole } from '../../middleware/auth.middleware';
-import { validate } from '../../middleware/validation.middleware';
+import { validateBody } from '../../middleware/validation.middleware';
 
 const router = Router({ mergeParams: true }); // Allows access to eventId from parent router
 
@@ -17,8 +17,8 @@ router.use(requireRole(AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER
 
 router.get('/', eventGalleryController.getGallery);
 
-router.post('/items', validate(addGalleryItemsSchema), eventGalleryController.addItems);
+router.post('/items', validateBody(addGalleryItemsSchema), eventGalleryController.addItems);
 
-router.patch('/settings', validate(updateGallerySettingsSchema), eventGalleryController.updateSettings);
+router.patch('/settings', validateBody(updateGallerySettingsSchema), eventGalleryController.updateSettings);
 
 export default router;
