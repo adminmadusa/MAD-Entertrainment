@@ -23,7 +23,7 @@ export function UpcomingEventsSkeleton() {
         </div>
 
         {/* Carousel Visual Skeleton */}
-        <div className="relative w-full max-w-6xl mx-auto h-[450px] sm:h-[500px] mt-8 flex items-center justify-center">
+        <div className="relative w-full max-w-6xl mx-auto h-[420px] sm:h-[480px] mt-6 sm:mt-8 flex items-center justify-center">
           {/* Left Flank Card (Visible only on desktop/tablet) */}
           <div className="hidden md:flex flex-col w-[272px] h-[382px] bg-white/2 border border-white/5 rounded-2xl overflow-hidden opacity-30 transform -translate-x-48 scale-85 pointer-events-none">
             <Skeleton className="aspect-[4/3] w-full" rounded={false} />
@@ -42,7 +42,7 @@ export function UpcomingEventsSkeleton() {
           </div>
 
           {/* Center Main Card */}
-          <div className="flex flex-col w-[260px] sm:w-[320px] h-[380px] sm:h-[450px] bg-white/3 border border-white/10 rounded-2xl overflow-hidden shadow-glow-sm z-10">
+          <div className="flex flex-col w-[270px] sm:w-[320px] h-[360px] sm:h-[430px] bg-white/3 border border-white/10 rounded-2xl overflow-hidden shadow-glow-sm z-10">
             {/* Banner Shimmer */}
             <div className="aspect-[4/3] w-full relative">
               <Skeleton className="absolute inset-0" rounded={false} />
@@ -50,14 +50,14 @@ export function UpcomingEventsSkeleton() {
             </div>
 
             {/* Details Shimmer */}
-            <div className="p-4 flex-grow flex flex-col justify-between">
-              <div className="space-y-3">
+            <div className="p-3.5 sm:p-4 flex-grow flex flex-col justify-between">
+              <div className="space-y-2.5">
                 {/* Date */}
                 <Skeleton width={96} height={12} />
                 {/* Title */}
-                <Skeleton width={192} height={20} />
+                <Skeleton width={192} height={18} />
                 {/* Description */}
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   <Skeleton className="w-full" height={12} />
                   <Skeleton className="w-5/6" height={12} />
                 </div>
@@ -65,12 +65,12 @@ export function UpcomingEventsSkeleton() {
             </div>
 
             {/* CTA Shimmer */}
-            <div className="px-4 pb-4 pt-3 border-t border-white/5 flex justify-between items-center bg-black/40">
+            <div className="px-3.5 pb-3.5 sm:px-4 sm:pb-4 pt-2.5 sm:pt-3 border-t border-white/5 flex justify-between items-center bg-black/40">
               <div className="space-y-1">
                 <Skeleton width={56} height={8} />
                 <Skeleton width={64} height={16} />
               </div>
-              <Skeleton width={96} height={32} rounded="rounded-xl" />
+              <Skeleton width={88} height={36} rounded="rounded-xl" />
             </div>
           </div>
 
