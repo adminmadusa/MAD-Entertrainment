@@ -1,11 +1,11 @@
 'use client';
 
-import { useMutation, useQuery } from '@tanstack/react-query';
-import React from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import React, { useState } from 'react';
 
 import { adminAddGalleryItems, adminGetGallery } from '@/lib/api/admin/event-gallery.service';
 import { UnifiedMediaUpload } from '@/components/UnifiedMediaUpload';
-import { Spinner } from '@mad/ui';
+import { Alert, Spinner } from '@mad/ui';
 
 import { EventGalleryGrid } from './EventGalleryGrid';
 import { EventGallerySettingsPanel } from './EventGallerySettingsPanel';
@@ -26,10 +26,12 @@ export const EventGalleryWorkspace = React.memo(function EventGalleryWorkspace({
   capabilities,
   readOnly = false,
 }: EventGalleryWorkspaceProps) {
+  const queryClient = useQueryClient();
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
   const {
     data,
     isLoading,
-    refetch,
   } = useQuery({
     queryKey: ['admin-gallery', eventId],
     queryFn: () => adminGetGallery(eventId),
@@ -37,7 +39,19 @@ export const EventGalleryWorkspace = React.memo(function EventGalleryWorkspace({
 
   const addItemsMutation = useMutation({
     mutationFn: (items: any[]) => adminAddGalleryItems(eventId, items),
-    onSuccess: () => refetch(),
+    onSuccess: () => {
+      setErrorMessage(null);
+      queryClient.invalidateQueries({ queryKey: ['admin-gallery', eventId] });
+      queryClient.invalidateQueries({ queryKey: ['admin-event', eventId] });
+    },
+    onError: (err: any) => {
+      const message =
+        err?.response?.data?.message ||
+        err?.response?.data?.error ||
+        err?.message ||
+        'Failed to add image to gallery';
+      setErrorMessage(typeof message === 'string' ? message : JSON.stringify(message));
+    },
   });
 
   if (isLoading) {
@@ -53,6 +67,21 @@ export const EventGalleryWorkspace = React.memo(function EventGalleryWorkspace({
 
   return (
     <div className="space-y-6">
+      {errorMessage && (
+        <Alert variant="danger" className="animate-in fade-in duration-300" role="alert">
+          <div className="flex items-center justify-between">
+            <span>{errorMessage}</span>
+            <button
+              onClick={() => setErrorMessage(null)}
+              className="text-xs font-semibold underline ml-4 hover:opacity-80"
+              type="button"
+            >
+              Dismiss
+            </button>
+          </div>
+        </Alert>
+      )}
+
       {/* Upload Section Full Width */}
       {readOnly ? (
         <div className="border border-border-subtle bg-surface-elevated/40 opacity-70 rounded-2xl p-6 sm:p-8 text-center cursor-not-allowed">
@@ -71,6 +100,7 @@ export const EventGalleryWorkspace = React.memo(function EventGalleryWorkspace({
           triggerOnly
           disabled={addItemsMutation.isPending}
           onUploadsSuccess={(assets) => {
+            setErrorMessage(null);
             const payload = assets.map((asset) => ({
               url: asset.url,
               publicId: asset.publicId,
