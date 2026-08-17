@@ -4,9 +4,6 @@
   "private": true,
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "bin": {
-    "governance": "./dist/index.js"
-  },
   "scripts": {
     "build": "rm -rf dist tsconfig.tsbuildinfo && tsc -p tsconfig.json && chmod +x dist/index.js",
     "type-check": "tsc -p tsconfig.json --noEmit",

@@ -27,6 +27,7 @@
     "governance:session": "tsx scripts/governance/cli/session.ts",
     "governance:rollback": "tsx scripts/governance/cli/rollback.ts",
     "governance:ui-baseline": "tsx scripts/governance/gather-ui-baseline.ts",
+    "governance:branch-cleanup": "tsx scripts/governance/branch-cleanup.ts",
     "test:ui-governance": "playwright test --config=playwright.config.ts"
   },
   "devDependencies": {

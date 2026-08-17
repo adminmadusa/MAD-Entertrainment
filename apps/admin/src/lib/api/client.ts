@@ -20,9 +20,14 @@ export const adminApiClient: AxiosInstance = axios.create({
 adminApiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     if (typeof window !== 'undefined') {
-      const token = localStorage.getItem(STORAGE_KEYS.ADMIN_TOKEN);
-      if (token && config.headers) {
-        config.headers.Authorization = `Bearer ${token}`;
+      const requestUrl = config.url ?? '';
+      const isOwnApi = requestUrl.startsWith('/') || requestUrl.startsWith(BASE_URL);
+
+      if (isOwnApi) {
+        const token = localStorage.getItem(STORAGE_KEYS.ADMIN_TOKEN);
+        if (token && config.headers && !config.headers.Authorization) {
+          config.headers.Authorization = `Bearer ${token}`;
+        }
       }
     }
     return config;
@@ -35,7 +40,10 @@ adminApiClient.interceptors.request.use(
 adminApiClient.interceptors.response.use(
   (response) => response,
   (error: AxiosError<{ message?: string; errors?: Record<string, string[]> }>) => {
-    if (error.response?.status === 401) {
+    const requestUrl = error.config?.url ?? '';
+    const isOwnApi = requestUrl.startsWith('/') || requestUrl.startsWith(BASE_URL);
+
+    if (error.response?.status === 401 && isOwnApi) {
       if (typeof window !== 'undefined') {
         localStorage.removeItem(STORAGE_KEYS.ADMIN_TOKEN);
         localStorage.removeItem(STORAGE_KEYS.ADMIN_DATA);
