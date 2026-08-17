@@ -22,7 +22,10 @@ export class AdminEventGalleryService {
     ]);
 
     return {
-      items,
+      items: items.map(item => ({
+        ...item,
+        id: item._id ? item._id.toString() : '',
+      })),
       settings: settings || { eventId, published: false },
     };
   }
@@ -113,7 +116,13 @@ export class AdminEventGalleryService {
     });
 
     const inserted = await EventGallery.insertMany(docsToInsert);
-    return inserted.map((doc) => doc.toObject());
+    return inserted.map((doc) => {
+      const obj = doc.toObject();
+      return {
+        ...obj,
+        id: doc._id ? doc._id.toString() : '',
+      };
+    });
   }
 
   /**
@@ -162,7 +171,8 @@ export class AdminEventGalleryService {
       if (!newCover) throw new AppError('Gallery item not found', 404);
       if (newCover.isCover) {
         await session.abortTransaction();
-        return newCover.toObject(); // Already cover
+        const obj = newCover.toObject();
+        return { ...obj, id: newCover._id ? newCover._id.toString() : '' };
       }
 
       // Unset previous cover
@@ -176,7 +186,8 @@ export class AdminEventGalleryService {
       await newCover.save({ session });
 
       await session.commitTransaction();
-      return newCover.toObject();
+      const obj = newCover.toObject();
+      return { ...obj, id: newCover._id ? newCover._id.toString() : '' };
     } catch (error) {
       await session.abortTransaction();
       throw error;
@@ -196,7 +207,11 @@ export class AdminEventGalleryService {
     if (data.visibility !== undefined) item.visibility = data.visibility;
 
     await item.save();
-    return item.toObject();
+    const obj = item.toObject();
+    return {
+      ...obj,
+      id: item._id ? item._id.toString() : '',
+    };
   }
 
   /**
