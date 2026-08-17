@@ -292,6 +292,14 @@ export default function EventDetailClient({ slug, initialEvent }: EventDetailCli
               </svg>
               {event.venue}
             </span>
+            {event.organizerName && (
+              <span className="flex items-center gap-1.5">
+                <svg className="w-4 h-4 text-text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+                By {event.organizerName}
+              </span>
+            )}
           </div>
         </div>
 
@@ -299,7 +307,6 @@ export default function EventDetailClient({ slug, initialEvent }: EventDetailCli
         {isCompleted ? (
           <ExpiredEventView
             event={event}
-            showDateTime={showDateTime}
             galleryData={galleryData}
           />
         ) : (

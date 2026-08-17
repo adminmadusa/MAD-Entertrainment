@@ -7,9 +7,10 @@ import { Drawer } from '@mad/ui';
 type EventOverviewProps = {
   description?: string | null;
   organizerName?: string | null;
+  hideOrganizerCard?: boolean;
 };
 
-export function EventOverview({ description = '', organizerName }: EventOverviewProps) {
+export function EventOverview({ description = '', organizerName, hideOrganizerCard = false }: EventOverviewProps) {
   const [isOverviewOpen, setIsOverviewOpen] = useState(false);
 
   const safeDescription = description || '';
@@ -20,17 +21,20 @@ export function EventOverview({ description = '', organizerName }: EventOverview
   return (
     <>
       {/* Organizer card */}
-      <div className="glass rounded-2xl border border-white/5 p-5 flex items-center gap-4 hover:border-white/10 transition-colors">
-        <div className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center font-bold text-lg text-accent-purple-light flex-shrink-0">
-          {organizerName?.charAt(0).toUpperCase() || 'M'}
-        </div>
-        <div>
-          <div className="text-sm font-bold text-white">
-            {organizerName || 'MAD Organizer'}
+      {!hideOrganizerCard && (
+        <div className="glass rounded-2xl border border-white/5 p-5 flex items-center gap-4 hover:border-white/10 transition-colors">
+          <div className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center font-bold text-lg text-accent-purple-light flex-shrink-0">
+            {organizerName?.charAt(0).toUpperCase() || 'M'}
           </div>
-          <div className="text-xs text-text-secondary mt-0.5">Event Organizer</div>
+          <div>
+            <div className="text-sm font-bold text-white">
+              {organizerName || 'MAD Organizer'}
+            </div>
+            <div className="text-xs text-text-secondary mt-0.5">Event Organizer</div>
+          </div>
         </div>
-      </div>
+      )}
+
 
       {/* Overview */}
       <div className="space-y-3">

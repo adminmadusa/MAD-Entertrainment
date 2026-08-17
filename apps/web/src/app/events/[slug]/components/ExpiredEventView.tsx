@@ -12,74 +12,40 @@ import { RecommendedUpcomingSection } from './RecommendedUpcomingSection';
 
 interface ExpiredEventViewProps {
   event: EventData;
-  showDateTime: string;
   galleryData?: {
     items: EventGalleryItem[];
     settings: EventGallerySettings | null;
   };
 }
 
-export function ExpiredEventView({ event, showDateTime, galleryData }: ExpiredEventViewProps) {
+export function ExpiredEventView({ event, galleryData }: ExpiredEventViewProps) {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
   const hasPhotos = galleryData?.items && galleryData.items.length > 0;
+  const galleryHeading = galleryData?.settings?.heading || 'Happy Moments & Photos';
 
   return (
-    <div className="pt-8 pb-20 max-w-6xl mx-auto space-y-12">
-      {/* Overview & Event Details */}
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
-        <div className="md:col-span-8 space-y-6">
+    <div className="pt-6 pb-20 max-w-5xl mx-auto space-y-12">
+      {/* Event Overview / Recap Story */}
+      {event.description && (
+        <div className="space-y-4">
           <EventOverview
             description={event.description}
             organizerName={event.organizerName}
+            hideOrganizerCard={true}
           />
         </div>
-
-        {/* Event Info / Venue Card */}
-        <div className="md:col-span-4 space-y-4">
-          <div className="glass rounded-2xl border border-white/10 p-5 space-y-4 shadow-lg">
-            <h2 className="text-base font-bold text-white flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-accent-pink" />
-              Event Details
-            </h2>
-            <div className="space-y-3 text-xs text-text-secondary">
-              <div>
-                <span className="text-text-muted block text-[10px] uppercase font-bold tracking-wider mb-0.5">Date &amp; Time</span>
-                <span className="text-white font-medium text-sm">{showDateTime}</span>
-              </div>
-              <div>
-                <span className="text-text-muted block text-[10px] uppercase font-bold tracking-wider mb-0.5">Venue</span>
-                <span className="text-white font-medium">{event.venue}</span>
-              </div>
-              {event.doorsOpenTime && (
-                <div>
-                  <span className="text-text-muted block text-[10px] uppercase font-bold tracking-wider mb-0.5">Doors Open</span>
-                  <span className="text-white font-medium">{event.doorsOpenTime} {event.showTime ? `· Show: ${event.showTime}` : ''}</span>
-                </div>
-              )}
-            </div>
-
-            <a
-              href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(event.venue || '')}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-white transition-all active:scale-95"
-            >
-              ↗ Get directions
-            </a>
-          </div>
-        </div>
-      </div>
+      )}
 
       {/* Happy Moments Photo Gallery Section */}
       <div className="pt-6 border-t border-white/5 space-y-8">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div>
             <p className="text-accent-pink-light text-xs font-semibold uppercase tracking-wider mb-1">
-              Relive the Magic
+              Relive The Moments
             </p>
             <h2 className="text-2xl sm:text-3xl font-black text-white">
-              Happy Moments &amp; Photos
+              {galleryHeading}
             </h2>
           </div>
           {hasPhotos && (
@@ -91,13 +57,8 @@ export function ExpiredEventView({ event, showDateTime, galleryData }: ExpiredEv
         </div>
 
         {/* Gallery Highlights & Message */}
-        {galleryData?.settings && (galleryData.settings.heading || galleryData.settings.thankYouMessage || (galleryData.settings.highlights && galleryData.settings.highlights.length > 0)) && (
+        {galleryData?.settings && (galleryData.settings.thankYouMessage || (galleryData.settings.highlights && galleryData.settings.highlights.length > 0)) && (
           <div className="glass rounded-2xl border border-white/5 p-6 space-y-4">
-            {galleryData.settings.heading && (
-              <h3 className="text-lg sm:text-xl font-bold text-white">
-                {galleryData.settings.heading}
-              </h3>
-            )}
             {galleryData.settings.thankYouMessage && (
               <p className="text-sm text-text-secondary leading-relaxed">
                 {galleryData.settings.thankYouMessage}
@@ -153,7 +114,7 @@ export function ExpiredEventView({ event, showDateTime, galleryData }: ExpiredEv
             </div>
             <h3 className="text-lg font-bold text-white">Event Concluded</h3>
             <p className="text-xs sm:text-sm text-text-muted max-w-md mx-auto">
-              This event has officially ended. Photos and highlights will appear here once published by the organizer.
+              This event has officially ended. Photos and highlights from the event will appear here once published by the organizer.
             </p>
           </div>
         )}
@@ -174,3 +135,4 @@ export function ExpiredEventView({ event, showDateTime, galleryData }: ExpiredEv
     </div>
   );
 }
+
