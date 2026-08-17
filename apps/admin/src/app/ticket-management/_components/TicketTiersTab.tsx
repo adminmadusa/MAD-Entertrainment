@@ -1,7 +1,7 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
+import React, { useState } from 'react';
 
 import {
   adminGetTiers,
@@ -11,57 +11,10 @@ import {
   type AdminTier
 } from '@/lib/api/admin/tier.service';
 import { extractApiError } from '@/lib/api/client';
-import { Modal, EmptyState, ErrorState } from '@mad/ui';
-import { Search, Ticket } from '@mad/ui/icons';
-
-// Color Presets for swatches
-const COLOR_PRESETS = [
-  { hex: '#6366F1', name: 'Indigo' },
-  { hex: '#8B5CF6', name: 'Violet' },
-  { hex: '#F59E0B', name: 'Amber' },
-  { hex: '#F43F5E', name: 'Rose' },
-  { hex: '#10B981', name: 'Emerald' },
-  { hex: '#0EA5E9', name: 'Sky' },
-  { hex: '#EC4899', name: 'Pink' },
-  { hex: '#64748B', name: 'Slate' }
-];
-
-// Icon Presets
-const ICON_PRESETS = [
-  { id: 'ticket', label: 'Ticket' },
-  { id: 'star', label: 'Star' },
-  { id: 'medal', label: 'Medal' },
-  { id: 'crown', label: 'Crown' },
-  { id: 'lock', label: 'Lock' },
-  { id: 'users', label: 'Users' },
-  { id: 'heart', label: 'Heart' },
-  { id: 'clock', label: 'Clock' },
-  { id: 'gift', label: 'Gift' }
-];
-
-function getTierIcon(iconName: string) {
-  switch (iconName) {
-    case 'star':
-      return <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>;
-    case 'medal':
-      return <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>;
-    case 'crown':
-      return <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M2 4l3 12h14l3-12-6 7-4-7-4 7-6-7z"/></svg>;
-    case 'lock':
-      return <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>;
-    case 'users':
-      return <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>;
-    case 'heart':
-      return <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>;
-    case 'clock':
-      return <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>;
-    case 'gift':
-      return <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="8" width="18" height="14" rx="2"/><path d="M12 5V22M19 12H5M12 5a3 3 0 1 0-3-3M12 5a3 3 0 1 1 3-3"/></svg>;
-    case 'ticket':
-    default:
-      return <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2z"/><line x1="9" y1="12" x2="15" y2="12"/></svg>;
-  }
-}
+import { EmptyState, ErrorState } from '@mad/ui';
+import { Ticket } from '@mad/ui/icons';
+import { COLOR_PRESETS, ICON_PRESETS, getTierIcon } from './tier-presets';
+import { TierEditModal, TierDeleteModal } from './TierFormModal';
 
 interface TabProps {
   canMutate: boolean;
@@ -255,11 +208,9 @@ export function TicketTiersTab({ canMutate, qc, showToast }: TabProps) {
 
       {/* Grid Layout (Desktop 2-col, Mobile 1-col) */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-
         {/* Left column: Visual Configurator Form */}
         {canMutate && (
           <div className="lg:col-span-1 space-y-6">
-
             {/* Live Preview Ticket Card */}
             <div className="glass rounded-2xl border border-border-subtle p-5 overflow-hidden relative flex flex-col justify-between h-48 bg-gradient-to-br from-white/5 to-white/0 shadow-glow-sm">
               <div className="absolute top-0 right-0 w-24 h-24 rounded-full filter blur-2xl opacity-20" style={{ backgroundColor: colorInput }} />
@@ -328,8 +279,8 @@ export function TicketTiersTab({ canMutate, qc, showToast }: TabProps) {
                         type="button"
                         onClick={() => setColorInput(preset.hex)}
                         title={preset.name}
-                        className={`w-6 h-6 rounded-full border transition-all ${
-                          colorInput === preset.hex ? 'scale-125 border-white ring-2 ring-accent-purple/50' : 'border-transparent hover:scale-110'
+                        className={`w-6 h-6 rounded-full border-2 transition-all ${
+                          colorInput === preset.hex ? 'scale-110 border-white shadow-glow-sm' : 'border-transparent hover:scale-105'
                         }`}
                         style={{ backgroundColor: preset.hex }}
                       />
@@ -338,14 +289,14 @@ export function TicketTiersTab({ canMutate, qc, showToast }: TabProps) {
                   <input
                     value={colorInput}
                     onChange={(e) => setColorInput(e.target.value)}
-                    placeholder="Hex code, e.g. #6366F1"
+                    placeholder="#HEX Code"
                     className="w-full px-4 py-2 rounded-xl bg-background border border-border-subtle text-xs text-text-primary focus:outline-none focus:border-accent-purple font-mono"
                   />
                 </div>
 
-                {/* Grid Icon Picker */}
+                {/* Icon Selection Picker */}
                 <div>
-                  <label className="text-text-secondary text-xs font-bold block mb-1.5">Badge Icon</label>
+                  <label className="text-text-secondary text-xs font-bold block mb-1.5">Icon Badge</label>
                   <div className="grid grid-cols-5 gap-2">
                     {ICON_PRESETS.map((icon) => (
                       <button
@@ -353,9 +304,9 @@ export function TicketTiersTab({ canMutate, qc, showToast }: TabProps) {
                         type="button"
                         onClick={() => setIconInput(icon.id)}
                         title={icon.label}
-                        className={`py-2 rounded-xl border flex items-center justify-center transition-all ${
+                        className={`p-2 rounded-xl border flex items-center justify-center transition-all ${
                           iconInput === icon.id
-                            ? 'bg-accent-purple/10 text-accent-purple-light border-accent-purple/30'
+                            ? 'bg-accent-purple/10 text-accent-purple-light border-accent-purple/30 shadow-glow-sm'
                             : 'glass border-border-subtle text-text-secondary hover:text-white'
                         }`}
                       >
@@ -365,7 +316,7 @@ export function TicketTiersTab({ canMutate, qc, showToast }: TabProps) {
                   </div>
                 </div>
 
-                {/* Additional Settings */}
+                {/* Visibility & Sort Order */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="text-text-secondary text-xs font-bold block mb-1.5">Sort Position</label>
@@ -374,10 +325,10 @@ export function TicketTiersTab({ canMutate, qc, showToast }: TabProps) {
                       min="0"
                       value={sortIdxInput}
                       onChange={(e) => setSortIdxInput(Number(e.target.value))}
-                      className="w-full px-4 py-2 rounded-xl bg-background border border-border-subtle text-sm text-text-primary focus:outline-none focus:border-accent-purple font-mono"
+                      className="w-full px-4 py-2.5 rounded-xl bg-background border border-border-subtle text-sm text-text-primary focus:outline-none focus:border-accent-purple font-mono"
                     />
                   </div>
-                  <div className="flex flex-col justify-end pb-2">
+                  <div className="flex flex-col justify-end pb-2.5">
                     <label className="flex items-center gap-2 text-text-secondary text-xs font-bold cursor-pointer select-none">
                       <input
                         type="checkbox"
@@ -385,7 +336,7 @@ export function TicketTiersTab({ canMutate, qc, showToast }: TabProps) {
                         onChange={(e) => setDefaultVisInput(e.target.checked)}
                         className="rounded bg-background border-border-subtle text-accent-purple focus:ring-accent-purple"
                       />
-                      Default Visible
+                      Visible by Default
                     </label>
                   </div>
                 </div>
@@ -393,102 +344,81 @@ export function TicketTiersTab({ canMutate, qc, showToast }: TabProps) {
                 <button
                   type="submit"
                   disabled={createMutation.isPending}
-                  className="w-full py-2.5 btn-gradient text-white text-sm font-bold rounded-xl shadow-glow-sm disabled:opacity-60 transition-all"
+                  className="w-full py-3 btn-gradient text-white text-sm font-bold rounded-xl shadow-glow transition-all active:scale-[0.98] disabled:opacity-60"
                 >
-                  Create Custom Tier
+                  {createMutation.isPending ? 'Saving...' : 'Save & Publish Tier'}
                 </button>
               </form>
             </div>
           </div>
         )}
 
-        {/* Right column: Tiers Log Manager */}
+        {/* Right column: Tiers Master Directory List */}
         <div className={`${canMutate ? 'lg:col-span-2' : 'lg:col-span-3'} space-y-4`}>
-          <div className="flex justify-between items-center">
-            <h3 className="text-white font-bold text-md capitalize">Active System Tiers</h3>
-            <span className="text-xs bg-white/5 border border-white/10 text-text-secondary font-bold px-2.5 py-0.5 rounded-full">
-              {filteredTiers.length} items
-            </span>
-          </div>
-
           {isLoading ? (
-            <div className="p-12 text-center text-text-muted text-sm animate-pulse">Loading tiers...</div>
+            <div className="glass rounded-2xl border border-border-subtle p-8 text-center text-text-muted">
+              Loading ticket tiers catalog...
+            </div>
           ) : filteredTiers.length === 0 ? (
-            <EmptyState
-              variant="card"
-              icon={searchQuery || statusFilter !== 'all' ? <Search /> : <Ticket />}
-              title={searchQuery || statusFilter !== 'all' ? "No results match your search." : "No ticket tiers defined yet."}
-              description={searchQuery || statusFilter !== 'all' ? "Try changing your filters or search criteria." : "Configure presets on the left."}
-            />
+            <div className="glass rounded-2xl border border-border-subtle p-8">
+              <EmptyState
+                icon={<Ticket className="w-8 h-8 text-text-muted" />}
+                title="No Tiers Found"
+                description={searchQuery ? 'No ticket tiers matched your query.' : 'No ticket tiers defined yet. Add your first tier to get started.'}
+              />
+            </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-3">
               {filteredTiers.map((tier) => (
                 <div
                   key={tier._id}
-                  className="glass p-5 rounded-2xl border border-border-subtle flex flex-col justify-between gap-4 hover:border-white/10 transition-colors relative"
+                  className="glass rounded-2xl border border-border-subtle p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 transition-all hover:border-white/10"
                 >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex items-center gap-3">
-                      <div
-                        className="w-10 h-10 rounded-xl flex items-center justify-center text-white"
-                        style={{ backgroundColor: tier.color || '#6366F1' }}
-                      >
-                        {getTierIcon(tier.icon || 'ticket')}
-                      </div>
-                      <div>
-                        <h4 className="text-white font-bold text-sm">{tier.name}</h4>
-                        <p className="text-[10px] text-text-muted font-mono">{tier.slug}</p>
-                      </div>
+                  <div className="flex items-center gap-4">
+                    <div
+                      className="w-12 h-12 rounded-2xl flex items-center justify-center text-white shrink-0 shadow-md"
+                      style={{ backgroundColor: tier.color || '#6366F1' }}
+                    >
+                      {getTierIcon(tier.icon || 'ticket')}
                     </div>
-
-                    {canMutate && (
-                      <span className="text-[9px] font-bold text-text-muted font-mono bg-white/5 px-2 py-0.5 rounded border border-white/5">
-                        Index: {tier.sortIndex ?? 0}
-                      </span>
-                    )}
+                    <div>
+                      <div className="flex items-center gap-2.5">
+                        <h4 className="text-white font-bold text-base">{tier.name}</h4>
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-white/5 border border-white/5 text-text-muted">
+                          {tier.slug}
+                        </span>
+                        {tier.isActive === false && (
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-red-500/10 text-red-400 border border-red-500/20">
+                            Inactive
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-text-secondary text-xs mt-1 line-clamp-1 max-w-md">
+                        {tier.description || 'No description provided.'}
+                      </p>
+                    </div>
                   </div>
 
-                  <p className="text-text-secondary text-xs line-clamp-2">
-                    {tier.description || <span className="text-text-muted/40 italic">No description provided.</span>}
-                  </p>
-
-                  <div className="flex items-center justify-between pt-3 border-t border-white/5">
-                    <span className="text-[10px] text-text-muted">
-                      Default: {tier.defaultVisibility !== false ? 'Visible' : 'Hidden'}
-                    </span>
-
+                  <div className="flex items-center gap-2 w-full sm:w-auto justify-end border-t sm:border-t-0 pt-3 sm:pt-0 border-white/5">
+                    <span className="text-xs text-text-muted font-mono mr-2">Pos: {tier.sortIndex ?? 0}</span>
                     {canMutate && (
-                      <div className="flex items-center gap-2">
-                        {/* Status Toggle Switch */}
+                      <>
                         <button
-                          onClick={() =>
-                            updateMutation.mutate({
-                              id: tier._id,
-                              payload: { isActive: tier.isActive !== false }
-                            })
-                          }
-                          className={`text-[10px] font-bold px-2 py-0.5 rounded-full border transition-all ${
-                            tier.isActive !== false
-                              ? 'bg-green-500/10 text-green-400 border-green-500/20'
-                              : 'bg-red-500/10 text-red-400 border-red-500/20'
-                          }`}
-                        >
-                          {tier.isActive !== false ? 'Active' : 'Inactive'}
-                        </button>
-
-                        <button
-                          onClick={() => setEditingTier(tier)}
-                          className="px-2.5 py-1 text-[11px] font-semibold glass border border-border-subtle rounded-lg text-text-secondary hover:text-white transition-colors"
+                          onClick={() => {
+                            setValidationError(null);
+                            setEditingTier({ ...tier });
+                          }}
+                          className="px-3 py-1.5 glass border border-border-subtle hover:border-white/20 text-xs font-semibold text-text-secondary hover:text-white rounded-xl transition-all"
                         >
                           Edit
                         </button>
                         <button
                           onClick={() => handleDelete(tier._id)}
-                          className="px-2.5 py-1 text-[11px] font-semibold glass border border-border-subtle rounded-lg text-text-muted hover:text-red-400 hover:border-red-500/40 transition-colors"
+                          className="px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 text-xs font-semibold rounded-xl transition-all"
                         >
                           Delete
                         </button>
-                      </div>
+                      </>
                     )}
                   </div>
                 </div>
@@ -499,156 +429,20 @@ export function TicketTiersTab({ canMutate, qc, showToast }: TabProps) {
       </div>
 
       {/* Editing Dialog Modal */}
-      <Modal
-        isOpen={!!editingTier}
+      <TierEditModal
+        editingTier={editingTier}
         onClose={() => setEditingTier(null)}
-        size="md"
-        showCloseButton={false}
-        closeOnBackdropClick={true}
-        ariaLabelledBy="edit-tier-modal-title"
-        className="glass-strong border border-border-subtle p-6 max-w-md"
-      >
-        {editingTier && (
-          <div className="space-y-4">
-            <h2 id="edit-tier-modal-title" className="text-white font-bold text-lg">Edit Ticket Tier</h2>
-            <form onSubmit={handleEditSave} className="space-y-4">
-              <div>
-                <label className="text-text-secondary text-xs font-bold block mb-1">Tier Name</label>
-                <input
-                  value={editingTier.name}
-                  onChange={(e) => setEditingTier({ ...editingTier, name: e.target.value })}
-                  required
-                  className="w-full px-4 py-2 rounded-xl bg-background border border-border-subtle text-sm text-text-primary focus:outline-none focus:border-accent-purple"
-                />
-              </div>
+        onSave={handleEditSave}
+        onTierChange={setEditingTier}
+        isPending={updateMutation.isPending}
+      />
 
-              <div>
-                <label className="text-text-secondary text-xs font-bold block mb-1">Description</label>
-                <textarea
-                  value={editingTier.description || ''}
-                  onChange={(e) => setEditingTier({ ...editingTier, description: e.target.value })}
-                  rows={2}
-                  className="w-full px-4 py-2 rounded-xl bg-background border border-border-subtle text-sm text-text-primary focus:outline-none focus:border-accent-purple resize-none"
-                />
-              </div>
-
-              {/* Color edit swatches */}
-              <div>
-                <label className="text-text-secondary text-xs font-bold block mb-1">Accent Color</label>
-                <div className="flex flex-wrap gap-1.5 mb-2">
-                  {COLOR_PRESETS.map((preset) => (
-                    <button
-                      key={preset.hex}
-                      type="button"
-                      onClick={() => setEditingTier({ ...editingTier, color: preset.hex })}
-                      className={`w-5 h-5 rounded-full border transition-all ${
-                        editingTier.color === preset.hex ? 'scale-110 border-white' : 'border-transparent'
-                      }`}
-                      style={{ backgroundColor: preset.hex }}
-                    />
-                  ))}
-                </div>
-                <input
-                  value={editingTier.color || ''}
-                  onChange={(e) => setEditingTier({ ...editingTier, color: e.target.value })}
-                  className="w-full px-4 py-2 rounded-xl bg-background border border-border-subtle text-xs text-text-primary focus:outline-none focus:border-accent-purple font-mono"
-                />
-              </div>
-
-              {/* Icon edit picker */}
-              <div>
-                <label className="text-text-secondary text-xs font-bold block mb-1">Icon Badge</label>
-                <div className="grid grid-cols-5 gap-1.5">
-                  {ICON_PRESETS.map((icon) => (
-                    <button
-                      key={icon.id}
-                      type="button"
-                      onClick={() => setEditingTier({ ...editingTier, icon: icon.id })}
-                      className={`py-1.5 rounded-lg border flex items-center justify-center transition-all ${
-                        editingTier.icon === icon.id
-                          ? 'bg-accent-purple/10 text-accent-purple-light border-accent-purple/30'
-                          : 'glass border-border-subtle text-text-secondary hover:text-white'
-                      }`}
-                    >
-                      {getTierIcon(icon.id)}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-text-secondary text-xs font-bold block mb-1">Sort Position</label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={editingTier.sortIndex ?? 0}
-                    onChange={(e) => setEditingTier({ ...editingTier, sortIndex: Number(e.target.value) })}
-                    className="w-full px-4 py-2 rounded-xl bg-background border border-border-subtle text-sm text-text-primary focus:outline-none focus:border-accent-purple font-mono"
-                  />
-                </div>
-                <div className="flex flex-col justify-end pb-2">
-                  <label className="flex items-center gap-2 text-text-secondary text-xs font-bold cursor-pointer select-none">
-                    <input
-                      type="checkbox"
-                      checked={editingTier.defaultVisibility !== false}
-                      onChange={(e) => setEditingTier({ ...editingTier, defaultVisibility: e.target.checked })}
-                      className="rounded bg-background border-border-subtle text-accent-purple focus:ring-accent-purple"
-                    />
-                    Visible
-                  </label>
-                </div>
-              </div>
-
-              <div className="flex gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setEditingTier(null)}
-                  className="flex-1 py-2.5 glass border border-border-subtle rounded-xl text-sm font-medium text-text-secondary hover:text-white transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={updateMutation.isPending}
-                  className="flex-1 py-2.5 btn-gradient text-white text-sm font-bold rounded-xl shadow-glow-sm disabled:opacity-60 transition-all"
-                >
-                  {updateMutation.isPending ? 'Saving...' : 'Save Changes'}
-                </button>
-              </div>
-            </form>
-          </div>
-        )}
-      </Modal>
-
-      <Modal
-        isOpen={!!deleteTierId}
+      {/* Deletion Dialog Modal */}
+      <TierDeleteModal
+        deleteTierId={deleteTierId}
         onClose={() => setDeleteTierId(null)}
-        size="sm"
-        showCloseButton={false}
-        closeOnBackdropClick={true}
-        ariaLabelledBy="delete-tier-confirm-modal-title"
-        className="glass-strong border border-border-subtle p-6 max-w-sm"
-      >
-        <h2 id="delete-tier-confirm-modal-title" className="text-white font-bold text-lg mb-2">Delete Ticket Tier?</h2>
-        <p className="text-text-secondary text-sm mb-5">
-          Are you sure you want to delete this ticket tier? Existing events referencing it will continue to render normally.
-        </p>
-        <div className="flex gap-3">
-          <button
-            onClick={() => setDeleteTierId(null)}
-            className="flex-1 py-2.5 glass border border-border-subtle rounded-xl text-sm font-medium text-text-secondary hover:text-white transition-colors"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={confirmDeleteTier}
-            className="flex-1 py-2.5 bg-error/80 hover:bg-error rounded-xl text-white text-sm font-medium transition-colors"
-          >
-            Delete
-          </button>
-        </div>
-      </Modal>
+        onConfirm={confirmDeleteTier}
+      />
     </div>
   );
 }
