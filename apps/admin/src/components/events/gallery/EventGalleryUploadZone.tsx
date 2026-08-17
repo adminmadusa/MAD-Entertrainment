@@ -63,6 +63,7 @@ export const EventGalleryUploadZone = React.memo(function EventGalleryUploadZone
           formData,
           {
             headers: { 'Content-Type': 'multipart/form-data' },
+            timeout: 300000,
             onUploadProgress: (progressEvent) => {
               if (progressEvent.total) {
                 const pct = Math.round((progressEvent.loaded / progressEvent.total) * 100);

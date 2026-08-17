@@ -68,6 +68,7 @@ export function CloudinaryUpload({
             headers: {
               'Content-Type': 'multipart/form-data',
             },
+            timeout: 300000,
             onUploadProgress: (progressEvent) => {
               if (progressEvent.total) {
                 setProgress(Math.round((progressEvent.loaded / progressEvent.total) * 100));
