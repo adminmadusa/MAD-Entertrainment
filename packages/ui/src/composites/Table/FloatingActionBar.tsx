@@ -1,8 +1,10 @@
 'use client';
 
-import React from 'react';
 import { clsx } from 'clsx';
+import React from 'react';
+
 import type { BulkActionConfig, BulkProgress } from '@mad/types';
+
 import { Button } from '../../primitives/Button';
 import { Spinner } from '../../primitives/Spinner';
 

@@ -1,4 +1,5 @@
 import { Response } from 'express';
+
 import { getEnv } from '../config/env';
 
 export const setXsrfCookie = (res: Response, csrfToken: string): void => {

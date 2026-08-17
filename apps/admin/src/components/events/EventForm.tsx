@@ -4,12 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import React, { useState, useEffect, useImperativeHandle, forwardRef } from 'react';
 
-import { EventAdditionalDetailsCard } from './EventAdditionalDetailsCard';
-import { EventBasicInfoCard } from './EventBasicInfoCard';
-import { EventMediaCard } from './EventMediaCard';
-import { EventRequirementsCard } from './EventRequirementsCard';
-import { EventScheduleCard } from './EventScheduleCard';
-import { EventTicketingCard, defaultTier, type TicketTierInput } from './EventTicketingCard';
+import { EventReviewSection } from '@/app/events/new/_components/EventReviewSection';
 import { adminGetCategories } from '@/lib/api/admin/category.service';
 import { type CloudinaryImage, type AdminEvent } from '@/lib/api/admin/event.service';
 import { adminGetTicketProfiles } from '@/lib/api/admin/ticket-profile.service';
@@ -23,7 +18,13 @@ import {
   type EventLifecycleStatus,
 } from '@mad/shared';
 import type { TicketProfile } from '@mad/types';
-import { EventReviewSection } from '@/app/events/new/_components/EventReviewSection';
+
+import { EventAdditionalDetailsCard } from './EventAdditionalDetailsCard';
+import { EventBasicInfoCard } from './EventBasicInfoCard';
+import { EventMediaCard } from './EventMediaCard';
+import { EventRequirementsCard } from './EventRequirementsCard';
+import { EventScheduleCard } from './EventScheduleCard';
+import { EventTicketingCard, defaultTier, type TicketTierInput } from './EventTicketingCard';
 
 export interface EventFormProps {
   initialValues?: Partial<AdminEvent>;

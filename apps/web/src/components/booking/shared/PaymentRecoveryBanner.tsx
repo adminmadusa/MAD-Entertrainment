@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+
 import { useCountdown } from '@/hooks/use-countdown.hook';
 import type { Booking } from '@mad/types';
 

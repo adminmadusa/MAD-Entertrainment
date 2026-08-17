@@ -1,7 +1,7 @@
 'use client';
 
-import { Button } from '@mad/ui';
 import { formatMoney } from '@mad/shared';
+import { Button } from '@mad/ui';
 
 interface BookingStickyFooterProps {
   ticketsLeft: number;

@@ -1,15 +1,16 @@
 'use client';
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import React, { useState } from 'react';
 import Image from 'next/image';
-import { type EventGalleryItem, MediaVisibility } from '@mad/types';
+import React, { useState } from 'react';
+
 import {
   adminUpdateGalleryItem,
   adminSetGalleryCover,
   adminReorderGalleryItems,
   adminDeleteGalleryItem,
 } from '@/lib/api/admin/event-gallery.service';
+import { type EventGalleryItem, MediaVisibility } from '@mad/types';
 
 export interface EventGalleryGridProps {
   eventId: string;

@@ -1,7 +1,7 @@
 'use client';
 
-import React, { forwardRef, useEffect, useRef, InputHTMLAttributes } from 'react';
 import { clsx } from 'clsx';
+import React, { forwardRef, useEffect, useRef, InputHTMLAttributes } from 'react';
 
 export interface CheckboxProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'type'> {
   indeterminate?: boolean;

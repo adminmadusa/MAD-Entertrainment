@@ -1,8 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import type { Booking, Event } from '@mad/types';
+
 import { formatMoney } from '@mad/shared';
+import type { Booking, Event } from '@mad/types';
+
 import { TicketSummaryItem } from './shared/TicketSummaryItem';
 
 export interface CheckoutConfirmationViewProps {

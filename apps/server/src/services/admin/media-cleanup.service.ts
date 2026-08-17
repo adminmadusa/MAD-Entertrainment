@@ -1,6 +1,6 @@
 import { cloudinary } from '../../config/cloudinary';
-import { Event } from '../../models/event.schema';
 import { EventGallery } from '../../models/event-gallery.schema';
+import { Event } from '../../models/event.schema';
 import { logger } from '../../utils/logger';
 import { UploadService } from './upload.service';
 

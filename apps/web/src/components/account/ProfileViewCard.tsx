@@ -2,11 +2,11 @@
 
 import React, { useRef, useState } from 'react';
 
-import { useAuth } from '@/providers/AuthProvider';
-import { publicUploadProfilePhoto, publicDeleteProfilePhoto } from '@/lib/api/public.service';
 import { extractApiError } from '@/lib/api/client';
-import { Button } from '@mad/ui';
+import { publicUploadProfilePhoto, publicDeleteProfilePhoto } from '@/lib/api/public.service';
+import { useAuth } from '@/providers/AuthProvider';
 import type { AuthUser } from '@/types/auth';
+import { Button } from '@mad/ui';
 
 interface ProfileViewCardProps {
   user: AuthUser | null;

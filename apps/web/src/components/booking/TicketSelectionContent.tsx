@@ -6,12 +6,12 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 
 import { extractApiError } from '@/lib/api/client';
 import { ensureGuestBookingSession, publicCreateBooking } from '@/lib/api/public.service';
+import { formatMoney } from '@mad/shared';
 import type { Event as EventData } from '@mad/types';
 import { ReserveTicketsInput } from '@mad/validations';
 
-import { PromoCodeForm } from './PromoCodeForm';
 import { BookingStickyFooter } from './BookingStickyFooter';
-import { formatMoney } from '@mad/shared';
+import { PromoCodeForm } from './PromoCodeForm';
 
 interface TicketSelectionContentProps {
   event: EventData;

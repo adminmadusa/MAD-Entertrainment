@@ -6,6 +6,7 @@ import { useState } from 'react';
 
 import { useAdminAuth } from '@/providers/AdminAuthProvider';
 import { AdminRole } from '@mad/shared';
+
 import { TicketProfilesTab } from './_components/TicketProfilesTab';
 import { TicketTiersTab } from './_components/TicketTiersTab';
 

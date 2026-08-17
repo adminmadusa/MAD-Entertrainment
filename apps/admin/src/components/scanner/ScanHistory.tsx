@@ -1,8 +1,9 @@
 'use client';
 
-import { ScannerHistoryItem } from '../../lib/api/admin/scanner.service';
 import { EmptyState } from '@mad/ui';
 import { Scan, Search } from '@mad/ui/icons';
+
+import { ScannerHistoryItem } from '../../lib/api/admin/scanner.service';
 
 interface ScanHistoryProps {
   items: ScannerHistoryItem[];

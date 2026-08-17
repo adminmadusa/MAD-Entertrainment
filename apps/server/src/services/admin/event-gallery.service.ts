@@ -1,10 +1,12 @@
 import mongoose, { Types } from 'mongoose';
-import { EventGallery, MediaVisibility } from '../../models/event-gallery.schema';
-import { EventGallerySettings } from '../../models/event-gallery-settings.schema';
-import { Event } from '../../models/event.schema';
-import { AppError } from '../../middleware/error.middleware';
-import { AddGalleryItemsInput, ReorderGalleryItemsInput, UpdateGalleryItemInput, UpdateGallerySettingsInput } from '@mad/validations';
+
 import { deriveEventCapabilities } from '@mad/shared';
+import { AddGalleryItemsInput, ReorderGalleryItemsInput, UpdateGalleryItemInput, UpdateGallerySettingsInput } from '@mad/validations';
+
+import { AppError } from '../../middleware/error.middleware';
+import { EventGallerySettings } from '../../models/event-gallery-settings.schema';
+import { EventGallery, MediaVisibility } from '../../models/event-gallery.schema';
+import { Event } from '../../models/event.schema';
 
 export class AdminEventGalleryService {
   /**

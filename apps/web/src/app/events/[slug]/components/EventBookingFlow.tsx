@@ -5,9 +5,9 @@ import { forwardRef, useEffect, useImperativeHandle, useRef, useState, type Reac
 
 import { CheckoutContent } from '@/components/booking/CheckoutContent';
 import { TicketSelectionContent } from '@/components/booking/TicketSelectionContent';
+import { formatMoney } from '@mad/shared';
 import type { Event as EventData } from '@mad/types';
 import { Modal } from '@mad/ui';
-import { formatMoney } from '@mad/shared';
 
 export type EventBookingFlowHandle = {
   openBooking: () => void;

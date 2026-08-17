@@ -1,8 +1,10 @@
 'use client';
 
 import React from 'react';
+
 import type { AdminTier } from '@/lib/api/admin/tier.service';
 import { Modal } from '@mad/ui';
+
 import { COLOR_PRESETS, ICON_PRESETS, getTierIcon } from './tier-presets';
 
 export interface TierEditModalProps {
