@@ -1,23 +1,23 @@
 import crypto from 'crypto';
-import Module from 'module';
 
-import { describe, it, expect, vi, beforeEach, afterAll } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 import { SeatLayout } from '../models/seat-layout.schema';
 import { auditLog } from '../utils/audit';
 import { registerSocketHandlers } from './index';
 
-const mockRedis = {
-  get: vi.fn(),
-  set: vi.fn(),
-  del: vi.fn(),
-  expire: vi.fn(),
-  isRedisConnected: vi.fn(() => true),
-};
-
-const mockEventModel = {
-  exists: vi.fn(),
-};
+const { mockRedis, mockEventModel } = vi.hoisted(() => ({
+  mockRedis: {
+    get: vi.fn(),
+    set: vi.fn(),
+    del: vi.fn(),
+    expire: vi.fn(),
+    isRedisConnected: vi.fn(() => true),
+  },
+  mockEventModel: {
+    exists: vi.fn(),
+  },
+}));
 
 // Mock dependencies for ESM imports
 vi.mock('../config/redis', () => ({
@@ -28,27 +28,6 @@ vi.mock('../config/redis', () => ({
 vi.mock('../models/event.schema', () => ({
   Event: mockEventModel,
 }));
-
-// Intercept dynamic require calls in the production code under test
-const originalRequire = Module.prototype.require;
-Module.prototype.require = function (id: string) {
-  if (id === '../config/redis') {
-    return {
-      getRedis: () => mockRedis,
-      isRedisConnected: () => mockRedis.isRedisConnected(),
-    };
-  }
-  if (id === '../models/event.schema') {
-    return {
-      Event: mockEventModel,
-    };
-  }
-  return originalRequire.apply(this, arguments as any);
-};
-
-afterAll(() => {
-  Module.prototype.require = originalRequire;
-});
 
 vi.mock('../models/seat-layout.schema', () => ({
   SeatLayout: {

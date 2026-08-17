@@ -1,11 +1,6 @@
-export type ApiError = {
-  message: string;
-  statusCode?: number;
-  code?: string;
-  details?: unknown;
-  errors?: Record<string, string[]>;
-  retryAfter?: number;
-};
+import type { ApiError } from '@mad/types';
+
+export type { ApiError };
 
 // ─── HTTP Status → User-Facing Message Map ──────────────────────────────────
 // Only used as a fallback when the backend does NOT provide a message.

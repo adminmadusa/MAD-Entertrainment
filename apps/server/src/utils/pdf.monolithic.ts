@@ -6,7 +6,13 @@ import { getPurchaserPDFTicketState } from '../services/public/ticket-ownership.
 import { logger } from './logger';
 
 /**
- * Generates the ticket PDF buffer using the monolithic engine.
+ * LEGACY
+ * Reason: Monolithic PDF generator fallback while Modular PDF Engine (generate-ticket-pdf.ts) reaches 100% production burn-in.
+ * Owner: Platform Engineering
+ * Ticket: GOV-PDF-001
+ * Removal Plan: Remove when ENABLE_MODULAR_PDF feature flag is permanently retired.
+ *
+ * @deprecated Use generateTicketPDF from `../lib/pdf/ticket/generate-ticket-pdf` instead.
  *
  * NOTE ON WORKER/SYSTEM CONTEXT (Condition 3):
  * All background worker jobs (e.g. confirmations, resends, consistency repairs) and admin triggers

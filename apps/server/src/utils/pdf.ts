@@ -33,6 +33,7 @@ export async function generateTicketPDF(
   }
 
   if (!useModular) {
+    logger.warn({ bookingId: booking?._id }, '[LEGACY] Invoking monolithic PDF generator. Modular PDF engine disabled via ENABLE_MODULAR_PDF.');
     return generateMonolithic(booking, event, options);
   }
 

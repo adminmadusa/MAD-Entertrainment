@@ -3,7 +3,7 @@
 import { useState } from 'react';
 
 import { submitContactForm } from '@/app/actions/contact.actions';
-import { Alert, FormField, Input, Textarea } from '@mad/ui';
+import { Alert, FormField, Input, Textarea, Spinner } from '@mad/ui';
 
 export function ContactForm() {
   const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
@@ -155,7 +155,7 @@ export function ContactForm() {
       >
         {status === 'submitting' ? (
           <>
-            <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            <Spinner size="sm" aria-label="Sending message" />
             Sending...
           </>
         ) : (

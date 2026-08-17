@@ -1,6 +1,7 @@
 import mongoose, { type FilterQuery } from 'mongoose';
 
-import { EventStatus, EVENT_STATUS_TRANSITIONS, type EventLifecycleStatus, type BulkOperationResult, deriveEventCapabilities } from '@mad/shared';
+import { EventStatus, EVENT_STATUS_TRANSITIONS, type EventLifecycleStatus, deriveEventCapabilities } from '@mad/shared';
+import type { BulkOperationResult } from '@mad/types';
 
 import { AppError } from '../../middleware/error.middleware';
 import { Booking } from '../../models/booking.schema';

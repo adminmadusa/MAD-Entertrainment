@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { BookingHeaderCard } from '@/components/booking/shared/BookingHeaderCard';
 import { BookingStatus, getBookingLifecycle, buildVenueMapLink, type BookingForLifecycle, type BaseEventForLifecycle } from '@mad/shared';
 import type { Booking, Ticket, Event } from '@mad/types';
+import { Spinner } from '@mad/ui';
 import { formatDate } from '@/utils/date';
 import { formatTicketCount } from '@/utils/booking-calculations';
 import { TicketSummaryItem } from '@/components/booking/shared/TicketSummaryItem';
@@ -113,7 +114,7 @@ export function BookingCard({
     if (lifecycle === 'upcoming' || lifecycle === 'live') {
       let resendContent;
       if (resending) {
-        resendContent = <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />;
+        resendContent = <Spinner size="sm" aria-label="Resending tickets" />;
       } else if (resendCooldown > 0) {
         resendContent = <span className="font-mono">{resendCooldown}s</span>;
       } else {
@@ -151,7 +152,7 @@ export function BookingCard({
             className="px-3 py-1.5 flex items-center justify-center gap-1.5 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-white text-xs min-h-[36px] transition-all disabled:opacity-50 font-bold"
           >
             {downloading ? (
-              <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              <Spinner size="sm" aria-label="Downloading ticket" />
             ) : (
               <>
                 <span>📥</span>

@@ -1,3 +1,5 @@
+import { toDisplayLabel } from '@mad/shared';
+
 /**
  * Calculates total ticket count and subtotal for selected quantities.
  */
@@ -33,9 +35,6 @@ export function formatTicketCount(qty: number): string {
  */
 export function formatDisplayName(name: string): string {
   if (!name) return '';
-  return name
-    .split(/[-_]/)
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
+  return toDisplayLabel(name);
 }
 

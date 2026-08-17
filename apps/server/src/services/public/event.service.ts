@@ -376,9 +376,24 @@ export class PublicEventService {
       throw AppError.notFound('Seat layout for this event');
     }
 
-    // Merge live locks from Redis
+    // Merge live locks from Redis via non-blocking SCAN
     const redis = getRedis();
-    const lockKeys = await redis.keys(`mad:lock:event:${eventId}:seat:*`);
+    const lockKeys: string[] = [];
+    let cursor = '0';
+    do {
+      const [nextCursor, scannedKeys] = await redis.scan(
+        cursor,
+        'MATCH',
+        `mad:lock:event:${eventId}:seat:*`,
+        'COUNT',
+        100
+      );
+      cursor = nextCursor;
+      if (scannedKeys.length > 0) {
+        lockKeys.push(...scannedKeys);
+      }
+    } while (cursor !== '0');
+
     const activeLocks: Record<string, string> = {};
 
     if (lockKeys.length > 0) {
