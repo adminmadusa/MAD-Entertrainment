@@ -10,7 +10,7 @@ export interface EventCapabilitiesInput {
   isSoldOut?: boolean;
   totalCapacity?: number;
   ticketsSold?: number;
-  
+
   // Gallery inputs
   galleryPublished?: boolean;
   galleryItemCount?: number;
@@ -124,7 +124,7 @@ export function deriveGalleryState(
   if (itemCount === 0) {
     return { status: 'NONE', itemCount };
   }
-  
+
   if (published && bookingStatus === BookingState.CLOSED) {
     return { status: 'PUBLISHED', itemCount };
   }

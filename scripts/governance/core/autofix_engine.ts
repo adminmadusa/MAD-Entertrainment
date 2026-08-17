@@ -58,12 +58,12 @@ export class AutoFixEngine {
     const violations: StatelessViolation[] = [];
     for (const res of report.results) {
       const allErrors = [...res.errors, ...res.warnings];
-      const def = ValidatorRegistry.getValidator(res.name) || 
+      const def = ValidatorRegistry.getValidator(res.name) ||
                   ValidatorRegistry.getAllValidators().find(v => v.name === res.name);
-      
-      const construct = def?.id === 'DeadAssetDuplicateValidator' || 
-                        def?.id === 'UIDesignValidator' || 
-                        def?.id === 'AccessibilityValidator' || 
+
+      const construct = def?.id === 'DeadAssetDuplicateValidator' ||
+                        def?.id === 'UIDesignValidator' ||
+                        def?.id === 'AccessibilityValidator' ||
                         def?.id === 'SharedComponentValidator' ? 'UIElement' : 'Document';
 
       for (const err of allErrors) {
@@ -78,7 +78,7 @@ export class AutoFixEngine {
             continue;
           }
         }
-        
+
         violations.push({
           rule: err.rule,
           path: err.file,
@@ -183,7 +183,7 @@ export class AutoFixEngine {
 
       try {
         const fixResult = await fixer.fix(violation, context);
-        
+
         if (fixResult.success && fixResult.applied && !context.dryRun && !context.preview && fixResult.fixedContent !== undefined) {
           // Perform writes via centralized FileWriter
           FileWriter.write(context.workspaceRoot, filePath, fixResult.fixedContent);

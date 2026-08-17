@@ -31,7 +31,7 @@ describe('AdminEventGalleryService', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    
+
     (Event.findById as any).mockReturnValue({
       select: vi.fn().mockReturnValue({
         lean: vi.fn().mockResolvedValue({
@@ -52,7 +52,7 @@ describe('AdminEventGalleryService', () => {
       });
       (EventGallery.countDocuments as any).mockResolvedValue(0);
       (EventGallery.exists as any).mockResolvedValue(false);
-      
+
       const mockInserted = [
         { _id: '1', publicId: 'p1', isCover: true, toObject: () => ({ isCover: true }) },
         { _id: '2', publicId: 'p2', isCover: false, toObject: () => ({ isCover: false }) }
@@ -105,7 +105,7 @@ describe('AdminEventGalleryService', () => {
         save: vi.fn().mockResolvedValue(true),
         toObject: function() { return this; }
       };
-      
+
       const mockSession = {
         startTransaction: vi.fn(),
         commitTransaction: vi.fn(),

@@ -43,7 +43,7 @@ export const EventGalleryGrid = React.memo(function EventGalleryGrid({
     onMutate: async (newOrder) => {
       await queryClient.cancelQueries({ queryKey: ['admin-gallery', eventId] });
       const previousGallery = queryClient.getQueryData(['admin-gallery', eventId]);
-      
+
       // Optimistically update
       queryClient.setQueryData(['admin-gallery', eventId], (old: any) => {
         if (!old) return old;
@@ -69,7 +69,7 @@ export const EventGalleryGrid = React.memo(function EventGalleryGrid({
     onMutate: async (itemId) => {
       await queryClient.cancelQueries({ queryKey: ['admin-gallery', eventId] });
       const previousGallery = queryClient.getQueryData(['admin-gallery', eventId]);
-      
+
       queryClient.setQueryData(['admin-gallery', eventId], (old: any) => {
         if (!old) return old;
         return {
@@ -129,8 +129,8 @@ export const EventGalleryGrid = React.memo(function EventGalleryGrid({
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
       {items.map((item, index) => (
-        <div 
-          key={item.id} 
+        <div
+          key={item.id}
           className={`glass rounded-2xl border ${item.isCover ? 'border-accent-purple shadow-[0_0_15px_rgba(139,92,246,0.3)]' : 'border-border-subtle'} overflow-hidden relative group`}
         >
           {/* Image */}
@@ -171,7 +171,7 @@ export const EventGalleryGrid = React.memo(function EventGalleryGrid({
 
           {/* Details / Controls */}
           <div className="p-4 space-y-4">
-            
+
             <div className="flex items-center justify-between">
               <label className="text-sm text-text-muted">Visibility</label>
               <select

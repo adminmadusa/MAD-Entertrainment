@@ -6,13 +6,13 @@
           echo "=== RUNNER OS INFO ==="
           uname -a || true
           echo "RUNNER_OS: $RUNNER_OS"
-          
+
           echo "=== RUNTIME VERSIONS ==="
           node -v || true
           npm -v || true
           pnpm -v || true
           yarn -v || true
-          
+
           echo "=== LOCALLY INSTALLED TOOLING ==="
           npx esbuild --version || true
           npx tsx --version || true
@@ -25,12 +25,12 @@
           echo "=== GIT CONFIG & STATE ==="
           git rev-parse HEAD || true
           git status || true
-          
+
           echo "=== SCAN FOR UNRESOLVED MERGE MARKERS ==="
           grep -rn "<<<<<<<" . || echo "No HEAD merge markers found."
           grep -rn "=======" . || echo "No separator merge markers found."
           grep -rn ">>>>>>>" . || echo "No incoming merge markers found."
-          
+
           echo "=== FILE METADATA AND HASHES ==="
           # Replace <PATH_TO_FAILING_FILE> with the file path reported in the error log
           FILE_PATH="<PATH_TO_FAILING_FILE>"
@@ -55,10 +55,10 @@
           if [ -f "$FILE_PATH" ]; then
             echo "=== DIRECT ESBUILD TRANSPILATION TEST ==="
             npx esbuild "$FILE_PATH" --bundle --platform=node --outfile=/dev/null || true
-            
+
             echo "=== DIRECT TSX EXECUTION TEST ==="
             npx tsx "$FILE_PATH" || true
-            
+
             echo "=== DIRECT TSC TYPECHECK TEST ==="
             npx tsc --noEmit || true
           fi

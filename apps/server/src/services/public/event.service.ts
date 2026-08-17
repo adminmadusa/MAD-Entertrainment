@@ -85,7 +85,7 @@ export class PublicEventService {
 
     if (filters.bookableOnly) {
       matchStage.$and = matchStage.$and || [];
-      
+
       // 1. Must not be closed (bookingEndDate > now, OR fallback to startDate > now)
       matchStage.$and.push({
         $or: [

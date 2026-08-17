@@ -57,13 +57,13 @@ export const cancelBooking = async (req: Request, res: Response, next: NextFunct
     const { reason, refundAmount, ticketIds } = req.body;
     // PRICING-003: Extract verified admin identity for scan-protection RBAC and audit trail
     const actor = { id: req.admin?.sub || 'system', role: req.admin?.role || 'unknown' };
-    
+
     if (refundAmount && Number(refundAmount) > 0) {
       const booking = await bookingService.getBookingById(req.params.id) as any;
       if (!booking || !booking.paymentId) {
         return res.status(400).json({ success: false, message: 'Cannot request refund for booking without payment' });
       }
-      
+
       const refund = await refundService.createRefund({
         bookingId: req.params.id,
         paymentId: booking.paymentId.toString(),
@@ -73,7 +73,7 @@ export const cancelBooking = async (req: Request, res: Response, next: NextFunct
         cancelTickets: true,
         ticketIds,
       });
-      
+
       return res.status(201).json({
         success: true,
         data: refund,

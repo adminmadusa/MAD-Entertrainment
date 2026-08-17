@@ -44,7 +44,7 @@ export class GitHubActionsReporter {
 
     const health = reportContent.health || { score: 100, ownershipCompliance: 100, freshnessCompliance: 100, linkageCompliance: 100 };
     const kpis = reportContent.kpis || { brokenLinksCount: 0, missingSsotReferences: 0, adrNumberingInconsistencies: 0, outdatedDocumentsCount: 0, documentationReviewSlaViolations: 0 };
-    
+
     const healthScore = health.score;
 
     // 3. Resolve threshold checks

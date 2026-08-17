@@ -1,7 +1,7 @@
 ## Context
 
-Currently, the `BottomNavigation.tsx` component in `apps/web/src/components/layout` contains hand-rolled SVG components (`HomeIcon`, `TicketIcon`, `UserIcon`) embedded inline. 
-We have a shared UI library `@mad/ui` (in `packages/ui`) that exports icons via `@mad/ui/icons` utilizing the unified Lucide icon package. 
+Currently, the `BottomNavigation.tsx` component in `apps/web/src/components/layout` contains hand-rolled SVG components (`HomeIcon`, `TicketIcon`, `UserIcon`) embedded inline.
+We have a shared UI library `@mad/ui` (in `packages/ui`) that exports icons via `@mad/ui/icons` utilizing the unified Lucide icon package.
 Standardizing on `@mad/ui` icons guarantees visual consistency and aligns the mobile navigation bar with the visual token governance of UI-001.
 
 ## Goals / Non-Goals

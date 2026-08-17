@@ -20,15 +20,15 @@ function main() {
 
   const phase20Local = rawBranches.find(b => b.name === 'feat/ai-os-phase-20-task-engine');
   const phase20RemoteExists = rawBranches.some(b => b.name === 'origin/feat/ai-os-phase-20-task-engine');
-  
+
   let isPhase20Merged = false;
   let isPhase20Active = false;
-  
+
   if (phase20Local) {
     isPhase20Merged = checkReachableFromDevelop(phase20Local.name) || analyzePatchEquivalence(phase20Local.name);
     isPhase20Active = worktreeMap.has(phase20Local.name);
   }
-  
+
   const isStackSafeToPrune = phase20Local && isPhase20Merged && phase20RemoteExists && !isPhase20Active;
 
   const safeDeleteList: any[] = [];
@@ -50,7 +50,7 @@ function main() {
     // Open PR check
     let hasOpenPR: 'YES' | 'NO' | 'UNKNOWN' = 'NO';
     let prNumber: string | null = null;
-    
+
     if (name === 'feat/governance-analytics' || name === 'origin/feat/governance-analytics') {
       hasOpenPR = 'YES';
       prNumber = '10A';
@@ -78,7 +78,7 @@ function main() {
       if (match) {
         const phaseNum = parseInt(match[1], 10);
         isPartOfActiveStack = phaseNum < 20 && !isStackSafeToPrune;
-        
+
         const nextPhase = stackReport.phaseChain.find(pc => pc.phase === phaseNum + 1);
         if (nextPhase && nextPhase.exists) {
           usedByBranches.push(nextPhase.name);

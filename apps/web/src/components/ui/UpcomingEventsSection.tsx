@@ -164,7 +164,7 @@ export const UpcomingEventsSection = memo(function UpcomingEventsSection({ initi
                   }
 
                   const zIndex = 20 - Math.abs(absoluteOffset);
-                  
+
                   // Don't render cards that are too far away
                   if (Math.abs(absoluteOffset) > 2) return null;
 
@@ -283,7 +283,7 @@ export const UpcomingEventsSection = memo(function UpcomingEventsSection({ initi
                             }}
                             disabled={cta.disabled}
                             className={`min-h-[44px] px-3.5 py-2 text-xs font-bold rounded-xl transition-all flex items-center justify-center text-center ${
-                              cta.disabled 
+                              cta.disabled
                                 ? 'bg-white/5 border border-white/5 text-text-muted cursor-not-allowed'
                                 : 'text-white btn-gradient shadow-glow-sm hover:scale-105 active:scale-95'
                             }`}

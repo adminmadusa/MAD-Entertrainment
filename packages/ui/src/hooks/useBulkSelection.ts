@@ -24,8 +24,8 @@ export interface UseBulkSelectionReturn<TId extends string = string> {
   indeterminate: boolean;
 }
 
-export function useBulkSelection<TId extends string = string>({ 
-  pageIds = [] 
+export function useBulkSelection<TId extends string = string>({
+  pageIds = []
 }: UseBulkSelectionOptions<TId> = {}): UseBulkSelectionReturn<TId> {
   const [selectedIds, setSelectedIds] = useState<Set<TId>>(new Set());
 
@@ -48,7 +48,7 @@ export function useBulkSelection<TId extends string = string>({
       const next = new Set(prev);
       let anyAdded = false;
       let anyDeleted = false;
-      
+
       for (const id of ids) {
         if (next.has(id)) {
           next.delete(id);
@@ -58,7 +58,7 @@ export function useBulkSelection<TId extends string = string>({
           anyAdded = true;
         }
       }
-      
+
       // If we just added some and deleted some, we're returning a new set.
       // If we didn't do anything, return prev to avoid re-renders.
       if (!anyAdded && !anyDeleted) return prev;
@@ -69,7 +69,7 @@ export function useBulkSelection<TId extends string = string>({
   const selectAll = useCallback((idsToSelect?: TId[]) => {
     const targets = idsToSelect || pageIds;
     if (!targets.length) return;
-    
+
     setSelectedIds((prev) => {
       const next = new Set(prev);
       let changed = false;
@@ -89,7 +89,7 @@ export function useBulkSelection<TId extends string = string>({
 
   const clearMany = useCallback((idsToClear: TId[]) => {
     if (!idsToClear.length) return;
-    
+
     setSelectedIds((prev) => {
       const next = new Set(prev);
       let changed = false;
@@ -109,17 +109,17 @@ export function useBulkSelection<TId extends string = string>({
     if (!pageIds.length) {
       return { allSelected: false, indeterminate: false };
     }
-    
+
     let selectedOnPage = 0;
     for (const id of pageIds) {
       if (selectedIds.has(id)) {
         selectedOnPage++;
       }
     }
-    
+
     const allSelected = selectedOnPage === pageIds.length;
     const indeterminate = selectedOnPage > 0 && selectedOnPage < pageIds.length;
-    
+
     return { allSelected, indeterminate };
   }, [pageIds, selectedIds]);
 

@@ -11,7 +11,7 @@
 - Introduce a synchronous block on click events using a local `useRef(false)` variable:
   ```typescript
   const isSubmitting = useRef(false);
-  
+
   const handleSubmit = () => {
     if (isSubmitting.current) return;
     isSubmitting.current = true;

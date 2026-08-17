@@ -79,7 +79,7 @@ async function runAutoFix(
   process.on('SIGTERM', handleSignal);
 
   console.log('🛠️   Initializing Governance Auto-Fix Engine...');
-  
+
   let result;
   try {
     result = await AutoFixEngine.execute(context, sessionManager);
@@ -247,7 +247,7 @@ async function run() {
     } else {
       const scanContext = new FixContext({ workspaceRoot, safeOnly, rule, path, preview, dryRun });
       const reporter = new ConsoleInteractionProvider();
-      
+
       const { plan, result: interactiveResult } = await InteractiveApprovalPolicy.gatherApprovals(
         scanContext,
         reporter

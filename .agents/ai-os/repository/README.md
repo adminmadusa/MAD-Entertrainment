@@ -12,7 +12,7 @@ supersedes: []
 
 # Repository Layer
 
-Welcome to the Repository Layer of the AI Operating System. This layer describes the physical structure, build orchestrations, workspaces, dependency constraints, and directory ownership of the MAD Entertrainment monorepo. 
+Welcome to the Repository Layer of the AI Operating System. This layer describes the physical structure, build orchestrations, workspaces, dependency constraints, and directory ownership of the MAD Entertrainment monorepo.
 
 This layer serves to explain **how the repository is organized**, not **how the business works**.
 

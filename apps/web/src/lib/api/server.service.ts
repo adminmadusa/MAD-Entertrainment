@@ -129,7 +129,7 @@ export async function serverGetUpcomingEvents(limit: number = 6): Promise<Event[
       label: 'Upcoming Events',
     }
   );
-  
+
   return Array.isArray(payload.events) ? payload.events : [];
 }
 export async function serverGetCompletedEvents(): Promise<Event[]> {

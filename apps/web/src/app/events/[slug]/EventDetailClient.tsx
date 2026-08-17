@@ -68,7 +68,7 @@ export default function EventDetailClient({ slug, initialEvent }: EventDetailCli
   });
 
   let cta: EventBookingCTA = { text: 'Book Now', disabled: false, variant: 'primary', action: 'BOOK' };
-  
+
   if (event) {
     if (event.lifecycle === 'COMPLETED') {
       cta = {

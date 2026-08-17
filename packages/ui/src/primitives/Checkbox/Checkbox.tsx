@@ -13,18 +13,18 @@ export interface CheckboxProps extends Omit<InputHTMLAttributes<HTMLInputElement
 
 export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
   (
-    { 
-      className, 
-      indeterminate = false, 
-      label, 
-      description, 
-      error, 
-      required, 
-      checked, 
-      disabled, 
+    {
+      className,
+      indeterminate = false,
+      label,
+      description,
+      error,
+      required,
+      checked,
+      disabled,
       id: providedId,
-      ...props 
-    }, 
+      ...props
+    },
     forwardedRef
   ) => {
     const internalRef = useRef<HTMLInputElement>(null);
@@ -100,7 +100,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
             <path d="M3 7H11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </div>
-        
+
         {(label || description || error) && (
           <div className="flex flex-col pt-0.5">
             {label && (

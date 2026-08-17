@@ -88,7 +88,7 @@ export class RuntimeRunner {
               mkdirSync(evidenceDir, { recursive: true });
             }
             const screenshotPath = resolve(evidenceDir, `${sanitizedRoute}_${viewport.name}_failure.png`);
-            
+
             try {
               await page.screenshot({ path: screenshotPath, fullPage: true });
               for (const finding of findings) {

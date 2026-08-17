@@ -1,7 +1,7 @@
 # Tasks: Event Overview Accessibility
 
 All changes are consolidated into a single Pull Request:
-**PR Title:** `fix(events): improve event overview accessibility and drawer interaction`  
+**PR Title:** `fix(events): improve event overview accessibility and drawer interaction`
 **Branch:** `feat/event-overview-read-more-a11y`
 
 ---

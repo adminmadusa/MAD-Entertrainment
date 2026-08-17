@@ -28,7 +28,7 @@ export function determineLifecycleState(
 
   // 4. Ready For Delete (Local or remote that passes all deletion safety checks)
   const isMergedOrPatchEquiv = v.isMerged || v.isSquashMerged;
-  const hasNoBlocks = 
+  const hasNoBlocks =
     !v.isProtected &&
     !v.hasActiveWorktree &&
     v.hasOpenPR !== 'YES' &&

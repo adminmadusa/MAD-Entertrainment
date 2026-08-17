@@ -186,7 +186,7 @@ export function useScannerState({ initialEventId = '' }: UseScannerStateProps = 
     async (ticketId: string) => {
       if (!selectedEventId || !ticketId.trim()) return;
       if (scannerState === 'Processing') return;
-      
+
       setScannerState('Processing');
       setLastValidationResult(null);
 

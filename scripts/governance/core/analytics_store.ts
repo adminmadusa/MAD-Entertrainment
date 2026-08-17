@@ -69,7 +69,7 @@ export class AnalyticsStore {
 
     for (const file of filesToWrite) {
       const filePath = join(analyticsDir, file.name);
-      
+
       // Preserve generatedAt timestamp if the rest of the file content is identical
       const existing = readJsonIfExists<any>(filePath);
       if (existing && typeof existing === 'object') {

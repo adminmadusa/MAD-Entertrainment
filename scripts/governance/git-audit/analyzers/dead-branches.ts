@@ -10,7 +10,7 @@ export interface StaleReport {
 
 export function analyzeStaleStatus(branch: BranchInfo, config: GovernanceConfig): StaleReport {
   const lagCommits = branch.behind;
-  
+
   // Calculate days since last commit
   const commitTimestampMs = branch.commitTime * 1000;
   const nowMs = Date.now();

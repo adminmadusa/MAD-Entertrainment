@@ -47,11 +47,11 @@ export function writeMarkdownReport(
     const hasUpstream = b.isLocal ? (b.upstream ? 'Yes' : 'No') : 'N/A';
     const openPr = v.hasOpenPR === 'YES' ? `Yes (#${v.prNumber})` : (v.hasOpenPR === 'UNKNOWN' ? 'Unknown' : 'No');
     const usedBy = v.usedByBranches.length > 0 ? `Yes (${v.usedByBranches.length})` : 'No';
-    
+
     let safeDelete = 'No';
     let needsReview = 'No';
     let mustNever = 'No';
-    
+
     if (v.isProtected) {
       mustNever = 'Yes';
     } else if (b.lifecycleState === 'Archived') {
@@ -61,7 +61,7 @@ export function writeMarkdownReport(
     } else {
       needsReview = 'Yes';
     }
-    
+
     verificationTable += `| \`${b.name}\` | ${hasUnique} | ${isMerged} | ${squashMerged} | ${patchEquiv} | ${reachDev} | ${reachLive} | ${hasUpstream} | ${openPr} | ${usedBy} | ${safeDelete} | ${needsReview} | ${mustNever} |\n`;
   }
 
@@ -93,7 +93,7 @@ export function writeMarkdownReport(
   for (const a of actions) {
     const cleanName = a.branchName;
     const isRemote = cleanName.startsWith('origin/');
-    
+
     if (a.status === 'Execute Now' || a.action.includes('Delete')) {
       if (a.risk === 'Low') {
         if (isRemote) {
@@ -155,8 +155,8 @@ ${legacyCommands || '# No legacy branch archivals.\n'}
 
   const markdown = `# Git Repository Hygiene Audit Report
 
-**Date**: 2026-07-04  
-**Repository**: MAD Entertrainment  
+**Date**: 2026-07-04
+**Repository**: MAD Entertrainment
 
 ### Git Repository Scores & Trend Progression
 * **Overall Git Repository Hygiene Score**: **${scoreReport.overallScore} / 100** (Trend: \`${overallTrend}\`)
@@ -316,12 +316,12 @@ ${shellScript}
 
   // Write to both workspace and brain folder
   fs.writeFileSync(WORKSPACE_REPORT_PATH, markdown, 'utf8');
-  
+
   const brainDir = path.dirname(BRAIN_REPORT_PATH);
   if (!fs.existsSync(brainDir)) {
     fs.mkdirSync(brainDir, { recursive: true });
   }
   fs.writeFileSync(BRAIN_REPORT_PATH, markdown, 'utf8');
-  
+
   console.log('Markdown report generated successfully.');
 }

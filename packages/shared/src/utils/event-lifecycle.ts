@@ -1,6 +1,6 @@
 import { EventStatus, DEFAULT_EVENT_DURATION_HOURS } from '../constants';
 
-export type EventLifecycleState = 
+export type EventLifecycleState =
   | 'draft'
   | 'upcoming'
   | 'live'
@@ -68,7 +68,7 @@ export function deriveEventLifecycleState(event: BaseEventForLifecycle): EventLi
  */
 export function canBook(event: BaseEventForLifecycle): boolean {
   const lifecycle = deriveEventLifecycleState(event);
-  
+
   // Must be in an active lifecycle state to book
   if (lifecycle !== 'upcoming' && lifecycle !== 'live') {
     return false;

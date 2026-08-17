@@ -35,21 +35,21 @@ function main() {
   const danglingCommitsCount = collectDanglingCommitsCount();
   const branchNames = rawBranches.map(b => b.name);
   const isWorkingTreeClean = runCommand('git status --porcelain').trim() === '';
-  
+
   // Perform stack ancestry check for AI OS phase branches
   const stackReport = analyzeAiOsStack(branchNames);
 
   // Check the specific deletion gates for the AI OS Stack Tip (Phase 20)
   const phase20Local = rawBranches.find(b => b.name === 'feat/ai-os-phase-20-task-engine');
-  
+
   let isPhase20Merged = false;
   let isPhase20Active = false;
-  
+
   if (phase20Local) {
     isPhase20Merged = checkReachableFromDevelop(phase20Local.name) || analyzePatchEquivalence(phase20Local.name);
     isPhase20Active = worktreeMap.has(phase20Local.name);
   }
-  
+
   // Stack parents are only safe to delete if Phase 20 has been pruned, or if it is merged and not active
   const isStackSafeToPrune = !phase20Local || (isPhase20Merged && !isPhase20Active);
 
@@ -70,7 +70,7 @@ function main() {
     // Open PR Check
     let hasOpenPR: 'YES' | 'NO' | 'UNKNOWN' = 'NO';
     let prNumber: string | null = null;
-    
+
     if (name === 'feat/governance-analytics' || name === 'origin/feat/governance-analytics') {
       hasOpenPR = 'YES';
       prNumber = '10A';
@@ -102,10 +102,10 @@ function main() {
       const match = name.match(/^feat\/ai-os-phase-(\d+)-/);
       if (match) {
         const phaseNum = parseInt(match[1], 10);
-        
+
         // If it is an intermediate stack parent, it is part of active stack
         isPartOfActiveStack = phaseNum < 20 && !isStackSafeToPrune;
-        
+
         // Populate usedByBranches for stack hierarchy
         const nextPhase = stackReport.phaseChain.find(pc => pc.phase === phaseNum + 1);
         if (nextPhase && nextPhase.exists) {
@@ -218,7 +218,7 @@ function main() {
     let rollbackStrategy: string;
     let estimatedEffort: string;
     let shellCommand = '';
-    
+
     // Evaluate strict deletion policy
     const deletionReport = validateDeletionPolicy(v, rb.isLocal);
 

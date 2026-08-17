@@ -90,9 +90,9 @@ jobs:
       - name: TruffleHog OSS
         uses: trufflesecurity/trufflehog@v3.95.7
         if: |
-          github.event_name == 'pull_request' || 
-          (github.event_name == 'push' && 
-           github.event.before != '0000000000000000000000000000000000000000' && 
+          github.event_name == 'pull_request' ||
+          (github.event_name == 'push' &&
+           github.event.before != '0000000000000000000000000000000000000000' &&
            github.event.before != github.sha)
         with:
           path: ./
