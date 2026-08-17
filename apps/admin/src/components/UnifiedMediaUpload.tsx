@@ -291,7 +291,7 @@ export function UnifiedMediaUpload({
                 {/* Image */}
                 <div className="relative flex-1 min-h-0">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={item.asset.url} alt={`Media ${i}`} className="w-full h-full object-cover" />
+                  <img src={item.asset.url} alt={`Media ${i}`} width={320} height={180} className="w-full h-full object-cover" />
 
                   {/* Badges */}
                   <div className="absolute top-2 left-2 flex flex-col gap-1 pointer-events-none">

@@ -154,7 +154,7 @@ export default function AdminEventsPage() {
             <div className="flex items-center gap-3">
               {event.bannerImage?.url ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={event.bannerImage.url} alt={event.title} className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />
+                <img src={event.bannerImage.url} alt={event.title} width={40} height={40} className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />
               ) : (
                 <div className="w-10 h-10 rounded-lg bg-accent-purple/10 flex-shrink-0 flex items-center justify-center text-accent-purple text-xs font-bold">
                   {(event.title || '?')[0]}

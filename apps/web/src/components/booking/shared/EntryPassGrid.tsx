@@ -142,6 +142,8 @@ export function EntryPassGrid({ tickets }: EntryPassGridProps) {
                       <img
                         src={ticket.qrCodeImage}
                         alt="QR Ticket Code"
+                        width={176}
+                        height={176}
                         className="w-44 h-44 bg-white transition-transform duration-300 group-hover:scale-[1.03]"
                       />
                       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 flex items-center justify-center transition-colors">
@@ -236,6 +238,8 @@ export function EntryPassGrid({ tickets }: EntryPassGridProps) {
                 <img
                   src={zoomedTicket.qrCodeImage}
                   alt="Enlarged QR Scanner Code"
+                  width={256}
+                  height={256}
                   className="w-64 h-64 mx-auto select-none pointer-events-none"
                 />
               </div>
