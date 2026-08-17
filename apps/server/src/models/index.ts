@@ -18,5 +18,8 @@ import './tier.schema';
 import './user.schema';
 import './magic-token.schema';
 import './refresh-token.schema';
-
 import './ticket-profile.schema';
+import './event-gallery.schema';
+import './event-gallery-settings.schema';
+import './suppression.schema';
+
