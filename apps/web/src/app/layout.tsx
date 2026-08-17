@@ -133,7 +133,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
             in the document. Targets #main-content which is the <main> landmark. */}
         <a
           href="#main-content"
-          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[200] focus:px-4 focus:py-2 focus:rounded-xl focus:bg-accent-purple focus:text-white focus:font-bold focus:text-sm focus:shadow-glow focus:outline-none"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-dialog focus:px-4 focus:py-2 focus:rounded-xl focus:bg-accent-purple focus:text-white focus:font-bold focus:text-sm focus:shadow-glow focus:outline-none"
         >
           Skip to main content
         </a>

@@ -542,7 +542,7 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose, onConfirm
       {/* Payment Processing Loader Backdrop */}
       <AnimatePresence>
         {isProcessing && (
-          <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex flex-col items-center justify-center z-[100] space-y-4" role="status" aria-live="assertive">
+          <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex flex-col items-center justify-center z-dialog space-y-4" role="status" aria-live="assertive">
             <div className="w-12 h-12 rounded-full border-4 border-accent-purple border-t-transparent animate-spin" />
             <p className="text-white font-bold text-sm tracking-wider">Verifying payment with bank servers...</p>
             <p className="text-text-muted text-xs">Please do not refresh this page.</p>
