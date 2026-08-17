@@ -14,6 +14,7 @@ import { RollbackHistory } from './rollback_history';
 import { AnalyticsEngine } from './analytics_engine';
 import { AnalyticsStore } from './analytics_store';
 import { FixRegistry } from './fix_registry';
+import { governanceConfig } from './governance.config';
 
 export class AuditEngine {
   private static workspaceRoot = resolve(__dirname, '../../..');
@@ -81,6 +82,16 @@ export class AuditEngine {
     // 2.5. Finalize active finding occurrences and apply write suppression if structurally unchanged
     for (const id of activeFindingIds) {
       this.findingManager.finalizeFinding(id);
+    }
+
+    // 2.7. Close findings whose evidence path is now within an excluded scan scope.
+    // When a directory is added to excludedPaths, its files are no longer scanned —
+    // so their findings are never seen as "resolved" by the reconcile cycle above.
+    // This pass closes them explicitly so they do not block the gating evaluation.
+    const excludedPaths = governanceConfig.scanScope?.excludedPaths ?? [];
+    const outOfScopeClosedCount = this.findingManager.closeOutOfScopeFindings(excludedPaths);
+    if (outOfScopeClosedCount > 0) {
+      console.log(`🧹 Closed ${outOfScopeClosedCount} out-of-scope finding(s) (paths now in excludedPaths).`);
     }
 
     // 3. Load and run governance plugins (if any exist)

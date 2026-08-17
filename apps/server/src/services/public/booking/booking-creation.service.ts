@@ -2,7 +2,7 @@ import crypto from 'crypto';
 
 import { Types } from 'mongoose';
 
-import { BookingStatus, BookingMode, ReservationStatus, SeatStatus, getCountryConfig } from '@mad/shared';
+import { BookingStatus, BookingMode, ReservationStatus, SeatStatus, getCountryConfig, deriveBookingEligibility } from '@mad/shared';
 
 import { getRedis } from '../../../config/redis';
 import { emitToAdmin, emitToEvent } from '../../../config/socket';
@@ -16,7 +16,6 @@ import { auditLog } from '../../../utils/audit';
 import { logger } from '../../../utils/logger';
 import { runInTransaction } from '../../../utils/transaction';
 import { ReservationService } from '../../reservation.service';
-import { deriveBookingEligibility } from '@mad/shared';
 import { BookingAccessService } from './booking-access.service';
 import type { CreateBookingRequest, SaveCheckoutRequest } from './booking.types';
 

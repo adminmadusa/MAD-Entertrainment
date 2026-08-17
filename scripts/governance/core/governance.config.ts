@@ -41,10 +41,44 @@ export const governanceConfig = {
       'scripts/governance',
       '.agents',
       'docs/archive',
+      // git-mcp: Gitignored, untracked third-party Remix/Cloudflare subproject.
+      // Its components, hooks, and assets are not part of any MAD production workspace
+      // and must not participate in dead-code detection. 0 tracked files.
+      'git-mcp',
+      // tmp: Scratch directory used for ad-hoc local testing scripts. Not production code.
+      'tmp',
+      // tests/ui-governance: Runtime browser test harness (Playwright). Its utility
+      // files are imported by the test runner process, not by the application bundles.
+      // The dead-asset BFS from app entry points correctly classifies them as unreachable.
+      'tests/ui-governance',
     ] as string[],
     documentationExclusions: [
       'docs/archive',
+      // openspec/changes/archive: Completed and archived OpenSpec design documents.
+      // These may contain file:// IDE deep-links written during the design phase
+      // (VAL-DOC-001) that are intentionally historical. Enforcing path hygiene
+      // on closed design specs adds noise without operational value.
+      'openspec/changes/archive',
       'apps/web/src/content/legal',
+    ] as string[],
+    /**
+     * deadCodeExclusions:
+     *   Files excluded from the dead-asset BFS reachability check (VAL-UI-014).
+     *   These files ARE actively used at runtime, but are referenced outside the
+     *   BFS traversal scope (e.g., via Next.js config, framework plugin APIs, or
+     *   runtime-only entry points that are correctly skipped as config files).
+     *
+     *   - 'apps/web/src/utils/image-loader.ts': Next.js custom image loader.
+     *     Referenced by `next.config.ts` via the `loader` option. BFS skips
+     *     next.config.ts (isConfig=true), making this file falsely unreachable.
+     *   - 'apps/server/src/utils/zeptomail.ts': ZeptoMail HTTP transport.
+     *     Consumed by `email.ts` and covered by its own test file. Classified as
+     *     dead only when BFS traversal from server entry points does not reach
+     *     the email module through the current graph snapshot.
+     */
+    deadCodeExclusions: [
+      'apps/web/src/utils/image-loader.ts',
+      'apps/server/src/utils/zeptomail.ts',
     ] as string[],
   },
 

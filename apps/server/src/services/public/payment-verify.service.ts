@@ -1,6 +1,6 @@
 import { Types } from 'mongoose';
 
-import { PaymentStatus } from '@mad/shared';
+import { PaymentStatus, deriveBookingEligibility } from '@mad/shared';
 
 import { getEnv } from '../../config/env';
 import { AppError } from '../../middleware/error.middleware';
@@ -12,7 +12,7 @@ import { logger } from '../../utils/logger';
 import { PaymentOwnershipContext } from './payment-intent.service';
 import { PaymentValidationService } from './payment-validation.service';
 import { StripeAdapter } from './stripe.adapter';
-import { deriveBookingEligibility } from '@mad/shared';
+
 
 export interface PaymentVerifyPersistence {
   confirmBooking(
