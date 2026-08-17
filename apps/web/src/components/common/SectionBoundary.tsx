@@ -1,6 +1,7 @@
 'use client';
 
 import React, { Component, type ErrorInfo, type ReactNode, Suspense } from 'react';
+
 import { ErrorState } from '@mad/ui';
 
 interface ErrorBoundaryProps {

@@ -1,5 +1,6 @@
-import type { Booking } from '@mad/types';
 import { formatMoney } from '@mad/shared';
+import type { Booking } from '@mad/types';
+
 import { TicketSummaryItem } from '../shared/TicketSummaryItem';
 
 interface CheckoutPricingProps {

@@ -5,6 +5,7 @@ import React from 'react';
 
 import { adminGetGallery } from '@/lib/api/admin/event-gallery.service';
 import { Spinner } from '@mad/ui';
+
 import { EventGalleryGrid } from './EventGalleryGrid';
 import { EventGallerySettingsPanel } from './EventGallerySettingsPanel';
 import { EventGalleryUploadZone } from './EventGalleryUploadZone';

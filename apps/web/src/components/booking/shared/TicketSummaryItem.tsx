@@ -1,7 +1,7 @@
 import React from 'react';
 
-import { formatMoney } from '@mad/shared';
 import { formatDisplayName } from '@/utils/booking-calculations';
+import { formatMoney } from '@mad/shared';
 
 interface TicketSummaryItemProps {
   tierName: string;

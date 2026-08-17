@@ -1,5 +1,6 @@
 'use client';
 import React from 'react';
+
 import { AdminBooking } from '@/lib/api/admin/booking.service';
 import { BookingStatus, getBookingStatusLabel } from '@mad/shared';
 import { Modal } from '@mad/ui';

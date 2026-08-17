@@ -1,5 +1,6 @@
-import { adminApiClient } from '../client';
 import { type EventGalleryItem, type EventGallerySettings, type MediaType, type MediaVisibility } from '@mad/types';
+
+import { adminApiClient } from '../client';
 
 export interface GalleryItemPayload {
   mediaType?: MediaType;

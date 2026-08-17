@@ -8,9 +8,9 @@ import { Notification } from '../../models/notification.schema';
 import { Refund } from '../../models/refund.schema';
 import { auditLog } from '../../utils/audit';
 import { logger } from '../../utils/logger';
+import { RefundNotificationService } from '../admin/refund/refund-notification.service';
 import { createNotificationSafe } from '../notification.service';
 import { QueueService } from '../queue.service';
-import { RefundNotificationService } from '../admin/refund/refund-notification.service';
 
 export class RefundConsistencyService {
   static async countStuckProcessingRefunds(): Promise<number> {

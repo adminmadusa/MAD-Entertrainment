@@ -3,17 +3,17 @@ import { Request, Response } from 'express';
 import { getEnv } from '../../config/env';
 import { AppError } from '../../middleware/error.middleware';
 import { UserModel } from '../../models/user.schema';
+import { UploadService } from '../../services/admin/upload.service';
 import { AuthService } from '../../services/public/auth.service';
 import { clearXsrfCookie, setXsrfCookie } from '../../utils/cookie';
-import { logger } from '../../utils/logger';
-import { requiresOnboarding } from '../../utils/user';
-import { UploadService } from '../../services/admin/upload.service';
 import {
   validateFilenameAndExtension,
   validateMagicBytes,
   generateSecureFilename,
   extractCloudinaryPublicId,
 } from '../../utils/file-security';
+import { logger } from '../../utils/logger';
+import { requiresOnboarding } from '../../utils/user';
 
 export class AuthController {
   /**

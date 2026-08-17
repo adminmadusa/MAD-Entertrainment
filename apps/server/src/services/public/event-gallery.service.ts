@@ -1,8 +1,9 @@
-import { EventGallery, MediaVisibility } from '../../models/event-gallery.schema';
-import { EventGallerySettings } from '../../models/event-gallery-settings.schema';
-import { Event } from '../../models/event.schema';
-import { AppError } from '../../middleware/error.middleware';
 import mongoose from 'mongoose';
+
+import { AppError } from '../../middleware/error.middleware';
+import { EventGallerySettings } from '../../models/event-gallery-settings.schema';
+import { EventGallery, MediaVisibility } from '../../models/event-gallery.schema';
+import { Event } from '../../models/event.schema';
 
 export class PublicEventGalleryService {
   /**

@@ -2,12 +2,12 @@ import jwt from 'jsonwebtoken';
 import { type FilterQuery, Types } from 'mongoose';
 
 import { EventStatus, SeatStatus, deriveEventCapabilities } from '@mad/shared';
-import { EventGallery } from '../../models/event-gallery.schema';
-import { EventGallerySettings } from '../../models/event-gallery-settings.schema';
 
 import { getEnv } from '../../config/env';
 import { getRedis } from '../../config/redis';
 import { AppError } from '../../middleware/error.middleware';
+import { EventGallerySettings } from '../../models/event-gallery-settings.schema';
+import { EventGallery } from '../../models/event-gallery.schema';
 import { Event, IEvent } from '../../models/event.schema';
 import { SeatLayout, ISeatLayout } from '../../models/seat-layout.schema';
 export function verifyPreviewToken(token: string): {

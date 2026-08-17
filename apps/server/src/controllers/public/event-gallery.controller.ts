@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+
 import { PublicEventGalleryService } from '../../services/public/event-gallery.service';
 import { sendSuccess } from '../../utils/response';
 

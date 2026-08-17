@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+
 import { AdminBooking } from '@/lib/api/admin/booking.service';
 import { Modal } from '@mad/ui';
 

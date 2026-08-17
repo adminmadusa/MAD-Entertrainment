@@ -1,8 +1,9 @@
 'use client';
 
-import { Image as ImageIcon } from '@mad/ui/icons';
 import Image, { type ImageProps } from 'next/image';
 import { useState, useEffect } from 'react';
+
+import { Image as ImageIcon } from '@mad/ui/icons';
 
 interface ImageWrapperProps extends Omit<ImageProps, 'onError'> {
   fallbackIcon?: React.ReactNode;

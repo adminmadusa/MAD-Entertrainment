@@ -2,18 +2,19 @@
 
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
+
 import { BookingHeaderCard } from '@/components/booking/shared/BookingHeaderCard';
+import { TicketSummaryItem } from '@/components/booking/shared/TicketSummaryItem';
+import { formatTicketCount } from '@/utils/booking-calculations';
+import { formatDate } from '@/utils/date';
 import { BookingStatus, getBookingLifecycle, buildVenueMapLink, type BookingForLifecycle, type BaseEventForLifecycle } from '@mad/shared';
 import type { Booking, Ticket, Event } from '@mad/types';
 import { Spinner } from '@mad/ui';
-import { formatDate } from '@/utils/date';
-import { formatTicketCount } from '@/utils/booking-calculations';
-import { TicketSummaryItem } from '@/components/booking/shared/TicketSummaryItem';
 
+import { BookingDetailsGrid } from './BookingDetailsGrid';
 import { EventCountdown } from './EventCountdown';
 import { PaymentRecoveryBanner } from './PaymentRecoveryBanner';
 import { TicketStatusMessage } from './TicketStatusMessage';
-import { BookingDetailsGrid } from './BookingDetailsGrid';
 
 const EntryPassGrid = dynamic(() => import('@/components/booking/shared/EntryPassGrid').then(mod => mod.EntryPassGrid), {
   ssr: false,

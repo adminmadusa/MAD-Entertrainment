@@ -1,14 +1,16 @@
 'use client';
 
-import React, { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { Calendar, MapPin, ArrowLeft, Image as ImageIcon } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Calendar, MapPin, ArrowLeft, Image as ImageIcon } from 'lucide-react';
+import React, { useState } from 'react';
+
+import { publicGetEvents } from '@/lib/api/public.service';
 import { formatMoney } from '@mad/shared';
 import type { Event, EventGalleryItem, EventGallerySettings } from '@mad/types';
+
 import { Lightbox } from './Lightbox';
-import { useQuery } from '@tanstack/react-query';
-import { publicGetEvents } from '@/lib/api/public.service';
 
 interface Props {
   event: Event;

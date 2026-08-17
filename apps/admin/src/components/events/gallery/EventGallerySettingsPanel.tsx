@@ -2,6 +2,7 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import React, { useState, useEffect } from 'react';
+
 import { adminUpdateGallerySettings } from '@/lib/api/admin/event-gallery.service';
 import { type EventGallerySettings } from '@mad/types';
 

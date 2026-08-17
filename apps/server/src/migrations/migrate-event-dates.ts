@@ -1,8 +1,8 @@
-import 'dotenv/config';
-
 import { connectDatabase, disconnectDatabase, isDatabaseConnected } from '../config/database';
 import { Event } from '../models/event.schema';
 import { logger } from '../utils/logger';
+
+import 'dotenv/config';
 
 export async function migrateEventDates(): Promise<{ matchedCount: number; modifiedCount: number }> {
   logger.info('🚀 Starting Event Dates Simplification Migration...');

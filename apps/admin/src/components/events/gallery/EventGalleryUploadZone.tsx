@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useRef, useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { adminApiClient } from '@/lib/api/client';
+import React, { useRef, useState } from 'react';
+
 import { adminAddGalleryItems, type GalleryItemPayload } from '@/lib/api/admin/event-gallery.service';
+import { adminApiClient } from '@/lib/api/client';
 import { MediaType } from '@mad/types';
 
 export interface EventGalleryUploadZoneProps {

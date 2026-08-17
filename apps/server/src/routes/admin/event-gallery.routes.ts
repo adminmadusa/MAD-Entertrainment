@@ -1,8 +1,6 @@
 import { Router } from 'express';
-import { requireRole } from '../../middleware/auth.middleware';
-import { validate } from '../../middleware/validation.middleware';
+
 import { AdminRole } from '@mad/shared';
-import * as eventGalleryController from '../../controllers/admin/event-gallery.controller';
 import {
   addGalleryItemsSchema,
   updateGalleryItemSchema,
@@ -10,6 +8,10 @@ import {
   updateGallerySettingsSchema,
   setCoverImageSchema
 } from '@mad/validations';
+
+import * as eventGalleryController from '../../controllers/admin/event-gallery.controller';
+import { requireRole } from '../../middleware/auth.middleware';
+import { validate } from '../../middleware/validation.middleware';
 
 const router = Router({ mergeParams: true }); // Allows access to eventId from parent router
 
