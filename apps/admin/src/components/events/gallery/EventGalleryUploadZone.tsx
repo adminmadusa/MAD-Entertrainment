@@ -123,7 +123,7 @@ export const EventGalleryUploadZone = React.memo(function EventGalleryUploadZone
             fileInputRef.current?.click();
           }
         }}
-        className={`border-2 border-dashed rounded-2xl p-8 text-center transition-colors ${
+        className={`border-2 border-dashed rounded-2xl p-6 sm:p-8 text-center transition-colors ${
           disabled
             ? 'border-border-subtle/50 bg-surface-elevated/40 opacity-40 cursor-not-allowed'
             : isDragging
@@ -131,11 +131,13 @@ export const EventGalleryUploadZone = React.memo(function EventGalleryUploadZone
             : 'border-border-subtle bg-surface-elevated hover:bg-surface-elevated/80 hover:border-text-muted cursor-pointer'
         } ${uploadingFiles.length > 0 || addItemsMutation.isPending ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}
       >
-        <div className="text-4xl mb-3">🔒</div>
-        <h3 className="text-white font-medium mb-1">
+        <div className="text-3xl sm:text-4xl mb-3">
+          {disabled ? '🔒' : '📤'}
+        </div>
+        <h3 className="text-white font-medium text-sm sm:text-base mb-1">
           {disabled ? 'Gallery Uploads Locked' : 'Upload Gallery Images'}
         </h3>
-        <p className="text-text-muted text-sm mb-4">
+        <p className="text-text-muted text-xs sm:text-sm mb-4">
           {disabled ? 'This event has not completed yet' : 'Drag & drop images here or click to browse'}
         </p>
         <input
