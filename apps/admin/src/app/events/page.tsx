@@ -7,7 +7,7 @@ import { useState } from 'react';
 import { adminGetEvents, adminDeleteEvent, adminBulkDeleteEvents, adminUpdateEvent, type AdminEvent } from '@/lib/api/admin/event.service';
 import { extractApiError } from '@/lib/api/client';
 import { useAdminAuth } from '@/providers/AdminAuthProvider';
-import { EVENT_STATUS_METADATA, EVENT_STATUS_TRANSITIONS, EventStatus, AdminRole } from '@mad/shared';
+import { EVENT_STATUS_METADATA, EVENT_STATUS_TRANSITIONS, EventStatus, AdminRole, deriveEventLifecycleState } from '@mad/shared';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, Modal, FloatingActionBar, EmptyState, Checkbox, useBulkSelection, TablePagination } from '@mad/ui';
 import { CalendarDays, Search } from '@mad/ui/icons';
 import { formatEventDate } from '@mad/utils';
@@ -140,6 +140,13 @@ export default function AdminEventsPage() {
 
     return events.map((event) => {
       const statusMeta = getEventStatusMeta(event.status);
+      const isCompleted = deriveEventLifecycleState({
+        status: event.status || EventStatus.DRAFT,
+        startDate: event.startDate,
+        endDate: event.endDate,
+        bookingStartDate: event.bookingStartDate,
+        bookingEndDate: event.bookingEndDate,
+      }) === 'completed';
 
       return (
         <TableRow key={event._id} className="border-b border-border-subtle/40 hover:bg-white/2 transition-colors">
@@ -247,12 +254,21 @@ export default function AdminEventsPage() {
           <TableCell sticky="end" showStickyDivider className="py-4 px-5">
             {canMutateEvents ? (
               <div className="flex items-center justify-end gap-2">
-                <Link
-                  href={`/events/${event._id}/edit`}
-                  className="px-3 py-1.5 text-xs font-medium glass border border-border-subtle rounded-lg text-text-secondary hover:text-white hover:border-accent-purple/40 transition-all"
-                >
-                  Edit
-                </Link>
+                {isCompleted ? (
+                  <Link
+                    href={`/events/${event._id}/gallery`}
+                    className="px-3 py-1.5 text-xs font-semibold bg-accent-purple text-white hover:bg-accent-purple-light shadow-md rounded-lg transition-all"
+                  >
+                    Gallery
+                  </Link>
+                ) : (
+                  <Link
+                    href={`/events/${event._id}/edit`}
+                    className="px-3 py-1.5 text-xs font-medium glass border border-border-subtle rounded-lg text-text-secondary hover:text-white hover:border-accent-purple/40 transition-all"
+                  >
+                    Edit
+                  </Link>
+                )}
 
                 <button
                   onClick={() => setDeleteTarget(event)}
