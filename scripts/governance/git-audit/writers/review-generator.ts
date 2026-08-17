@@ -37,7 +37,7 @@ function parseExistingDecisions(): Map<string, ReviewDecision> {
       const parts = line.split('|').map(p => p.trim());
       // Expect: | Branch Name | Lifecycle State | Decision | Rationale | Reviewer | Date |
       if (parts.length < 8) continue;
-      
+
       const branchName = parts[1].replace(/`/g, '');
       // Skip table header and separator lines
       if (branchName === 'Branch Name' || branchName.startsWith(':') || branchName.startsWith('-')) {

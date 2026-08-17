@@ -48,20 +48,20 @@ export default function BookingDetailsModal({
   errorToast,
 }: BookingDetailsModalProps) {
   const [selectedTicketIds, setSelectedTicketIds] = React.useState<string[]>([]);
-  
+
   if (!isOpen) return null;
   const customer = booking.userId ?? booking.guestInfo;
   const email = customer?.email ?? '—';
   const phone = customer?.phone || '—';
   const keepUpdated = customer?.keepUpdated ? 'Yes' : 'No';
   const sendBestEvents = customer?.sendBestEvents ? 'Yes' : 'No';
-  
+
   const handleTicketToggle = (ticketId: string) => {
-    setSelectedTicketIds(prev => 
+    setSelectedTicketIds(prev =>
       prev.includes(ticketId) ? prev.filter(id => id !== ticketId) : [...prev, ticketId]
     );
   };
-  
+
   const handleSelectAllActive = () => {
     const activeTicketIds = (booking.individualTickets || []).filter(t => t.status === 'active').map(t => t.ticketId);
     if (selectedTicketIds.length === activeTicketIds.length) {
@@ -244,7 +244,7 @@ export default function BookingDetailsModal({
             <div className="flex items-center justify-between">
               <h4 className="text-text-muted font-medium text-xs uppercase tracking-wider">Individual Tickets & QR Status</h4>
               {canMutateBookings && booking.status === BookingStatus.CONFIRMED && (
-                <button 
+                <button
                   onClick={handleSelectAllActive}
                   className="text-[10px] text-accent-purple hover:text-white transition-colors uppercase font-semibold"
                 >
@@ -258,8 +258,8 @@ export default function BookingDetailsModal({
                   <div className="flex justify-between items-center">
                     <div className="flex items-center gap-2">
                       {t.status === 'active' && canMutateBookings && (
-                        <input 
-                          type="checkbox" 
+                        <input
+                          type="checkbox"
                           checked={selectedTicketIds.includes(t.ticketId)}
                           onChange={() => handleTicketToggle(t.ticketId)}
                           className="w-3.5 h-3.5 rounded border-border-subtle bg-background/50 accent-accent-purple"
@@ -298,8 +298,8 @@ export default function BookingDetailsModal({
                 }
               }}
               className={`flex-1 py-2 rounded-xl text-xs font-semibold text-white transition-all ${
-                selectedTicketIds.length > 0 
-                  ? 'bg-yellow-500/80 hover:bg-yellow-500 shadow-[0_0_15px_rgba(234,179,8,0.3)]' 
+                selectedTicketIds.length > 0
+                  ? 'bg-yellow-500/80 hover:bg-yellow-500 shadow-[0_0_15px_rgba(234,179,8,0.3)]'
                   : 'bg-error/80 hover:bg-error shadow-[0_0_15px_rgba(239,68,68,0.3)]'
               }`}
             >

@@ -4,7 +4,7 @@ import { getEnv } from '../config/env';
 export const setXsrfCookie = (res: Response, csrfToken: string): void => {
   const env = getEnv();
   const isProd = env.NODE_ENV === 'production';
-  
+
   res.cookie('XSRF-TOKEN', csrfToken, {
     httpOnly: false, // Must be readable by Axios
     secure: isProd,
@@ -18,7 +18,7 @@ export const setXsrfCookie = (res: Response, csrfToken: string): void => {
 export const clearXsrfCookie = (res: Response): void => {
   const env = getEnv();
   const isProd = env.NODE_ENV === 'production';
-  
+
   res.clearCookie('XSRF-TOKEN', {
     httpOnly: false,
     secure: isProd,

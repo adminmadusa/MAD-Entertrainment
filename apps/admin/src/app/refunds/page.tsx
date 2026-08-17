@@ -50,9 +50,9 @@ export default function AdminRefundsPage() {
 
   const { data, isLoading, error } = useQuery({
     queryKey: QUERY_KEYS.admin.refunds.list({ page, status: statusFilter, sortField, sortOrder }),
-    queryFn: () => adminGetRefunds({ 
-      page: String(page), 
-      limit: '15', 
+    queryFn: () => adminGetRefunds({
+      page: String(page),
+      limit: '15',
       ...(statusFilter && { status: statusFilter }),
       ...(sortField && { sortField }),
       ...(sortOrder && { sortOrder })

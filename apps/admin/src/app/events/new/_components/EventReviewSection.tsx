@@ -143,7 +143,7 @@ export const EventReviewSection: React.FC<EventReviewSectionProps> = ({
             <span className="text-text-muted block mb-1">Ticketing Type</span>
             <span className="text-white font-medium capitalize">{ticketingType}</span>
           </div>
-          
+
           {ticketingType === 'custom' && (
             <div className="space-y-2">
               <span className="text-text-muted block">Ticket Tiers</span>

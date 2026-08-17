@@ -64,7 +64,7 @@ export const EventGallerySettingsPanel = React.memo(function EventGallerySetting
   return (
     <div className="glass rounded-2xl border border-border-subtle overflow-hidden">
       {/* Mobile Accordion Header */}
-      <div 
+      <div
         className="p-6 flex justify-between items-center cursor-pointer lg:cursor-auto"
         onClick={() => setIsExpanded(!isExpanded)}
       >
@@ -75,7 +75,7 @@ export const EventGallerySettingsPanel = React.memo(function EventGallerySetting
       </div>
 
       <div className={`px-6 pb-6 space-y-6 ${isExpanded ? 'block' : 'hidden lg:block'}`}>
-        
+
         {/* Published Toggle */}
         <div className={`flex items-center justify-between p-4 bg-background-dark/50 rounded-xl border border-border-subtle ${disabled ? 'opacity-55' : ''}`}>
           <div>

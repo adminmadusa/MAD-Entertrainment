@@ -26,7 +26,7 @@ export function PublicGalleryView({ event, gallery }: Props) {
   const coverUrl = coverItem?.url || event.bannerImage?.url;
 
   const eventDate = event.startDate ? new Date(event.startDate) : null;
-  
+
   let headerSubtitle = 'Gallery';
   if (event.status === 'completed') {
     headerSubtitle = 'Happy Moments';
@@ -66,7 +66,7 @@ export function PublicGalleryView({ event, gallery }: Props) {
             blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mN8/wQAAgMBBNN+f6YAAAAASUVORK5CYII="
           />
           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
-          
+
           {/* Event Context Overlay */}
           <div className="absolute bottom-0 left-0 right-0 p-6 md:p-12 container mx-auto">
             <h1 className="text-4xl md:text-6xl font-black text-white mb-4 drop-shadow-md">

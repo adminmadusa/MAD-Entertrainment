@@ -52,7 +52,7 @@ export class AdminEventGalleryService {
     if (data.heading !== undefined) settings.heading = data.heading;
     if (data.thankYouMessage !== undefined) settings.thankYouMessage = data.thankYouMessage;
     if (data.highlights !== undefined) settings.highlights = data.highlights;
-    
+
     if (data.published !== undefined && settings.published !== data.published) {
       settings.published = data.published;
       if (data.published) {
@@ -132,7 +132,7 @@ export class AdminEventGalleryService {
         const nextCandidate = await EventGallery.findOne({ eventId })
           .sort({ sortOrder: 1, createdAt: 1 })
           .session(session);
-        
+
         if (nextCandidate) {
           nextCandidate.isCover = true;
           await nextCandidate.save({ session });

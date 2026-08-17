@@ -12,13 +12,13 @@ export interface CommitDetails {
 export function collectTipCommit(ref: string): CommitDetails | null {
   const sha = runCommand(`git rev-parse "${ref}"`);
   if (!sha) return null;
-  
+
   const authorName = runCommand(`git log -1 --format="%an" "${ref}"`);
   const authorEmail = runCommand(`git log -1 --format="%ae" "${ref}"`);
   const authorDate = runCommand(`git log -1 --format="%ad" --date=short "${ref}"`);
   const commitTime = parseInt(runCommand(`git log -1 --format="%ct" "${ref}"`), 10) || 0;
   const subject = runCommand(`git log -1 --format="%s" "${ref}"`);
-  
+
   return {
     sha,
     authorName,

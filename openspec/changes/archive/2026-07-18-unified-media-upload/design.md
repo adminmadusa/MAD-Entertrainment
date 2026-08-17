@@ -16,8 +16,8 @@ The current `EventMediaCard` component defines three strict upload regions for b
 
 ## Decisions
 
-1.  **State Management:** The unified dropzone will maintain a single array of uploaded images `CloudinaryImage[]`. 
-2.  **Role Designation UI:** A dropdown menu, a set of radio buttons, or visual tags/badges overlaid on the image thumbnails in the gallery will allow the admin to designate an image as the "Banner Image" or "Poster Image". 
+1.  **State Management:** The unified dropzone will maintain a single array of uploaded images `CloudinaryImage[]`.
+2.  **Role Designation UI:** A dropdown menu, a set of radio buttons, or visual tags/badges overlaid on the image thumbnails in the gallery will allow the admin to designate an image as the "Banner Image" or "Poster Image".
 3.  **Fallback Logic (Auto-assignment):** When the "Save" or "Next" button is pressed, the `EventMediaCard` will inspect the selections. If no image is tagged as the Banner, the system will slice `images[0]` and assign it to the `bannerImage` payload field automatically, mapping the rest to `galleryImages`.
 
 ## Risks / Trade-offs

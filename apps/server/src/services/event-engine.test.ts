@@ -26,7 +26,7 @@ describe('Event Lifecycle & Booking Engine Boundary Tests', () => {
 
   it('detects UPCOMING state before event start', () => {
     vi.setSystemTime(new Date('2026-06-30T23:59:59.000Z'));
-    
+
     const caps = deriveEventCapabilities(baseEvent);
     expect(caps.lifecycle).toBe(EventLifecycle.UPCOMING);
     expect(caps.booking.status).toBe(BookingState.CLOSED);

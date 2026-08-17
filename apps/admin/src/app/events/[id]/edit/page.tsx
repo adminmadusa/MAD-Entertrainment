@@ -64,7 +64,7 @@ export default function EditEventPage() {
     if (formRef.current?.validateStep(4) && event) {
       try {
         const payload = formRef.current.getPayload();
-        
+
         // Immutable payload transformation for Edit updates
         const updatePayload = {
           ...payload,

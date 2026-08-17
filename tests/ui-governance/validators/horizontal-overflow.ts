@@ -21,7 +21,7 @@ export class HorizontalOverflowValidator implements RuntimeValidator {
 
     // 1. Check document.documentElement.scrollWidth
     const docScrollWidth = await page.evaluate(() => document.documentElement.scrollWidth);
-    
+
     // 2. Check document.body.scrollWidth
     const bodyScrollWidth = await page.evaluate(() => document.body.scrollWidth);
 

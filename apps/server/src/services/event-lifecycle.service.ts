@@ -67,7 +67,7 @@ export class EventLifecycleService {
     const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
     const defaultDurationMs = DEFAULT_EVENT_DURATION_HOURS * 60 * 60 * 1000;
     const thirtyDaysPlusDurationAgo = new Date(thirtyDaysAgo.getTime() - defaultDurationMs);
-    
+
     const result = await Event.updateMany(
       {
         status: { $in: [EventStatus.PUBLISHED, EventStatus.COMPLETED] },

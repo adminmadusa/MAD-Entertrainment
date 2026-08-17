@@ -18,14 +18,14 @@ export function getUpstream(branch: string): string | null {
 
 export function checkPatchEquivalent(branchName: string): boolean {
   if (branchName === 'develop' || branchName === 'origin/develop') return false;
-  
+
   // Hardcoded known equivalent branches (from historical PR data)
   if (branchName === 'fix/production-sentry-reporting') return true;
 
   const cherryOutput = runCommand(`git cherry develop "${branchName}"`);
   const lines = cherryOutput.split('\n').filter(Boolean);
   const hasPlus = lines.some(l => l.startsWith('+'));
-  
+
   if (lines.length > 0 && !hasPlus) {
     return true;
   }
@@ -60,7 +60,7 @@ export function getMergedPRNumber(branchName: string): string | null {
     const devPrLogs = runCommand(`git log develop --grep="(#${prNum})" --oneline`);
     if (devPrLogs) return prNum;
   }
-  
+
   const tipMsg = runCommand(`git log -1 --format="%s" "${branchName}"`);
   if (tipMsg) {
     const escapedMsg = tipMsg.replace(/["']/g, '');
@@ -70,6 +70,6 @@ export function getMergedPRNumber(branchName: string): string | null {
       if (prMatch) return prMatch[1];
     }
   }
-  
+
   return null;
 }

@@ -32,7 +32,7 @@ describe('FloatingActionBar', () => {
   it('calls onClearSelection when clear button is clicked', async () => {
     const user = userEvent.setup();
     render(<FloatingActionBar selectedCount={2} onClearSelection={mockOnClearSelection} />);
-    
+
     await user.click(screen.getByRole('button', { name: /clear selection/i }));
     expect(mockOnClearSelection).toHaveBeenCalledTimes(1);
   });
@@ -43,7 +43,7 @@ describe('FloatingActionBar', () => {
         <button data-testid="custom-action">Custom Action</button>
       </FloatingActionBar>
     );
-    
+
     expect(screen.getByTestId('custom-action')).toBeInTheDocument();
   });
 
@@ -55,14 +55,14 @@ describe('FloatingActionBar', () => {
 
     it('renders actions correctly', () => {
       render(
-        <FloatingActionBar 
-          selectedCount={1} 
+        <FloatingActionBar
+          selectedCount={1}
           onClearSelection={mockOnClearSelection}
           actions={actions}
           onAction={mockOnAction}
         />
       );
-      
+
       expect(screen.getByRole('button', { name: 'Delete' })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: 'Archive' })).toBeInTheDocument();
     });
@@ -70,28 +70,28 @@ describe('FloatingActionBar', () => {
     it('calls onAction with correct id when action is clicked', async () => {
       const user = userEvent.setup();
       render(
-        <FloatingActionBar 
-          selectedCount={1} 
+        <FloatingActionBar
+          selectedCount={1}
           onClearSelection={mockOnClearSelection}
           actions={actions}
           onAction={mockOnAction}
         />
       );
-      
+
       await user.click(screen.getByRole('button', { name: 'Delete' }));
       expect(mockOnAction).toHaveBeenCalledWith('delete');
     });
 
     it('disables actions when phase is loading or confirming', () => {
       render(
-        <FloatingActionBar 
-          selectedCount={1} 
+        <FloatingActionBar
+          selectedCount={1}
           onClearSelection={mockOnClearSelection}
           actions={actions}
           phase="loading"
         />
       );
-      
+
       expect(screen.getByRole('button', { name: 'Delete' })).toBeDisabled();
       expect(screen.getByRole('button', { name: 'Archive' })).toBeDisabled();
       expect(screen.getByRole('button', { name: /clear selection/i })).toBeDisabled();
@@ -101,30 +101,30 @@ describe('FloatingActionBar', () => {
       const actionsWithLoading: BulkActionConfig[] = [
         { id: 'delete', label: 'Delete', loadingLabel: 'Deleting...' }
       ];
-      
+
       render(
-        <FloatingActionBar 
-          selectedCount={1} 
+        <FloatingActionBar
+          selectedCount={1}
           onClearSelection={mockOnClearSelection}
           actions={actionsWithLoading}
           phase="loading"
         />
       );
-      
+
       expect(screen.getByRole('button', { name: 'Deleting...' })).toBeInTheDocument();
     });
 
     it('renders progress text when provided', () => {
       render(
-        <FloatingActionBar 
-          selectedCount={5} 
+        <FloatingActionBar
+          selectedCount={5}
           onClearSelection={mockOnClearSelection}
           actions={actions}
           phase="loading"
           progress={{ actionId: 'delete', completed: 2, total: 5, failed: 0 }}
         />
       );
-      
+
       expect(screen.getByText('2 / 5')).toBeInTheDocument();
     });
   });

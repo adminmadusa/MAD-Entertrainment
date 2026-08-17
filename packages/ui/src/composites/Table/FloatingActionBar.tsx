@@ -18,24 +18,24 @@ export interface FloatingActionBarProps<TId = string> {
   children?: React.ReactNode;
 }
 
-export function FloatingActionBar<TId = string>({ 
-  selectedCount, 
-  onClearSelection, 
+export function FloatingActionBar<TId = string>({
+  selectedCount,
+  onClearSelection,
   actions,
   onAction,
   phase = 'idle',
   progress,
-  children 
+  children
 }: FloatingActionBarProps<TId>) {
   const hasActions = actions && actions.length > 0;
-  
+
   return (
-    <div 
+    <div
       className={clsx(
         'fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-4 rounded-full bg-surface-elevated px-6 py-3 shadow-elevation-high border border-border-default transition-all duration-300',
         selectedCount > 0 ? 'translate-y-0 opacity-100 pointer-events-auto' : 'translate-y-8 opacity-0 pointer-events-none'
       )}
-      role="toolbar" 
+      role="toolbar"
       aria-label="Bulk actions"
     >
       <div className="flex items-center gap-2">

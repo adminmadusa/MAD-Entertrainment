@@ -8,7 +8,7 @@ export interface StackReport {
 
 export function analyzeAiOsStack(branchNames: string[]): StackReport {
   const phaseBranches: { phase: number; name: string }[] = [];
-  
+
   // Extract all AI OS phase branches
   for (const name of branchNames) {
     const match = name.match(/^feat\/ai-os-phase-(\d+)-/);
@@ -36,7 +36,7 @@ export function analyzeAiOsStack(branchNames: string[]): StackReport {
       phaseChain.push({ phase: i, name: `feat/ai-os-phase-${i}-...`, exists: false, isAncestorOfNext: false });
       continue;
     }
-    
+
     phaseChain.push({ phase: i, name: found.name, exists: true, isAncestorOfNext: false });
   }
 
@@ -45,10 +45,10 @@ export function analyzeAiOsStack(branchNames: string[]): StackReport {
     for (let i = 0; i < phaseChain.length - 1; i++) {
       const current = phaseChain[i];
       const next = phaseChain[i + 1];
-      
+
       const reachable = isReachable(current.name, next.name);
       current.isAncestorOfNext = reachable;
-      
+
       if (!reachable) {
         isStackValid = false;
         brokenLinkReason = `Phase ${current.phase} (${current.name}) is not an ancestor of Phase ${next.phase} (${next.name}). History is broken at this link.`;

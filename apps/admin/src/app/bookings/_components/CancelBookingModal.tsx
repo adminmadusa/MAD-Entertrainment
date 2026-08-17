@@ -31,8 +31,8 @@ export default function CancelBookingModal({
   const handleSubmit = () => {
     setHasSubmitted(true);
     onSubmit(
-      cancelReason, 
-      ticketIds, 
+      cancelReason,
+      ticketIds,
       isPaid && refundAmount ? parseFloat(refundAmount) : undefined
     );
   };

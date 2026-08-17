@@ -32,10 +32,10 @@ describe('Checkbox', () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
     render(<Checkbox aria-label="Test checkbox" onChange={onChange} />);
-    
+
     const checkbox = screen.getByRole('checkbox');
     await user.click(checkbox);
-    
+
     expect(onChange).toHaveBeenCalledTimes(1);
   });
 
@@ -43,11 +43,11 @@ describe('Checkbox', () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
     render(<Checkbox aria-label="Test checkbox" onChange={onChange} />);
-    
+
     await user.tab();
     const checkbox = screen.getByRole('checkbox');
     expect(checkbox).toHaveFocus();
-    
+
     await user.keyboard('[Space]');
     expect(onChange).toHaveBeenCalledTimes(1);
   });
@@ -56,39 +56,39 @@ describe('Checkbox', () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
     render(<Checkbox aria-label="Test checkbox" disabled onChange={onChange} />);
-    
+
     const checkbox = screen.getByRole('checkbox');
     expect(checkbox).toBeDisabled();
-    
+
     await user.click(checkbox);
     expect(onChange).not.toHaveBeenCalled();
   });
 
   it('associates label, description, and error via aria', () => {
     render(
-      <Checkbox 
-        label="Accept terms" 
-        description="You must accept before proceeding" 
-        error="This is required" 
-        required 
+      <Checkbox
+        label="Accept terms"
+        description="You must accept before proceeding"
+        error="This is required"
+        required
       />
     );
-    
+
     const checkbox = screen.getByRole('checkbox', { name: /accept terms/i });
     expect(checkbox).toHaveAttribute('aria-invalid', 'true');
     expect(checkbox).toHaveAttribute('aria-required', 'true');
-    
+
     // Check if aria-describedby connects to description and error
     const describedBy = checkbox.getAttribute('aria-describedby');
     expect(describedBy).toBeTruthy();
-    
+
     if (describedBy) {
       const ids = describedBy.split(' ');
       expect(ids.length).toBe(2);
-      
+
       const descriptionEl = document.getElementById(ids[0]);
       expect(descriptionEl).toHaveTextContent('You must accept before proceeding');
-      
+
       const errorEl = document.getElementById(ids[1]);
       expect(errorEl).toHaveTextContent('This is required');
     }

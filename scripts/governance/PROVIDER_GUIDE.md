@@ -33,7 +33,7 @@ export interface GovernanceProvider {
   readonly id: string;
   readonly name: string;
   readonly version: string;
-  
+
   initialize(context: EngineContext): Promise<void>;
   collectSnapshot(): Promise<DomainSnapshot>;
 }
@@ -47,7 +47,7 @@ export interface GovernanceRule {
   readonly category: RuleCategory;
   readonly severity: Severity;
   readonly tags: string[];
-  
+
   validate(snapshot: DomainSnapshot, context: EngineContext): Promise<Finding[]>;
 }
 ```

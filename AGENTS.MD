@@ -361,7 +361,7 @@ Before merging `develop` $\longrightarrow$ `live`:
 # FINAL MAD GOLDEN RULE
 
 > **Do not optimize for speed. Optimize for:**
-> 
+>
 > **Correctness • Maintainability • Safety • Consistency • Traceability • Long-Term Health**
-> 
+>
 > *The cleanest code is the code that never needs to be rewritten.*

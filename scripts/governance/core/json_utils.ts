@@ -65,7 +65,7 @@ export function writeJsonIfChanged(filePath: string, object: any): { written: bo
   if (existsSync(filePath)) {
     try {
       const existingContent = readFileSync(filePath, 'utf8');
-      
+
       const existingHash = createHash('sha256').update(existingContent).digest('hex');
       const newHash = createHash('sha256').update(newContent).digest('hex');
 

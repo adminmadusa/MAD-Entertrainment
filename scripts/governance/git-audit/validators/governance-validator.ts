@@ -6,7 +6,7 @@ export interface GovernanceReport {
 export function validateGovernanceRules(branchName: string): GovernanceReport {
   const violations: string[] = [];
   const clean = branchName.replace('origin/', '');
-  
+
   // 1. Check naming convention (must start with approved prefixes)
   const allowedPrefixes = ['develop', 'live', 'main', 'feat/', 'fix/', 'refactor/', 'audit/', 'docs/', 'test/', 'chore/', 'seo/'];
   const complies = allowedPrefixes.some(p => clean.startsWith(p));

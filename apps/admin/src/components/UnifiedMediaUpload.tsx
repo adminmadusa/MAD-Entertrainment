@@ -141,7 +141,7 @@ export function UnifiedMediaUpload({
   const handleRemove = (item: { asset: CloudinaryAsset; role: 'banner' | 'poster' | 'gallery'; index: number }) => {
     setWarningMessage('');
     adminApiClient.delete('/admin/uploads', { data: { publicId: item.asset.publicId } }).catch(() => {});
-    
+
     if (item.role === 'banner') {
       onChange(null, posterImage, galleryImages);
     } else if (item.role === 'poster') {
@@ -158,7 +158,7 @@ export function UnifiedMediaUpload({
     if (item.role === 'gallery') {
       newGallery.splice(item.index, 1); // Remove from gallery
     }
-    
+
     // If there was an old banner, push it to gallery
     if (bannerImage) {
       newGallery.push(bannerImage);
@@ -178,7 +178,7 @@ export function UnifiedMediaUpload({
     if (item.role === 'gallery') {
       newGallery.splice(item.index, 1); // Remove from gallery
     }
-    
+
     // If there was an old poster, push it to gallery
     if (posterImage) {
       newGallery.push(posterImage);
@@ -286,12 +286,12 @@ export function UnifiedMediaUpload({
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {allImages.map((item, i) => (
               <div key={item.asset.publicId} className={`relative aspect-video rounded-xl overflow-hidden border ${item.role === 'banner' ? 'border-accent-purple border-2' : item.role === 'poster' ? 'border-accent-blue border-2' : 'border-border-subtle'} bg-black/40 group flex flex-col`}>
-                
+
                 {/* Image */}
                 <div className="relative flex-1 min-h-0">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={item.asset.url} alt={`Media ${i}`} className="w-full h-full object-cover" />
-                  
+
                   {/* Badges */}
                   <div className="absolute top-2 left-2 flex flex-col gap-1 pointer-events-none">
                     {item.role === 'banner' && <span className="px-2 py-0.5 bg-accent-purple/90 text-white text-[10px] font-bold rounded shadow-lg backdrop-blur">Banner</span>}

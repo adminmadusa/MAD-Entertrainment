@@ -4,18 +4,18 @@ import { BranchInfo } from '../models/branch';
 
 export function collectAllBranches(): BranchInfo[] {
   const formatStr = '%(refname:short)|%(upstream:short)|%(objectname)|%(tree)|%(authorname)|%(authoremail)|%(authordate:short)|%(committerdate:unix)|%(subject)';
-  
+
   // 1. Fetch local branches
   const localOutput = runCommand(`git branch --format="${formatStr}"`);
   const localLines = localOutput.split('\n').map(l => l.trim()).filter(Boolean);
-  
+
   // 2. Fetch remote branches
   const remoteOutput = runCommand(`git branch -r --format="${formatStr}"`);
   const remoteLines = remoteOutput.split('\n')
     .map(l => l.trim())
     .filter(Boolean)
     .filter(l => !l.includes('->') && !l.startsWith('origin|'));
-  
+
   const branches: BranchInfo[] = [];
 
   // Helper to parse line formatted as %(refname:short)|...
@@ -39,7 +39,7 @@ export function collectAllBranches(): BranchInfo[] {
     // Calculate ahead/behind
     let ahead = 0;
     let behind = 0;
-    
+
     const isDevelop = name === 'develop' || name === 'origin/develop';
     if (!isDevelop) {
       const countStr = runCommand(`git rev-list --left-right --count develop..."${name}"`);

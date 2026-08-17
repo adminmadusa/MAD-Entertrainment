@@ -15,7 +15,7 @@ interface LightboxProps {
 
 export function Lightbox({ items, currentIndex, onClose, onChange }: LightboxProps) {
   const currentItem = items[currentIndex];
-  
+
   // Navigation handlers
   const handlePrev = useCallback(() => {
     if (currentIndex > 0) {
@@ -36,12 +36,12 @@ export function Lightbox({ items, currentIndex, onClose, onChange }: LightboxPro
       if (e.key === 'ArrowLeft') handlePrev();
       if (e.key === 'ArrowRight') handleNext();
     };
-    
+
     window.addEventListener('keydown', handleKeyDown);
-    
+
     // Lock body scroll
     document.body.style.overflow = 'hidden';
-    
+
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
       document.body.style.overflow = 'auto';
@@ -148,7 +148,7 @@ export function Lightbox({ items, currentIndex, onClose, onChange }: LightboxPro
                 sizes="100vw"
               />
             </div>
-            
+
             {/* Caption */}
             {currentItem.caption && (
               <div className="absolute bottom-4 left-0 right-0 text-center px-4">

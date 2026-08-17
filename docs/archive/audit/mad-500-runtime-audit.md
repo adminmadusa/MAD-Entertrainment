@@ -172,7 +172,7 @@ sequenceDiagram
   User->>GW: Complete Payment Authorization
   GW-->>Web: Redirect to /checkout/verify (Signature/Intent)
   Web->>Svr: POST /payments/verify
-  
+
   Note over Svr, DB: Starts Confirmation Transaction
   Svr->>DB: Find Payment & verify signature
   Svr->>DB: Update Payment to PAID
@@ -207,26 +207,26 @@ sequenceDiagram
 
   Admin->>Panel: Trigger Approve Refund
   Panel->>Svr: POST /admin/refunds/:id/process (approve)
-  
+
   Note over Svr, DB: Phase 1 Mongoose Transaction
   Svr->>DB: Atomically find Refund (status: REQUESTED) & set to PROCESSING
   Svr->>DB: Lock parent Payment record (Serialization aid)
   Svr->>DB: Check scanned tickets (Block if checked-in)
   Svr->>DB: Check cumulative refund balance limits
   Note over Svr, DB: Phase 1 Commits Mongoose Transaction
-  
+
   Note over Svr, GW: Phase 2 External Gateway Interaction (No locks)
   Svr->>GW: API: Create Gateway Refund (Stripe/Razorpay)
   GW-->>Svr: Return Gateway Refund ID
   Svr->>DB: Persist Gateway Refund ID to Refund record
-  
+
   Note over Svr, DB: Phase 3 Mongoose Transaction
   Svr->>DB: Update Refund status to COMPLETED
   Svr->>DB: Update Payment status to REFUNDED / PARTIALLY_REFUNDED
   Svr->>DB: Update Booking status to CANCELLED (if fully refunded)
   Svr->>DB: Release seat layout allocations & capacity reserves
   Note over Svr, DB: Phase 3 Commits Mongoose Transaction
-  
+
   Svr-->>Panel: Return Success
   Panel-->>Admin: Display refunded status
 ```
