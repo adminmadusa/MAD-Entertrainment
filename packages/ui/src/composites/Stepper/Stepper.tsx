@@ -8,16 +8,16 @@ export interface StepperProps {
 export const Stepper: React.FC<StepperProps> = ({ steps, currentStep }) => {
   return (
     <div className="w-full">
-      <div className="flex items-center justify-between">
+      <div className="flex items-start justify-between">
         {steps.map((step, index) => {
           const isCompleted = index < currentStep;
           const isCurrent = index === currentStep;
 
           return (
             <React.Fragment key={step}>
-              <div className="flex flex-col items-center relative z-10 group">
+              <div className="flex flex-col items-center flex-1 min-w-0 px-1">
                 <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold transition-colors duration-200
+                  className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold transition-colors duration-200 shrink-0
                     ${isCompleted ? 'bg-primary text-primary-foreground' : ''}
                     ${isCurrent ? 'bg-primary/20 text-primary border-2 border-primary' : ''}
                     ${!isCompleted && !isCurrent ? 'bg-surface-elevated text-text-muted border border-border' : ''}
@@ -32,8 +32,8 @@ export const Stepper: React.FC<StepperProps> = ({ steps, currentStep }) => {
                   )}
                 </div>
                 <span
-                  className={`absolute top-10 text-xs font-medium whitespace-nowrap transition-colors duration-200
-                    ${isCurrent ? 'text-text' : 'text-text-muted'}
+                  className={`text-xs font-medium text-center mt-2 leading-tight transition-colors duration-200 max-w-[120px] break-words
+                    ${isCurrent ? 'text-text font-semibold' : 'text-text-muted'}
                     ${isCompleted ? 'text-primary' : ''}
                   `}
                 >
@@ -43,7 +43,7 @@ export const Stepper: React.FC<StepperProps> = ({ steps, currentStep }) => {
 
               {/* Connecting Line */}
               {index < steps.length - 1 && (
-                <div className="flex-1 h-px mx-4 relative top-[-10px] z-0">
+                <div className="flex-1 h-px mt-4 -mx-1 relative z-0 shrink-0">
                   <div className="absolute inset-0 bg-border" />
                   <div
                     className="absolute inset-0 bg-primary transition-all duration-300"
@@ -55,7 +55,7 @@ export const Stepper: React.FC<StepperProps> = ({ steps, currentStep }) => {
           );
         })}
       </div>
-      <div className="h-6" /> {/* Spacer for the absolute positioned text */}
     </div>
   );
 };
+

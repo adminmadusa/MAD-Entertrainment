@@ -353,6 +353,7 @@ export const EventForm = forwardRef<EventFormHandle, EventFormProps>(function Ev
           {activeStep === 2 && (
             <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-6">
               <EventTicketingCard
+                countryCode={countryCode}
                 ticketingType={ticketingType}
                 setTicketingType={setTicketingType}
                 tiers={tiers}
@@ -412,6 +413,7 @@ export const EventForm = forwardRef<EventFormHandle, EventFormProps>(function Ev
                 requireAgeConfirmation={requireAgeConfirmation}
                 ageRestriction={ageRestriction}
                 tags={tags}
+                countryCode={countryCode}
                 ticketingType={ticketingType}
                 tiers={tiers}
                 selectedProfileId={selectedProfileId}
@@ -476,6 +478,7 @@ export const EventForm = forwardRef<EventFormHandle, EventFormProps>(function Ev
           />
 
           <EventTicketingCard
+            countryCode={countryCode}
             ticketingType={ticketingType}
             setTicketingType={setTicketingType}
             tiers={tiers}
