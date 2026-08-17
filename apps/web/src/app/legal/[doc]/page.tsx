@@ -32,7 +32,7 @@ export async function generateMetadata({ params }: LegalDocPageProps): Promise<M
     title: `${docMeta.title} | MAD Entertainment`,
     description: docMeta.description,
     alternates: {
-      canonical: `https://madentertainment.in/legal/${docMeta.slug}`,
+      canonical: `https://www.madentertainments.net/legal/${docMeta.slug}`,
     },
   };
 }

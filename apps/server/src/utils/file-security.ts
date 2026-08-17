@@ -6,7 +6,7 @@ import { UPLOAD_CONSTANTS } from '@mad/validations';
 import { AppError } from '../middleware/error.middleware';
 
 /**
- * Validates the file extension to prevent double extensions (e.g. image.php.png)
+ * Validates the file extension to prevent dangerous executable extensions (e.g. image.php.png)
  * and ensure it is in our allowed list.
  */
 export function validateFilenameAndExtension(originalName: string) {
@@ -21,10 +21,10 @@ export function validateFilenameAndExtension(originalName: string) {
     throw AppError.badRequest('Invalid filename: Contains directory traversal characters');
   }
 
-  // Count dots to prevent double extensions (e.g., .php.png)
-  const dotCount = (basename.match(/\./g) || []).length;
-  if (dotCount > 1) {
-    throw AppError.badRequest('Invalid filename: Multiple extensions are not allowed');
+  // Block dangerous executable extensions anywhere before the final extension (e.g., .php.png, .exe.jpg)
+  const dangerousExecutablePattern = /\.(php[0-9]?|phtml|phar|exe|sh|bat|cmd|js|ts|py|pl|cgi|jar|war|bin|jsp|asp|aspx|vbs|wsf|scr|msi|dll|com)\./i;
+  if (dangerousExecutablePattern.test(basename)) {
+    throw AppError.badRequest('Invalid filename: Executable extensions are not allowed');
   }
 
   const ext = path.extname(basename).toLowerCase();
@@ -36,17 +36,16 @@ export function validateFilenameAndExtension(originalName: string) {
 }
 
 /**
- * Checks the magic bytes of the buffer to verify the actual file content matches the claimed image type.
+ * Checks the magic bytes of the buffer to verify the actual file content matches an allowed image type.
  * This prevents users from uploading executable scripts disguised as images.
  */
 export function validateMagicBytes(buffer: Buffer, mimetype: string) {
-  // We need at least 12 bytes to check WEBP
   if (!buffer || buffer.length < 12) {
     throw AppError.badRequest('File is too small or empty');
   }
 
-  // JPEG: FF D8 FF
-  const isJpeg = buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff;
+  // JPEG: FF D8 (SOI marker)
+  const isJpeg = buffer[0] === 0xff && buffer[1] === 0xd8;
 
   // PNG: 89 50 4E 47 0D 0A 1A 0A
   const isPng =
@@ -64,17 +63,27 @@ export function validateMagicBytes(buffer: Buffer, mimetype: string) {
     buffer.toString('ascii', 0, 4) === 'RIFF' &&
     buffer.toString('ascii', 8, 12) === 'WEBP';
 
-  if (mimetype === 'image/jpeg' && !isJpeg) {
+  // AVIF / HEIC / HEIF: container formats starting with ftyp box
+  const isFtyp =
+    buffer.length >= 12 &&
+    buffer.toString('ascii', 4, 8) === 'ftyp';
+
+  const normalizedMime = mimetype.toLowerCase();
+
+  if ((normalizedMime === 'image/jpeg' || normalizedMime === 'image/jpg' || normalizedMime === 'image/pjpeg') && !isJpeg) {
     throw AppError.badRequest('File signature does not match image/jpeg');
   }
-  if (mimetype === 'image/png' && !isPng) {
+  if ((normalizedMime === 'image/png' || normalizedMime === 'image/x-png') && !isPng) {
     throw AppError.badRequest('File signature does not match image/png');
   }
-  if (mimetype === 'image/webp' && !isWebp) {
+  if (normalizedMime === 'image/webp' && !isWebp) {
     throw AppError.badRequest('File signature does not match image/webp');
   }
+  if ((normalizedMime === 'image/avif' || normalizedMime === 'image/heic' || normalizedMime === 'image/heif') && !isFtyp) {
+    throw AppError.badRequest('File signature does not match container image format');
+  }
 
-  if (!isJpeg && !isPng && !isWebp) {
+  if (!isJpeg && !isPng && !isWebp && !isFtyp) {
     throw AppError.badRequest('File signature is not a recognized valid image format');
   }
 

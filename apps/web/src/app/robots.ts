@@ -1,6 +1,6 @@
 import type { MetadataRoute } from 'next';
 
-const SITE_URL = 'https://madentertainment.in';
+const SITE_URL = 'https://www.madentertainments.net';
 
 /**
  * robots.ts — Next.js App Router robots convention

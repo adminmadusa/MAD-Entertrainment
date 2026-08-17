@@ -40,8 +40,8 @@ export interface EventCapabilitiesOutput {
 }
 
 export function deriveEventLifecycle(event: EventCapabilitiesInput): EventLifecycle {
-  // Treat explicit COMPLETED status as legacy override
-  if (event.status === EventStatus.COMPLETED) {
+  // Treat explicit COMPLETED or ARCHIVED status as completed lifecycle
+  if (event.status === EventStatus.COMPLETED || event.status === EventStatus.ARCHIVED) {
     return EventLifecycle.COMPLETED;
   }
 
@@ -62,8 +62,13 @@ export function deriveVisibility(event: EventCapabilitiesInput) {
   const status = event.status as EventStatus;
   const isDeleted = event.isDeleted === true;
 
-  const isPublic = !isDeleted && status === EventStatus.PUBLISHED;
-  const isDiscoverable = !isDeleted && status === EventStatus.PUBLISHED;
+  const isVisibleStatus =
+    status === EventStatus.PUBLISHED ||
+    status === EventStatus.COMPLETED ||
+    status === EventStatus.ARCHIVED;
+
+  const isPublic = !isDeleted && isVisibleStatus;
+  const isDiscoverable = !isDeleted && isVisibleStatus;
 
   return {
     public: isPublic,

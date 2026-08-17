@@ -48,6 +48,16 @@ export class AppError extends Error {
     }
     return error;
   }
+
+  static unprocessable(message = 'Validation failed', errors?: Record<string, string[]>) {
+    return new AppError(message, HTTP_STATUS.UNPROCESSABLE_ENTITY, errors);
+  }
+
+  static internal(message = 'Internal server error', code?: string) {
+    const error = new AppError(message, HTTP_STATUS.INTERNAL_SERVER_ERROR);
+    error.code = code;
+    return error;
+  }
 }
 
 export const notFoundHandler: RequestHandler = (req, res) => {

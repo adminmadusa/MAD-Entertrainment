@@ -21,7 +21,9 @@ interface Props {
 }
 
 export function PublicGalleryView({ event, gallery }: Props) {
-  const { items, settings } = gallery;
+  const rawGallery = gallery as { items?: EventGalleryItem[]; gallery?: EventGalleryItem[] };
+  const items = rawGallery.items || rawGallery.gallery || [];
+  const settings = gallery.settings;
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
   const coverItem = items.find((item) => item.isCover) || items[0];

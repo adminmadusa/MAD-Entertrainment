@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   title: 'Support Center | MAD Entertainment',
   description: 'Get help with tickets, payments, events, and account issues.',
   alternates: {
-    canonical: 'https://madentertainment.in/support',
+    canonical: 'https://www.madentertainments.net/support',
   },
 };
 

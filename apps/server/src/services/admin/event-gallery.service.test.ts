@@ -71,29 +71,47 @@ describe('AdminEventGalleryService', () => {
       expect(items).toHaveLength(2);
     });
 
-    it('should reject uploads if the gallery is already published (hard lock)', async () => {
+    it('should allow uploads even when gallery is already published', async () => {
       (EventGallerySettings.findOne as any).mockReturnValue({
         lean: vi.fn().mockResolvedValue({ published: true }),
       });
+      (EventGallery.find as any).mockReturnValue({
+        distinct: vi.fn().mockResolvedValue([]),
+      });
+      (EventGallery.countDocuments as any).mockResolvedValue(1);
+      (EventGallery.exists as any).mockResolvedValue(true);
 
-      await expect(
-        AdminEventGalleryService.addItems(eventId, {
-          items: [{ url: 'url1', publicId: 'p1', mediaType: 'IMAGE' as any, assetProvider: 'cloudinary' }]
-        }, adminId)
-      ).rejects.toThrow('Modifications are locked: Gallery is already published');
+      const mockInserted = [
+        { _id: '2', publicId: 'p2', isCover: false, toObject: () => ({ isCover: false }) },
+      ];
+      (EventGallery.insertMany as any).mockResolvedValue(mockInserted);
+
+      const items = await AdminEventGalleryService.addItems(
+        eventId,
+        {
+          items: [{ url: 'url2', publicId: 'p2', mediaType: 'IMAGE' as any, assetProvider: 'cloudinary' }],
+        },
+        adminId
+      );
+
+      expect(items).toHaveLength(1);
     });
   });
 
   describe('updateSettings', () => {
-    it('should reject publish toggle if gallery is already published (one-way lock)', async () => {
-      (EventGallerySettings.findOne as any).mockResolvedValue({
+    it('should allow publishing and unpublishing gallery freely', async () => {
+      const mockSettings = {
         published: true,
-        save: vi.fn(),
-      });
+        save: vi.fn().mockResolvedValue(true),
+        toObject: vi.fn().mockReturnValue({ published: false }),
+      };
+      (EventGallerySettings.findOne as any).mockResolvedValue(mockSettings);
 
-      await expect(
-        AdminEventGalleryService.updateSettings(eventId, { published: true }, adminId)
-      ).rejects.toThrow('Gallery is already published and cannot be modified');
+      const result = await AdminEventGalleryService.updateSettings(eventId, { published: false }, adminId);
+
+      expect(mockSettings.published).toBe(false);
+      expect(mockSettings.save).toHaveBeenCalled();
+      expect(result.published).toBe(false);
     });
   });
 });

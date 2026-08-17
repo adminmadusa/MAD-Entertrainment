@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://apm.esparex.in/api/:path*"
+      "destination": "https://api.madentertainments.net/api/:path*"
     }
   ]
 }

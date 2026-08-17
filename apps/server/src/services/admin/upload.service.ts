@@ -26,7 +26,7 @@ export class UploadService {
         },
         (error, result) => {
           if (error) {
-            reject(new AppError(`Cloudinary upload failed: ${error.message}`, 500));
+            reject(AppError.internal(`Cloudinary upload failed: ${error.message}`));
           } else if (result) {
             resolve({
               url: result.secure_url,
@@ -34,7 +34,7 @@ export class UploadService {
               hash,
             });
           } else {
-            reject(new AppError('Cloudinary upload returned null', 500));
+            reject(AppError.internal('Cloudinary upload returned null'));
           }
         }
       );
@@ -52,15 +52,15 @@ export class UploadService {
     return new Promise((resolve, reject) => {
       cloudinary.uploader.destroy(publicId, (error, result) => {
         if (error) {
-          reject(new AppError(`Cloudinary deletion failed: ${error.message}`, 500));
+          reject(AppError.internal(`Cloudinary deletion failed: ${error.message}`));
         } else if (result) {
           if (result.result !== 'ok' && result.result !== 'not found') {
-            reject(new AppError(`Cloudinary deletion failed with result: ${result.result}`, 500));
+            reject(AppError.internal(`Cloudinary deletion failed with result: ${result.result}`));
           } else {
             resolve();
           }
         } else {
-          reject(new AppError('Cloudinary deletion returned null', 500));
+          reject(AppError.internal('Cloudinary deletion returned null'));
         }
       });
     });

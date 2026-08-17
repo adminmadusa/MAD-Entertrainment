@@ -58,7 +58,6 @@ export const EventForm = forwardRef<EventFormHandle, EventFormProps>(function Ev
   const [ageRestriction, setAgeRestriction] = useState<number | ''>(18);
   const [bannerImage, setBannerImage] = useState<CloudinaryImage | null>(null);
   const [posterImage, setPosterImage] = useState<CloudinaryImage | null>(null);
-  const [galleryImages, setGalleryImages] = useState<CloudinaryImage[]>([]);
   const [tiers, setTiers] = useState<TicketTierInput[]>([defaultTier()]);
   const [ticketingType, setTicketingType] = useState<'custom' | 'profile'>('custom');
   const [selectedProfileId, setSelectedProfileId] = useState('');
@@ -105,7 +104,6 @@ export const EventForm = forwardRef<EventFormHandle, EventFormProps>(function Ev
       setAgeRestriction(initialValues.ageRestriction ?? 18);
       setBannerImage(initialValues.bannerImage || null);
       setPosterImage(initialValues.posterImage || null);
-      setGalleryImages(initialValues.galleryImages || []);
 
       if (initialValues.ticketProfileId) {
         setTicketingType('profile');
@@ -210,7 +208,6 @@ export const EventForm = forwardRef<EventFormHandle, EventFormProps>(function Ev
       bookingMode: BookingMode.GENERAL_ADMISSION,
       bannerImage: bannerImage!,
       posterImage: posterImage ?? undefined,
-      galleryImages: galleryImages.length > 0 ? galleryImages : undefined,
       venue: venue.trim(),
       startDate: new Date(startDate).toISOString(),
       endDate: endDate ? new Date(endDate).toISOString() : undefined,
@@ -389,8 +386,6 @@ export const EventForm = forwardRef<EventFormHandle, EventFormProps>(function Ev
                 setBannerImage={setBannerImage}
                 posterImage={posterImage}
                 setPosterImage={setPosterImage}
-                galleryImages={galleryImages}
-                setGalleryImages={setGalleryImages}
               />
             </motion.div>
           )}
@@ -417,7 +412,6 @@ export const EventForm = forwardRef<EventFormHandle, EventFormProps>(function Ev
                 selectedProfileId={selectedProfileId}
                 coverImage={bannerImage}
                 posterImage={posterImage}
-                galleryImages={galleryImages}
                 onEditStep={onEditStep}
               />
             </motion.div>
@@ -431,8 +425,6 @@ export const EventForm = forwardRef<EventFormHandle, EventFormProps>(function Ev
             setBannerImage={setBannerImage}
             posterImage={posterImage}
             setPosterImage={setPosterImage}
-            galleryImages={galleryImages}
-            setGalleryImages={setGalleryImages}
           />
 
           <EventBasicInfoCard

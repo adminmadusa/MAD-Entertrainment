@@ -131,9 +131,15 @@ export function UnifiedMediaUpload({
         onChange?.(bannerImage, posterImage, [...galleryImages, newAsset]);
         setUploads((prev) => prev.map((u) => (u.id === fingerprint ? { ...u, state: 'success', progress: 100 } : u)));
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('[UnifiedMediaUpload] Upload failed:', err);
-      setUploads((prev) => prev.map((u) => u.id === fingerprint ? { ...u, state: 'error', error: 'Upload failed' } : u));
+      const msg =
+        err?.response?.data?.message ||
+        err?.response?.data?.error ||
+        err?.message ||
+        'Upload failed';
+      setWarningMessage(typeof msg === 'string' ? msg : 'Upload failed');
+      setUploads((prev) => prev.map((u) => (u.id === fingerprint ? { ...u, state: 'error', error: typeof msg === 'string' ? msg : 'Upload failed' } : u)));
     }
   }, [allImages, bannerImage, posterImage, galleryImages, isDuplicateFile, onChange, onUploadsSuccess, triggerOnly]);
 

@@ -37,7 +37,6 @@ export interface AdminEvent {
   category?: string;
   bookingMode?: string;
   status?: EventStatus;
-  galleryImages?: CloudinaryImage[];
   venue: string;
   startDate: string;
   endDate?: string;

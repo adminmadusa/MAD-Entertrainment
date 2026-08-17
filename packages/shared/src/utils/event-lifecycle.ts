@@ -24,9 +24,6 @@ export function getEventEndDate(event: BaseEventForLifecycle): Date {
   if (event.endDate) {
     return new Date(event.endDate);
   }
-  if (event.bookingEndDate) {
-    return new Date(event.bookingEndDate);
-  }
   const durationHours = (event as any).duration ?? DEFAULT_EVENT_DURATION_HOURS;
   return new Date(new Date(event.startDate).getTime() + durationHours * 60 * 60 * 1000);
 }

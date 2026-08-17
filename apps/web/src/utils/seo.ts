@@ -1,4 +1,4 @@
-export const SITE_URL = 'https://madentertainment.in';
+export const SITE_URL = 'https://www.madentertainments.net';
 
 export interface BreadcrumbItem {
   name: string;

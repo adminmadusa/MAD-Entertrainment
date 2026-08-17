@@ -18,7 +18,7 @@ export class AdminEventGalleryService {
     settings: EventGallerySettings | { eventId: string; published: boolean };
   }> {
     const event = await Event.findById(eventId).select('_id').lean();
-    if (!event) throw new AppError('Event not found', 404);
+    if (!event) throw AppError.notFound('Event');
 
     const [items, settings] = await Promise.all([
       EventGallery.find({ eventId }).sort({ isCover: -1, sortOrder: 1, createdAt: 1 }).lean(),
@@ -61,8 +61,7 @@ export class AdminEventGalleryService {
   }
 
   /**
-   * Updates the gallery publication state.
-   * Once published, the gallery cannot be un-published.
+   * Updates the gallery publication state (publish/unpublish toggle).
    */
   static async updateSettings(
     eventId: string,
@@ -70,7 +69,7 @@ export class AdminEventGalleryService {
     adminId: string
   ): Promise<any> {
     const event = await Event.findById(eventId).select('_id status startDate endDate bookingStartDate bookingEndDate').lean();
-    if (!event) throw new AppError('Event not found', 404);
+    if (!event) throw AppError.notFound('Event');
 
     const caps = deriveEventCapabilities({
       status: event.status,
@@ -81,7 +80,7 @@ export class AdminEventGalleryService {
     });
 
     if (!caps.capabilities.canPublishGallery) {
-      throw new AppError('Galleries can only be published once the event is completed', 400);
+      throw AppError.badRequest('Galleries can only be published once the event is completed');
     }
 
     let settings = await EventGallerySettingsModel.findOne({ eventId });
@@ -89,15 +88,12 @@ export class AdminEventGalleryService {
       settings = new EventGallerySettingsModel({ eventId });
     }
 
-    // Hard lock: once published it stays published
-    if (settings.published) {
-      throw new AppError('Gallery is already published and cannot be modified', 400);
-    }
-
-    if (data.published) {
-      settings.published = true;
-      settings.publishedAt = new Date();
-      settings.publishedBy = new Types.ObjectId(adminId);
+    if (typeof data.published === 'boolean') {
+      settings.published = data.published;
+      if (data.published) {
+        settings.publishedAt = new Date();
+        settings.publishedBy = new Types.ObjectId(adminId);
+      }
     }
 
     await settings.save();
@@ -106,7 +102,6 @@ export class AdminEventGalleryService {
 
   /**
    * Uploads/registers new gallery items.
-   * Blocked once the gallery is published (final-state lock).
    */
   static async addItems(
     eventId: string,
@@ -114,7 +109,7 @@ export class AdminEventGalleryService {
     adminId: string
   ): Promise<EventGalleryItem[]> {
     const event = await Event.findById(eventId).select('_id status startDate endDate bookingStartDate bookingEndDate').lean();
-    if (!event) throw new AppError('Event not found', 404);
+    if (!event) throw AppError.notFound('Event');
 
     const caps = deriveEventCapabilities({
       status: event.status,
@@ -125,13 +120,7 @@ export class AdminEventGalleryService {
     });
 
     if (!caps.capabilities.canUploadGallery) {
-      throw new AppError('Galleries can only be uploaded once booking is closed', 400);
-    }
-
-    // Hard lock: prevent uploads once gallery is published
-    const existingSettings = await EventGallerySettingsModel.findOne({ eventId }).lean();
-    if (existingSettings?.published) {
-      throw new AppError('Modifications are locked: Gallery is already published', 400);
+      throw AppError.badRequest('Galleries can only be uploaded once booking is closed');
     }
 
     // Prevent duplicates by publicId

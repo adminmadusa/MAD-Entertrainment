@@ -10,7 +10,7 @@ export const metadata: Metadata = {
     title: 'Discover Events | MAD Entertrainment',
     description:
       'Browse and book tickets for the finest shows, music festivals, DJ operators, and theater plays across India.',
-    url: 'https://madentertainment.in/events',
+    url: 'https://www.madentertainments.net/events',
     siteName: 'MAD Entertrainment',
     locale: 'en_IN',
     type: 'website',
@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     description: 'Book tickets for DJ nights, concerts, festivals and live events in India.',
   },
   alternates: {
-    canonical: 'https://madentertainment.in/events',
+    canonical: 'https://www.madentertainments.net/events',
   },
 };
 

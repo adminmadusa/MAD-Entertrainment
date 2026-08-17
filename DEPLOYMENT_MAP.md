@@ -99,7 +99,7 @@ The platform manages four distinct deployment environments.
 | **Purpose** | Sandbox coding | PR validation | Integration testing | Live customer traffic |
 | **Branch** | Local workspace | Pull Request | `develop` | `live` |
 | **Hosting** | Local machine | Vercel Serverless | Vercel Serverless | Vercel Serverless (Web/Admin), Render Node Container (API) |
-| **URL** | `http://localhost:3000` (Web)<br>`http://localhost:3002` (Admin) | Vercel Preview URL | `https://testmad.esparex.in` (Web)<br>`https://testmadmin.esparex.in` (Admin) | `https://mad.esparex.in` (Web)<br>`https://madmin.esparex.in` (Admin)<br>`https://apm.esparex.in/api` (API) |
+| **URL** | `http://localhost:3000` (Web)<br>`http://localhost:3002` (Admin) | Vercel Preview URL | `https://testmad.esparex.in` (Web)<br>`https://testmadmin.esparex.in` (Admin) | `https://www.madentertainments.net` (Web)<br>`https://www.admin.madentertainments.net` (Admin)<br>`https://api.madentertainments.net/api` (API) |
 | **Database** | Local MongoDB | MongoDB Atlas Sandbox | MongoDB Atlas Shared | MongoDB Atlas Prod |
 | **Redis** | Local Redis | Mock / None | Redis Cloud Shared | Redis Cloud Prod |
 | **Storage** | Local FS / Mock | Cloudinary Sandbox | Cloudinary Sandbox | Cloudinary Production |
@@ -114,7 +114,7 @@ The platform manages four distinct deployment environments.
 
 #### Current Deployment Constraint (Shared Backend Setup)
 Our staging/testing environment operates under a shared-backend constraint:
-- **Topology**: The Vercel Test frontend (`testmad.esparex.in`, built from the `develop` branch) routes its requests to the production Render API backend (`apm.esparex.in`, built from the `live` branch).
+- **Topology**: The Vercel Test frontend (`testmad.esparex.in`, built from the `develop` branch) routes its requests to the production Render API backend (`api.madentertainments.net`, built from the `live` branch).
 - **Operational Impact**:
   - Test activity performed on the staging URL (e.g. testing booking flows, database updates) directly modifies the production database cluster and enqueues jobs in the production Redis instance.
   - Environment-specific behavior and data differences must be understood before testing. Testing operators must coordinate actions to prevent contamination of production metrics.
@@ -242,8 +242,8 @@ sequenceDiagram
   CI-->>Git: Status: Success
   Git->>Vercel: Trigger Frontend Build (on live/develop push)
   Git->>Render: Trigger Backend Build (on live push)
-  Vercel-->>Dev: UI Live (test.esparex.in / mad.esparex.in)
-  Render-->>Dev: API Live (apm.esparex.in)
+  Vercel-->>Dev: UI Live (www.madentertainments.net / www.admin.madentertainments.net)
+  Render-->>Dev: API Live (api.madentertainments.net)
 ```
 
 *Evidence*:
@@ -379,7 +379,7 @@ Rollback steps are executed manually from provider consoles:
 ### Repository Standard
 - Rollback validation must verify health checks immediately after deployment:
   ```bash
-  curl https://apm.esparex.in/api/health
+  curl https://api.madentertainments.net/api/health
   # Expected response: {"status":"ok","services":{"mongo":"ok","redis":"ok"}}
   ```
 
@@ -394,7 +394,7 @@ Rollback steps are executed manually from provider consoles:
 Observability is mapped to three targets:
 - **Endpoints**: Express hosts `/api/health` checking MongoDB and Redis connections (documented in [API_CONTRACTS.md](API_CONTRACTS.md)).
 - **Logging**: Render routes logs to Sentry. BullMQ failures are enqueued for dead-letter processing.
-- **Alerting**: Better Uptime monitors `apm.esparex.in/api/health`.
+- **Alerting**: Better Uptime monitors `api.madentertainments.net/api/health`.
 
 *Evidence*:
 - Health routes defined in `apps/server/src/routes/admin/diagnostics.routes.ts`.
