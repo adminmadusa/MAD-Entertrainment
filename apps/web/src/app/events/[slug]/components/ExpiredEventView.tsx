@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import { useState } from 'react';
 
-import type { Event as EventData, EventGalleryItem, EventGallerySettings } from '@mad/types';
+import { MediaType, MediaVisibility, type Event as EventData, type EventGalleryItem, type EventGallerySettings } from '@mad/types';
 import { Camera } from '@mad/ui';
 
 import { EventOverview } from './EventOverview';
@@ -21,7 +21,27 @@ interface ExpiredEventViewProps {
 export function ExpiredEventView({ event, galleryData }: ExpiredEventViewProps) {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
-  const hasPhotos = galleryData?.items && galleryData.items.length > 0;
+  const fallbackItems: EventGalleryItem[] = event.galleryImages?.map((img, index) => ({
+    id: img.publicId,
+    eventId: event._id,
+    mediaType: MediaType.IMAGE,
+    url: img.url,
+    publicId: img.publicId,
+    thumbnail: img.url,
+    caption: img.alt || '',
+    sortOrder: index,
+    isCover: index === 0,
+    visibility: MediaVisibility.PUBLIC,
+    assetProvider: 'cloudinary',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  })) || [];
+
+  const displayItems = galleryData?.items && galleryData.items.length > 0
+    ? galleryData.items
+    : fallbackItems;
+
+  const hasPhotos = displayItems.length > 0;
   const galleryHeading = galleryData?.settings?.heading || 'Happy Moments & Photos';
 
   return (
@@ -51,7 +71,7 @@ export function ExpiredEventView({ event, galleryData }: ExpiredEventViewProps) 
           {hasPhotos && (
             <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-accent-pink/10 border border-accent-pink/30 text-accent-pink self-start sm:self-auto">
               <Camera className="w-3.5 h-3.5" />
-              {galleryData.items.length} Photos Captured
+              {displayItems.length} Photos Captured
             </span>
           )}
         </div>
@@ -82,7 +102,7 @@ export function ExpiredEventView({ event, galleryData }: ExpiredEventViewProps) 
         {/* Photo Grid */}
         {hasPhotos ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
-            {galleryData.items.map((item, index) => (
+            {displayItems.map((item, index) => (
               <button
                 key={item.id || index}
                 type="button"
@@ -121,9 +141,9 @@ export function ExpiredEventView({ event, galleryData }: ExpiredEventViewProps) 
       </div>
 
       {/* Lightbox Modal */}
-      {lightboxIndex !== null && galleryData?.items && (
+      {lightboxIndex !== null && displayItems.length > 0 && (
         <Lightbox
-          items={galleryData.items}
+          items={displayItems}
           currentIndex={lightboxIndex}
           onClose={() => setLightboxIndex(null)}
           onChange={(newIndex) => setLightboxIndex(newIndex)}

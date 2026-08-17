@@ -145,6 +145,7 @@ export type Event = {
   taxLabel?: string;
   taxPercentage?: number;
   locale?: string;
+  galleryImages?: ImageAsset[];
 
   // Booking Eligibility (Single Source of Truth from Backend)
   bookingAllowed?: boolean;
