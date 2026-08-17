@@ -12,12 +12,3 @@ export type {
 } from './utils/booking-eligibility.engine';
 export { deriveBookingEligibility } from './utils/booking-eligibility.engine';
 
-export interface BulkOperationResult {
-  successCount: number;
-  failedCount: number;
-  results: {
-    id: string;
-    status: 'success' | 'failed';
-    reason?: string;
-  }[];
-}
