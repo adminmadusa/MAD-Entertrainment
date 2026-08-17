@@ -127,7 +127,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
 
   return (
     <html lang="en" className={`${outfit.variable} dark`} suppressHydrationWarning>
-      <body className="bg-background text-text-primary antialiased relative min-h-screen">
+      <body className="bg-background text-text-primary antialiased relative min-h-screen" suppressHydrationWarning>
         {/* A11Y-001 — Skip to Main Content (WCAG 2.4.1 Level A)
             Visually hidden until keyboard-focused. First focusable element
             in the document. Targets #main-content which is the <main> landmark. */}

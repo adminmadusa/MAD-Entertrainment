@@ -37,7 +37,7 @@ interface RootLayoutProps {
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en" className={`${outfit.variable} dark`} suppressHydrationWarning data-scroll-behavior="smooth">
-      <body className="bg-background text-text-primary antialiased">
+      <body className="bg-background text-text-primary antialiased" suppressHydrationWarning>
         <Providers>
           <ErrorBoundary>
             <AdminShell>{children}</AdminShell>
