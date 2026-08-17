@@ -106,9 +106,15 @@ export class DeadAssetDetector {
     }
 
     // 5. Evaluate reachability for all files in scope
+    const deadCodeExclusions: string[] = (config as any).scanScope?.deadCodeExclusions ?? [];
     for (const file of files) {
       // Skip ignored paths, test files, storybooks, and configuration files
       if (this.shouldSkipFile(file, ignorePatterns)) {
+        continue;
+      }
+      // Skip files explicitly excluded from dead-code detection in governance.config.ts
+      // (e.g., files referenced via config-level APIs outside BFS traversal scope)
+      if (deadCodeExclusions.some(exc => file === exc || file.endsWith('/' + exc))) {
         continue;
       }
 

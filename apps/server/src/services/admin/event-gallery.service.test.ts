@@ -2,8 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { AdminEventGalleryService } from './event-gallery.service';
 import { EventGallery, MediaVisibility } from '../../models/event-gallery.schema';
 import { Event } from '../../models/event.schema';
-import { Types } from 'mongoose';
-import mongoose from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 
 vi.mock('../../config/env', () => ({
   getEnv: vi.fn().mockReturnValue({

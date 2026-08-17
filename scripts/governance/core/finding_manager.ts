@@ -252,6 +252,55 @@ export class FindingManager {
     return Array.from(this.findings.values()).sort((a, b) => a.id.localeCompare(b.id));
   }
 
+  /**
+   * Closes all active findings whose evidence path falls within an excluded scan scope path.
+   *
+   * When a directory is added to `governanceConfig.scanScope.excludedPaths`, the validator
+   * no longer scans those files — so their findings are never seen as "resolved" by the
+   * normal reconciliation cycle. Without this method, they remain NEW indefinitely and
+   * continue to trigger FAIL_BUILD gating even though the files are intentionally out of scope.
+   *
+   * This must be called once per audit run, before `getAllFindings()` is used for gating.
+   */
+  public closeOutOfScopeFindings(excludedPaths: string[]): number {
+    if (!excludedPaths || excludedPaths.length === 0) return 0;
+
+    let closedCount = 0;
+    const now = new Date().toISOString();
+
+    for (const [id, finding] of this.findings.entries()) {
+      // Only close active findings
+      if (
+        finding.status === 'CLOSED' ||
+        finding.status === 'FALSE_POSITIVE' ||
+        finding.status === 'IGNORED' ||
+        finding.status === 'VERIFIED'
+      ) {
+        continue;
+      }
+
+      const path = finding.evidence?.path || '';
+      const isExcluded = excludedPaths.some(
+        exc => path === exc || path.startsWith(exc + '/') || path.startsWith(exc + '\\')
+      );
+
+      if (isExcluded) {
+        finding.status = 'CLOSED';
+        finding.history = finding.history || [];
+        finding.history.push({
+          timestamp: now,
+          event: 'CLOSED',
+          actor: 'GovernanceEngine',
+          note: `Automatically closed: evidence path is now within an excluded scan scope (${excludedPaths.find(e => path.startsWith(e)) || ''}).`,
+        } as HistoryEvent);
+        this.saveFinding(finding);
+        closedCount++;
+      }
+    }
+
+    return closedCount;
+  }
+
   public getFinding(id: string): Finding | undefined {
     return this.findings.get(id);
   }

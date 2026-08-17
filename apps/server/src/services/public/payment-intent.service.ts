@@ -2,7 +2,7 @@ import crypto from 'crypto';
 
 import { Types } from 'mongoose';
 
-import { BookingStatus, PaymentStatus, ReservationStatus } from '@mad/shared';
+import { BookingStatus, PaymentStatus, ReservationStatus, deriveBookingEligibility } from '@mad/shared';
 
 import { getEnv } from '../../config/env';
 import { AppError } from '../../middleware/error.middleware';
@@ -16,7 +16,7 @@ import { PublicBookingService } from './booking.service';
 import { PaymentValidationService } from './payment-validation.service';
 import { RazorpayAdapter } from './razorpay.adapter';
 import { StripeAdapter } from './stripe.adapter';
-import { deriveBookingEligibility } from '@mad/shared';
+
 
 export type PaymentOwnershipContext = {
   userId?: string;

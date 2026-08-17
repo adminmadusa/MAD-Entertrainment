@@ -1,9 +1,8 @@
-import { Types } from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 import { EventGallery, MediaVisibility } from '../../models/event-gallery.schema';
 import { EventGallerySettings } from '../../models/event-gallery-settings.schema';
 import { Event } from '../../models/event.schema';
 import { AppError } from '../../middleware/error.middleware';
-import mongoose from 'mongoose';
 import { AddGalleryItemsInput, ReorderGalleryItemsInput, UpdateGalleryItemInput, UpdateGallerySettingsInput } from '@mad/validations';
 import { deriveEventCapabilities } from '@mad/shared';
 
