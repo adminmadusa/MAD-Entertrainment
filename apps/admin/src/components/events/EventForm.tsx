@@ -69,6 +69,7 @@ export const EventForm = forwardRef<EventFormHandle, EventFormProps>(function Ev
   const [refundPolicy, setRefundPolicy] = useState('');
   const [highlightsInput, setHighlightsInput] = useState('');
   const [countryCode, setCountryCode] = useState('US');
+  const [convenienceFee, setConvenienceFee] = useState<number | ''>('');
   const [localError, setLocalError] = useState('');
 
   // Queries
@@ -96,6 +97,7 @@ export const EventForm = forwardRef<EventFormHandle, EventFormProps>(function Ev
       setRefundPolicy(initialValues.refundPolicy || '');
       setHighlightsInput(initialValues.highlights?.join(', ') || '');
       setCountryCode(initialValues.countryCode || 'US');
+      setConvenienceFee(initialValues.convenienceFee !== undefined ? initialValues.convenienceFee : '');
       setTags(initialValues.tags?.join(', ') || '');
       setRequireTerms(initialValues.requireTerms ?? true);
       setRequireAgeConfirmation(!!initialValues.requireAgeConfirmation);
@@ -225,6 +227,7 @@ export const EventForm = forwardRef<EventFormHandle, EventFormProps>(function Ev
       taxLabel: countryCode === 'IN' ? 'GST' : 'Sales Tax',
       taxPercentage: countryCode === 'IN' ? 18 : 0,
       locale: countryCode === 'IN' ? 'en-IN' : 'en-US',
+      convenienceFee: convenienceFee === '' ? undefined : convenienceFee,
     };
 
     if (isProfileType) {
@@ -315,6 +318,8 @@ export const EventForm = forwardRef<EventFormHandle, EventFormProps>(function Ev
                 hideStatus
                 countryCode={countryCode}
                 setCountryCode={setCountryCode}
+                convenienceFee={convenienceFee}
+                setConvenienceFee={setConvenienceFee}
               />
               <EventAdditionalDetailsCard
                 organizerName={organizerName}
@@ -445,6 +450,8 @@ export const EventForm = forwardRef<EventFormHandle, EventFormProps>(function Ev
             statusOptions={statusOptions}
             countryCode={countryCode}
             setCountryCode={setCountryCode}
+            convenienceFee={convenienceFee}
+            setConvenienceFee={setConvenienceFee}
           />
 
           <EventAdditionalDetailsCard

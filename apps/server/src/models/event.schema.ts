@@ -149,6 +149,7 @@ export interface IEvent extends Document {
   taxLabel: string;
   taxPercentage: number;
   locale: string;
+  convenienceFee?: number;
 }
 
 
@@ -166,6 +167,7 @@ const eventSchema = new Schema<IEvent>(
     taxLabel: { type: String, default: 'Sales Tax' },
     taxPercentage: { type: Number, default: 0 },
     locale: { type: String, default: 'en-US' },
+    convenienceFee: { type: Number },
 
     bannerImage: { type: cloudinaryImageSchema, required: true },
     posterImage: cloudinaryImageSchema,

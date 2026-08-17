@@ -175,6 +175,9 @@ export class BookingCreationService {
       }
     }
 
+    const eventCountry = event.countryCode || 'US';
+    const countryConfig = getCountryConfig(eventCountry);
+
     let subtotal = 0;
     let totalTicketsCount = 0;
     let totalGst = 0;
@@ -222,8 +225,6 @@ export class BookingCreationService {
       const tierSubtotal = tierPriceAfterDiscount * ticketReq.quantity;
 
       // Calculate Tier-specific tax based on event localization country
-      const eventCountry = event.countryCode || 'US';
-      const countryConfig = getCountryConfig(eventCountry);
       const tierTaxPercent = tierConfig.taxPercent ?? event.taxPercentage ?? countryConfig.defaultTax;
       const tierGst = Math.round((tierSubtotal * tierTaxPercent) / 100);
 
@@ -278,8 +279,10 @@ export class BookingCreationService {
     }
 
     // Pricing calculations (fixed convenience fee per ticket + event tax applied on subtotal)
-    const convenienceFee = 30 * totalTicketsCount;
-    const convenienceFeeGst = Math.round((convenienceFee * 18) / 100);
+    const baseFee = event.convenienceFee !== undefined ? event.convenienceFee : countryConfig.defaultConvenienceFee;
+    const convenienceFee = baseFee * totalTicketsCount;
+    const taxPercentage = event.taxPercentage !== undefined ? event.taxPercentage : countryConfig.defaultTax;
+    const convenienceFeeGst = Math.round((convenienceFee * taxPercentage) / 100);
     const gst = totalGst + convenienceFeeGst;
 
     // Apply Coupon
@@ -342,9 +345,6 @@ export class BookingCreationService {
     const logicalExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
     // Deferred physical TTL cleanup (30 days) to allow webhook recoveries
     const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
-
-    const eventCountry = event.countryCode || 'US';
-    const countryConfig = getCountryConfig(eventCountry);
 
     // Create pending booking
     const booking = new Booking({

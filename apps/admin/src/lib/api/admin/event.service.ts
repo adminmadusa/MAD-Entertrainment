@@ -75,6 +75,7 @@ export interface AdminEvent {
   taxLabel?: string;
   taxPercentage?: number;
   locale?: string;
+  convenienceFee?: number;
 
   // Decoupled Status States
   lifecycle?: string;

@@ -6,6 +6,7 @@ export interface CountryConfig {
   taxLabel: string;
   defaultTax: number;
   locale: string;
+  defaultConvenienceFee: number;
 }
 
 export const COUNTRY_CONFIG: Record<string, CountryConfig> = {
@@ -17,6 +18,7 @@ export const COUNTRY_CONFIG: Record<string, CountryConfig> = {
     taxLabel: 'Sales Tax',
     defaultTax: 0,
     locale: 'en-US',
+    defaultConvenienceFee: 2,
   },
   IN: {
     countryCode: 'IN',
@@ -26,6 +28,7 @@ export const COUNTRY_CONFIG: Record<string, CountryConfig> = {
     taxLabel: 'GST',
     defaultTax: 18,
     locale: 'en-IN',
+    defaultConvenienceFee: 30,
   },
 } as const;
 

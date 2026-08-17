@@ -36,6 +36,8 @@ export interface EventBasicInfoCardProps {
   hideStatus?: boolean;
   countryCode: string;
   setCountryCode: (val: string) => void;
+  convenienceFee: number | '';
+  setConvenienceFee: (val: number | '') => void;
 }
 
 export const EventBasicInfoCard = React.memo(function EventBasicInfoCard({
@@ -55,6 +57,8 @@ export const EventBasicInfoCard = React.memo(function EventBasicInfoCard({
   hideStatus = false,
   countryCode,
   setCountryCode,
+  convenienceFee,
+  setConvenienceFee,
 }: EventBasicInfoCardProps) {
   return (
     <div className="glass rounded-2xl border border-border-subtle p-6 space-y-5">
@@ -115,7 +119,7 @@ export const EventBasicInfoCard = React.memo(function EventBasicInfoCard({
         <EventVenueInput venue={venue} setVenue={setVenue} required />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-white/5 pt-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border-t border-white/5 pt-4">
         <FormField label="Country Location" htmlFor="event-country">
           <select
             id="event-country"
@@ -129,6 +133,17 @@ export const EventBasicInfoCard = React.memo(function EventBasicInfoCard({
               </option>
             ))}
           </select>
+        </FormField>
+        <FormField label={`Convenience Fee (${getCountryConfig(countryCode).currency})`} htmlFor="event-convenience-fee">
+          <Input
+            id="event-convenience-fee"
+            type="number"
+            min="0"
+            step="0.01"
+            value={convenienceFee}
+            onChange={(e) => setConvenienceFee(e.target.value === '' ? '' : Number(e.target.value))}
+            placeholder={`e.g. ${getCountryConfig(countryCode).defaultConvenienceFee}`}
+          />
         </FormField>
         <div className="space-y-1">
           <span className="text-text-secondary text-xs font-semibold block mb-1">Localization Parameters (Auto-Resolved)</span>

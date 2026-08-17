@@ -161,6 +161,7 @@ const eventBodySchema = z.object({
   bookingStartDate: z.string().datetime().optional(),
   bookingEndDate: z.string().datetime().optional(),
   venue: z.string().min(1),
+  convenienceFee: z.number().min(0).optional(),
 
   djOperatorIds: z.array(z.string()).optional(),
   ticketTiers: z
