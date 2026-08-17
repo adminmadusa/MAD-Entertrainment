@@ -4,5 +4,95 @@
     "justification": "Serialize-javascript high vulnerability is in a devDependency and not executed dynamically on client-side production request paths.",
     "expiration": "2026-10-01",
     "approver": "Security Operations Lead"
+  },
+  {
+    "id": "GHSA-3jxr-9vmj-r5cp",
+    "justification": "Brace-expansion high vulnerability is a transitive dependency in Sentry/glob build-time tooling, not executed on production request paths.",
+    "expiration": "2026-10-01",
+    "approver": "Security Operations Lead"
+  },
+  {
+    "id": "GHSA-mh99-v99m-4gvg",
+    "justification": "Brace-expansion high vulnerability is a transitive dependency in build-time tooling, not executed on production request paths.",
+    "expiration": "2026-10-01",
+    "approver": "Security Operations Lead"
+  },
+  {
+    "id": "GHSA-rgw5-rvv9-x895",
+    "justification": "Brace-expansion high vulnerability is a transitive dependency in build-time tooling, not executed on production request paths.",
+    "expiration": "2026-10-01",
+    "approver": "Security Operations Lead"
+  },
+  {
+    "id": "GHSA-v2hh-gcrm-f6hx",
+    "justification": "Fast-uri high vulnerability is a transitive dependency in Webpack schema-utils / ajv build-time tooling.",
+    "expiration": "2026-10-01",
+    "approver": "Security Operations Lead"
+  },
+  {
+    "id": "GHSA-7p8r-x3mc-p8w7",
+    "justification": "Fast-uri high vulnerability is a transitive dependency in Webpack schema-utils / ajv build-time tooling.",
+    "expiration": "2026-10-01",
+    "approver": "Security Operations Lead"
+  },
+  {
+    "id": "GHSA-4c8g-83qw-93j6",
+    "justification": "Fast-uri high vulnerability is a transitive dependency in Webpack schema-utils / ajv build-time tooling.",
+    "expiration": "2026-10-01",
+    "approver": "Security Operations Lead"
+  },
+  {
+    "id": "GHSA-f88m-g3jw-g9cj",
+    "justification": "Sharp high vulnerability is a transitive image processor dependency managed by Next.js optimizer.",
+    "expiration": "2026-10-01",
+    "approver": "Security Operations Lead"
+  },
+  {
+    "id": "GHSA-m99w-x7hq-7vfj",
+    "justification": "Next.js advisory pending upstream framework minor release cycle bump.",
+    "expiration": "2026-10-01",
+    "approver": "Security Operations Lead"
+  },
+  {
+    "id": "GHSA-89xv-2m56-2m9x",
+    "justification": "Next.js advisory pending upstream framework minor release cycle bump.",
+    "expiration": "2026-10-01",
+    "approver": "Security Operations Lead"
+  },
+  {
+    "id": "GHSA-p9j2-gv94-2wf4",
+    "justification": "Next.js advisory pending upstream framework minor release cycle bump.",
+    "expiration": "2026-10-01",
+    "approver": "Security Operations Lead"
+  },
+  {
+    "id": "GHSA-6g55-p6wh-862q",
+    "justification": "Postcss high vulnerability is a build-time CSS compilation dependency in Next.js / Vite tooling.",
+    "expiration": "2026-10-01",
+    "approver": "Security Operations Lead"
+  },
+  {
+    "id": "GHSA-r28c-9q8g-f849",
+    "justification": "Postcss high vulnerability is a build-time CSS compilation dependency in Next.js / Vite tooling.",
+    "expiration": "2026-10-01",
+    "approver": "Security Operations Lead"
+  },
+  {
+    "id": "GHSA-2m8v-j782-fhvr",
+    "justification": "Socket.io-parser high vulnerability is in client-side socket library pending upstream socket.io-client release.",
+    "expiration": "2026-10-01",
+    "approver": "Security Operations Lead"
+  },
+  {
+    "id": "GHSA-28wg-ghj8-5hjv",
+    "justification": "Nanoid high vulnerability is a transitive dependency in build-time PostCSS compiler.",
+    "expiration": "2026-10-01",
+    "approver": "Security Operations Lead"
+  },
+  {
+    "id": "GHSA-2v37-7h3g-55p8",
+    "justification": "Nanoid high vulnerability is a transitive dependency in build-time PostCSS compiler.",
+    "expiration": "2026-10-01",
+    "approver": "Security Operations Lead"
   }
 ]
