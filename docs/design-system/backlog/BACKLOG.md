@@ -70,4 +70,3 @@ This file is the canonical registry of capability gaps discovered during Phase 3
 **Resolved In:** `packages/ui/src/composites/NumericStepper`
 **Description:** Quantity stepper controls (increment/decrement buttons + number input value) are implemented with custom styles and behaviors in the ticket selection overlay.
 **Impact:** Prevents unified focus navigation rules and touch-target sizes for numeric inputs across checkout and ticket management.
-

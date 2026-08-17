@@ -14,7 +14,7 @@ violating the One Task Rule.
 
 | ID | Title | Priority | Source | Status |
 |---|---|---|---|---|
-| P4-001 | `pnpm governance:branch-cleanup` script | high | User recommendation, post-PR-#510 | Open |
+| P4-001 | `pnpm governance:branch-cleanup` script | high | User recommendation, post-PR-#510 | Resolved |
 
 ---
 
@@ -24,7 +24,8 @@ violating the One Task Rule.
 
 **Priority:** High
 **Source:** Recommendation made after PR #510 cleanup (2026-07-06)
-**Status:** Open
+**Status:** Resolved
+**Resolved In:** `scripts/governance/branch-cleanup.ts`
 **Target Phase:** 4
 
 **Description:**

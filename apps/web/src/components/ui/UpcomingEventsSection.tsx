@@ -421,6 +421,4 @@ export const UpcomingEventsSection = memo(function UpcomingEventsSection({
       </div>
     </section>
   );
-
 });
-
