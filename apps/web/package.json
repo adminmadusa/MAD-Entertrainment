@@ -10,8 +10,6 @@
     "start": "next start",
     "lint": "eslint src --max-warnings 0",
     "type-check": "tsc --noEmit",
-    "circular-check": "madge --extensions ts,tsx --ts-config tsconfig.json --circular src",
-    "dead-code-check": "depcheck",
     "clean": "rm -rf .next out",
     "test": "vitest run --config vitest.config.ts"
   },

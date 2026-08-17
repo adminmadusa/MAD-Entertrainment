@@ -102,3 +102,9 @@ openspec/changes/archive/2026-07-17-pdf-ticket-redesign/
 openspec/specs/pdf-ticket-*
 apps/server/src/lib/pdf/ticket/fonts/
 .agents/skills/code-clean/
+
+# Python bytecode and type declaration maps
+*.pyc
+__pycache__/
+*.d.ts.map
+

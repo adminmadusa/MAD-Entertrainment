@@ -1,7 +1,7 @@
-// scripts/governance/core/execution_scheduler.ts
 import { ValidatorDefinition } from './validator_registry';
 import { ValidationResult } from './types';
 import { FileContentCache, ASTParserCache } from './ast_parser_cache';
+import { governanceConfig } from './governance.config';
 
 export interface ValidatorExecutionMetrics {
   validatorId: string;
@@ -45,6 +45,9 @@ export class ExecutionScheduler {
     const schedulerStart = Date.now();
     const memStartGlobal = process.memoryUsage().heapUsed;
 
+    const excludedPaths = governanceConfig.scanScope?.excludedPaths || [];
+    const docExclusions = governanceConfig.scanScope?.documentationExclusions || [];
+
     for (const def of orderedValidators) {
       const validator = def.validator;
       const validatorId = def.id;
@@ -55,6 +58,16 @@ export class ExecutionScheduler {
         targetFiles = files.filter(file => {
           return def.supportedFileTypes.some(ext => file.endsWith(ext));
         });
+      }
+
+      // Filter out general excludedPaths for all validators
+      if (excludedPaths.length > 0) {
+        targetFiles = targetFiles.filter(file => !excludedPaths.some(p => file === p || file.startsWith(p + '/')));
+      }
+
+      // If validator targets documentation (.md), also filter out documentationExclusions
+      if (def.supportedFileTypes && def.supportedFileTypes.includes('.md') && docExclusions.length > 0) {
+        targetFiles = targetFiles.filter(file => !docExclusions.some(p => file === p || file.startsWith(p + '/')));
       }
 
       const memStart = process.memoryUsage().heapUsed;
