@@ -23,8 +23,6 @@ export function CheckoutForm({ event, isExpired, isDisabled, onSubmit, onErrorSe
   const [guestEmail, setGuestEmail] = useState('');
   const [guestEmailConfirm, setGuestEmailConfirm] = useState('');
   const [guestPhone, setGuestPhone] = useState('');
-  const [keepUpdated, setKeepUpdated] = useState(false);
-  const [sendBestEvents, setSendBestEvents] = useState(false);
 
   const [ageConfirmed, setAgeConfirmed] = useState(false);
 
@@ -71,8 +69,8 @@ export function CheckoutForm({ event, isExpired, isDisabled, onSubmit, onErrorSe
       lastName: lastName.trim(),
       guestEmail: guestEmail.trim().toLowerCase(),
       guestPhone: guestPhone.trim(),
-      keepUpdated,
-      sendBestEvents,
+      keepUpdated: false,
+      sendBestEvents: false,
       ageConfirmed: event?.requireAgeConfirmation ? ageConfirmed : undefined,
     };
 
@@ -222,30 +220,6 @@ export function CheckoutForm({ event, isExpired, isDisabled, onSubmit, onErrorSe
               className="text-base md:text-sm"
             />
           </FormField>
-        </div>
-
-        {/* Subscriptions */}
-        <div className="space-y-2 pt-3 border-t border-white/5">
-          <label className="flex items-center gap-3 min-h-[44px] cursor-pointer text-xs text-text-secondary leading-normal">
-            <input
-              type="checkbox"
-              checked={keepUpdated}
-              disabled={isDisabled}
-              onChange={(e) => setKeepUpdated(e.target.checked)}
-              className="w-5 h-5 rounded border-white/10 bg-background accent-accent-purple shrink-0"
-            />
-            <span>Keep me updated on more events and news from this event organizer.</span>
-          </label>
-          <label className="flex items-center gap-3 min-h-[44px] cursor-pointer text-xs text-text-secondary leading-normal">
-            <input
-              type="checkbox"
-              checked={sendBestEvents}
-              disabled={isDisabled}
-              onChange={(e) => setSendBestEvents(e.target.checked)}
-              className="w-5 h-5 rounded border-white/10 bg-background accent-accent-purple shrink-0"
-            />
-            <span>Send me emails about the best events happening nearby or online.</span>
-          </label>
         </div>
 
         <p className="text-[11px] text-text-muted leading-relaxed pt-3 border-t border-white/5">
