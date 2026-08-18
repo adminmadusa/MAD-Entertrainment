@@ -272,6 +272,49 @@ describe('event image validations', () => {
     });
   });
 
+  it('accepts event with 15 marketing images (banner + poster + 13 gallery)', () => {
+    const galleryImages = Array.from({ length: 13 }, (_, i) => ({
+      url: `https://example.com/gallery-${i}.jpg`,
+      publicId: `gallery_${i}`,
+      hash: `hash_gallery_${i}`,
+    }));
+
+    expectAccepted(createEventSchema, {
+      body: {
+        ...validEventBody,
+        posterImage: { url: 'https://example.com/poster.jpg', publicId: 'poster1', hash: 'hash_poster' },
+        galleryImages,
+      },
+    });
+  });
+
+  it('rejects event with more than 13 galleryImages (exceeding 15 total marketing images)', () => {
+    const galleryImages = Array.from({ length: 14 }, (_, i) => ({
+      url: `https://example.com/gallery-${i}.jpg`,
+      publicId: `gallery_${i}`,
+      hash: `hash_gallery_${i}`,
+    }));
+
+    expectRejected(createEventSchema, {
+      body: {
+        ...validEventBody,
+        posterImage: { url: 'https://example.com/poster.jpg', publicId: 'poster1', hash: 'hash_poster' },
+        galleryImages,
+      },
+    });
+  });
+
+  it('rejects event if galleryImage duplicates bannerImage publicId', () => {
+    expectRejected(createEventSchema, {
+      body: {
+        ...validEventBody,
+        galleryImages: [
+          { url: 'https://example.com/g1.jpg', publicId: 'banner1', hash: 'hash_g1' }, // same publicId as banner1
+        ],
+      },
+    });
+  });
+
   describe('Ticket Tier Validation Schema Tests', () => {
     it('accepts correct tier values', () => {
       expectAccepted(createTierSchema, {

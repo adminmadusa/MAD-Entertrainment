@@ -12,12 +12,22 @@ export const addGalleryItemsSchema = z.object({
       thumbnail: z.string().url().optional(),
       caption: z.string().max(255).optional(),
     })
-  ).min(1, 'At least one item is required')
+  ).min(1, 'At least one item is required').max(20, 'Maximum 20 photos allowed per event gallery')
 });
 
 export const updateGallerySettingsSchema = z.object({
   published: z.boolean().optional(),
 });
 
+export const updateGalleryItemSchema = z.object({
+  caption: z.string().max(255).optional(),
+});
+
+export const reorderGalleryItemsSchema = z.object({
+  itemIds: z.array(z.string().min(1)).min(1, 'At least one item ID is required'),
+});
+
 export type AddGalleryItemsInput = z.infer<typeof addGalleryItemsSchema>;
 export type UpdateGallerySettingsInput = z.infer<typeof updateGallerySettingsSchema>;
+export type UpdateGalleryItemInput = z.infer<typeof updateGalleryItemSchema>;
+export type ReorderGalleryItemsInput = z.infer<typeof reorderGalleryItemsSchema>;

@@ -37,15 +37,15 @@ export default function AdminEventsPage() {
     setTimeout(() => setToastMessage(null), 4000);
   };
 
-  const [sortField, setSortField] = useState<'title' | 'startDate' | null>(null);
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [sortField, setSortField] = useState<'title' | 'startDate' | 'status' | 'createdAt' | null>('createdAt');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
-  const handleSort = (field: 'title' | 'startDate') => {
+  const handleSort = (field: 'title' | 'startDate' | 'status' | 'createdAt') => {
     if (sortField === field) {
       setSortOrder((prev) => (prev === 'asc' ? 'desc' : 'asc'));
     } else {
       setSortField(field);
-      setSortOrder('asc');
+      setSortOrder(field === 'createdAt' ? 'desc' : 'asc');
     }
   };
 
@@ -217,43 +217,34 @@ export default function AdminEventsPage() {
               );
             })()}
           </TableCell>
-          <TableCell className="py-4 px-4 capitalize text-text-secondary">
+          <TableCell className="py-4 px-4">
             {event.category ? (
-              event.category.replace('_', ' ')
+              <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-white/5 border border-border-subtle text-text-secondary capitalize">
+                {event.category.replace('_', ' ')}
+              </span>
             ) : (
               <span className="text-xs px-2.5 py-1 rounded-full border border-yellow-500/30 bg-yellow-500/10 text-yellow-400 font-semibold animate-pulse inline-flex items-center gap-1">
                 ⚠️ Missing Category
               </span>
             )}
           </TableCell>
-          <TableCell className="py-4 px-4 text-text-secondary">
+          <TableCell className="py-4 px-4">
             {event.startDate ? (
               <div className="flex flex-col gap-0.5 text-xs">
-                <div>
-                  <span className="text-text-secondary">Starts:</span> {formatEventDate(event.startDate)}
-                </div>
-                {event.endDate && (
-                  <div className="text-[11px] text-text-secondary">
-                    <span className="text-text-secondary/70">Ends:</span> {formatEventDate(event.endDate)}
-                  </div>
-                )}
+                <span className="font-semibold text-text-primary">
+                  {formatEventDate(event.startDate)}
+                  {event.endDate && ` – ${formatEventDate(event.endDate)}`}
+                </span>
                 {(event.bookingStartDate || event.bookingEndDate) && (
-                  <div className="text-[10px] text-text-secondary/80 border-t border-white/5 pt-0.5 mt-0.5 flex flex-col gap-0.5">
-                    {event.bookingStartDate && (
-                      <div>
-                        <span className="font-medium text-accent-purple-light">Book Opens:</span> {formatEventDate(event.bookingStartDate)}
-                      </div>
-                    )}
-                    {event.bookingEndDate && (
-                      <div>
-                        <span className="font-medium text-accent-purple-light">Book Closes:</span> {formatEventDate(event.bookingEndDate)}
-                      </div>
-                    )}
-                  </div>
+                  <span className="text-[11px] text-text-muted flex items-center gap-1">
+                    <span className="text-accent-purple-light font-medium">Bookings:</span>
+                    {event.bookingStartDate ? formatEventDate(event.bookingStartDate) : 'Open'}
+                    {event.bookingEndDate ? ` – ${formatEventDate(event.bookingEndDate)}` : ''}
+                  </span>
                 )}
               </div>
             ) : (
-              <span className="text-text-secondary">N/A</span>
+              <span className="text-text-muted text-xs">N/A</span>
             )}
           </TableCell>
           <TableCell className="py-4 px-4">
@@ -263,28 +254,32 @@ export default function AdminEventsPage() {
               const allowedTransitions = EVENT_STATUS_TRANSITIONS[currentStatus] ?? [];
               const isPending = statusUpdateMutation.isPending && statusUpdateMutation.variables?.id === event._id;
               return (
-                <select
-                  id={`status-select-${event._id}`}
-                  value={currentStatus}
-                  disabled={isPending || allowedTransitions.length === 0}
-                  onChange={(e) => {
-                    const newStatus = e.target.value as EventStatus;
-                    statusUpdateMutation.mutate({ id: event._id, status: newStatus, eventVersion: event.eventVersion ?? 1 });
-                  }}
-                  aria-label={`Change status for ${event.title}`}
-                  className={`text-xs px-2.5 py-1 rounded-full border font-medium cursor-pointer bg-transparent appearance-none pr-5 disabled:opacity-60 disabled:cursor-not-allowed transition-colors ${
-                    currentMeta?.className ?? 'border-border-subtle text-text-secondary'
-                  }`}
-                  style={{ backgroundImage: 'none' }}
-                >
-                  {/* Current status always present */}
-                  <option value={currentStatus}>{currentMeta?.label ?? currentStatus}</option>
-                  {allowedTransitions.map((s) => (
-                    <option key={s} value={s}>
-                      {EVENT_STATUS_METADATA[s]?.label ?? s}
-                    </option>
-                  ))}
-                </select>
+                <div className="relative inline-flex items-center">
+                  <select
+                    id={`status-select-${event._id}`}
+                    value={currentStatus}
+                    disabled={isPending || allowedTransitions.length === 0}
+                    onChange={(e) => {
+                      const newStatus = e.target.value as EventStatus;
+                      statusUpdateMutation.mutate({ id: event._id, status: newStatus, eventVersion: event.eventVersion ?? 1 });
+                    }}
+                    aria-label={`Change status for ${event.title}`}
+                    className={`text-xs pl-3 pr-6 py-1 rounded-full border font-medium cursor-pointer bg-transparent appearance-none disabled:opacity-60 disabled:cursor-not-allowed transition-colors ${
+                      currentMeta?.className ?? 'border-border-subtle text-text-secondary'
+                    }`}
+                  >
+                    {/* Current status always present */}
+                    <option value={currentStatus} className="bg-background text-text-primary">{currentMeta?.label ?? currentStatus}</option>
+                    {allowedTransitions.map((s) => (
+                      <option key={s} value={s} className="bg-background text-text-primary">
+                        {EVENT_STATUS_METADATA[s]?.label ?? s}
+                      </option>
+                    ))}
+                  </select>
+                  {allowedTransitions.length > 0 && (
+                    <span className="pointer-events-none absolute right-2 text-[8px] text-text-muted">▼</span>
+                  )}
+                </div>
               );
             })() : (
               <span className={`text-xs px-2.5 py-1 rounded-full border font-medium ${
@@ -295,7 +290,7 @@ export default function AdminEventsPage() {
             )}
           </TableCell>
 
-          <TableCell sticky="end" showStickyDivider className="py-4 px-5">
+          <TableCell className="py-4 px-5">
             {canMutateEvents ? (() => {
               const isCompleted = event.status === 'completed' || event.status === 'archived' || event.lifecycle === 'COMPLETED';
               if (isCompleted) {
@@ -440,11 +435,18 @@ export default function AdminEventsPage() {
               >
                 Event Starts {sortField === 'startDate' ? (sortOrder === 'asc' ? '▲' : '▼') : ''}
               </TableHead>
-              <TableHead className="py-3.5 px-4 text-text-secondary select-none">
-                Status
+              <TableHead
+                onClick={() => handleSort('status')}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleSort('status'); } }}
+                tabIndex={0}
+                role="columnheader"
+                aria-sort={sortField === 'status' ? (sortOrder === 'asc' ? 'ascending' : 'descending') : 'none'}
+                className="py-3.5 px-4 cursor-pointer hover:text-white transition-colors select-none focus:outline-none focus-visible:ring-1 focus-visible:ring-accent-purple rounded"
+              >
+                Status {sortField === 'status' ? (sortOrder === 'asc' ? '▲' : '▼') : ''}
               </TableHead>
 
-              <TableHead sticky="end" showStickyDivider className="py-3.5 px-5 text-right">Actions</TableHead>
+              <TableHead className="py-3.5 px-5 text-right select-none">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
