@@ -245,23 +245,41 @@ export default function AdminEventsPage() {
           </TableCell>
 
           <TableCell sticky="end" showStickyDivider className="py-4 px-5">
-            {canMutateEvents ? (
-              <div className="flex items-center justify-end gap-2">
-                <Link
-                  href={`/events/${event._id}/edit`}
-                  className="px-3 py-1.5 text-xs font-medium glass border border-border-subtle rounded-lg text-text-secondary hover:text-white hover:border-accent-purple/40 transition-all"
-                >
-                  Edit
-                </Link>
+            {canMutateEvents ? (() => {
+              const isCompleted = event.status === 'completed' || event.status === 'archived' || event.lifecycle === 'COMPLETED';
+              if (isCompleted) {
+                return (
+                  <div className="flex items-center justify-end gap-2">
+                    <Link
+                      href={`/events/${event._id}/gallery`}
+                      id={`event-gallery-btn-${event._id}`}
+                      className="px-3 py-1.5 text-xs font-medium glass border border-accent-pink/40 text-accent-pink hover:bg-accent-pink/10 hover:text-white rounded-lg transition-all"
+                    >
+                      Gallery
+                    </Link>
+                  </div>
+                );
+              }
+              return (
+                <div className="flex items-center justify-end gap-2">
+                  <Link
+                    href={`/events/${event._id}/edit`}
+                    id={`event-edit-btn-${event._id}`}
+                    className="px-3 py-1.5 text-xs font-medium glass border border-border-subtle rounded-lg text-text-secondary hover:text-white hover:border-accent-purple/40 transition-all"
+                  >
+                    Edit
+                  </Link>
 
-                <button
-                  onClick={() => setDeleteTarget(event)}
-                  className="px-3 py-1.5 text-xs font-medium glass border border-border-subtle rounded-lg text-text-secondary hover:text-red-400 hover:border-red-500/40 transition-all"
-                >
-                  Delete
-                </button>
-              </div>
-            ) : (
+                  <button
+                    onClick={() => setDeleteTarget(event)}
+                    id={`event-delete-btn-${event._id}`}
+                    className="px-3 py-1.5 text-xs font-medium glass border border-border-subtle rounded-lg text-text-secondary hover:text-red-400 hover:border-red-500/40 transition-all"
+                  >
+                    Delete
+                  </button>
+                </div>
+              );
+            })() : (
               <div className="text-right text-text-secondary">—</div>
             )}
           </TableCell>
