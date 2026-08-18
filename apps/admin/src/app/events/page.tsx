@@ -37,15 +37,15 @@ export default function AdminEventsPage() {
     setTimeout(() => setToastMessage(null), 4000);
   };
 
-  const [sortField, setSortField] = useState<'title' | 'startDate' | null>(null);
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [sortField, setSortField] = useState<'title' | 'startDate' | 'status' | 'createdAt' | null>('createdAt');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
-  const handleSort = (field: 'title' | 'startDate') => {
+  const handleSort = (field: 'title' | 'startDate' | 'status' | 'createdAt') => {
     if (sortField === field) {
       setSortOrder((prev) => (prev === 'asc' ? 'desc' : 'asc'));
     } else {
       setSortField(field);
-      setSortOrder('asc');
+      setSortOrder(field === 'createdAt' ? 'desc' : 'asc');
     }
   };
 
@@ -440,8 +440,15 @@ export default function AdminEventsPage() {
               >
                 Event Starts {sortField === 'startDate' ? (sortOrder === 'asc' ? '▲' : '▼') : ''}
               </TableHead>
-              <TableHead className="py-3.5 px-4 text-text-secondary select-none">
-                Status
+              <TableHead
+                onClick={() => handleSort('status')}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleSort('status'); } }}
+                tabIndex={0}
+                role="columnheader"
+                aria-sort={sortField === 'status' ? (sortOrder === 'asc' ? 'ascending' : 'descending') : 'none'}
+                className="py-3.5 px-4 cursor-pointer hover:text-white transition-colors select-none focus:outline-none focus-visible:ring-1 focus-visible:ring-accent-purple rounded"
+              >
+                Status {sortField === 'status' ? (sortOrder === 'asc' ? '▲' : '▼') : ''}
               </TableHead>
 
               <TableHead sticky="end" showStickyDivider className="py-3.5 px-5 text-right">Actions</TableHead>

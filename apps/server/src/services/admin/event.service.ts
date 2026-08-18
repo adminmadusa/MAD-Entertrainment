@@ -176,7 +176,7 @@ export const getEvents = async (
     createdAt: 'createdAt'
   };
   const validSortField = filters.sortField ? (SORT_FIELDS[filters.sortField] ?? 'createdAt') : 'createdAt';
-  const sortDirection = filters.sortOrder === 'asc' ? 1 : -1;
+  const sortDirection = filters.sortOrder ? (filters.sortOrder === 'asc' ? 1 : -1) : (validSortField === 'createdAt' ? -1 : 1);
   const sortOptions: any = { [validSortField]: sortDirection };
   if (validSortField !== 'createdAt') sortOptions.createdAt = -1;
   sortOptions._id = 1;
