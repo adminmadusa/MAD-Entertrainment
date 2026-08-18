@@ -387,6 +387,7 @@ export default function EventDetailClient({ slug, initialEvent }: EventDetailCli
                 }
               }}
               cta={cta}
+              showDateTime={showDateTime}
             />
 
           </div>
