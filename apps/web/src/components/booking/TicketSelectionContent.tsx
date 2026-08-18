@@ -2,7 +2,7 @@
 
 import { useMutation } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 import { extractApiError } from '@/lib/api/client';
 import { ensureGuestBookingSession, publicCreateBooking } from '@/lib/api/public.service';
@@ -10,7 +10,6 @@ import { formatMoney } from '@mad/shared';
 import type { Event as EventData } from '@mad/types';
 import { ReserveTicketsInput } from '@mad/validations';
 
-import { BookingStickyFooter } from './BookingStickyFooter';
 import { PromoCodeForm } from './PromoCodeForm';
 
 interface TicketSelectionContentProps {
@@ -47,10 +46,6 @@ export function TicketSelectionContent({
   const router = useRouter();
   const eventId = event._id;
   const currency = event.currency || 'USD';
-
-  const totalCapacity = event.totalCapacity || event.ticketTiers?.reduce((acc, t) => acc + (t.quantity || 0), 0) || 0;
-  const soldCount = event.soldCount || event.ticketTiers?.reduce((acc, t) => acc + (t.soldCount || 0), 0) || 0;
-  const ticketsLeft = Math.max(0, totalCapacity - soldCount);
 
   const [sessionToken, setSessionToken] = useState('');
   const [sessionError, setSessionError] = useState(false);
@@ -195,18 +190,6 @@ export function TicketSelectionContent({
       }
     };
   }, [checkoutTriggerRef, handleCheckoutSubmit]);
-
-  const { subtotal } = useMemo(() => {
-    let total = 0;
-    event.ticketTiers.forEach((tier) => {
-      const qty = quantities[tier.tier] || 0;
-      if (qty > 0) {
-        const price = Math.max(0, tier.price - (tier.discount || 0));
-        total += price * qty;
-      }
-    });
-    return { subtotal: total };
-  }, [quantities, event.ticketTiers]);
 
   return (
     <div className={`space-y-6 text-white ${isModal ? '' : 'container-mad max-w-2xl px-4 pb-32 pt-6'}`}>
@@ -362,17 +345,6 @@ export function TicketSelectionContent({
         onRemoveCoupon={handleRemoveCoupon}
         onCouponChange={handleCouponChange}
       />
-
-      {/* Mobile Sticky bottom footer when not rendered inside modal */}
-      {!isModal && (
-        <BookingStickyFooter
-          ticketsLeft={ticketsLeft}
-          subtotal={subtotal}
-          onCheckoutSubmit={handleCheckoutSubmit}
-          isPending={createBookingMutation.isPending}
-          currency={currency}
-        />
-      )}
     </div>
   );
 }

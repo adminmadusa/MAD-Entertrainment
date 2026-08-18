@@ -350,7 +350,7 @@ export function BookingCard({
             </span>
 
             {/* Quick Actions */}
-            <div className="flex items-center gap-1.5">
+            <div className={`flex items-center gap-1.5 ${showExpanded ? 'max-sm:hidden' : ''}`}>
               {renderQuickActions()}
             </div>
           </div>
