@@ -317,18 +317,18 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose, onConfirm
   }
 
   return (
-    <div className={isModal ? "relative text-white" : "pt-24 pb-24 min-h-screen bg-background text-white relative overflow-x-hidden flex flex-col items-center justify-center"}>
+    <div className={isModal ? "flex flex-col h-full overflow-hidden text-white bg-background relative" : "pt-16 pb-24 min-h-screen bg-background text-white relative overflow-x-hidden flex flex-col items-center justify-center"}>
       {!isModal && (
         <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-accent-purple/5 rounded-full blur-[150px] pointer-events-none" />
       )}
 
-      {/* Sticky Top Checkout Header */}
-      <div className={isModal ? "sticky top-0 bg-background border-b border-white/10 py-3 z-50 shadow-md" : "fixed top-0 left-0 right-0 bg-background/90 backdrop-blur-md border-b border-white/10 py-3 z-50 shadow-md"}>
-        <div className="container-mad max-w-4xl px-4 flex items-center justify-between">
+      {/* Solid Pinned Topbar (Zero Jitter, Zero Transparency) */}
+      <div className={isModal ? "shrink-0 bg-background border-b border-white/10 py-1.5 px-3 sm:py-2 sm:px-4 z-30 shadow-sm" : "fixed top-0 left-0 right-0 bg-background border-b border-white/10 py-2 px-4 z-50 shadow-md"}>
+        <div className="container-mad max-w-4xl flex items-center justify-between">
           <button
             type="button"
             onClick={handleBackClick}
-            className="w-11 h-11 rounded-full hover:bg-white/5 border border-white/10 flex items-center justify-center text-white text-lg transition-colors shrink-0"
+            className="w-8 h-8 rounded-full hover:bg-white/10 border border-white/10 flex items-center justify-center text-white text-base transition-colors shrink-0"
             aria-label="Go back"
           >
             ←
@@ -336,7 +336,7 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose, onConfirm
 
           <div className="text-center min-w-0 flex-1 px-2">
             <h1 id="checkout-modal-title" className="text-xs md:text-sm font-bold text-white tracking-wide truncate">Checkout</h1>
-            <div className={`text-[10px] font-semibold mt-0.5 ${isExpired ? 'text-red-400' : 'text-accent-cyan animate-pulse'}`}>
+            <div className={`text-[10px] font-semibold ${isExpired ? 'text-red-400' : 'text-accent-cyan animate-pulse'}`}>
               {timeLeft}
             </div>
           </div>
@@ -344,7 +344,7 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose, onConfirm
           <button
             type="button"
             onClick={handleCloseClick}
-            className="w-11 h-11 rounded-full hover:bg-white/5 border border-white/10 flex items-center justify-center text-white text-sm transition-colors shrink-0"
+            className="w-8 h-8 rounded-full hover:bg-white/10 border border-white/10 flex items-center justify-center text-white text-xs transition-colors shrink-0"
             aria-label="Close checkout"
           >
             ✕
@@ -352,31 +352,32 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose, onConfirm
         </div>
       </div>
 
-      <div className={isModal ? "space-y-4 relative z-10 mt-4" : "container-mad max-w-4xl space-y-4 relative z-10 px-4 mt-20 w-full"}>
+      {/* Scrollable Middle Body (The ONLY Scrolling Element) */}
+      <div className={isModal ? "flex-1 overflow-y-auto custom-scrollbar p-3 sm:p-4 space-y-3" : "container-mad max-w-4xl space-y-4 relative z-10 px-4 mt-16 pb-28 w-full"}>
         {error && (
-          <div className="p-3 bg-error/10 border border-error/30 rounded-xl text-xs text-red-400 text-center" role="alert" aria-live="assertive">
+          <div className="py-2 px-3 bg-error/10 border border-error/20 rounded-xl text-xs text-red-400 text-center" role="alert" aria-live="assertive">
             {error}
           </div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6 items-start">
           {/* Left Column: Event summary card & Billing details */}
-          <div className="lg:col-span-8 space-y-4">
+          <div className="lg:col-span-8 space-y-3">
 
             {/* Event Summary Card */}
             {event && (
-              <div className="glass rounded-2xl border border-white/5 p-4 flex gap-4 items-center">
+              <div className="glass rounded-xl border border-white/5 p-3 flex gap-3 items-center">
                 {event.bannerImage?.url && (
-                  <div className="relative w-20 h-20 bg-black/20 rounded-xl border border-white/10 overflow-hidden">
-                    <Image src={event.bannerImage.url} alt={event.title} fill sizes="80px" className="object-contain" />
+                  <div className="relative w-14 h-14 sm:w-16 sm:h-16 bg-black/20 rounded-lg border border-white/10 overflow-hidden shrink-0">
+                    <Image src={event.bannerImage.url} alt={event.title} fill sizes="64px" className="object-contain" />
                   </div>
                 )}
-                <div className="space-y-1">
-                  <h2 className="text-sm font-bold text-white line-clamp-1">{event.title}</h2>
-                  <p className="text-xs text-text-muted">
+                <div className="space-y-0.5 min-w-0 flex-1">
+                  <h2 className="text-xs sm:text-sm font-bold text-white truncate">{event.title}</h2>
+                  <p className="text-[11px] text-text-muted truncate">
                     {new Date(event.startDate).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'UTC' })} · {event.showTime}
                   </p>
-                  <p className="text-xs text-accent-purple-light font-bold">{formatMoney(booking.totalAmount, currency)}</p>
+                  <p className="text-xs text-accent-purple-light font-black">{formatMoney(booking.totalAmount, currency)}</p>
                 </div>
               </div>
             )}
@@ -393,23 +394,23 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose, onConfirm
             </div>
           </div>
 
-          <div className="lg:col-span-4 space-y-4">
+          <div className="lg:col-span-4 space-y-3">
             <CheckoutPricing booking={booking} />
 
-            {/* Place Order & Terms */}
-            <div className="glass rounded-2xl border border-white/5 p-5 space-y-3">
+            {/* Place Order & Terms (Desktop Column) */}
+            <div className="glass rounded-xl border border-white/5 p-4 space-y-2.5">
               <button
                 type="submit"
                 form="checkout-form"
                 disabled={isExpired || saveDetailsMutation.isPending || paymentIntentMutation.isPending || isProcessing}
-                className="hidden lg:block w-full px-8 py-3 rounded-xl bg-gradient-to-r from-accent-purple to-accent-pink hover:from-accent-purple-light hover:to-accent-pink/80 text-white font-black text-sm transition-all hover:scale-[1.02] active:scale-95 shadow-glow disabled:opacity-50"
+                className="hidden lg:block w-full px-6 py-3 rounded-xl bg-gradient-to-r from-accent-purple to-accent-pink hover:from-accent-purple-light hover:to-accent-pink/80 text-white font-black text-sm transition-all hover:scale-[1.02] active:scale-95 shadow-glow disabled:opacity-50"
               >
                 {buttonText}
               </button>
 
-              <div className="pt-0 lg:pt-3 border-t-0 lg:border-t border-white/5 space-y-3">
-                <div className="flex items-center justify-center gap-1.5 text-[11px] text-text-secondary font-medium bg-white/5 py-2 rounded-lg border border-white/5">
-                  <svg className="w-3.5 h-3.5 text-text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <div className="pt-0 lg:pt-2 border-t-0 lg:border-t border-white/5 space-y-2">
+                <div className="flex items-center justify-center gap-1.5 text-[10px] sm:text-[11px] text-text-secondary font-medium bg-white/5 py-1.5 rounded-lg border border-white/5">
+                  <svg className="w-3.5 h-3.5 text-text-secondary shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                   </svg>
                   <span>Secure checkout · No hidden fees</span>
@@ -423,19 +424,19 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose, onConfirm
         </div>
       </div>
 
-      {/* Sticky Place Order Footer (Mobile Only) */}
+      {/* Solid Pinned Footer (Zero Jitter, Zero Overlap, Mobile Only) */}
       {!viewport.isKeyboardOpen && (
-        <div className={isModal ? "sticky bottom-0 z-40 bg-background/95 border-t border-white/10 py-2 mt-4 shadow-2xl lg:hidden" : "fixed bottom-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-lg border-t border-white/10 shadow-2xl lg:hidden"}>
-          <div className={`container-mad max-w-4xl px-4 flex items-center gap-4 ${isModal ? 'py-2' : 'py-3 pb-[calc(1rem+env(safe-area-inset-bottom))]'}`}>
-            <div className="flex-1">
-              <div className="text-[10px] text-text-muted font-semibold uppercase tracking-wider">Total Amount</div>
-              <div className="text-white font-black text-lg">{formatMoney(booking.totalAmount, currency)}</div>
+        <div className={isModal ? "shrink-0 bg-background border-t border-white/10 py-2 px-4 z-30 shadow-2xl lg:hidden" : "fixed bottom-0 left-0 right-0 z-40 bg-background border-t border-white/10 shadow-2xl lg:hidden"}>
+          <div className={`container-mad max-w-4xl flex items-center justify-between gap-3 ${isModal ? 'py-1' : 'py-2 pb-[calc(0.75rem+env(safe-area-inset-bottom))]'}`}>
+            <div>
+              <div className="text-[9px] text-text-muted font-semibold uppercase tracking-wider">Total Amount</div>
+              <div className="text-white font-black text-base sm:text-lg leading-tight">{formatMoney(booking.totalAmount, currency)}</div>
             </div>
             <button
               type="submit"
               form="checkout-form"
               disabled={isExpired || saveDetailsMutation.isPending || paymentIntentMutation.isPending || isProcessing}
-              className="flex-shrink-0 px-8 py-3.5 rounded-xl bg-gradient-to-r from-accent-purple to-accent-pink hover:from-accent-purple-light hover:to-accent-pink/80 text-white font-black text-sm transition-all hover:scale-[1.02] active:scale-95 shadow-glow disabled:opacity-50"
+              className="px-6 py-2.5 sm:px-8 sm:py-3 rounded-xl bg-gradient-to-r from-accent-purple to-accent-pink hover:from-accent-purple-light hover:to-accent-pink/80 text-white font-black text-xs sm:text-sm transition-all hover:scale-[1.02] active:scale-95 shadow-glow disabled:opacity-50 cursor-pointer"
             >
               {buttonText}
             </button>
