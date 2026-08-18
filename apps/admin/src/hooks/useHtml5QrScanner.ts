@@ -12,6 +12,71 @@ export interface UseHtml5QrScannerProps {
   onScanFailure?: (errorMessage: string) => void;
 }
 
+function mapBrowserCameraError(err: any): { permissionState: 'prompt' | 'granted' | 'denied'; message: string } {
+  const errStr = (err?.message || err?.toString?.() || '').toLowerCase();
+  const errName = (err?.name || '').toLowerCase();
+
+  if (errName === 'notallowederror' || errStr.includes('permission denied') || errStr.includes('not allowed')) {
+    return {
+      permissionState: 'denied',
+      message: 'Camera permission denied. Please allow camera access in your browser address bar or settings.',
+    };
+  }
+
+  if (errName === 'notfounderror' || errName === 'devicesnotfounderror' || errStr.includes('not found') || errStr.includes('no camera')) {
+    return {
+      permissionState: 'prompt',
+      message: 'No camera hardware found. Please connect a webcam or use the Manual Verify tab.',
+    };
+  }
+
+  if (errName === 'notreadableerror' || errName === 'trackstarterror' || errStr.includes('could not start') || errStr.includes('already in use')) {
+    return {
+      permissionState: 'prompt',
+      message: 'Camera is in use by another app (e.g. Zoom, FaceTime, or another tab). Close other apps and retry.',
+    };
+  }
+
+  if (errName === 'overconstrainederror' || errStr.includes('overconstrained')) {
+    return {
+      permissionState: 'prompt',
+      message: 'Selected camera does not support required video settings. Try selecting a different camera.',
+    };
+  }
+
+  if (errName === 'securityerror' || errStr.includes('secure context') || errStr.includes('https')) {
+    return {
+      permissionState: 'prompt',
+      message: 'Camera access requires a secure HTTPS connection.',
+    };
+  }
+
+  if (errName === 'aborterror' || errStr.includes('aborted')) {
+    return {
+      permissionState: 'prompt',
+      message: 'Camera initialization was cancelled or interrupted.',
+    };
+  }
+
+  return {
+    permissionState: 'prompt',
+    message: err?.message || 'Unable to access camera. Please check your browser device settings or use Manual Verify.',
+  };
+}
+
+const safeStopScanner = async (scanner: any) => {
+  if (!scanner) return;
+  try {
+    const isScanning =
+      typeof scanner.getState === 'function' ? scanner.getState() === 2 : Boolean(scanner.isScanning);
+    if (isScanning) {
+      await scanner.stop();
+    }
+  } catch {
+    // Redundant or transition stop error safely absorbed
+  }
+};
+
 export function useHtml5QrScanner({ onScanSuccess, onScanFailure }: UseHtml5QrScannerProps) {
   const [devices, setDevices] = useState<CameraDevice[]>([]);
   const [selectedDeviceId, setSelectedDeviceId] = useState<string>('');
@@ -29,9 +94,7 @@ export function useHtml5QrScanner({ onScanSuccess, onScanFailure }: UseHtml5QrSc
   // 1. Enumerate available video inputs safely
   const refreshDevices = useCallback(async () => {
     try {
-      if (typeof window === 'undefined' || !navigator.mediaDevices?.enumerateDevices) {
-        return;
-      }
+      if (typeof window === 'undefined' || !navigator.mediaDevices?.enumerateDevices) return;
       const allDevices = await navigator.mediaDevices.enumerateDevices();
       const videoDevices = allDevices
         .filter((device) => device.kind === 'videoinput')
@@ -41,15 +104,10 @@ export function useHtml5QrScanner({ onScanSuccess, onScanFailure }: UseHtml5QrSc
         }));
       setDevices(videoDevices);
 
-      // Restore saved preferred camera or select rear camera
       const savedDevice = typeof window !== 'undefined' ? localStorage.getItem('mad-preferred-camera') : null;
       setSelectedDeviceId((prevId) => {
-        if (prevId && videoDevices.some((d) => d.id === prevId)) {
-          return prevId;
-        }
-        if (savedDevice && videoDevices.some((d) => d.id === savedDevice)) {
-          return savedDevice;
-        }
+        if (prevId && videoDevices.some((d) => d.id === prevId)) return prevId;
+        if (savedDevice && videoDevices.some((d) => d.id === savedDevice)) return savedDevice;
         const rearCamera = videoDevices.find((d) =>
           d.label.toLowerCase().includes('back') ||
           d.label.toLowerCase().includes('rear') ||
@@ -57,8 +115,8 @@ export function useHtml5QrScanner({ onScanSuccess, onScanFailure }: UseHtml5QrSc
         );
         return rearCamera?.id || videoDevices[0]?.id || '';
       });
-    } catch (err) {
-      console.error('Failed to enumerate media devices:', err);
+    } catch {
+      // Ignore enumeration failure
     }
   }, []);
 
@@ -115,11 +173,7 @@ export function useHtml5QrScanner({ onScanSuccess, onScanFailure }: UseHtml5QrSc
         const { Html5Qrcode } = await import('html5-qrcode');
 
         if (scannerRef.current) {
-          try {
-            await scannerRef.current.stop();
-          } catch {
-            // ignore already stopped error
-          }
+          await safeStopScanner(scannerRef.current);
         }
 
         const html5QrCode = new Html5Qrcode(containerId);
@@ -150,7 +204,6 @@ export function useHtml5QrScanner({ onScanSuccess, onScanFailure }: UseHtml5QrSc
         setIsScanning(true);
         setError(null);
 
-        // Determine if torch is available
         try {
           const capabilities = html5QrCode.getRunningTrackCapabilities();
           setHasTorch(!!(capabilities as any)?.torch);
@@ -162,16 +215,9 @@ export function useHtml5QrScanner({ onScanSuccess, onScanFailure }: UseHtml5QrSc
         await refreshDevices();
       } catch (err: any) {
         setIsScanning(false);
-        const errStr = err?.toString?.() || '';
-        const errName = err?.name || '';
-        if (errStr.includes('NotAllowedError') || errName === 'NotAllowedError') {
-          setPermissionState('denied');
-          setError('Camera permission denied.');
-        } else if (errStr.includes('NotFoundError') || errName === 'NotFoundError') {
-          setError('No camera found on this device.');
-        } else {
-          setError('Camera is currently unavailable.');
-        }
+        const mapped = mapBrowserCameraError(err);
+        setPermissionState(mapped.permissionState);
+        setError(mapped.message);
       } finally {
         setIsInitializing(false);
       }
@@ -184,11 +230,7 @@ export function useHtml5QrScanner({ onScanSuccess, onScanFailure }: UseHtml5QrSc
     if (isStoppingRef.current) return;
     isStoppingRef.current = true;
     try {
-      if (scannerRef.current) {
-        await scannerRef.current.stop();
-      }
-    } catch {
-      // ignore
+      await safeStopScanner(scannerRef.current);
     } finally {
       scannerRef.current = null;
       setIsScanning(false);
@@ -223,18 +265,17 @@ export function useHtml5QrScanner({ onScanSuccess, onScanFailure }: UseHtml5QrSc
         advanced: [{ torch: nextTorchState } as any],
       });
       setIsTorchOn(nextTorchState);
-    } catch (err) {
-      console.error('Failed to toggle torch:', err);
+    } catch {
+      // Ignore torch error
     }
   }, [isTorchOn, hasTorch]);
 
   // 8. Auto-cleanup on unmount
   useEffect(() => {
     return () => {
-      if (scannerRef.current) {
-        scannerRef.current.stop().catch(() => {});
-        scannerRef.current = null;
-      }
+      const currentScanner = scannerRef.current;
+      scannerRef.current = null;
+      safeStopScanner(currentScanner);
     };
   }, []);
 
