@@ -383,18 +383,18 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose, onConfirm
           <div className="lg:col-span-4 space-y-4">
             <CheckoutPricing booking={booking} />
 
-            {/* Place Order & Terms (Always Visible) */}
+            {/* Place Order & Terms */}
             <div className="glass rounded-2xl border border-white/5 p-5 space-y-3">
               <button
                 type="submit"
                 form="checkout-form"
                 disabled={isExpired || saveDetailsMutation.isPending || paymentIntentMutation.isPending || isProcessing}
-                className="w-full px-8 py-3 rounded-xl bg-gradient-to-r from-accent-purple to-accent-pink hover:from-accent-purple-light hover:to-accent-pink/80 text-white font-black text-sm transition-all hover:scale-[1.02] active:scale-95 shadow-glow disabled:opacity-50"
+                className="hidden lg:block w-full px-8 py-3 rounded-xl bg-gradient-to-r from-accent-purple to-accent-pink hover:from-accent-purple-light hover:to-accent-pink/80 text-white font-black text-sm transition-all hover:scale-[1.02] active:scale-95 shadow-glow disabled:opacity-50"
               >
                 {buttonText}
               </button>
 
-              <div className="pt-3 border-t border-white/5 space-y-3">
+              <div className="pt-0 lg:pt-3 border-t-0 lg:border-t border-white/5 space-y-3">
                 <div className="flex items-center justify-center gap-1.5 text-[11px] text-text-secondary font-medium bg-white/5 py-2 rounded-lg border border-white/5">
                   <svg className="w-3.5 h-3.5 text-text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
