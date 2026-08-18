@@ -152,16 +152,31 @@ export const EventGalleryWorkspace = React.memo(function EventGalleryWorkspace({
     deleteItemMutation.mutate(itemId);
   }, [itemToDelete, deleteItemMutation]);
 
+  const MAX_GALLERY_PHOTOS = 20;
+
   // Upload handler for files dropped or selected from the + tile
   const handleUpload = useCallback(
     async (files: File[]) => {
       if (files.length === 0) return;
+
+      const remainingSlots = Math.max(0, MAX_GALLERY_PHOTOS - items.length);
+      if (remainingSlots <= 0) {
+        setErrorMessage(`Event gallery has reached the maximum limit of ${MAX_GALLERY_PHOTOS} photos.`);
+        return;
+      }
+
+      const filesToUpload = files.slice(0, remainingSlots);
+      if (files.length > remainingSlots) {
+        setErrorMessage(`Only ${remainingSlots} photo(s) could be uploaded to stay within the ${MAX_GALLERY_PHOTOS}-photo limit.`);
+      } else {
+        setErrorMessage(null);
+      }
+
       setIsUploading(true);
-      setErrorMessage(null);
 
       const uploadedAssets: { url: string; publicId: string; mediaType: string }[] = [];
 
-      for (const file of files) {
+      for (const file of filesToUpload) {
         try {
           const formData = new FormData();
           formData.append('image', file);
@@ -202,7 +217,7 @@ export const EventGalleryWorkspace = React.memo(function EventGalleryWorkspace({
         addItemsMutation.mutate(uploadedAssets);
       }
     },
-    [addItemsMutation]
+    [addItemsMutation, items.length]
   );
 
   if (isLoading) {
@@ -213,7 +228,7 @@ export const EventGalleryWorkspace = React.memo(function EventGalleryWorkspace({
     );
   }
 
-  const canUpload = capabilities ? capabilities.canUploadGallery : true;
+  const canUpload = (capabilities ? capabilities.canUploadGallery : true) && items.length < MAX_GALLERY_PHOTOS;
   const isMutating =
     deleteItemMutation.isPending || setCoverMutation.isPending;
 
@@ -239,7 +254,7 @@ export const EventGalleryWorkspace = React.memo(function EventGalleryWorkspace({
         {/* Left: Stats & Status */}
         <div className="flex items-center gap-3">
           <span className="text-xs sm:text-sm font-semibold text-white bg-white/10 px-3 py-1 rounded-full border border-white/10">
-            {items.length} {items.length === 1 ? 'Photo' : 'Photos'}
+            {items.length} / {MAX_GALLERY_PHOTOS} Photos
           </span>
           <span
             className={`text-xs sm:text-sm font-medium px-3 py-1 rounded-full flex items-center gap-1.5 border ${

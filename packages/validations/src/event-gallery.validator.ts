@@ -12,7 +12,7 @@ export const addGalleryItemsSchema = z.object({
       thumbnail: z.string().url().optional(),
       caption: z.string().max(255).optional(),
     })
-  ).min(1, 'At least one item is required')
+  ).min(1, 'At least one item is required').max(20, 'Maximum 20 photos allowed per event gallery')
 });
 
 export const updateGallerySettingsSchema = z.object({

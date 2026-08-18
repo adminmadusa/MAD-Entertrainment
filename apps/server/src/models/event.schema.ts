@@ -67,6 +67,7 @@ export interface IEvent extends Document {
   bookingMode: BookingMode;
   bannerImage: { url: string; publicId: string };
   posterImage?: { url: string; publicId: string };
+  galleryImages?: { url: string; publicId: string; hash?: string; width?: number; height?: number }[];
 
   startDate: Date;
   endDate?: Date;
@@ -171,6 +172,7 @@ const eventSchema = new Schema<IEvent>(
 
     bannerImage: { type: cloudinaryImageSchema, required: true },
     posterImage: cloudinaryImageSchema,
+    galleryImages: { type: [cloudinaryImageSchema], default: [] },
 
     startDate: { type: Date, required: true, index: true },
     endDate: Date,

@@ -15,6 +15,8 @@ import { EventGallery, MediaVisibility } from '../../models/event-gallery.schema
 import { Event } from '../../models/event.schema';
 import { safeDeleteImages } from './media-cleanup.service';
 
+export const MAX_EVENT_GALLERY_ITEMS = 20;
+
 export class AdminEventGalleryService {
   /**
    * Retrieves the full gallery (items and settings) for an event.
@@ -139,6 +141,12 @@ export class AdminEventGalleryService {
     }
 
     const currentCount = await EventGallery.countDocuments({ eventId });
+    if (currentCount + newItems.length > MAX_EVENT_GALLERY_ITEMS) {
+      throw AppError.badRequest(
+        `Event gallery limit reached (maximum ${MAX_EVENT_GALLERY_ITEMS} photos allowed). Current: ${currentCount}, adding: ${newItems.length}`
+      );
+    }
+
     let hasCover = !!(await EventGallery.exists({ eventId, isCover: true }));
 
     const docsToInsert = newItems.map((item, index) => {

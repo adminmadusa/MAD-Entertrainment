@@ -100,6 +100,26 @@ describe('AdminEventGalleryService', () => {
 
       expect(items).toHaveLength(1);
     });
+
+    it('should throw bad request when adding items exceeds 20 items cap', async () => {
+      (EventGallery.find as any).mockReturnValue({
+        distinct: vi.fn().mockResolvedValue([]),
+      });
+      (EventGallery.countDocuments as any).mockResolvedValue(19);
+
+      await expect(
+        AdminEventGalleryService.addItems(
+          eventId,
+          {
+            items: [
+              { url: 'url1', publicId: 'p1', mediaType: 'IMAGE' as any, assetProvider: 'cloudinary' },
+              { url: 'url2', publicId: 'p2', mediaType: 'IMAGE' as any, assetProvider: 'cloudinary' },
+            ],
+          },
+          adminId
+        )
+      ).rejects.toThrow('Event gallery limit reached (maximum 20 photos allowed)');
+    });
   });
 
   describe('updateSettings', () => {

@@ -10,6 +10,8 @@ export interface EventMediaCardProps {
   setBannerImage: (img: CloudinaryImage | null) => void;
   posterImage: CloudinaryImage | null;
   setPosterImage: (img: CloudinaryImage | null) => void;
+  galleryImages?: CloudinaryImage[];
+  setGalleryImages?: (imgs: CloudinaryImage[]) => void;
 }
 
 export const EventMediaCard = React.memo(function EventMediaCard({
@@ -17,6 +19,8 @@ export const EventMediaCard = React.memo(function EventMediaCard({
   setBannerImage,
   posterImage,
   setPosterImage,
+  galleryImages = [],
+  setGalleryImages,
 }: EventMediaCardProps) {
   const { id } = useParams() as { id: string };
 
@@ -25,7 +29,9 @@ export const EventMediaCard = React.memo(function EventMediaCard({
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-white font-semibold">Event Media</h2>
-          <p className="text-text-muted text-xs mt-0.5">Upload cover banner and promotional poster</p>
+          <p className="text-text-muted text-xs mt-0.5">
+            Upload cover banner, promotional poster, and up to 13 marketing photos (15 total)
+          </p>
         </div>
         {id && (
           <Link
@@ -40,12 +46,13 @@ export const EventMediaCard = React.memo(function EventMediaCard({
       <UnifiedMediaUpload
         bannerImage={bannerImage}
         posterImage={posterImage}
-        galleryImages={[]}
-        onChange={(b, p) => {
+        galleryImages={galleryImages}
+        onChange={(b, p, g) => {
           setBannerImage(b);
           setPosterImage(p);
+          setGalleryImages?.(g);
         }}
-        maxTotalImages={2}
+        maxTotalImages={15}
       />
     </div>
   );

@@ -62,6 +62,7 @@ export interface AdminEvent {
   highlights?: string[];
   bannerImage?: CloudinaryImage;
   posterImage?: CloudinaryImage;
+  galleryImages?: CloudinaryImage[];
   ticketsSold?: number;
   ticketsCheckedIn?: number;
   ticketsRemaining?: number;
