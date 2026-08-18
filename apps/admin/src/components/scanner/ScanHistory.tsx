@@ -45,20 +45,22 @@ export function ScanHistory({
           <p className="text-text-muted text-xs mt-1">Audit log of gate validations and check-in activities</p>
         </div>
 
-        {/* Filters */}
+        {/* Filters with >= 44px touch targets */}
         <div className="flex items-center gap-2 flex-wrap">
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search ticket / guest..."
-            className="bg-background border border-border-subtle text-white text-xs rounded-lg px-3 py-1.5 focus-ring w-44"
+            className="bg-background border border-border-subtle text-white text-xs rounded-xl px-3.5 py-2 min-h-[44px] focus-ring w-48"
+            aria-label="Search scan history"
           />
 
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
-            className="bg-background border border-border-subtle text-white text-xs rounded-lg px-2.5 py-1.5 focus-ring"
+            className="bg-background border border-border-subtle text-white text-xs rounded-xl px-3 py-2 min-h-[44px] focus-ring"
+            aria-label="Filter by scan status"
           >
             <option value="">All Statuses</option>
             <option value="SUCCESS">Success</option>
@@ -95,8 +97,8 @@ export function ScanHistory({
                   <EmptyState
                     variant="table"
                     icon={search.trim() !== '' ? <Search /> : <Scan />}
-                    title={search.trim() !== '' ? "No results match your search." : "No scans recorded yet."}
-                    description={search.trim() !== '' ? "Try changing your search criteria." : "Waiting for the first attendee."}
+                    title={search.trim() !== '' ? 'No results match your search.' : 'No scans recorded yet.'}
+                    description={search.trim() !== '' ? 'Try changing your search criteria.' : 'Waiting for the first attendee.'}
                   />
                 </td>
               </tr>
@@ -120,9 +122,11 @@ export function ScanHistory({
                     )}
                   </td>
                   <td className="py-3 text-right">
-                    <span className={`px-2 py-0.5 rounded-md border text-xxs font-bold uppercase tracking-wider ${
-                      HISTORY_STATUS_STYLES[item.status] || 'bg-white/5 border-white/10 text-text-muted'
-                    }`}>
+                    <span
+                      className={`px-2.5 py-1 rounded-md border text-xxs font-bold uppercase tracking-wider ${
+                        HISTORY_STATUS_STYLES[item.status] || 'bg-white/5 border-white/10 text-text-muted'
+                      }`}
+                    >
                       {item.status.replace('_', ' ')}
                     </span>
                   </td>
@@ -133,13 +137,13 @@ export function ScanHistory({
         </table>
       </div>
 
-      {/* Pagination */}
+      {/* Pagination with min-h-[44px] */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between pt-4 border-t border-white/5 text-xxs text-text-secondary font-bold">
+        <div className="flex items-center justify-between pt-4 border-t border-white/5 text-xs text-text-secondary font-bold">
           <button
             onClick={() => setPage(Math.max(1, page - 1))}
             disabled={page === 1}
-            className="px-3 py-1.5 bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-2.5 min-h-[44px] bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-all disabled:opacity-50 disabled:cursor-not-allowed focus-ring flex items-center justify-center"
           >
             Previous
           </button>
@@ -147,7 +151,7 @@ export function ScanHistory({
           <button
             onClick={() => setPage(Math.min(totalPages, page + 1))}
             disabled={page === totalPages}
-            className="px-3 py-1.5 bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-2.5 min-h-[44px] bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-all disabled:opacity-50 disabled:cursor-not-allowed focus-ring flex items-center justify-center"
           >
             Next
           </button>

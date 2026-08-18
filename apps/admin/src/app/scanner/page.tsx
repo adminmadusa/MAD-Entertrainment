@@ -199,7 +199,7 @@ export default function ScannerPage() {
       {selectedEventId ? (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           {/* ── Right column: Stats + Desktop History ── */}
-          <div className="order-1 lg:order-2 lg:col-span-7 space-y-6">
+          <div className="order-2 lg:order-2 lg:col-span-7 space-y-6">
             {/* Stats — accordion on mobile, always visible on desktop */}
             <div className="glass rounded-2xl border border-border-subtle bg-background-card/50 overflow-hidden">
               {/* Mobile toggle */}
@@ -250,7 +250,7 @@ export default function ScannerPage() {
           </div>
 
           {/* ── Left column: Tabs + Camera / Verify + Recent Activity ── */}
-          <div className="order-2 lg:order-1 lg:col-span-5 space-y-4">
+          <div className="order-1 lg:order-1 lg:col-span-5 space-y-4">
             {/* Tab switcher */}
             <div
               role="tablist"

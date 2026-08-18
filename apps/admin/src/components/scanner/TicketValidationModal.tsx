@@ -153,6 +153,18 @@ export function TicketValidationModal({ result, onClose, onSwitchToVerify }: Tic
     }
   }, [result, isSuccess, isOfflineQueued, isDuplicate]);
 
+  // Escape key listener for accessible keyboard dismiss
+  useEffect(() => {
+    if (!result) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [result, onClose]);
+
   if (!result) return null;
 
   const theme = resolveTheme(isSuccess, isOfflineQueued, isDuplicate, isExpired, isWrongEvent);
@@ -164,7 +176,8 @@ export function TicketValidationModal({ result, onClose, onSwitchToVerify }: Tic
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="absolute inset-0 bg-black/75 backdrop-blur-sm"
+        onClick={onClose}
+        className="absolute inset-0 bg-black/75 backdrop-blur-sm cursor-pointer"
         aria-hidden="true"
       />
 

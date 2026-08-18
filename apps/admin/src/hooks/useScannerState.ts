@@ -50,6 +50,21 @@ export function useScannerState({ initialEventId = '' }: UseScannerStateProps = 
   const [historyPage, setHistoryPage] = useState(1);
   const [historyFilterStatus, setHistoryFilterStatus] = useState('');
   const [historySearch, setHistorySearch] = useState('');
+  const [debouncedHistorySearch, setDebouncedHistorySearch] = useState('');
+
+  // Debounce history search input (~300ms)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedHistorySearch(historySearch.trim());
+      setHistoryPage(1);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [historySearch]);
+
+  const handleSetFilterStatus = useCallback((status: string) => {
+    setHistoryFilterStatus(status);
+    setHistoryPage(1);
+  }, []);
 
   // 1. Detect network status changes
   useEffect(() => {
@@ -90,15 +105,15 @@ export function useScannerState({ initialEventId = '' }: UseScannerStateProps = 
     staleTime: 5000,
   });
 
-  // 4. React Query: History query
+  // 4. React Query: History query (uses debounced search string)
   const { data: historyRes, isLoading: isLoadingHistory, refetch: refetchHistory } = useQuery({
-    queryKey: ['scanner-history', selectedEventId, historyPage, historyFilterStatus, historySearch],
+    queryKey: ['scanner-history', selectedEventId, historyPage, historyFilterStatus, debouncedHistorySearch],
     queryFn: () =>
       adminGetScannerHistory(selectedEventId, {
         page: historyPage,
         limit: 15,
         status: historyFilterStatus || undefined,
-        search: historySearch || undefined,
+        search: debouncedHistorySearch || undefined,
       }),
     enabled: !!selectedEventId && !isOffline,
   });
@@ -304,7 +319,7 @@ export function useScannerState({ initialEventId = '' }: UseScannerStateProps = 
     historyPage,
     setHistoryPage,
     historyFilterStatus,
-    setHistoryFilterStatus,
+    setHistoryFilterStatus: handleSetFilterStatus,
     historySearch,
     setHistorySearch,
     historyItems: historyRes?.items || [],
