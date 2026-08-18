@@ -73,6 +73,8 @@ export function createApp(): Application {
         'X-Requested-With',
         'X-Request-ID',
         'x-session-id',
+        'X-XSRF-TOKEN',
+        'X-CSRF-TOKEN',
         'Cache-Control',
         'Pragma',
       ],

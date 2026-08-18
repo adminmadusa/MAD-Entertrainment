@@ -12,6 +12,7 @@ import { useCountdown } from '@/hooks/use-countdown.hook';
 import { extractApiError } from '@/lib/api/client';
 import { publicGetBookingDetails, publicCreatePaymentIntent, publicVerifyPayment, publicSaveCheckoutDetails, getStoredGuestBookingSession, type PaymentIntentResponse } from '@/lib/api/public.service';
 import { loadScriptOnce } from '@/lib/utils/load-script-once';
+import { useAuth } from '@/providers/AuthProvider';
 import { BookingStatus, QUERY_KEYS, formatMoney } from '@mad/shared';
 import type { Booking, Event, Ticket } from '@mad/types';
 import { Spinner } from '@mad/ui';
@@ -43,15 +44,16 @@ function asEvent(value: unknown): Event | null {
 
 interface CheckoutContentProps {
   bookingId: string;
-  isModal: boolean;
-  onBack: () => void;
-  onClose: () => void;
+  isModal?: boolean;
+  onBack?: () => void;
+  onClose?: () => void;
   onConfirmed?: () => void;
 }
 
 export function CheckoutContent({ bookingId, isModal, onBack, onClose, onConfirmed }: CheckoutContentProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
+  const { isAuthenticated } = useAuth();
 
   const [selectedGateway, setSelectedGateway] = useState<'stripe' | 'razorpay'>('razorpay');
   const [error, setError] = useState('');
@@ -84,6 +86,8 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose, onConfirm
   });
 
   const booking = details?.booking;
+  const tickets = details?.tickets || [];
+  const ticketsReady = details?.ticketsReady ?? false;
   const currency = booking?.currency || 'USD';
   const event = asEvent((booking as Booking | undefined)?.eventId);
 
@@ -104,8 +108,15 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose, onConfirm
 
   const handleViewTickets = () => {
     allowNavigation();
-    router.push(`/tickets?ref=${booking?.bookingId}`);
-    if (isModal) onClose();
+    if (isAuthenticated) {
+      router.push(`/dashboard?tab=tickets&ref=${booking?.bookingId}`);
+      if (isModal && onClose) onClose();
+    } else {
+      const ticketsSection = document.getElementById('confirmation-tickets-section');
+      if (ticketsSection) {
+        ticketsSection.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
   };
 
 
@@ -274,6 +285,8 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose, onConfirm
         isModal={isModal}
         currency={currency}
         onViewTickets={handleViewTickets}
+        tickets={tickets}
+        ticketsReady={ticketsReady}
       />
     );
   }

@@ -6,6 +6,7 @@ import { useState, useEffect, useCallback } from 'react';
 
 import { extractApiError } from '@/lib/api/client';
 import { ensureGuestBookingSession, publicCreateBooking } from '@/lib/api/public.service';
+import { useAuth } from '@/providers/AuthProvider';
 import { formatMoney } from '@mad/shared';
 import type { Event as EventData } from '@mad/types';
 import { ReserveTicketsInput } from '@mad/validations';
@@ -44,6 +45,7 @@ export function TicketSelectionContent({
   onBookingSuccess,
 }: TicketSelectionContentProps) {
   const router = useRouter();
+  const { isAuthenticated } = useAuth();
   const eventId = event._id;
   const currency = event.currency || 'USD';
 
@@ -58,6 +60,9 @@ export function TicketSelectionContent({
 
   // Setup signed guest session token — extracted for retry support
   const initGuestSession = useCallback(() => {
+    // Authenticated users don't need guest session tokens
+    if (isAuthenticated) return;
+
     setSessionError(false);
     setError('');
 
@@ -69,7 +74,7 @@ export function TicketSelectionContent({
         setSessionError(true);
         setError('Secure session initialization failed. Please refresh and try again.');
       });
-  }, []);
+  }, [isAuthenticated]);
 
   useEffect(() => {
     initGuestSession();
@@ -97,7 +102,8 @@ export function TicketSelectionContent({
 
       if (setIsPendingChange) setIsPendingChange(false);
     },
-    mutationFn: (payload: ReserveTicketsInput) => publicCreateBooking(payload, sessionToken),
+    mutationFn: (payload: ReserveTicketsInput) =>
+      publicCreateBooking(payload, isAuthenticated ? undefined : sessionToken),
   });
 
   const handleQtyChange = useCallback((tier: string, change: number) => {
