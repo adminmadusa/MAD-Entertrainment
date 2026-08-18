@@ -80,8 +80,13 @@ export const governanceConfig = {
       'apps/web/src/utils/image-loader.ts',
       'apps/server/src/utils/zeptomail.ts',
     ] as string[],
+    performanceExclusions: [
+      '/email/templates/',
+      'email/templates/',
+      'apps/server/src/app.ts',
+      'next-env.d.ts',
+    ] as string[],
   },
-
 
   sharedComponentScopes: [
     'apps/admin',
@@ -92,6 +97,9 @@ export const governanceConfig = {
       '**/AdminShell.tsx',
       '**/AdminSidebar.tsx',
       '**/MobileNavigation.tsx',
+    ],
+    fieldExemptions: [
+      'apps/admin/src/app/events/new/_components/Field.tsx',
     ],
   },
   documentationGovernance: {

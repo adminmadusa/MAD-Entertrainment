@@ -32,6 +32,9 @@ export class SharedComponentValidator implements GovernanceValidator {
 
     const scopes = governanceConfig.sharedComponentScopes;
     const ignorePatterns = governanceConfig.sharedComponentEnforcement.ignoreFiles;
+    const fieldExemptions: string[] = (governanceConfig.sharedComponentEnforcement as any)?.fieldExemptions ?? [
+      'apps/admin/src/app/events/new/_components/Field.tsx',
+    ];
 
     for (const file of files) {
       // Scope validation
@@ -74,6 +77,10 @@ export class SharedComponentValidator implements GovernanceValidator {
       }
 
       const lines = content.split('\n');
+      const normalizedFile = file.replace(/\\/g, '/');
+      const isFieldExempt = fieldExemptions.some(
+        exempt => normalizedFile === exempt || normalizedFile.endsWith('/' + exempt)
+      );
 
       const reportWarning = (line: number, ruleId: string, baseMessage: string) => {
         const supp = checkSuppression(lines, line, ruleId);
@@ -122,7 +129,7 @@ export class SharedComponentValidator implements GovernanceValidator {
         // Detect local implementations of components named Field
         if (ts.isFunctionDeclaration(node) && node.name) {
           const name = node.name.text;
-          if (name === 'Field' && file !== 'apps/admin/src/app/events/new/_components/Field.tsx') {
+          if (name === 'Field' && !isFieldExempt) {
             const { line } = ts.getLineAndCharacterOfPosition(sourceFile, node.getStart());
             reportWarning(line, 'VAL-UI-006', 'Local duplication of <Field> wrapper. Use a shared components package. (Related Rule: VAL-UI-010)');
           }
@@ -130,7 +137,7 @@ export class SharedComponentValidator implements GovernanceValidator {
 
         if (ts.isVariableDeclaration(node) && node.name && ts.isIdentifier(node.name)) {
           const name = node.name.text;
-          if (name === 'Field' && file !== 'apps/admin/src/app/events/new/_components/Field.tsx') {
+          if (name === 'Field' && !isFieldExempt) {
             const { line } = ts.getLineAndCharacterOfPosition(sourceFile, node.getStart());
             reportWarning(line, 'VAL-UI-006', 'Local duplication of <Field> wrapper. Use a shared components package. (Related Rule: VAL-UI-010)');
           }
