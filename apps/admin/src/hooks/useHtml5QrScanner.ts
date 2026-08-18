@@ -19,14 +19,14 @@ function mapBrowserCameraError(err: any): { permissionState: 'prompt' | 'granted
   if (errName === 'notallowederror' || errStr.includes('permission denied') || errStr.includes('not allowed')) {
     return {
       permissionState: 'denied',
-      message: 'Camera permission denied. Please allow camera access in your browser address bar or settings.',
+      message: 'Camera permission denied. Please allow camera access in your browser settings or address bar.',
     };
   }
 
   if (errName === 'notfounderror' || errName === 'devicesnotfounderror' || errStr.includes('not found') || errStr.includes('no camera')) {
     return {
       permissionState: 'prompt',
-      message: 'No camera hardware found. Please connect a webcam or use the Manual Verify tab.',
+      message: 'No camera hardware detected. Please connect a webcam or use the Manual Verify tab.',
     };
   }
 
@@ -40,14 +40,14 @@ function mapBrowserCameraError(err: any): { permissionState: 'prompt' | 'granted
   if (errName === 'overconstrainederror' || errStr.includes('overconstrained')) {
     return {
       permissionState: 'prompt',
-      message: 'Selected camera does not support required video settings. Try selecting a different camera.',
+      message: 'Selected camera does not support required video constraints. Try selecting a different camera.',
     };
   }
 
   if (errName === 'securityerror' || errStr.includes('secure context') || errStr.includes('https')) {
     return {
       permissionState: 'prompt',
-      message: 'Camera access requires a secure HTTPS connection.',
+      message: 'Camera access requires a secure HTTPS or localhost connection.',
     };
   }
 
@@ -64,16 +64,34 @@ function mapBrowserCameraError(err: any): { permissionState: 'prompt' | 'granted
   };
 }
 
-const safeStopScanner = async (scanner: any) => {
-  if (!scanner) return;
-  try {
-    const isScanning =
-      typeof scanner.getState === 'function' ? scanner.getState() === 2 : Boolean(scanner.isScanning);
-    if (isScanning) {
-      await scanner.stop();
+const safeStopScanner = async (scanner: any, containerId: string = 'scanner-preview-container') => {
+  if (scanner) {
+    try {
+      const isScanning =
+        typeof scanner.getState === 'function' ? scanner.getState() === 2 : Boolean(scanner.isScanning);
+      if (isScanning) {
+        await scanner.stop();
+      }
+    } catch {
+      // Absorb transition errors
     }
-  } catch {
-    // Redundant or transition stop error safely absorbed
+  }
+
+  // Force stop and release all MediaStream tracks from any video element in the container
+  if (typeof document !== 'undefined') {
+    const container = document.getElementById(containerId);
+    if (container) {
+      const videoElements = container.querySelectorAll('video');
+      videoElements.forEach((video) => {
+        if (video.srcObject) {
+          const stream = video.srcObject as MediaStream;
+          stream.getTracks().forEach((track) => {
+            track.stop();
+          });
+          video.srcObject = null;
+        }
+      });
+    }
   }
 };
 
@@ -169,11 +187,20 @@ export function useHtml5QrScanner({ onScanSuccess, onScanFailure }: UseHtml5QrSc
         }
       }
 
+      // Check if container element exists and is measurable
+      if (typeof document !== 'undefined') {
+        const container = document.getElementById(containerId);
+        if (!container || container.offsetWidth === 0 || container.offsetHeight === 0) {
+          setIsInitializing(false);
+          return;
+        }
+      }
+
       try {
         const { Html5Qrcode } = await import('html5-qrcode');
 
         if (scannerRef.current) {
-          await safeStopScanner(scannerRef.current);
+          await safeStopScanner(scannerRef.current, containerId);
         }
 
         const html5QrCode = new Html5Qrcode(containerId);
@@ -186,8 +213,10 @@ export function useHtml5QrScanner({ onScanSuccess, onScanFailure }: UseHtml5QrSc
           cameraOption,
           {
             fps: 10,
-            qrbox: (width, height) => {
-              const size = Math.min(width, height) * 0.7;
+            qrbox: (viewfinderWidth, viewfinderHeight) => {
+              // Ensure qrbox dimension is never less than 50px (required by html5-qrcode)
+              const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
+              const size = Math.max(50, Math.floor((minEdge || 250) * 0.7));
               return { width: size, height: size };
             },
             aspectRatio: 1.0,
@@ -225,12 +254,12 @@ export function useHtml5QrScanner({ onScanSuccess, onScanFailure }: UseHtml5QrSc
     [isInitializing, selectedDeviceId, onScanSuccess, onScanFailure, refreshDevices]
   );
 
-  // 5. Stop Scanner
+  // 5. Stop Scanner & Release Media Tracks
   const stopScanner = useCallback(async () => {
     if (isStoppingRef.current) return;
     isStoppingRef.current = true;
     try {
-      await safeStopScanner(scannerRef.current);
+      await safeStopScanner(scannerRef.current, containerId);
     } finally {
       scannerRef.current = null;
       setIsScanning(false);
@@ -270,12 +299,12 @@ export function useHtml5QrScanner({ onScanSuccess, onScanFailure }: UseHtml5QrSc
     }
   }, [isTorchOn, hasTorch]);
 
-  // 8. Auto-cleanup on unmount
+  // 8. Auto-cleanup on unmount: kill all tracks immediately
   useEffect(() => {
     return () => {
       const currentScanner = scannerRef.current;
       scannerRef.current = null;
-      safeStopScanner(currentScanner);
+      safeStopScanner(currentScanner, containerId);
     };
   }, []);
 

@@ -52,13 +52,13 @@ export function ScannerCamera({ isOffline, onScan, scannerState, isPaused }: Sca
     containerId,
   } = useHtml5QrScanner({ onScanSuccess: handleScanSuccess });
 
-  // Initial camera activation on mount
+  // Pause/stop camera whenever component is paused (e.g. modal open, tab changed)
   useEffect(() => {
-    if (!isScanning && !isInitializing && permissionState !== 'denied' && !isUserPaused) {
-      startScanner();
+    isPausedRef.current = isPaused;
+    if (isPaused && isScanning) {
+      stopScanner();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [isPaused, isScanning, stopScanner]);
 
   const handlePauseCamera = async () => {
     setIsUserPaused(true);
@@ -204,19 +204,24 @@ export function ScannerCamera({ isOffline, onScan, scannerState, isPaused }: Sca
                     <circle cx="12" cy="13" r="4" />
                   </svg>
                 </div>
-                <div className="flex flex-col items-center">
+                <div className="flex flex-col items-center space-y-1.5">
                   <p className="text-sm font-bold text-white tracking-wide">
-                    {isUserPaused ? 'Scanner Camera Paused' : 'Scanner Camera Inactive'}
+                    {isUserPaused ? 'Scanner Camera Paused' : 'Scanner Camera Ready'}
+                  </p>
+                  <p className="text-xs text-text-muted max-w-[260px]">
+                    {isUserPaused
+                      ? 'Camera stream paused. Click below to resume scanning.'
+                      : 'Click below to activate camera and start scanning tickets.'}
                   </p>
                   <button
                     onClick={handleResumeCamera}
                     type="button"
-                    className="mt-4 px-6 py-3.5 min-h-[44px] bg-accent-purple hover:bg-accent-purple-light text-white text-xs font-bold rounded-xl shadow-glow-sm transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center gap-2 focus-ring"
+                    className="mt-3 px-6 py-3.5 min-h-[48px] bg-accent-purple hover:bg-accent-purple-light text-white text-xs font-bold rounded-xl shadow-glow-sm transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center gap-2 focus-ring"
                   >
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                       <polygon points="5 3 19 12 5 21 5 3" />
                     </svg>
-                    {isUserPaused ? 'Resume Camera' : 'Start Camera Scan'}
+                    <span>{isUserPaused ? 'Resume Camera Scan' : 'Start Camera Scan'}</span>
                   </button>
                 </div>
               </>
