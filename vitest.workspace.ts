@@ -44,6 +44,7 @@ export default [
     }
   },
   {
+    extends: 'apps/web/vitest.config.ts',
     resolve: {
       alias: {
         '@': resolve(__dirname, './apps/admin/src'),
@@ -66,6 +67,9 @@ export default [
         '**/dist/**',
         '**/e2e/**',
         '**/.next/**'
+      ],
+      setupFiles: [
+        'apps/web/vitest.setup.ts'
       ]
     }
   },
