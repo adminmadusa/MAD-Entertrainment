@@ -187,7 +187,7 @@ export default function EventDetailClient({ slug, initialEvent }: EventDetailCli
 
   return (
     <div className="min-h-screen bg-background text-white relative pb-16">
-      <div className="container-mad max-w-6xl px-4 sm:px-6 lg:px-8 pt-6 md:pt-10">
+      <div className="container-mad max-w-6xl px-4 sm:px-6 lg:px-8 pt-24 md:pt-28">
 
         {/* ── CONTAINED 16:9 / CINEMATIC BANNER CARD ── */}
         <div className="relative w-full aspect-[16/9] sm:aspect-[2.2/1] max-h-[420px] rounded-3xl overflow-hidden border border-white/10 shadow-2xl bg-surface-elevated">
