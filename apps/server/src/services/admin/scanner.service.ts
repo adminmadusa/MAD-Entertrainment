@@ -129,7 +129,7 @@ export async function validateAndCheckInTicket(payload: ScanRequestPayload): Pro
     tierName: updatedTicket.tierName,
     admits: updatedTicket.admits || 1,
     scannedAt: updatedTicket.scannedAt?.toISOString(),
-    attendeeEmail: updatedTicket.attendeeEmail,
+    attendeeEmail: updatedTicket.attendeeEmail || (booking as any).attendeeEmail || (booking as any).customerEmail,
     guestName: booking.guestName,
     message: 'Ticket scanned and verified successfully.',
   };

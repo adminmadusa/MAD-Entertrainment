@@ -11,7 +11,7 @@ describe('normalizeTicketReference', () => {
 
   it('normalizes raw ticket IDs and trims whitespace', () => {
     expect(normalizeTicketReference('TKT-001')).toBe('TKT-001');
-    expect(normalizeTicketReference('  TKT-MAD-2026-X7Y8Z-001 \n ')).toBe('TKT-MAD-2026-X7Y8Z-001');
+    expect(normalizeTicketReference('  TKT-MAD-2026-X7Y8Z-001 \n\t ')).toBe('TKT-MAD-2026-X7Y8Z-001');
     expect(normalizeTicketReference('MAD-2026-ABCDE')).toBe('MAD-2026-ABCDE');
   });
 
@@ -24,10 +24,12 @@ describe('normalizeTicketReference', () => {
   it('normalizes relative ticket URLs', () => {
     expect(normalizeTicketReference('/tickets/TKT-001')).toBe('TKT-001');
     expect(normalizeTicketReference('/api/public/tickets/TKT-001/qr')).toBe('TKT-001');
+    expect(normalizeTicketReference('///tickets/TKT-001')).toBe('TKT-001');
   });
 
   it('handles query parameters and hash fragments', () => {
     expect(normalizeTicketReference('https://madentertainments.net/tickets/TKT-001?source=email&ref=share')).toBe('TKT-001');
     expect(normalizeTicketReference('/tickets/TKT-001#preview')).toBe('TKT-001');
+    expect(normalizeTicketReference('/tickets/TKT-001?foo=bar#section')).toBe('TKT-001');
   });
 });
