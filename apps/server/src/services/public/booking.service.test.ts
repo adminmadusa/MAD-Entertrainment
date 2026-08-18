@@ -59,8 +59,13 @@ vi.mock('../../models/booking.schema', () => {
     this.save = mockBookingSave;
     this.tickets = data?.tickets || [];
     this.totalTickets = data?.totalTickets || 0;
-    this.totalAmount = data?.totalAmount || 0;
+    this.subtotal = data?.subtotal ?? 0;
+    this.discount = data?.discount ?? 0;
+    this.convenienceFee = data?.convenienceFee ?? 0;
+    this.gst = data?.gst ?? 0;
+    this.totalAmount = data?.totalAmount ?? 0;
     this.bookingVersion = 0;
+    Object.assign(this, data);
     return this;
   });
   (mockBooking as any).findOne = vi.fn();
@@ -136,6 +141,7 @@ vi.mock('../../utils/logger', () => ({
 
 import { emitToEvent, emitToAdmin } from '../../config/socket';
 import { Booking } from '../../models/booking.schema';
+import { Coupon } from '../../models/coupon.schema';
 import { Event } from '../../models/event.schema';
 import { SeatLayout } from '../../models/seat-layout.schema';
 import { Ticket } from '../../models/ticket.schema';
@@ -1034,6 +1040,244 @@ describe('PublicBookingService.getMyBookings — ownership and reconciliation ma
         }),
         expect.any(Object)
       );
+    });
+  });
+
+  describe('PublicBookingService.createBooking — promo code calculation & tax base integrity', () => {
+    const baseEvent = {
+      _id: new Types.ObjectId('60c72b2f9b1d8e25b8d29b02'),
+      status: 'published',
+      isDeleted: false,
+      isSoldOut: false,
+      bookingMode: 'general_admission',
+      title: 'Discounted Festival',
+      category: 'music',
+      countryCode: 'US',
+      currency: 'USD',
+      convenienceFee: 5,
+      taxPercentage: 10,
+      startDate: new Date(Date.now() + 86400000),
+      endDate: new Date(Date.now() + 172800000),
+      ticketTiers: [
+        {
+          tier: 'GA_TIER',
+          name: 'General Admission',
+          isActive: true,
+          price: 100,
+          soldCount: 0,
+          totalCapacity: 100,
+          taxPercent: 10,
+        },
+      ],
+    };
+
+    beforeEach(() => {
+      vi.clearAllMocks();
+      vi.mocked(Booking.findOne).mockResolvedValue(null);
+      vi.mocked(ReservationService.reserveForBooking).mockResolvedValue({
+        reservations: [{ reservationId: 'RES-01', tier: 'GA_TIER', quantity: 1, status: 'reserved' }],
+        postCommit: vi.fn().mockResolvedValue(undefined),
+      } as any);
+    });
+
+    it('Percentage Coupon: calculates tax strictly on discounted net subtotal', async () => {
+      vi.mocked(Event.findById).mockResolvedValue(baseEvent as any);
+
+      // 50% discount on $100 ticket -> subtotal $100, discount $50, netTicketSubtotal $50
+      // netTicketGst = 10% of $50 = $5
+      // convenienceFee = $5 (1 ticket), feeGst = 10% of $5 = $1 (round(0.5) = 1)
+      // totalAmount = 50 + 5 + (5 + 1) = $61
+      const mockCoupon = {
+        _id: new Types.ObjectId('60c72b2f9b1d8e25b8d29b88'),
+        code: 'HALF50',
+        discountType: 'percentage',
+        discountValue: 50,
+        validFrom: new Date(Date.now() - 86400000),
+        validUntil: new Date(Date.now() + 86400000),
+        usageLimit: 100,
+        usedCount: 5,
+        isActive: true,
+      };
+      vi.mocked(Coupon.findOne).mockResolvedValue(mockCoupon as any);
+
+      const booking = await PublicBookingService.createBooking(
+        {
+          eventId: baseEvent._id.toString(),
+          tickets: [{ tier: 'GA_TIER', quantity: 1 }],
+          couponCode: 'HALF50',
+        },
+        'session-user-1'
+      );
+
+      expect(booking.subtotal).toBe(100);
+      expect(booking.discount).toBe(50);
+      expect(booking.convenienceFee).toBe(5);
+      expect(booking.gst).toBe(6); // $5 net ticket tax + $1 fee tax
+      expect(booking.totalAmount).toBe(61);
+    });
+
+    it('Fixed Coupon: calculates discount and net tax accurately', async () => {
+      vi.mocked(Event.findById).mockResolvedValue(baseEvent as any);
+
+      // $20 fixed discount on $100 ticket -> subtotal $100, discount $20, netTicketSubtotal $80
+      // netTicketGst = 10% of $80 = $8
+      // fee = $5, feeGst = $1, total gst = $9
+      // totalAmount = 80 + 5 + 9 = $94
+      const mockCoupon = {
+        _id: new Types.ObjectId('60c72b2f9b1d8e25b8d29b89'),
+        code: 'FLAT20',
+        discountType: 'fixed',
+        discountValue: 20,
+        validFrom: new Date(Date.now() - 86400000),
+        validUntil: new Date(Date.now() + 86400000),
+        usageLimit: 50,
+        usedCount: 0,
+        isActive: true,
+      };
+      vi.mocked(Coupon.findOne).mockResolvedValue(mockCoupon as any);
+
+      const booking = await PublicBookingService.createBooking(
+        {
+          eventId: baseEvent._id.toString(),
+          tickets: [{ tier: 'GA_TIER', quantity: 1 }],
+          couponCode: 'FLAT20',
+        },
+        'session-user-2'
+      );
+
+      expect(booking.subtotal).toBe(100);
+      expect(booking.discount).toBe(20);
+      expect(booking.convenienceFee).toBe(5);
+      expect(booking.gst).toBe(9);
+      expect(booking.totalAmount).toBe(94);
+    });
+
+    it('Max Discount: caps percentage discount to maxDiscount', async () => {
+      vi.mocked(Event.findById).mockResolvedValue(baseEvent as any);
+
+      // 50% discount on $200 (2 tickets), but maxDiscount is $30
+      // discount = $30, netTicketSubtotal = $170
+      // netTicketGst = 10% of $170 = $17
+      // fee = $10 (2 * $5), feeGst = 10% of $10 = $1, total gst = $18
+      // totalAmount = 170 + 10 + 18 = $198
+      const mockCoupon = {
+        _id: new Types.ObjectId('60c72b2f9b1d8e25b8d29b90'),
+        code: 'CAP30',
+        discountType: 'percentage',
+        discountValue: 50,
+        maxDiscount: 30,
+        validFrom: new Date(Date.now() - 86400000),
+        validUntil: new Date(Date.now() + 86400000),
+        usageLimit: 10,
+        usedCount: 0,
+        isActive: true,
+      };
+      vi.mocked(Coupon.findOne).mockResolvedValue(mockCoupon as any);
+
+      const booking = await PublicBookingService.createBooking(
+        {
+          eventId: baseEvent._id.toString(),
+          tickets: [{ tier: 'GA_TIER', quantity: 2 }],
+          couponCode: 'CAP30',
+        },
+        'session-user-3'
+      );
+
+      expect(booking.subtotal).toBe(200);
+      expect(booking.discount).toBe(30);
+      expect(booking.totalAmount).toBe(198);
+    });
+
+    it('100% Free Booking: correctly reduces ticket subtotal and tax to 0', async () => {
+      const freeFeeEvent = {
+        ...baseEvent,
+        convenienceFee: 0,
+      };
+      vi.mocked(Event.findById).mockResolvedValue(freeFeeEvent as any);
+
+      const mockCoupon = {
+        _id: new Types.ObjectId('60c72b2f9b1d8e25b8d29b91'),
+        code: 'ALLFREE',
+        discountType: 'percentage',
+        discountValue: 100,
+        validFrom: new Date(Date.now() - 86400000),
+        validUntil: new Date(Date.now() + 86400000),
+        usageLimit: 10,
+        usedCount: 0,
+        isActive: true,
+      };
+      vi.mocked(Coupon.findOne).mockResolvedValue(mockCoupon as any);
+
+      const booking = await PublicBookingService.createBooking(
+        {
+          eventId: baseEvent._id.toString(),
+          tickets: [{ tier: 'GA_TIER', quantity: 1 }],
+          couponCode: 'ALLFREE',
+        },
+        'session-user-4'
+      );
+
+      expect(booking.subtotal).toBe(100);
+      expect(booking.discount).toBe(100);
+      expect(booking.gst).toBe(0);
+      expect(booking.totalAmount).toBe(0);
+    });
+
+    it('Rejects coupon if usageLimit has been reached', async () => {
+      vi.mocked(Event.findById).mockResolvedValue(baseEvent as any);
+
+      const mockCoupon = {
+        _id: new Types.ObjectId('60c72b2f9b1d8e25b8d29b92'),
+        code: 'EXHAUSTED',
+        discountType: 'fixed',
+        discountValue: 10,
+        validFrom: new Date(Date.now() - 86400000),
+        validUntil: new Date(Date.now() + 86400000),
+        usageLimit: 5,
+        usedCount: 5,
+        isActive: true,
+      };
+      vi.mocked(Coupon.findOne).mockResolvedValue(mockCoupon as any);
+
+      await expect(
+        PublicBookingService.createBooking(
+          {
+            eventId: baseEvent._id.toString(),
+            tickets: [{ tier: 'GA_TIER', quantity: 1 }],
+            couponCode: 'EXHAUSTED',
+          },
+          'session-user-5'
+        )
+      ).rejects.toThrow('Coupon usage limit reached');
+    });
+
+    it('Rejects coupon if minOrderAmount is not satisfied', async () => {
+      vi.mocked(Event.findById).mockResolvedValue(baseEvent as any);
+
+      const mockCoupon = {
+        _id: new Types.ObjectId('60c72b2f9b1d8e25b8d29b93'),
+        code: 'BIGSPENDER',
+        discountType: 'fixed',
+        discountValue: 50,
+        minOrderAmount: 300,
+        validFrom: new Date(Date.now() - 86400000),
+        validUntil: new Date(Date.now() + 86400000),
+        usageLimit: 10,
+        usedCount: 0,
+        isActive: true,
+      };
+      vi.mocked(Coupon.findOne).mockResolvedValue(mockCoupon as any);
+
+      await expect(
+        PublicBookingService.createBooking(
+          {
+            eventId: baseEvent._id.toString(),
+            tickets: [{ tier: 'GA_TIER', quantity: 1 }], // subtotal = 100 < 300
+            couponCode: 'BIGSPENDER',
+          },
+          'session-user-6'
+        )
+      ).rejects.toThrow('Minimum subtotal order amount of $300 is required');
     });
   });
 });

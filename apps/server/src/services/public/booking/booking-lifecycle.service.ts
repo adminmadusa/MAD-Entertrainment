@@ -208,8 +208,8 @@ export class BookingLifecycleService {
       }
       await booking.save({ session });
 
-      // Decrement Coupon usedCount (F1)
-      if (booking.couponId) {
+      // Decrement Coupon usedCount only if the booking was confirmed/redeemed
+      if (booking.couponId && (previousStatus === BookingStatus.CONFIRMED || booking.confirmedAt)) {
         try {
           await Coupon.updateOne(
             { _id: booking.couponId, usedCount: { $gt: 0 } },
@@ -431,21 +431,7 @@ export class BookingLifecycleService {
       }
       await booking.save({ session });
 
-      // Decrement Coupon usedCount (F1)
-      if (booking.couponId) {
-        try {
-          await Coupon.updateOne(
-            { _id: booking.couponId, usedCount: { $gt: 0 } },
-            { $inc: { usedCount: -1 } },
-            { session }
-          );
-        } catch (err) {
-          logger.warn(
-            { err, bookingId: booking._id, couponId: booking.couponId },
-            'expireBooking: Failed to decrement coupon usedCount (possibly coupon was deleted)'
-          );
-        }
-      }
+      // Note: Coupon usedCount is NOT decremented here because pending/unconfirmed bookings never increment usedCount.
 
       // 2. Transition corresponding reservations to EXPIRED
       const transitioned = await ReservationService.transitionForBooking(

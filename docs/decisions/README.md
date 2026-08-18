@@ -45,9 +45,12 @@ The following graph illustrates how architectural decisions feed into our Single
 ```mermaid
 graph TD
     Decisions["Architecture Decisions"] --> ADR001["ADR-001 Booking Ownership"]
+    Decisions --> ADR017["ADR-017 Coupon Pricing & Redemption"]
     ADR001 --> ARCH["ARCHITECTURE.md"]
     ADR001 --> API["API_CONTRACTS.md"]
     ADR001 --> DEPL["DEPLOYMENT_MAP.md"]
+    ADR017 --> ARCH
+    ADR017 --> API
     ARCH --> RUN["RUNBOOK.md"]
     API --> RUN
     DEPL --> RUN
