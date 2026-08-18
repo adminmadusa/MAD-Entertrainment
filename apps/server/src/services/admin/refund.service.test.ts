@@ -58,6 +58,12 @@ vi.mock('./booking.service', () => ({
   executeCancelBookingSideEffects: vi.fn(),
 }));
 
+vi.mock('../public/booking/booking-lifecycle.service', () => ({
+  BookingLifecycleService: {
+    cancelSpecificTickets: vi.fn().mockResolvedValue({ success: true, voidedCount: 1, postCommitPayload: null }),
+  },
+}));
+
 vi.mock('../../utils/transaction', () => ({
   runInTransaction: vi.fn(async (fn) => fn('mock-session')),
 }));
@@ -262,6 +268,26 @@ describe('Admin Refund Service Tests', () => {
       expect(result.status).toBe('requested');
       expect(result.bookingId).toBe('b-123');
     });
+
+    it('should support creating ticket-level refund request with ticketIds and cancelTickets flag', async () => {
+      const mockPayment = { _id: 'p-123', bookingId: 'b-123', status: PaymentStatus.PAID, amount: 500 };
+      const mockBooking = { _id: 'b-123', status: BookingStatus.CONFIRMED };
+      vi.mocked(Payment.findById).mockImplementation(() => createMockQuery(mockPayment));
+      vi.mocked(Booking.findById).mockImplementation(() => createMockQuery(mockBooking));
+      vi.mocked(Refund.find).mockImplementation(() => createMockQuery([]));
+
+      const result = await createRefund({
+        bookingId: 'b-123',
+        paymentId: 'p-123',
+        amount: 250,
+        reason: 'Selected ticket cancellation',
+        cancelTickets: true,
+        ticketIds: ['507f1f77bcf86cd799439011'],
+      });
+      expect(result.amount).toBe(250);
+      expect(result.cancelTickets).toBe(true);
+      expect(result.ticketIds).toEqual(['507f1f77bcf86cd799439011']);
+    });
   });
 
   describe('processRefund', () => {
@@ -335,6 +361,46 @@ describe('Admin Refund Service Tests', () => {
 
       expect(result?.status).toBe('completed');
       expect(mockRefundSave).toHaveBeenCalled();
+      expect(cancelBooking).not.toHaveBeenCalled();
+      expect(Payment.findByIdAndUpdate).toHaveBeenCalledWith(
+        'payment-789',
+        { status: PaymentStatus.PARTIALLY_REFUNDED },
+        { session: 'mock-session' }
+      );
+    });
+
+    it('should successfully approve a ticket-level partial refund and void only specified tickets', async () => {
+      const mockRefundSave = vi.fn();
+      const mockRefund = {
+        _id: 'refund-ticket-partial',
+        bookingId: 'booking-456',
+        paymentId: 'payment-789',
+        amount: 200,
+        status: 'requested',
+        cancelTickets: true,
+        ticketIds: ['507f1f77bcf86cd799439011'],
+        save: mockRefundSave,
+      };
+
+      const mockPayment = { _id: 'payment-789', amount: 500, status: PaymentStatus.PAID };
+      const mockBooking = { _id: 'booking-456', status: BookingStatus.CONFIRMED };
+
+      vi.mocked(Refund.findOneAndUpdate).mockReturnValue(createMockQuery(mockRefund));
+      vi.mocked(Payment.findById).mockReturnValue({ session: vi.fn().mockResolvedValue(mockPayment) } as any);
+      const mockBookingFindChain = {
+        session: vi.fn().mockReturnThis(),
+        populate: vi.fn().mockResolvedValue(mockBooking),
+        then: vi.fn().mockImplementation((resolve) => resolve(mockBooking)),
+      };
+      vi.mocked(Booking.findById).mockReturnValue(mockBookingFindChain as any);
+      vi.mocked(Refund.find).mockReturnValue(createMockQuery([]));
+      vi.mocked(Payment.findByIdAndUpdate).mockResolvedValue({} as any);
+
+      const result = await processRefund('refund-ticket-partial', 'approve', 'Ticket partial refund notes', 'gateway-ref-123');
+
+      expect(result?.status).toBe('completed');
+      expect(mockRefundSave).toHaveBeenCalled();
+      // Whole booking is NOT cancelled, payment is PARTIALLY_REFUNDED
       expect(cancelBooking).not.toHaveBeenCalled();
       expect(Payment.findByIdAndUpdate).toHaveBeenCalledWith(
         'payment-789',
