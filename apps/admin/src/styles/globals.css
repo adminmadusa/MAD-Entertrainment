@@ -170,6 +170,16 @@
   100% { transform: translateX(-50%); }
 }
 
+@keyframes scanner-sweep {
+  0% { transform: translateY(0); opacity: 0.7; }
+  50% { transform: translateY(240px); opacity: 1; }
+  100% { transform: translateY(0); opacity: 0.7; }
+}
+
+.scanner-line {
+  animation: scanner-sweep 2.5s ease-in-out infinite;
+}
+
 /* ─── Page Transitions (admin-only) ─────────────────────────── */
 .page-enter {
   opacity: 0;

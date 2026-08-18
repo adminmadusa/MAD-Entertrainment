@@ -179,13 +179,6 @@ export const processRefundSchema = z.object({
 });
 
 // -- Scanner Validation --
-const scannerReferenceSchema = z
-  .string()
-  .trim()
-  .min(1, 'Reference is required')
-  .max(100, 'Reference is too long')
-  .regex(/^[A-Za-z0-9][A-Za-z0-9_-]*$/, 'Invalid scanner reference format');
-
 export const scannerScanSchema = z.object({
   body: z.object({
     ticketId: z.string().trim().min(1, 'Ticket ID is required').max(100),
@@ -193,15 +186,6 @@ export const scannerScanSchema = z.object({
     requestId: z.string().optional(),
     source: z.enum(['camera', 'manual', 'hardware']).optional(),
     offline: z.boolean().optional(),
-  }).strict(),
-});
-
-export const scannerLookupSchema = z.object({
-  params: z.object({
-    reference: scannerReferenceSchema,
-  }).strict(),
-  query: z.object({
-    eventId: objectIdSchema,
   }).strict(),
 });
 
