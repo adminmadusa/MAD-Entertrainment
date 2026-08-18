@@ -77,6 +77,7 @@ export const scanTicket = async (req: Request, res: Response, next: NextFunction
         success: false,
         message: result.message || 'Ticket already used.',
         details: {
+          ticketId: result.ticketId,
           scannedAt: result.scannedAt,
         },
       });
@@ -90,6 +91,8 @@ export const scanTicket = async (req: Request, res: Response, next: NextFunction
         tierName: result.tierName,
         admits: result.admits,
         scannedAt: result.scannedAt,
+        guestName: result.guestName,
+        attendeeEmail: result.attendeeEmail,
       },
     });
   } catch (error: any) {

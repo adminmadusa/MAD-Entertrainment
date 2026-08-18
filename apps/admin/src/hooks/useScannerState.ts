@@ -11,7 +11,7 @@ import {
   ValidationResult,
   ScanResponse,
 } from '../lib/api/admin/scanner.service';
-import { extractApiError } from '../lib/api/client';
+import { extractApiError, normalizeTicketReference } from '@mad/utils';
 import { playSuccess, playFailure } from '../lib/audio/gate-audio';
 
 export type ScannerModeState =
@@ -149,6 +149,8 @@ export function useScannerState({ initialEventId = '' }: UseScannerStateProps = 
         tierName: data.tierName,
         admits: data.admits,
         scannedAt: data.scannedAt,
+        guestName: data.guestName,
+        attendeeEmail: data.attendeeEmail,
         message: 'Ticket scanned and verified successfully.',
       });
       playSuccess();
@@ -156,17 +158,19 @@ export function useScannerState({ initialEventId = '' }: UseScannerStateProps = 
       queryClient.invalidateQueries({ queryKey: ['scanner-stats', selectedEventId] });
       queryClient.invalidateQueries({ queryKey: ['scanner-history', selectedEventId] });
     },
-    onError: (err: any) => {
+    onError: (err: any, variables) => {
       const apiErr = extractApiError(err);
       const isDuplicate = apiErr.message?.includes('already used') || apiErr.message?.includes('Already checked');
       playFailure();
+
+      const failedTicketId = (apiErr.details as any)?.ticketId || variables?.ticketId || '';
 
       if (isDuplicate) {
         const details = apiErr.details as any;
         setScannerState('Duplicate');
         setLastValidationResult({
           status: 'ALREADY_SCANNED',
-          ticketId: details?.ticketId || '',
+          ticketId: failedTicketId,
           scannedAt: details?.scannedAt,
           message: apiErr.message,
         });
@@ -174,7 +178,7 @@ export function useScannerState({ initialEventId = '' }: UseScannerStateProps = 
         setScannerState('Invalid');
         setLastValidationResult({
           status: 'INVALID',
-          ticketId: '',
+          ticketId: failedTicketId,
           message: apiErr.message || 'Ticket validation failed.',
         });
       }
@@ -183,8 +187,9 @@ export function useScannerState({ initialEventId = '' }: UseScannerStateProps = 
 
   // 7. Submit Ticket Scan coordinator (Online & Offline abstraction)
   const submitScan = useCallback(
-    async (ticketId: string) => {
-      if (!selectedEventId || !ticketId.trim()) return;
+    async (rawTicketId: string) => {
+      const ticketId = normalizeTicketReference(rawTicketId);
+      if (!selectedEventId || !ticketId) return;
       if (scannerState === 'Processing') return;
 
       setScannerState('Processing');

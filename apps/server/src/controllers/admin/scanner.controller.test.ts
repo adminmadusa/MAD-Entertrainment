@@ -333,6 +333,7 @@ describe('scanTicket', () => {
     vi.mocked(Booking.findById).mockResolvedValue({
       _id: mockBookingId,
       status: 'confirmed',
+      guestName: 'Alice Smith',
     } as any);
 
     const scannedDate = new Date();
@@ -370,6 +371,8 @@ describe('scanTicket', () => {
         tierName: 'VIP',
         admits: 2,
         scannedAt: scannedDate.toISOString(),
+        guestName: 'Alice Smith',
+        attendeeEmail: undefined,
       },
     });
   });
@@ -387,6 +390,7 @@ describe('scanTicket', () => {
     vi.mocked(Booking.findById).mockResolvedValue({
       _id: mockBookingId,
       status: 'confirmed',
+      guestName: 'Alice Smith',
     } as any);
 
     vi.mocked(Ticket.findOneAndUpdate).mockResolvedValue(null);
@@ -411,7 +415,10 @@ describe('scanTicket', () => {
       expect.objectContaining({
         success: false,
         message: expect.stringContaining('already used'),
-        details: { scannedAt: scannedDate.toISOString() },
+        details: expect.objectContaining({
+          ticketId: mockTicketId,
+          scannedAt: scannedDate.toISOString(),
+        }),
       })
     );
   });

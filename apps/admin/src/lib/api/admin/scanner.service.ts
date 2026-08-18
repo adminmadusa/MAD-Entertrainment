@@ -5,6 +5,8 @@ export interface ScanResponse {
   tierName: string;
   admits: number;
   scannedAt: string;
+  guestName?: string;
+  attendeeEmail?: string;
 }
 
 export type ValidationStatus = 'SUCCESS' | 'ALREADY_SCANNED' | 'INVALID' | 'EXPIRED' | 'WRONG_EVENT' | 'OFFLINE_QUEUED' | 'ERROR';
