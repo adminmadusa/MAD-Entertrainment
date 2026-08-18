@@ -31,6 +31,8 @@
     "test:ui-governance": "playwright test --config=playwright.config.ts"
   },
   "devDependencies": {
+    "@commitlint/cli": "^19.0.0",
+    "@commitlint/config-conventional": "^19.0.0",
     "@playwright/test": "^1.60.0",
     "@sentry/nextjs": "^10.53.1",
     "@sentry/node": "^10.53.1",

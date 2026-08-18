@@ -180,6 +180,7 @@ function runAudit() {
       'vercel.json',
       '.audit-exceptions.json',
       'turbo.json',
+      '.commitlintrc.json',
     ]);
     for (const file of files) {
       if (file.endsWith('.json')) {
