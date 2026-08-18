@@ -1,6 +1,6 @@
 import * as Sentry from '@sentry/node';
 
-import { BookingStatus, PaymentStatus } from '@mad/shared';
+import { BookingStatus, PaymentStatus, calculateRemainingBalance, toMinorUnits } from '@mad/shared';
 
 import { getEnv } from '../../../config/env';
 import { AppError } from '../../../middleware/error.middleware';
@@ -170,7 +170,7 @@ export class RefundValidationService {
     }
 
     // 5. Individual Amount Cap Check
-    if (amount > payment.amount) {
+    if (toMinorUnits(amount) > toMinorUnits(payment.amount)) {
       throw AppError.badRequest('Refund amount cannot exceed original payment amount');
     }
 
@@ -181,8 +181,8 @@ export class RefundValidationService {
       }
 
       // 7. Cumulative Refund Check
-      if (existingSum + amount > payment.amount) {
-        const remaining = payment.amount - existingSum;
+      if (toMinorUnits(existingSum) + toMinorUnits(amount) > toMinorUnits(payment.amount)) {
+        const remaining = calculateRemainingBalance(payment.amount, existingSum);
         throw AppError.badRequest(`Cumulative refund amount exceeds original payment amount (Paid: ${payment.amount} ${payment.currency || 'USD'}, Refunded/Processing: ${existingSum}, Max Remaining: ${remaining})`);
       }
     }
@@ -277,7 +277,7 @@ export class RefundValidationService {
     }
 
     // 4. Cumulative balance cap check
-    if (totalRefundedSoFar + refund.amount > payment.amount) {
+    if (toMinorUnits(totalRefundedSoFar) + toMinorUnits(refund.amount) > toMinorUnits(payment.amount)) {
       throw AppError.badRequest(`Refund amount exceeds remaining captured balance (Paid: ${payment.amount} ${payment.currency || 'USD'}, Refunded/Processing: ${totalRefundedSoFar}, Attempted: ${refund.amount})`);
     }
   }

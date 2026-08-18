@@ -1046,6 +1046,38 @@ describe('Admin Refund Service Tests', () => {
       ).rejects.toThrow('Refund amount exceeds remaining captured balance');
     });
 
+    it('should eliminate IEEE-754 precision issues and classify decimal sum as PaymentStatus.REFUNDED', async () => {
+      // Payment is ₹300.30. Refund 1 is ₹100.10. Refund 2 is ₹200.20. (0.1 + 0.2 === 0.30000000000000004)
+      const mockRefund1 = { _id: 'ref-dec-1', bookingId: 'booking-dec', paymentId: 'payment-dec', amount: 100.1, status: 'requested', save: vi.fn() };
+      const mockRefund2 = { _id: 'ref-dec-2', bookingId: 'booking-dec', paymentId: 'payment-dec', amount: 200.2, status: 'requested', save: vi.fn() };
+
+      const mockPayment = { _id: 'payment-dec', amount: 300.3, status: PaymentStatus.PAID };
+      const mockBooking = { _id: 'booking-dec', status: BookingStatus.CONFIRMED };
+
+      vi.mocked(Payment.findById).mockReturnValue({ session: vi.fn().mockResolvedValue(mockPayment) } as any);
+      vi.mocked(Booking.findById).mockReturnValue({ session: vi.fn().mockResolvedValue(mockBooking) } as any);
+      vi.mocked(Payment.findByIdAndUpdate).mockResolvedValue({} as any);
+
+      vi.mocked(Refund.findOneAndUpdate)
+        .mockReturnValueOnce(createMockQuery(mockRefund1))
+        .mockReturnValueOnce(createMockQuery(mockRefund2));
+
+      vi.mocked(Refund.find).mockReturnValueOnce(createMockQuery([]));
+      const res1 = await processRefund('ref-dec-1', 'approve', 'Approve 100.10');
+      expect(res1?.status).toBe('completed');
+
+      vi.mocked(Refund.find).mockReturnValueOnce(createMockQuery([res1]));
+      const res2 = await processRefund('ref-dec-2', 'approve', 'Approve 200.20');
+      expect(res2?.status).toBe('completed');
+
+      // Assert that Payment status was updated to REFUNDED (not PARTIALLY_REFUNDED) on the final cumulative decimal payment
+      expect(Payment.findByIdAndUpdate).toHaveBeenLastCalledWith(
+        'payment-dec',
+        { status: PaymentStatus.REFUNDED },
+        expect.anything()
+      );
+    });
+
     it('RFND-B-F01 - refreshes booking status inside Phase 3 transaction to prevent stale status crash', async () => {
       const mockRefund = {
         _id: 'ref-stale-test',

@@ -92,3 +92,4 @@ export * from './jwt';
 export * from './date';
 export * from './image';
 export * from './scanner';
+export * from './money';

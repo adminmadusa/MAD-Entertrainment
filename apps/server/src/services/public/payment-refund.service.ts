@@ -22,7 +22,7 @@
 import * as Sentry from '@sentry/node';
 import { ClientSession } from 'mongoose';
 
-import { BookingStatus, NotificationType, PaymentStatus, RefundStatus } from '@mad/shared';
+import { BookingStatus, NotificationType, PaymentStatus, RefundStatus, isFullRefund } from '@mad/shared';
 
 import { getEnv } from '../../config/env';
 import { getQueueName } from '../../config/queue.config';
@@ -281,7 +281,7 @@ export class PaymentRefundService {
     if (!refund) {
       const paymentObj = await Payment.findOne({ gatewayPaymentId, gateway });
       if (paymentObj) {
-        const isFullRefund = amountMajorUnits === paymentObj.amount;
+        const isFullGatewayRefund = isFullRefund(0, amountMajorUnits, paymentObj.amount);
 
         try {
           const result = await runInTransaction(async (session) => {
@@ -311,7 +311,7 @@ export class PaymentRefundService {
               reconciledAt: new Date(),
               processedAt: new Date(),
               webhookEventId,
-              cancelTickets: isFullRefund
+              cancelTickets: isFullGatewayRefund
             }], { session });
 
             const newRefundDoc = createdRefund[0];
@@ -323,7 +323,7 @@ export class PaymentRefundService {
               _id: { $ne: newRefundDoc._id }
             }).session(session);
             const totalCompletedRefunded = otherCompletedRefunds.reduce((sum, r) => sum + r.amount, 0);
-            const isReallyFullRefund = (totalCompletedRefunded + newRefundDoc.amount) === paymentObj.amount;
+            const isReallyFullRefund = isFullRefund(totalCompletedRefunded, newRefundDoc.amount, paymentObj.amount);
             const newPaymentStatus = isReallyFullRefund ? PaymentStatus.REFUNDED : PaymentStatus.PARTIALLY_REFUNDED;
 
             await Payment.findByIdAndUpdate(paymentObj._id, { status: newPaymentStatus }, { session });
@@ -492,13 +492,13 @@ export class PaymentRefundService {
             _id: { $ne: updatedRefund._id }
           }).session(session);
           const totalCompletedRefunded = otherCompletedRefunds.reduce((sum, r) => sum + r.amount, 0);
-          const isFullRefund = (totalCompletedRefunded + updatedRefund.amount) === payment.amount;
-          const newPaymentStatus = isFullRefund ? PaymentStatus.REFUNDED : PaymentStatus.PARTIALLY_REFUNDED;
+          const isFullRefundStatus = isFullRefund(totalCompletedRefunded, updatedRefund.amount, payment.amount);
+          const newPaymentStatus = isFullRefundStatus ? PaymentStatus.REFUNDED : PaymentStatus.PARTIALLY_REFUNDED;
 
           await Payment.findByIdAndUpdate(payment._id, { status: newPaymentStatus }, { session });
 
           let cancelPostCommitPayload = null;
-          if (isFullRefund) {
+          if (isFullRefundStatus) {
             if (booking.status === BookingStatus.CONFIRMED) {
               const cancelResult = await cancelBooking(booking._id.toString(), `${gateway === 'stripe' ? 'Stripe' : 'Razorpay'} Webhook Reconciled`, session, BookingStatus.REFUNDED);
               if (cancelResult && cancelResult.postCommitPayload) {
