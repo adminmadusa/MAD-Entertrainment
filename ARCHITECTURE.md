@@ -180,7 +180,7 @@ Services are deployed to separate cloud providers based on type:
 - **Reverse Proxy**: Vercel routes `/api/*` requests to the Render API url.
 
 *Evidence*:
-- Root `vercel.json` contains rewrites mapping `/api/:path*` to `https://apm.esparex.in/api/:path*`.
+- Root `vercel.json` contains rewrites mapping `/api/:path*` to `https://api.madentertainments.net/api/:path*`.
 - Root `render.yaml` defines the web service deployment for `mad-server` built from the repository root.
 
 ```mermaid

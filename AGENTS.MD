@@ -114,6 +114,12 @@ Before creating any utility, type, schema, constant, or validation, search the r
 Every UI feature must trace:
 $$\text{Page} \longrightarrow \text{API} \longrightarrow \text{Service} \longrightarrow \text{Database}$$
 
+* **Canonical Public Web URL**: `https://www.madentertainments.net`
+* **Canonical Admin Panel URL**: `https://www.admin.madentertainments.net`
+* **Canonical Production API Base URL**: `https://api.madentertainments.net/api`
+* **Local Development API Base URL**: `http://localhost:3001/api`
+* **Browser Client Routing**: Relative `/api/*` reverse-proxied via Next.js rewrites to the active API target.
+
 Before implementation, identify: Endpoint, Request Schema, Response Schema, Error Schema, Auth Rules, and Ownership. Frontend assumptions must match backend responses exactly. Shared schemas are mandatory.
 
 ---

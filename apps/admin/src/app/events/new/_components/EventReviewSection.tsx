@@ -25,7 +25,6 @@ interface EventReviewSectionProps {
   selectedProfileId: string;
   coverImage: CloudinaryImage | null;
   posterImage: CloudinaryImage | null;
-  galleryImages: CloudinaryImage[];
   onEditStep: (step: number) => void;
 }
 
@@ -49,7 +48,6 @@ export const EventReviewSection: React.FC<EventReviewSectionProps> = ({
   selectedProfileId,
   coverImage,
   posterImage,
-  galleryImages: _galleryImages,
   onEditStep,
 }) => {
   const currencySymbol = getCountryConfig(countryCode).symbol;

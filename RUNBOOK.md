@@ -48,7 +48,7 @@ Admin Browser
   └─▶ Vercel  (admin: https://madmin.esparex.in)
         └─▶ Next.js rewrites /api/* ─▶ Render API
 
-Render API    (server: https://apm.esparex.in)
+Render API    (server: https://api.madentertainments.net)
   ├─▶ MongoDB Atlas   (primary datastore)
   ├─▶ Redis           (rate-limiting, session, pub/sub)
   ├─▶ Cloudinary      (image storage)
@@ -58,13 +58,13 @@ Render API    (server: https://apm.esparex.in)
 
 **Key URLs:**
 
-| Service            | URL                               |
-| ------------------ | --------------------------------- |
-| Web (public)       | https://mad.esparex.in            |
-| Admin              | https://madmin.esparex.in         |
-| API                | https://apm.esparex.in/api        |
-| Health Check       | https://apm.esparex.in/api/health |
-| API Docs (Swagger) | https://apm.esparex.in/api/docs   |
+| Service            | URL                                           |
+| ------------------ | --------------------------------------------- |
+| Web (public)       | https://www.madentertainments.net             |
+| Admin              | https://www.admin.madentertainments.net       |
+| API                | https://api.madentertainments.net/api        |
+| Health Check       | https://api.madentertainments.net/api/health |
+| API Docs (Swagger) | https://api.madentertainments.net/api/docs   |
 
 ---
 
@@ -101,21 +101,21 @@ Complete this checklist before deploying to staging or production.
 
 | Variable                      | Required | Notes                                      |
 | ----------------------------- | -------- | ------------------------------------------ |
-| `NEXT_PUBLIC_API_URL`         | ✅       | `https://apm.esparex.in/api`               |
-| `NEXT_PUBLIC_SOCKET_URL`      | ✅       | `https://apm.esparex.in`                   |
-| `NEXT_PUBLIC_APP_URL`         | ✅       | `https://mad.esparex.in`                   |
+| `NEXT_PUBLIC_API_URL`         | ✅       | `https://api.madentertainments.net/api`   |
+| `NEXT_PUBLIC_SOCKET_URL`      | ✅       | `https://api.madentertainments.net`       |
+| `NEXT_PUBLIC_APP_URL`         | ✅       | `https://www.madentertainments.net`       |
 | `NEXT_PUBLIC_RAZORPAY_KEY_ID` | ✅       | Must match server's `RAZORPAY_KEY_ID`      |
 | `NEXT_PUBLIC_SENTRY_DSN`      | ⚠️       | Optional — enables frontend error tracking |
 
 ### Admin (Vercel)
 
-| Variable                    | Required | Notes                                   |
-| --------------------------- | -------- | --------------------------------------- |
-| `NEXT_PUBLIC_API_URL`       | ✅       | `https://apm.esparex.in/api`            |
-| `NEXT_PUBLIC_SOCKET_URL`    | ✅       | `https://apm.esparex.in`                |
-| `NEXT_PUBLIC_APP_URL`       | ✅       | `https://madmin.esparex.in`             |
-| `NEXT_PUBLIC_CACHE_VERSION` | —        | Default: `prod`                         |
-| `NEXT_PUBLIC_SENTRY_DSN`    | ⚠️       | Optional — enables admin error tracking |
+| Variable                    | Required | Notes                                      |
+| --------------------------- | -------- | ------------------------------------------ |
+| `NEXT_PUBLIC_API_URL`       | ✅       | `https://api.madentertainments.net/api`   |
+| `NEXT_PUBLIC_SOCKET_URL`    | ✅       | `https://api.madentertainments.net`       |
+| `NEXT_PUBLIC_APP_URL`       | ✅       | `https://www.admin.madentertainments.net` |
+| `NEXT_PUBLIC_CACHE_VERSION` | —        | Default: `prod`                            |
+| `NEXT_PUBLIC_SENTRY_DSN`    | ⚠️       | Optional — enables admin error tracking    |
 
 ---
 
@@ -127,7 +127,7 @@ Complete this checklist before deploying to staging or production.
 2. Verify the build log in the Render dashboard for any missing env var errors.
 3. Confirm the health check passes:
    ```bash
-   curl https://apm.esparex.in/api/health
+   curl https://api.madentertainments.net/api/health
    # Expected: {"status":"ok","services":{"mongo":"ok","redis":"ok"},...}
    ```
 4. If `status` is `degraded`, check which service is `down` in the response.
@@ -176,7 +176,7 @@ The server auto-seeds the admin user and default categories/tiers on first boot
 ### Configure the webhook
 
 1. In Razorpay Dashboard → Webhooks → Add webhook.
-2. URL: `https://apm.esparex.in/api/payments/webhook/razorpay`
+2. URL: `https://api.madentertainments.net/api/payments/webhook/razorpay`
 3. Events: `payment.authorized`, `payment.failed`
 4. Copy the webhook secret and set `RAZORPAY_WEBHOOK_SECRET` on the server.
 
@@ -247,7 +247,7 @@ If `scripts/ensure-indexes.ts` doesn't exist yet, create it to call
 ### Health endpoint
 
 ```bash
-GET https://apm.esparex.in/api/health
+GET https://api.madentertainments.net/api/health
 ```
 
 **Healthy response (HTTP 200):**
@@ -431,7 +431,7 @@ Event Memories are intended for events with status `COMPLETED`. Confirm the even
 
 ```bash
 # Health check to confirm the backend is reachable
-curl https://apm.esparex.in/api/health
+curl https://api.madentertainments.net/api/health
 # Expected: {"status":"ok", ...}
 ```
 
@@ -491,7 +491,7 @@ After publishing, verify the following:
 
 ```bash
 # 1. Confirm the public event detail endpoint returns memories
-curl https://apm.esparex.in/api/events/<slug>
+curl https://api.madentertainments.net/api/events/<slug>
 # Expected: event.memories.publicationState === "PUBLISHED"
 # Expected: event.memories.gallery is non-empty (if photos were uploaded)
 # Expected: event.status === "COMPLETED"

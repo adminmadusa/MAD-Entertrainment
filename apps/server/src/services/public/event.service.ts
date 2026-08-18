@@ -78,9 +78,9 @@ export class PublicEventService {
     if (state === 'active') {
       matchStage.status = EventStatus.PUBLISHED;
     } else if (state === 'past' || state === 'completed') {
-      matchStage.status = { $in: [EventStatus.PUBLISHED, EventStatus.COMPLETED] };
+      matchStage.status = { $in: [EventStatus.PUBLISHED, EventStatus.COMPLETED, EventStatus.ARCHIVED] };
     } else {
-      matchStage.status = { $in: [EventStatus.PUBLISHED, EventStatus.COMPLETED, EventStatus.POSTPONED] };
+      matchStage.status = { $in: [EventStatus.PUBLISHED, EventStatus.COMPLETED, EventStatus.POSTPONED, EventStatus.ARCHIVED] };
     }
 
     if (filters.bookableOnly) {
@@ -201,7 +201,7 @@ export class PublicEventService {
         $addFields: {
           lifecycle: {
             $cond: {
-              if: { $eq: ["$status", EventStatus.COMPLETED] },
+              if: { $in: ["$status", [EventStatus.COMPLETED, EventStatus.ARCHIVED]] },
               then: "COMPLETED",
               else: {
                 $cond: {
@@ -234,14 +234,14 @@ export class PublicEventService {
     }
 
     const isPastState = state === 'past' || state === 'completed';
-    const sortStage = isPastState
-      ? { $sort: { startDate: -1 as const } }
-      : { $sort: { sortWeight: 1 as const, startDate: 1 as const } };
-
-    pipeline.push(
-      { $addFields: { sortWeight: sortWeightCond } },
-      sortStage
-    );
+    if (isPastState) {
+      pipeline.push({ $sort: { startDate: -1 as const } });
+    } else {
+      pipeline.push(
+        { $addFields: { sortWeight: sortWeightCond } },
+        { $sort: { sortWeight: 1 as const, startDate: 1 as const } }
+      );
+    }
 
     let events: any[] = [];
     let total = 0;
@@ -305,7 +305,7 @@ export class PublicEventService {
     const event = await Event.findOne(
       {
         slug,
-        status: { $in: [EventStatus.PUBLISHED, EventStatus.COMPLETED] },
+        status: { $in: [EventStatus.PUBLISHED, EventStatus.COMPLETED, EventStatus.ARCHIVED] },
         isDeleted: { $ne: true },
       },
       null,

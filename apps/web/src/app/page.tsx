@@ -14,10 +14,10 @@ export const metadata: Metadata = {
   description:
     'Discover and book tickets for the hottest shows, events, DJ nights, concerts, festivals, comedy, and VIP events near you.',
   alternates: {
-    canonical: 'https://madentertainment.in',
+    canonical: 'https://www.madentertainments.net',
   },
   openGraph: {
-    url: 'https://madentertainment.in',
+    url: 'https://www.madentertainments.net',
     images: [
       {
         url: '/og-image.png',
@@ -53,7 +53,7 @@ export default function HomePage() {
     name: 'MAD Entertrainment — Book Shows, Events & DJ Nights',
     description:
       'Book tickets for the hottest shows, events, DJ nights, concerts, comedy shows, and live performances.',
-    url: 'https://madentertainment.in',
+    url: 'https://www.madentertainments.net',
   };
 
   return (

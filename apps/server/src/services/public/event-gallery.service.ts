@@ -16,11 +16,11 @@ export class PublicEventGalleryService {
     const query = isObjectId ? { _id: eventIdOrSlug } : { slug: eventIdOrSlug };
 
     const event = await Event.findOne(query).select('_id title').lean();
-    if (!event) throw new AppError('Event not found', 404);
+    if (!event) throw AppError.notFound('Event');
 
     const settings = await EventGallerySettings.findOne({ eventId: event._id }).lean();
     if (!settings || !settings.published) {
-      throw new AppError('Gallery is not published', 404);
+      throw AppError.notFound('Gallery is not published');
     }
 
     const gallery = await EventGallery.find({
@@ -29,6 +29,16 @@ export class PublicEventGalleryService {
     })
       .sort({ isCover: -1, sortOrder: 1, createdAt: 1 })
       .lean();
+
+    const mappedItems = gallery.map(item => ({
+      id: item._id.toString(),
+      mediaType: item.mediaType,
+      url: item.url,
+      thumbnail: item.thumbnail,
+      caption: item.caption,
+      isCover: item.isCover,
+      sortOrder: item.sortOrder
+    }));
 
     return {
       event: {
@@ -40,15 +50,8 @@ export class PublicEventGalleryService {
         thankYouMessage: settings.thankYouMessage,
         published: settings.published
       },
-      gallery: gallery.map(item => ({
-        id: item._id.toString(),
-        mediaType: item.mediaType,
-        url: item.url,
-        thumbnail: item.thumbnail,
-        caption: item.caption,
-        isCover: item.isCover,
-        sortOrder: item.sortOrder
-      }))
+      items: mappedItems,
+      gallery: mappedItems
     };
   }
 }

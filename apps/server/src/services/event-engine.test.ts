@@ -139,4 +139,21 @@ describe('Event Lifecycle & Booking Engine Boundary Tests', () => {
     expect(caps3.capabilities.canViewGallery).toBe(true);
     expect(caps3.capabilities.canUploadGallery).toBe(true);
   });
+
+  it('handles ARCHIVED events correctly with COMPLETED lifecycle and discoverable visibility', () => {
+    const archivedEvent = {
+      ...baseEvent,
+      status: 'archived',
+      startDate: '2025-01-01T00:00:00.000Z',
+      endDate: '2025-01-01T04:00:00.000Z',
+    };
+
+    const caps = deriveEventCapabilities(archivedEvent);
+    expect(caps.lifecycle).toBe(EventLifecycle.COMPLETED);
+    expect(caps.visibility.public).toBe(true);
+    expect(caps.visibility.discoverable).toBe(true);
+    expect(caps.booking.status).toBe(BookingState.CLOSED);
+    expect(caps.booking.reason).toBe(BookingReason.EVENT_ARCHIVED);
+    expect(caps.capabilities.canBook).toBe(false);
+  });
 });

@@ -1,6 +1,6 @@
 import mongoose, { type FilterQuery } from 'mongoose';
 
-import { EventStatus, EVENT_STATUS_TRANSITIONS, type EventLifecycleStatus, deriveEventCapabilities } from '@mad/shared';
+import { EventStatus, EVENT_STATUS_TRANSITIONS, type EventLifecycleStatus, deriveEventCapabilities, EventLifecycle } from '@mad/shared';
 import type { BulkOperationResult } from '@mad/types';
 
 import { AppError } from '../../middleware/error.middleware';
@@ -237,6 +237,47 @@ export const getEventById = async (id: string): Promise<EventWithAttendance | nu
 export const updateEvent = async (id: string, data: Partial<IEvent>): Promise<EventWithAttendance | null> => {
   const existing = await Event.findById(String(id));
   if (!existing) return null;
+
+  const caps = deriveEventCapabilities({
+    status: existing.status,
+    startDate: existing.startDate,
+    endDate: existing.endDate,
+    bookingStartDate: existing.bookingStartDate,
+    bookingEndDate: existing.bookingEndDate,
+    isSoldOut: existing.isSoldOut,
+    totalCapacity: existing.totalCapacity || existing.ticketTiers?.reduce((acc: number, t: any) => acc + (t.totalCapacity || 0), 0) || 0,
+    ticketsSold: existing.soldCount || existing.ticketTiers?.reduce((acc: number, t: any) => acc + (t.soldCount || 0), 0) || 0,
+    galleryPublished: false,
+    galleryItemCount: 0,
+    isDeleted: existing.isDeleted
+  });
+
+  if (caps.lifecycle === EventLifecycle.COMPLETED) {
+    const coreFields: (keyof IEvent)[] = [
+      'title',
+      'description',
+      'startDate',
+      'endDate',
+      'bookingStartDate',
+      'bookingEndDate',
+      'ticketProfileId',
+      'ticketOverrides',
+      'ticketTiers',
+      'totalCapacity',
+      'bannerImage',
+      'posterImage'
+    ];
+
+    const modifiedCoreFields = coreFields.filter(
+      (field) => data[field] !== undefined && JSON.stringify(data[field]) !== JSON.stringify(existing[field])
+    );
+
+    if (modifiedCoreFields.length > 0) {
+      throw AppError.badRequest(
+        `Cannot modify core details of a completed event. Modified fields: ${modifiedCoreFields.join(', ')}`
+      );
+    }
+  }
 
   const rawExpectedVersion = data.eventVersion;
   if (rawExpectedVersion === undefined || rawExpectedVersion === null) {

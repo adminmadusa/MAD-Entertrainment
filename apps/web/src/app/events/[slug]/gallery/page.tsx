@@ -72,7 +72,8 @@ export default async function PublicGalleryPage({ params }: Props) {
     );
   }
 
-  const items = gallery.items || [];
+  const rawGallery = gallery as { items?: import('@mad/types').EventGalleryItem[]; gallery?: import('@mad/types').EventGalleryItem[] };
+  const items = rawGallery.items || rawGallery.gallery || [];
 
   // Handle empty published gallery state
   if (items.length === 0) {
@@ -112,7 +113,7 @@ export default async function PublicGalleryPage({ params }: Props) {
         }}
       />
 
-      <PublicGalleryView event={event} gallery={gallery} />
+      <PublicGalleryView event={event} gallery={{ ...gallery, items }} />
     </>
   );
 }

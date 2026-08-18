@@ -32,34 +32,37 @@ export default function EventGalleryPage() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6 text-white pb-20">
+    <div className="max-w-6xl mx-auto space-y-6 text-white px-4 sm:px-6 pb-20">
       {/* Breadcrumbs */}
-      <nav className="flex items-center space-x-2 text-sm font-medium text-text-muted">
+      <nav className="flex flex-wrap items-center gap-1.5 text-xs sm:text-sm font-medium text-text-muted">
         <Link href="/events" className="hover:text-text-secondary transition-colors">
           Events
         </Link>
         <span>/</span>
-        <Link href={`/events/${id}/edit`} className="hover:text-text-secondary transition-colors">
+        <span className="text-text-secondary truncate max-w-[150px] sm:max-w-none">
           {event.title}
-        </Link>
+        </span>
         <span>/</span>
         <span className="text-white">Gallery</span>
       </nav>
 
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-border-subtle pb-4">
         <div>
-          <h1 className="text-2xl font-black text-white">Manage Gallery</h1>
-          <p className="text-text-muted text-sm mt-0.5">Manage event media, cover images, and visibility</p>
+          <h1 className="text-xl sm:text-2xl font-black text-white">Manage Gallery</h1>
+          <p className="text-text-muted text-xs sm:text-sm mt-0.5">{event.title} • Completed Event</p>
         </div>
         <Link
-          href={`/events/${id}/edit`}
-          className="text-text-muted text-sm hover:text-text-secondary transition-colors flex items-center gap-1.5"
+          href="/events"
+          className="text-text-muted text-xs sm:text-sm hover:text-text-secondary transition-colors flex items-center gap-1.5 self-start sm:self-auto bg-surface-elevated/40 hover:bg-surface-elevated border border-border-subtle px-3 py-1.5 rounded-lg"
         >
-          ← Back to Event
+          ← Back to Events
         </Link>
       </div>
 
-      <EventGalleryWorkspace eventId={id} capabilities={event.capabilities} />
+      <EventGalleryWorkspace
+        eventId={id}
+        capabilities={event.capabilities}
+      />
     </div>
   );
 }

@@ -24,7 +24,7 @@ export const metadata: Metadata = {
    * metadataBase is required for Next.js to resolve relative URLs in OG images
    * across all pages. Without it, opengraph-image paths are left unresolved.
    */
-  metadataBase: new URL('https://madentertainment.in'),
+  metadataBase: new URL('https://www.madentertainments.net'),
 
   title: {
     default: 'MAD Entertrainment — Book Shows, Events & DJ Nights',
@@ -48,7 +48,7 @@ export const metadata: Metadata = {
   creator: 'MAD Entertrainment',
   publisher: 'MAD Entertrainment',
   alternates: {
-    canonical: 'https://madentertainment.in',
+    canonical: 'https://www.madentertainments.net',
   },
   robots: {
     index: true,
@@ -67,7 +67,7 @@ export const metadata: Metadata = {
     title: 'MAD Entertrainment — Book Shows, Events & DJ Nights',
     description:
       'Book tickets for the hottest shows, events, DJ nights, concerts, comedy shows, and live performances.',
-    url: 'https://madentertainment.in',
+    url: 'https://www.madentertainments.net',
     locale: 'en_IN',
     images: [
       {
@@ -111,15 +111,15 @@ export default function RootLayout({ children }: RootLayoutProps) {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
     name: 'MAD Entertrainment',
-    url: 'https://madentertainment.in',
+    url: 'https://www.madentertainments.net',
   };
 
   const organizationJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Organization',
     name: 'MAD Entertrainment',
-    url: 'https://madentertainment.in',
-    logo: 'https://madentertainment.in/og-image.png',
+    url: 'https://www.madentertainments.net',
+    logo: 'https://www.madentertainments.net/og-image.png',
   };
 
   return (

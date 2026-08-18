@@ -63,10 +63,10 @@ describe('PublicEventService.listEvents', () => {
 
     expect(Event.aggregate).toHaveBeenCalled();
 
-    // 1. Base match includes published and completed statuses
+    // 1. Base match includes published, completed, and archived statuses
     const baseMatch = capturedPipeline.find((stage) => stage.$match && stage.$match.status);
     expect(baseMatch.$match.status).toEqual({
-      $in: [EventStatus.PUBLISHED, EventStatus.COMPLETED],
+      $in: [EventStatus.PUBLISHED, EventStatus.COMPLETED, EventStatus.ARCHIVED],
     });
 
     // 2. Lifecycle filter matches strictly COMPLETED (LIVE is excluded)
@@ -119,5 +119,35 @@ describe('PublicEventService.listEvents', () => {
     const sortStage = capturedPipeline.find((stage) => stage.$sort);
     expect(sortStage).toBeDefined();
     expect(sortStage.$sort).toEqual({ sortWeight: 1, startDate: 1 });
+  });
+
+  it('retrieves event by slug even if archived', async () => {
+    const mockPopulate = vi.fn().mockReturnValue({
+      lean: vi.fn().mockResolvedValue({
+        _id: '507f1f77bcf86cd799439011',
+        slug: 'past-festival',
+        title: 'Past Festival',
+        status: EventStatus.ARCHIVED,
+        startDate: new Date('2025-01-01T00:00:00Z'),
+        isDeleted: false,
+      }),
+    });
+    vi.mocked(Event.findOne).mockReturnValue({
+      populate: mockPopulate,
+    } as any);
+
+    const result = await PublicEventService.getEventBySlug('past-festival');
+
+    expect(Event.findOne).toHaveBeenCalledWith(
+      {
+        slug: 'past-festival',
+        status: { $in: [EventStatus.PUBLISHED, EventStatus.COMPLETED, EventStatus.ARCHIVED] },
+        isDeleted: { $ne: true },
+      },
+      null,
+      { maxTimeMS: 5000 }
+    );
+    expect(result.slug).toBe('past-festival');
+    expect(result.lifecycle).toBe('COMPLETED');
   });
 });

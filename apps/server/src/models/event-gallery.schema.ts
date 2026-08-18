@@ -23,6 +23,8 @@ export interface IEventGallery extends Document {
   uploadedBy?: Types.ObjectId;
   assetProvider: string;
   assetVersion?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 const eventGallerySchema = new Schema<IEventGallery>(

@@ -37,7 +37,6 @@ export interface AdminEvent {
   category?: string;
   bookingMode?: string;
   status?: EventStatus;
-  galleryImages?: CloudinaryImage[];
   venue: string;
   startDate: string;
   endDate?: string;
@@ -172,4 +171,3 @@ export async function adminBulkDeleteEvents(ids: string[]): Promise<any> {
   const { data } = await adminApiClient.post('/admin/events/bulk/delete', { ids });
   return data.data;
 }
-

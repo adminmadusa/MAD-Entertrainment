@@ -90,7 +90,7 @@ export const cleanupTemporaryAssets = async (): Promise<{ deletedCount: number; 
         });
 
         const isReferencedInGallery = await EventGallery.exists({
-          'items.publicId': publicId,
+          publicId,
         });
 
         if (!isReferencedInEvent && !isReferencedInGallery) {
