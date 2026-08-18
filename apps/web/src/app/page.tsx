@@ -91,7 +91,7 @@ function HeroSection() {
   return (
     <section
       id="hero"
-      className="relative min-h-[70vh] min-h-[70svh] md:min-h-[75vh] md:min-h-[75dvh] lg:min-h-[80vh] lg:min-h-[80dvh] flex items-center justify-center overflow-hidden"
+      className="relative min-h-[48vh] min-h-[48svh] sm:min-h-[60vh] sm:min-h-[60svh] md:min-h-[75vh] md:min-h-[75dvh] lg:min-h-[80vh] lg:min-h-[80dvh] flex items-center justify-center overflow-hidden"
       aria-label="Hero section"
     >
       {/* Animated Background */}
@@ -113,28 +113,28 @@ function HeroSection() {
       />
 
       {/* Content */}
-      <div className="container-mad relative z-10 text-center pt-24 pb-8">
+      <div className="container-mad relative z-10 text-center pt-16 sm:pt-24 pb-4 sm:pb-8">
 
         {/* Headline */}
-        <h1 className="text-display-xl font-black text-white mb-6 leading-[1.02] text-glow-neon animate-hero-fade-in animation-delay-200">
+        <h1 className="text-3xl xs:text-4xl sm:text-display-md md:text-display-xl font-black text-white mb-3 sm:mb-6 leading-[1.05] text-glow-neon animate-hero-fade-in animation-delay-200">
           Experience the{' '}
           <span className="text-gradient block">Extraordinary</span>
         </h1>
 
         {/* CTAs */}
-        <div className="flex flex-col sm:flex-row gap-4 justify-center animate-hero-fade-in animation-delay-350">
+        <div className="flex flex-row gap-3 sm:gap-4 justify-center items-center animate-hero-fade-in animation-delay-350 px-2">
           <Link
             id="hero-book-now"
             href="/events"
-            className="px-8 py-4 btn-gradient text-white font-bold text-lg rounded-2xl shadow-glow inline-flex items-center gap-2 group focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            className="px-4 py-2.5 sm:px-8 sm:py-4 btn-gradient text-white font-bold text-xs xs:text-sm sm:text-lg rounded-xl sm:rounded-2xl shadow-glow inline-flex items-center gap-1.5 sm:gap-2 group focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background cursor-pointer"
           >
-            Browse Events
-            <ArrowRight className="group-hover:translate-x-1 transition-transform" />
+            <span>Browse Events</span>
+            <ArrowRight className="w-3.5 h-3.5 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
           </Link>
           <Link
             id="hero-my-booking"
             href="/tickets"
-            className="px-8 py-4 glass border border-border-subtle hover:border-accent-purple/50 text-text-primary hover:text-white hover:bg-accent-purple/10 font-semibold text-lg rounded-2xl transition-all duration-300 hover:shadow-glow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            className="px-4 py-2.5 sm:px-8 sm:py-4 glass border border-border-subtle hover:border-accent-purple/50 text-text-primary hover:text-white hover:bg-accent-purple/10 font-semibold text-xs xs:text-sm sm:text-lg rounded-xl sm:rounded-2xl transition-all duration-300 hover:shadow-glow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background cursor-pointer"
           >
             My Tickets
           </Link>
@@ -142,7 +142,7 @@ function HeroSection() {
       </div>
 
       {/* Bottom Gradient Fade */}
-      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent" />
+      <div className="absolute bottom-0 left-0 right-0 h-24 sm:h-32 bg-gradient-to-t from-background to-transparent" />
 
     </section>
   );

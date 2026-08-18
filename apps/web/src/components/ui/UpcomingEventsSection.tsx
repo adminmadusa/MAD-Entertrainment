@@ -2,17 +2,13 @@
 
 import { AnimatePresence, motion, type PanInfo, useReducedMotion } from 'framer-motion';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { memo, useCallback, useRef, useState } from 'react';
 
-import { ImageWrapper } from '@/components/common/ImageWrapper';
+import { EventCard } from '@/components/common/EventCard';
 import { Reveal } from '@/components/common/PageTransition';
 import { useMounted, useWindowWidth } from '@/hooks/use-window.hook';
-import { formatEventDate } from '@/utils/date';
-import { getOptimizedImageUrl } from '@/utils/image';
-import { EventCategory, EVENT_CATEGORY_LABELS, formatMoney, deriveBookingEligibility } from '@mad/shared';
 import type { Event } from '@mad/types';
-import { ArrowLeft, ArrowRight, CalendarIcon, Skeleton } from '@mad/ui';
+import { ArrowLeft, ArrowRight, Skeleton } from '@mad/ui';
 
 interface UpcomingEventsSectionProps {
   initialEvents?: Event[];
@@ -28,7 +24,6 @@ export const UpcomingEventsSection = memo(function UpcomingEventsSection({
 
   const prefersReducedMotion = useReducedMotion();
   const mounted = useMounted();
-  const router = useRouter();
 
   const events = initialEvents;
 
@@ -90,44 +85,44 @@ export const UpcomingEventsSection = memo(function UpcomingEventsSection({
   if (loading) {
     sectionContent = (
       <div
-        className="w-full max-w-6xl mx-auto h-[340px] xs:h-[380px] sm:h-[440px] md:h-[470px] mt-6 sm:mt-8 flex items-center justify-center gap-4 overflow-hidden"
+        className="w-full max-w-6xl mx-auto h-[260px] xs:h-[290px] sm:h-[350px] md:h-[380px] mt-4 sm:mt-6 flex items-center justify-center gap-4 overflow-hidden"
         aria-busy="true"
         aria-label="Loading events"
       >
-        <div className="hidden sm:block w-[260px] md:w-[280px] h-[350px] md:h-[380px] glass rounded-2xl border border-border-subtle/30 opacity-40 p-4 flex flex-col">
-          <Skeleton className="w-full aspect-[16/9] rounded-xl mb-4" />
-          <Skeleton className="w-24 h-4 rounded mb-2" />
-          <Skeleton className="w-3/4 h-5 rounded mb-2" />
-          <Skeleton className="w-full h-12 rounded mt-auto" />
+        <div className="hidden sm:block w-[260px] md:w-[280px] h-[320px] md:h-[350px] glass rounded-2xl border border-border-subtle/30 opacity-40 p-3.5 flex flex-col">
+          <Skeleton className="w-full aspect-[16/9] rounded-xl mb-3" />
+          <Skeleton className="w-20 h-3 rounded mb-2" />
+          <Skeleton className="w-3/4 h-4 rounded mb-2" />
+          <Skeleton className="w-full h-9 rounded mt-auto" />
         </div>
-        <div className="w-[230px] xs:w-[260px] sm:w-[300px] md:w-[320px] h-[310px] xs:h-[350px] sm:h-[400px] md:h-[430px] glass rounded-2xl border border-accent-purple/30 p-3.5 sm:p-4 flex flex-col shadow-glow">
-          <Skeleton className="w-full aspect-[16/9] rounded-xl mb-3 sm:mb-4" />
-          <Skeleton className="w-24 sm:w-28 h-3.5 sm:h-4 rounded mb-2" />
-          <Skeleton className="w-5/6 h-5 sm:h-6 rounded mb-2 sm:mb-3" />
-          <Skeleton className="w-full h-8 sm:h-10 rounded mb-3 sm:mb-4" />
-          <div className="mt-auto pt-2.5 sm:pt-3 border-t border-border-subtle/40 flex items-center justify-between">
-            <Skeleton className="w-16 sm:w-20 h-5 sm:h-6 rounded" />
-            <Skeleton className="w-20 sm:w-24 h-8 sm:h-10 rounded-xl" />
+        <div className="w-[220px] xs:w-[250px] sm:w-[290px] md:w-[320px] h-[260px] xs:h-[290px] sm:h-[350px] md:h-[380px] glass rounded-2xl border border-accent-purple/30 p-3 flex flex-col shadow-glow">
+          <Skeleton className="w-full aspect-[16/9] rounded-xl mb-2.5" />
+          <Skeleton className="w-20 sm:w-24 h-3 sm:h-3.5 rounded mb-1.5" />
+          <Skeleton className="w-5/6 h-4 sm:h-5 rounded mb-2" />
+          <Skeleton className="w-full h-6 sm:h-8 rounded mb-2" />
+          <div className="mt-auto pt-2 border-t border-border-subtle/40 flex items-center justify-between">
+            <Skeleton className="w-14 sm:w-16 h-4 sm:h-5 rounded" />
+            <Skeleton className="w-16 sm:w-20 h-7 sm:h-8 rounded-xl" />
           </div>
         </div>
-        <div className="hidden sm:block w-[260px] md:w-[280px] h-[350px] md:h-[380px] glass rounded-2xl border border-border-subtle/30 opacity-40 p-4 flex flex-col">
-          <Skeleton className="w-full aspect-[16/9] rounded-xl mb-4" />
-          <Skeleton className="w-24 h-4 rounded mb-2" />
-          <Skeleton className="w-3/4 h-5 rounded mb-2" />
-          <Skeleton className="w-full h-12 rounded mt-auto" />
+        <div className="hidden sm:block w-[260px] md:w-[280px] h-[320px] md:h-[350px] glass rounded-2xl border border-border-subtle/30 opacity-40 p-3.5 flex flex-col">
+          <Skeleton className="w-full aspect-[16/9] rounded-xl mb-3" />
+          <Skeleton className="w-20 h-3 rounded mb-2" />
+          <Skeleton className="w-3/4 h-4 rounded mb-2" />
+          <Skeleton className="w-full h-9 rounded mt-auto" />
         </div>
       </div>
     );
   } else if (events.length === 0) {
     sectionContent = (
-      <div className="text-center py-20 glass rounded-2xl border border-border-subtle" role="status">
-        <div className="flex justify-center mb-4 text-accent-purple/60 animate-pulse" aria-hidden="true">
-          <svg className="w-14 h-14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
+      <div className="text-center py-16 glass rounded-2xl border border-border-subtle" role="status">
+        <div className="flex justify-center mb-3 text-accent-purple/60 animate-pulse" aria-hidden="true">
+          <svg className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
             <path strokeLinecap="round" strokeLinejoin="round" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
           </svg>
         </div>
-        <h3 className="text-white font-bold text-lg">No Active Events</h3>
-        <p className="text-text-secondary text-sm max-w-xs mx-auto mt-1">
+        <h3 className="text-white font-bold text-base">No Active Events</h3>
+        <p className="text-text-secondary text-xs max-w-xs mx-auto mt-1">
           Check back soon for upcoming shows, DJ nights, and entertainment experiences!
         </p>
       </div>
@@ -136,7 +131,7 @@ export const UpcomingEventsSection = memo(function UpcomingEventsSection({
     sectionContent = (
       <div
         ref={containerRef}
-        className="relative w-full max-w-6xl mx-auto h-[340px] xs:h-[380px] sm:h-[440px] md:h-[470px] mt-4 sm:mt-8 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-4 focus-visible:ring-offset-background rounded-2xl"
+        className="relative w-full max-w-6xl mx-auto h-[270px] xs:h-[300px] sm:h-[360px] md:h-[390px] mt-3 sm:mt-6 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-4 focus-visible:ring-offset-background rounded-2xl"
         style={{ perspective: '1200px' }}
         role="group"
         aria-roledescription="carousel"
@@ -164,11 +159,11 @@ export const UpcomingEventsSection = memo(function UpcomingEventsSection({
               // Safe server default (1024 width) prevents layout shifts
               const currentWidth = mounted ? windowWidth : 1024;
               const isMobileViewport = currentWidth < 640;
-              const spread = isMobileViewport ? 80 : 160;
+              const spread = isMobileViewport ? 75 : 150;
 
               // Cover flow 3D math
               const x = absoluteOffset * spread;
-              const z = isActive || isMobileViewport ? 0 : -150 - Math.abs(absoluteOffset) * 60;
+              const z = isActive || isMobileViewport ? 0 : -140 - Math.abs(absoluteOffset) * 50;
               let rotateY = 0;
               if (!isActive && !isMobileViewport) {
                 rotateY = absoluteOffset > 0 ? -25 : 25;
@@ -187,9 +182,6 @@ export const UpcomingEventsSection = memo(function UpcomingEventsSection({
 
               // Don't render cards that are too far away
               if (Math.abs(absoluteOffset) > 2) return null;
-
-              const eligibility = deriveBookingEligibility(event);
-              const cta = eligibility.bookingCTA;
 
               return (
                 <motion.div
@@ -224,117 +216,21 @@ export const UpcomingEventsSection = memo(function UpcomingEventsSection({
                   }}
                   className={`${
                     isActive ? 'pointer-events-auto' : 'pointer-events-none sm:pointer-events-auto'
-                  } w-[230px] xs:w-[260px] sm:w-[300px] md:w-[320px] h-[310px] xs:h-[350px] sm:h-[400px] md:h-[430px] group glass rounded-2xl border ${
-                    isActive
-                      ? 'border-accent-purple/50 shadow-glow'
-                      : 'border-border-subtle cursor-pointer'
-                  } overflow-hidden flex flex-col focus-within:ring-2 focus-within:ring-accent-purple focus-within:border-accent-purple/40`}
+                  } w-[220px] xs:w-[250px] sm:w-[290px] md:w-[320px] h-[260px] xs:h-[290px] sm:h-[350px] md:h-[380px]`}
                   onClick={() => !isActive && setActiveIndex(index)}
                   role="group"
                   aria-roledescription="slide"
                   aria-label={`${index + 1} of ${events.length}: ${event.title}`}
                   aria-hidden={!isActive}
                 >
-                  <Link
-                    href={`/events/${event.slug}`}
-                    id={`upcoming-event-card-${event.slug}`}
-                    className={`flex flex-col h-full focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple ${
-                      !isActive ? 'pointer-events-none' : ''
-                    }`}
-                    aria-label={`View details for ${event.title}`}
-                    tabIndex={isActive ? 0 : -1}
-                  >
-
-                    {/* Banner Image with 16:9 ratio */}
-                    <div className="aspect-[16/9] w-full overflow-hidden relative bg-white/5 flex-shrink-0">
-                      {event.bannerImage?.url ? (
-                        <ImageWrapper
-                          src={getOptimizedImageUrl(event.bannerImage.url, 600)}
-                          alt={`Promotional poster for ${event.title}`}
-                          fill
-                          priority={index === 0}
-                          sizes="(max-width: 640px) 270px, (max-width: 768px) 320px, 320px"
-                          className="object-cover group-hover:scale-105 transition-transform duration-500"
-                        />
-                      ) : (
-                        <div
-                          className="w-full h-full flex items-center justify-center text-accent-purple text-4xl"
-                          aria-hidden="true"
-                        >
-                          🎧
-                        </div>
-                      )}
-
-                      {/* Dark overlay for inactive slides to make the center pop */}
-                      {!isActive && <div className="absolute inset-0 bg-black/40 transition-opacity" />}
-
-                      {/* Category Badge */}
-                      <span className="absolute top-2.5 left-2.5 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-black/60 backdrop-blur-md text-accent-purple-light rounded-full border border-accent-purple/20">
-                        {EVENT_CATEGORY_LABELS[event.category as EventCategory] || event.category}
-                      </span>
-
-                      {cta.action === 'NONE' && (
-                        <span className="absolute inset-0 bg-black/60 backdrop-blur-[2px] flex items-center justify-center text-white font-bold text-xs tracking-wider">
-                          {cta.text.toUpperCase()}
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Card Content */}
-                    <div className="p-3.5 sm:p-4 flex flex-col flex-grow bg-black/20">
-                      <div className="text-text-secondary text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
-                        <CalendarIcon className="w-3.5 h-3.5 text-accent-purple-light" />
-                        {formatEventDate(event.startDate)}
-                      </div>
-                      <h3 className="text-white font-bold text-sm sm:text-base line-clamp-1 mb-1.5 group-hover:text-accent-purple-light transition-colors">
-                        {event.title}
-                      </h3>
-                      <p className="text-text-secondary text-[11px] sm:text-xs line-clamp-2 mb-3 flex-grow leading-relaxed">
-                        {event.description}
-                      </p>
-                    </div>
-
-                    <div
-                      className={`px-3.5 pb-3.5 sm:px-4 sm:pb-4 pt-2.5 sm:pt-3 border-t border-border-subtle/40 flex items-center justify-between mt-auto bg-black/40 transition-opacity w-full ${
-                        !isActive ? 'opacity-50' : ''
-                      }`}
-                    >
-                      <div>
-                        <div className="text-[9px] sm:text-[10px] text-text-secondary font-medium">
-                          Tickets from
-                        </div>
-                        <div className="text-white font-black text-xs sm:text-sm">
-                          {formatMoney(
-                            event.ticketTiers && event.ticketTiers.length > 0
-                              ? Math.min(...event.ticketTiers.map((t) => t.price))
-                              : 0,
-                            event.currency
-                          )}
-                        </div>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          if (cta.action === 'NONE' || cta.disabled) return;
-                          if (cta.action === 'BOOK') {
-                            router.push(`/events/${event.slug}?modal=booking`);
-                          } else {
-                            router.push(`/events/${event.slug}`);
-                          }
-                        }}
-                        disabled={cta.disabled}
-                        className={`min-h-[44px] min-w-[44px] px-3.5 py-2 text-xs font-bold rounded-xl transition-all flex items-center justify-center text-center ${
-                          cta.disabled
-                            ? 'bg-white/5 border border-white/5 text-text-muted cursor-not-allowed'
-                            : 'text-white btn-gradient shadow-glow-sm hover:scale-105 active:scale-95'
-                        }`}
-                      >
-                        {cta.text}
-                      </button>
-                    </div>
-                  </Link>
+                  <EventCard
+                    event={event}
+                    variant="active"
+                    density="compact"
+                    priority={index === 0}
+                    isActive={isActive}
+                    className="h-full w-full"
+                  />
                 </motion.div>
               );
             })}
@@ -347,23 +243,23 @@ export const UpcomingEventsSection = memo(function UpcomingEventsSection({
             <button
               type="button"
               onClick={prevSlide}
-              className="hidden sm:flex absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 z-30 min-w-[44px] min-h-[44px] p-3 sm:p-4 rounded-full glass border border-border-subtle text-white hover:text-accent-purple hover:border-accent-purple/50 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background shadow-lg items-center justify-center"
+              className="hidden sm:flex absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 z-30 min-w-[40px] min-h-[40px] p-2.5 sm:p-3.5 rounded-full glass border border-border-subtle text-white hover:text-accent-purple hover:border-accent-purple/50 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background shadow-lg items-center justify-center cursor-pointer"
               aria-label="Previous event"
             >
-              <ArrowLeft size={20} />
+              <ArrowLeft size={18} />
             </button>
             <button
               type="button"
               onClick={nextSlide}
-              className="hidden sm:flex absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 z-30 min-w-[44px] min-h-[44px] p-3 sm:p-4 rounded-full glass border border-border-subtle text-white hover:text-accent-purple hover:border-accent-purple/50 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background shadow-lg items-center justify-center"
+              className="hidden sm:flex absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 z-30 min-w-[40px] min-h-[40px] p-2.5 sm:p-3.5 rounded-full glass border border-border-subtle text-white hover:text-accent-purple hover:border-accent-purple/50 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background shadow-lg items-center justify-center cursor-pointer"
               aria-label="Next event"
             >
-              <ArrowRight size={20} />
+              <ArrowRight size={18} />
             </button>
 
             {/* Dots indicator */}
             <div
-              className="absolute -bottom-8 left-1/2 -translate-x-1/2 flex gap-2 z-30"
+              className="absolute -bottom-6 sm:-bottom-8 left-1/2 -translate-x-1/2 flex gap-1.5 sm:gap-2 z-30"
               role="tablist"
               aria-label="Carousel slide triggers"
             >
@@ -375,14 +271,14 @@ export const UpcomingEventsSection = memo(function UpcomingEventsSection({
                   role="tab"
                   aria-controls={`upcoming-event-slide-${idx}`}
                   aria-selected={idx === activeIndex}
-                  className={`min-h-[32px] min-w-[32px] flex items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple rounded-full`}
+                  className="min-h-[28px] min-w-[28px] flex items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple rounded-full cursor-pointer"
                   aria-label={`Go to slide ${idx + 1}`}
                 >
                   <span
-                    className={`block h-2 rounded-full transition-all duration-300 ${
+                    className={`block h-1.5 sm:h-2 rounded-full transition-all duration-300 ${
                       idx === activeIndex
-                        ? 'bg-accent-purple w-6 shadow-glow-sm'
-                        : 'bg-border-subtle w-2 hover:bg-accent-purple/50'
+                        ? 'bg-accent-purple w-5 sm:w-6 shadow-glow-sm'
+                        : 'bg-border-subtle w-1.5 sm:w-2 hover:bg-accent-purple/50'
                     }`}
                   />
                 </button>
@@ -396,24 +292,24 @@ export const UpcomingEventsSection = memo(function UpcomingEventsSection({
 
   return (
     <section
-      className="pt-8 pb-16 overflow-hidden"
+      className="pt-6 sm:pt-8 pb-12 sm:pb-16 overflow-hidden"
       aria-labelledby="upcoming-events-heading"
     >
       <div className="container-mad">
         <Reveal>
-          <div className="flex items-end justify-between mb-10">
+          <div className="flex items-end justify-between mb-6 sm:mb-8">
             <div>
-              <p className="text-accent-purple text-xs sm:text-sm font-semibold uppercase tracking-wider mb-2">
+              <p className="text-accent-purple text-xs sm:text-sm font-semibold uppercase tracking-wider mb-1">
                 Don&apos;t Miss Out
               </p>
-              <h2 id="upcoming-events-heading" className="text-display-sm font-black text-white">
+              <h2 id="upcoming-events-heading" className="text-xl sm:text-display-sm font-black text-white">
                 Active Events
               </h2>
             </div>
             <Link
               href="/events"
               id="view-all-events"
-              className="text-text-secondary hover:text-accent-purple-light text-sm font-medium transition-colors flex items-center gap-1 min-h-[44px] px-2 py-1 rounded-lg focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:outline-none"
+              className="text-text-secondary hover:text-accent-purple-light text-xs sm:text-sm font-medium transition-colors flex items-center gap-1 min-h-[36px] sm:min-h-[44px] px-2 py-1 rounded-lg focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:outline-none cursor-pointer"
             >
               View all <ArrowRight size={14} />
             </Link>
