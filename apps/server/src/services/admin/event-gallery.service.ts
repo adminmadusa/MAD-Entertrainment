@@ -2,12 +2,18 @@ import { Types } from 'mongoose';
 
 import { deriveEventCapabilities } from '@mad/shared';
 import { type EventGalleryItem, type EventGallerySettings } from '@mad/types';
-import { AddGalleryItemsInput, UpdateGallerySettingsInput } from '@mad/validations';
+import {
+  AddGalleryItemsInput,
+  ReorderGalleryItemsInput,
+  UpdateGalleryItemInput,
+  UpdateGallerySettingsInput,
+} from '@mad/validations';
 
 import { AppError } from '../../middleware/error.middleware';
 import { EventGallerySettings as EventGallerySettingsModel } from '../../models/event-gallery-settings.schema';
 import { EventGallery, MediaVisibility } from '../../models/event-gallery.schema';
 import { Event } from '../../models/event.schema';
+import { safeDeleteImages } from './media-cleanup.service';
 
 export class AdminEventGalleryService {
   /**
@@ -170,5 +176,135 @@ export class AdminEventGalleryService {
         updatedAt: obj.updatedAt ? new Date(obj.updatedAt).toISOString() : new Date().toISOString(),
       };
     });
+  }
+
+  /**
+   * Deletes a gallery item, asynchronously purges the asset from Cloudinary,
+   * and automatically reassigns cover if the deleted item was the cover.
+   */
+  static async deleteItem(
+    eventId: string,
+    itemId: string,
+    _adminId: string
+  ): Promise<{ success: true }> {
+    const event = await Event.findById(eventId).select('_id').lean();
+    if (!event) throw AppError.notFound('Event');
+
+    const item = await EventGallery.findOne({ _id: itemId, eventId });
+    if (!item) throw AppError.notFound('Gallery item');
+
+    const wasCover = item.isCover;
+    const publicId = item.publicId;
+
+    await EventGallery.deleteOne({ _id: itemId, eventId });
+
+    // Clean up Cloudinary asset asynchronously
+    if (publicId) {
+      safeDeleteImages([publicId], 'Event', 'delete');
+    }
+
+    // If this item was the cover, assign cover to the next available item
+    if (wasCover) {
+      const nextItem = await EventGallery.findOne({ eventId }).sort({ sortOrder: 1, createdAt: 1 });
+      if (nextItem) {
+        nextItem.isCover = true;
+        await nextItem.save();
+      }
+    }
+
+    return { success: true };
+  }
+
+  /**
+   * Sets a specific gallery item as the primary cover photo for the event.
+   */
+  static async setCoverItem(
+    eventId: string,
+    itemId: string,
+    _adminId: string
+  ): Promise<{ success: true }> {
+    const event = await Event.findById(eventId).select('_id').lean();
+    if (!event) throw AppError.notFound('Event');
+
+    const item = await EventGallery.findOne({ _id: itemId, eventId });
+    if (!item) throw AppError.notFound('Gallery item');
+
+    // Atomically reset all existing covers and set the new cover
+    await EventGallery.updateMany({ eventId, isCover: true }, { isCover: false });
+    await EventGallery.findByIdAndUpdate(itemId, { isCover: true });
+
+    return { success: true };
+  }
+
+  /**
+   * Updates metadata (e.g. caption) of a gallery item.
+   */
+  static async updateItem(
+    eventId: string,
+    itemId: string,
+    data: UpdateGalleryItemInput,
+    _adminId: string
+  ): Promise<EventGalleryItem> {
+    const event = await Event.findById(eventId).select('_id').lean();
+    if (!event) throw AppError.notFound('Event');
+
+    const item = await EventGallery.findOne({ _id: itemId, eventId });
+    if (!item) throw AppError.notFound('Gallery item');
+
+    if (data.caption !== undefined) {
+      item.caption = data.caption;
+    }
+
+    await item.save();
+    const obj = item.toObject();
+
+    return {
+      id: item._id ? item._id.toString() : '',
+      eventId: obj.eventId ? obj.eventId.toString() : eventId,
+      mediaType: obj.mediaType,
+      url: obj.url,
+      publicId: obj.publicId,
+      thumbnail: obj.thumbnail,
+      caption: obj.caption,
+      sortOrder: obj.sortOrder,
+      isCover: obj.isCover,
+      visibility: obj.visibility,
+      uploadedBy: obj.uploadedBy ? obj.uploadedBy.toString() : undefined,
+      assetProvider: obj.assetProvider,
+      assetVersion: obj.assetVersion,
+      createdAt: obj.createdAt ? new Date(obj.createdAt).toISOString() : new Date().toISOString(),
+      updatedAt: obj.updatedAt ? new Date(obj.updatedAt).toISOString() : new Date().toISOString(),
+    };
+  }
+
+  /**
+   * Reorders items within an event's gallery.
+   */
+  static async reorderItems(
+    eventId: string,
+    data: ReorderGalleryItemsInput,
+    _adminId: string
+  ): Promise<{ success: true }> {
+    const event = await Event.findById(eventId).select('_id').lean();
+    if (!event) throw AppError.notFound('Event');
+
+    const existingItems = await EventGallery.find({
+      _id: { $in: data.itemIds },
+      eventId,
+    }).select('_id');
+
+    if (existingItems.length !== data.itemIds.length) {
+      throw AppError.badRequest('Invalid gallery item IDs in reorder request');
+    }
+
+    const bulkOps = data.itemIds.map((id, index) => ({
+      updateOne: {
+        filter: { _id: id, eventId },
+        update: { $set: { sortOrder: index } },
+      },
+    }));
+
+    await EventGallery.bulkWrite(bulkOps);
+    return { success: true };
   }
 }
