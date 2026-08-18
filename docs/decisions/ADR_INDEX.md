@@ -20,3 +20,4 @@ This index maintains the chronological list of all architectural decisions made 
 | **ADR-014** | Theme Contract | Accepted | Architecture / UI | 2026-07-06 | [ADR-014](ADR-014-theme-contract.md) |
 | **ADR-015** | Public API Freeze During Infrastructure Changes | Accepted | Architecture / UI | 2026-07-06 | [ADR-015](ADR-015-public-api-freeze.md) |
 | **ADR-016** | Component Lifecycle Model | Accepted | Architecture / UI | 2026-07-06 | [ADR-016](ADR-016-component-lifecycle.md) |
+| **ADR-017** | Coupon Pricing Calculation and Redemption Ownership Invariants | Implemented | Architecture / Payments / API | 2026-08-18 | [ADR-017](ADR-017-coupon-pricing-and-redemption-ownership.md) |
