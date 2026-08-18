@@ -257,6 +257,11 @@ export function TicketSelectionContent({
                       <div className="space-y-2 flex-1">
                         <div className="flex flex-wrap items-center gap-2">
                           <span className="text-base font-bold text-white">{tier.name}</span>
+                          {tier.tier && (
+                            <span className="text-[9px] font-mono text-accent-purple-light uppercase px-2 py-0.5 bg-accent-purple/10 rounded-full border border-accent-purple/20">
+                              {tier.tier}
+                            </span>
+                          )}
                           {tier.groupSize && tier.groupSize > 1 && (
                             <span className="text-[9px] text-emerald-400 font-semibold px-2 py-0.5 bg-emerald-500/10 rounded-full border border-emerald-500/20">
                               Admits {tier.groupSize}
