@@ -151,20 +151,40 @@ export default function AdminEventsPage() {
             />
           </TableCell>
           <TableCell sticky="start" stickyOffset="3rem" showStickyDivider className="py-4 px-5">
-            <div className="flex items-center gap-3">
-              {event.bannerImage?.url ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={event.bannerImage.url} alt={event.title} width={40} height={40} className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />
-              ) : (
-                <div className="w-10 h-10 rounded-lg bg-accent-purple/10 flex-shrink-0 flex items-center justify-center text-accent-purple text-xs font-bold">
-                  {(event.title || '?')[0]}
-                </div>
-              )}
-              <div className="min-w-0">
-                <p className="text-text-primary font-medium truncate max-w-52">{event.title || 'Untitled Event'}</p>
-                <p className="text-text-secondary text-xs truncate">{event.slug || 'no-slug'}</p>
-              </div>
-            </div>
+            {(() => {
+              const isCompleted = event.status === 'completed' || event.status === 'archived' || event.lifecycle === 'COMPLETED';
+              const targetUrl = isCompleted ? `/events/${event._id}/gallery` : `/events/${event._id}/edit`;
+              return (
+                <Link
+                  href={targetUrl}
+                  className="flex items-center gap-3 group focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple rounded-lg"
+                  aria-label={`Manage ${event.title || 'event'}`}
+                >
+                  {event.bannerImage?.url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={event.bannerImage.url}
+                      alt={event.title}
+                      width={40}
+                      height={40}
+                      className="w-10 h-10 rounded-lg object-cover flex-shrink-0 group-hover:scale-105 transition-transform"
+                    />
+                  ) : (
+                    <div className="w-10 h-10 rounded-lg bg-accent-purple/10 flex-shrink-0 flex items-center justify-center text-accent-purple text-xs font-bold group-hover:bg-accent-purple/20 transition-colors">
+                      {(event.title || '?')[0]}
+                    </div>
+                  )}
+                  <div className="min-w-0">
+                    <p className="text-text-primary font-medium truncate max-w-52 group-hover:text-accent-purple-light transition-colors">
+                      {event.title || 'Untitled Event'}
+                    </p>
+                    <p className="text-text-secondary text-xs truncate group-hover:text-text-primary transition-colors">
+                      {event.slug || 'no-slug'}
+                    </p>
+                  </div>
+                </Link>
+              );
+            })()}
           </TableCell>
           <TableCell className="py-4 px-4 capitalize text-text-secondary">
             {event.category ? (
@@ -245,23 +265,41 @@ export default function AdminEventsPage() {
           </TableCell>
 
           <TableCell sticky="end" showStickyDivider className="py-4 px-5">
-            {canMutateEvents ? (
-              <div className="flex items-center justify-end gap-2">
-                <Link
-                  href={`/events/${event._id}/edit`}
-                  className="px-3 py-1.5 text-xs font-medium glass border border-border-subtle rounded-lg text-text-secondary hover:text-white hover:border-accent-purple/40 transition-all"
-                >
-                  Edit
-                </Link>
+            {canMutateEvents ? (() => {
+              const isCompleted = event.status === 'completed' || event.status === 'archived' || event.lifecycle === 'COMPLETED';
+              if (isCompleted) {
+                return (
+                  <div className="flex items-center justify-end gap-2">
+                    <Link
+                      href={`/events/${event._id}/gallery`}
+                      id={`event-gallery-btn-${event._id}`}
+                      className="px-3 py-1.5 text-xs font-medium glass border border-accent-pink/40 text-accent-pink hover:bg-accent-pink/10 hover:text-white rounded-lg transition-all"
+                    >
+                      Gallery
+                    </Link>
+                  </div>
+                );
+              }
+              return (
+                <div className="flex items-center justify-end gap-2">
+                  <Link
+                    href={`/events/${event._id}/edit`}
+                    id={`event-edit-btn-${event._id}`}
+                    className="px-3 py-1.5 text-xs font-medium glass border border-border-subtle rounded-lg text-text-secondary hover:text-white hover:border-accent-purple/40 transition-all"
+                  >
+                    Edit
+                  </Link>
 
-                <button
-                  onClick={() => setDeleteTarget(event)}
-                  className="px-3 py-1.5 text-xs font-medium glass border border-border-subtle rounded-lg text-text-secondary hover:text-red-400 hover:border-red-500/40 transition-all"
-                >
-                  Delete
-                </button>
-              </div>
-            ) : (
+                  <button
+                    onClick={() => setDeleteTarget(event)}
+                    id={`event-delete-btn-${event._id}`}
+                    className="px-3 py-1.5 text-xs font-medium glass border border-border-subtle rounded-lg text-text-secondary hover:text-red-400 hover:border-red-500/40 transition-all"
+                  >
+                    Delete
+                  </button>
+                </div>
+              );
+            })() : (
               <div className="text-right text-text-secondary">—</div>
             )}
           </TableCell>

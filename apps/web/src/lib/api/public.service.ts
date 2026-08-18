@@ -122,9 +122,18 @@ export async function publicGetEventBySlug(slug: string): Promise<Event> {
 }
 
 export async function publicGetGallery(slug: string): Promise<{ items: import('@mad/types').EventGalleryItem[]; settings: import('@mad/types').EventGallerySettings | null }> {
-  const { data } = await apiClient.get<{ data: { items: import('@mad/types').EventGalleryItem[]; settings: import('@mad/types').EventGallerySettings | null } }>(`/events/${slug}/gallery`);
-  return data.data;
+  try {
+    const { data } = await apiClient.get<{ data: { items?: import('@mad/types').EventGalleryItem[]; gallery?: import('@mad/types').EventGalleryItem[]; settings: import('@mad/types').EventGallerySettings | null } }>(`/events/${slug}/gallery`);
+    const payload = data?.data;
+    return {
+      settings: payload?.settings ?? null,
+      items: payload?.items ?? payload?.gallery ?? [],
+    };
+  } catch {
+    return { settings: null, items: [] };
+  }
 }
+
 
 // ─── DJ Operators ─────────────────────────────────────────────
 

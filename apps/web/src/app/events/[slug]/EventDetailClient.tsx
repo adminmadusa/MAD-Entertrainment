@@ -1,18 +1,20 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
+
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
-import { publicGetEventBySlug } from '@/lib/api/public.service';
+import { publicGetEventBySlug, publicGetGallery } from '@/lib/api/public.service';
 import { QUERY_KEYS, formatMoney } from '@mad/shared';
 import type { Event as EventData, EventBookingCTA } from '@mad/types';
 
 import type { EventBookingFlowHandle } from './components/EventBookingFlow';
 import { EventOverview } from './components/EventOverview';
 import { EventStickyCTA } from './components/EventStickyCTA';
+import { ExpiredEventView } from './components/ExpiredEventView';
 
 const EventBookingFlow = dynamic(
   () => import('./components/EventBookingFlow').then((mod) => mod.EventBookingFlow),
@@ -60,11 +62,18 @@ export default function EventDetailClient({ slug, initialEvent }: EventDetailCli
     queryFn: () => publicGetEventBySlug(slug),
     enabled: !!slug,
     initialData: initialEvent,
-    // PERF-018C: staleTime prevents React Query from treating server-fetched
-    // initialData as immediately stale and firing a background refetch on mount.
-    // 60 s matches the server cache window; data re-validates after that.
     staleTime: 60_000,
     initialDataUpdatedAt: initialEvent ? Date.now() : undefined,
+  });
+
+  const isCompleted = event?.lifecycle === 'COMPLETED';
+
+  // Fetch gallery media only when event is completed
+  const { data: galleryData } = useQuery({
+    queryKey: ['public', 'events', slug, 'gallery'],
+    queryFn: () => publicGetGallery(slug),
+    enabled: isCompleted && !!slug,
+    staleTime: 60_000,
   });
 
   let cta: EventBookingCTA = { text: 'Book Now', disabled: false, variant: 'primary', action: 'BOOK' };
@@ -156,7 +165,7 @@ export default function EventDetailClient({ slug, initialEvent }: EventDetailCli
     timeZone: 'UTC',
   });
 
-  // Calculate price range
+  // Calculate price range for active events
   const prices = event.ticketTiers?.map((t) => t.price - (t.discount || 0)) || [];
   const minPrice = prices.length > 0 ? Math.min(...prices) : 0;
   const maxPrice = prices.length > 0 ? Math.max(...prices) : 0;
@@ -186,8 +195,6 @@ export default function EventDetailClient({ slug, initialEvent }: EventDetailCli
 
         {/* Hero image with parallax */}
         {event.bannerImage?.url ? (
-          // PERF-018B: Wrapping div carries the ref so the scroll handler can
-          // mutate transform directly without going through React state.
           <div
             ref={heroImageRef}
             className="absolute inset-0"
@@ -206,9 +213,8 @@ export default function EventDetailClient({ slug, initialEvent }: EventDetailCli
           <div className="absolute inset-0 bg-gradient-to-br from-accent-purple/20 to-accent-pink/10" />
         )}
 
-        {/* Cinema fade overlay — bottom fades into background */}
+        {/* Cinema fade overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/30 to-transparent" />
-        {/* Side fades for wide screens */}
         <div className="absolute inset-0 bg-gradient-to-r from-background/20 via-transparent to-background/20" />
 
         {/* Category & Lifecycle badges anchored to hero bottom */}
@@ -227,7 +233,7 @@ export default function EventDetailClient({ slug, initialEvent }: EventDetailCli
               Live Now
             </span>
           )}
-          {event.lifecycle === 'COMPLETED' && (
+          {isCompleted && (
             <span className="inline-flex items-center gap-1.5 text-[10px] uppercase font-bold tracking-widest px-3 py-1.5 bg-white/5 border border-white/10 text-text-muted rounded-full">
               Ended
             </span>
@@ -240,7 +246,6 @@ export default function EventDetailClient({ slug, initialEvent }: EventDetailCli
 
         {/* Title row + Share action + metadata strip */}
         <div className="py-6 space-y-3 border-b border-white/5">
-          {/* Title + Share on same row */}
           <div className="flex items-start justify-between gap-4">
             <h1 className="text-display-md font-black text-white leading-tight">{event.title}</h1>
             <button
@@ -287,104 +292,123 @@ export default function EventDetailClient({ slug, initialEvent }: EventDetailCli
               </svg>
               {event.venue}
             </span>
+            {event.organizerName && (
+              <span className="flex items-center gap-1.5">
+                <svg className="w-4 h-4 text-text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+                By {event.organizerName}
+              </span>
+            )}
           </div>
         </div>
 
-        {/* ── TWO-COLUMN GRID ──────────────────────────────────── */}
-        <div className="pt-5 pb-20 lg:pb-16 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        {/* ── CONDITIONAL LAYOUT BRANCHING ─────────────────────── */}
+        {isCompleted ? (
+          <ExpiredEventView
+            event={event}
+            galleryData={galleryData}
+          />
+        ) : (
+          /* ── ACTIVE / UPCOMING EVENT BOOKING LAYOUT ── */
+          <div className="pt-5 pb-20 lg:pb-16 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
 
-          {/* ── MAIN COLUMN ────────────────────────────────────── */}
-          <div className="lg:col-span-7 space-y-8">
+            {/* ── MAIN COLUMN ── */}
+            <div className="lg:col-span-7 space-y-8">
 
-            <EventOverview
-              description={event.description}
-              organizerName={event.organizerName}
-            />
+              <EventOverview
+                description={event.description}
+                organizerName={event.organizerName}
+              />
 
-            {/* Good to know + Refund policy */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="glass rounded-2xl border border-white/5 p-5 space-y-4 hover:border-white/10 transition-colors">
-                <h2 className="text-base font-bold text-white">Good to know</h2>
-                <div className="space-y-3 text-xs text-text-secondary">
-                  <div className="flex items-start gap-3">
-                    <svg className="w-4 h-4 mt-0.5 flex-shrink-0 text-text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <span>Doors open: {event.doorsOpenTime || 'TBA'} · Show: {event.showTime}</span>
+              {/* Good to know + Refund policy */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="glass rounded-2xl border border-white/5 p-5 space-y-4 hover:border-white/10 transition-colors">
+                  <h2 className="text-base font-bold text-white">Good to know</h2>
+                  <div className="space-y-3 text-xs text-text-secondary">
+                    <div className="flex items-start gap-3">
+                      <svg className="w-4 h-4 mt-0.5 flex-shrink-0 text-text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <span>Doors open: {event.doorsOpenTime || 'TBA'} · Show: {event.showTime}</span>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <svg className="w-4 h-4 mt-0.5 flex-shrink-0 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <circle cx="12" cy="12" r="9" stroke="currentColor" />
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M18.364 5.636l-12.728 12.728" />
+                      </svg>
+                      <span>Age limit: {event.ageRestriction ? `${event.ageRestriction}+` : 'All ages'}</span>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <svg className="w-4 h-4 mt-0.5 flex-shrink-0 text-text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      </svg>
+                      <span>Dresscode: {event.dresscode || 'Casual / Smart casual'}</span>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <svg className="w-4 h-4 mt-0.5 flex-shrink-0 text-text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <span>{event.additionalInfo || 'Free parking available around the venue'}</span>
+                    </div>
                   </div>
-                  <div className="flex items-start gap-3">
-                    <svg className="w-4 h-4 mt-0.5 flex-shrink-0 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <circle cx="12" cy="12" r="9" stroke="currentColor" />
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M18.364 5.636l-12.728 12.728" />
-                    </svg>
-                    <span>Age limit: {event.ageRestriction ? `${event.ageRestriction}+` : 'All ages'}</span>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <svg className="w-4 h-4 mt-0.5 flex-shrink-0 text-text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                    </svg>
-                    <span>Dresscode: {event.dresscode || 'Casual / Smart casual'}</span>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <svg className="w-4 h-4 mt-0.5 flex-shrink-0 text-text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <span>{event.additionalInfo || 'Free parking available around the venue'}</span>
-                  </div>
+                </div>
+
+                <div className="glass rounded-2xl border border-white/5 p-5 space-y-4 hover:border-white/10 transition-colors">
+                  <h2 className="text-base font-bold text-white">Refund policy</h2>
+                  <p className="text-xs text-text-secondary leading-relaxed">
+                    {event.refundPolicy || 'All sales are final. No refunds or exchanges are permitted unless the event is cancelled or postponed.'}
+                  </p>
                 </div>
               </div>
 
+              {/* Location */}
               <div className="glass rounded-2xl border border-white/5 p-5 space-y-4 hover:border-white/10 transition-colors">
-                <h2 className="text-base font-bold text-white">Refund policy</h2>
-                <p className="text-xs text-text-secondary leading-relaxed">
-                  {event.refundPolicy || 'All sales are final. No refunds or exchanges are permitted unless the event is cancelled or postponed.'}
-                </p>
+                <div>
+                  <h2 className="text-base font-bold text-white">Location</h2>
+                  <div className="text-sm text-text-secondary mt-1">{event.venue}</div>
+                </div>
+
+                <a
+                  href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(event.venue || '')}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-sm font-semibold text-white transition-all active:scale-95"
+                >
+                  ↗ Get directions
+                </a>
               </div>
+
+              {/* Mobile spacer above sticky footer */}
+              <div className="h-6 lg:hidden" aria-hidden="true" />
             </div>
 
-            {/* Location */}
-            <div className="glass rounded-2xl border border-white/5 p-5 space-y-4 hover:border-white/10 transition-colors">
-              <div>
-                <h2 className="text-base font-bold text-white">Location</h2>
-                <div className="text-sm text-text-secondary mt-1">{event.venue}</div>
-              </div>
+            <EventStickyCTA
+              priceLabel={priceDisplay}
+              onGetTickets={() => {
+                if (cta.action === 'BOOK') {
+                  bookingFlowRef.current?.openBooking();
+                }
+              }}
+              cta={cta}
+            />
 
-              <a
-                href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(event.venue || '')}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-sm font-semibold text-white transition-all active:scale-95"
-              >
-                ↗ Get directions
-              </a>
-            </div>
-
-            {/* Mobile spacer above sticky footer — kept minimal */}
-            <div className="h-6 lg:hidden" aria-hidden="true" />
           </div>
-
-          <EventStickyCTA
-            priceLabel={priceDisplay}
-            onGetTickets={() => {
-              if (cta.action === 'BOOK') {
-                bookingFlowRef.current?.openBooking();
-              } else if (cta.action === 'GALLERY') {
-                router.push(`/events/${slug}/gallery`);
-              }
-            }}
-            cta={cta}
-          />
-
-        </div>
+        )}
       </div>
 
-      <EventBookingFlow
-        ref={bookingFlowRef}
-        event={event}
-        showDateTime={showDateTime}
-        ticketsLeft={ticketsLeft}
-      />
+      {/* Booking flow modal mounted only for active events */}
+      {!isCompleted && (
+        <EventBookingFlow
+          ref={bookingFlowRef}
+          event={event}
+          showDateTime={showDateTime}
+          ticketsLeft={ticketsLeft}
+        />
+      )}
 
     </div>
   );
 }
+
+
