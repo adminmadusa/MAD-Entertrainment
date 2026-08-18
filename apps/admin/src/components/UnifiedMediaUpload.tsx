@@ -58,7 +58,7 @@ export function UnifiedMediaUpload({
 
   const isDuplicateFile = useCallback((file: File): boolean => {
     const fingerprint = `${file.name}_${file.size}_${file.lastModified}`;
-    return uploads.some((up) => up.id === fingerprint);
+    return uploads.some((up) => up.id === fingerprint && up.state === 'uploading');
   }, [uploads]);
 
   const uploadFile = useCallback(async (file: File) => {
@@ -128,8 +128,20 @@ export function UnifiedMediaUpload({
           setUploads((prev) => prev.filter((u) => u.id !== fingerprint));
         }, 1500);
       } else {
-        onChange?.(bannerImage, posterImage, [...galleryImages, newAsset]);
-        setUploads((prev) => prev.map((u) => (u.id === fingerprint ? { ...u, state: 'success', progress: 100 } : u)));
+        let newBanner = bannerImage;
+        let newPoster = posterImage;
+        const newGallery = [...galleryImages];
+
+        if (!newBanner) {
+          newBanner = newAsset;
+        } else if (!newPoster) {
+          newPoster = newAsset;
+        } else {
+          newGallery.push(newAsset);
+        }
+
+        onChange?.(newBanner, newPoster, newGallery);
+        setUploads((prev) => prev.filter((u) => u.id !== fingerprint));
       }
     } catch (err: any) {
       console.error('[UnifiedMediaUpload] Upload failed:', err);
@@ -163,11 +175,11 @@ export function UnifiedMediaUpload({
     adminApiClient.delete('/admin/uploads', { data: { publicId: item.asset.publicId } }).catch(() => {});
 
     if (item.role === 'banner') {
-      onChange(null, posterImage, galleryImages);
+      onChange?.(null, posterImage, galleryImages);
     } else if (item.role === 'poster') {
-      onChange(bannerImage, null, galleryImages);
+      onChange?.(bannerImage, null, galleryImages);
     } else {
-      onChange(bannerImage, posterImage, galleryImages.filter((_, idx) => idx !== item.index));
+      onChange?.(bannerImage, posterImage, galleryImages.filter((_, idx) => idx !== item.index));
     }
   };
 
