@@ -187,6 +187,13 @@ The table below logs all active endpoints compiled from Express router maps and 
 | **PUT** | `/api/admin/events/:id` | Internal (Admin) | Stable | Yes (Admin) | `super_admin`, `admin`, `manager` | Update event details with concurrency safety. |
 | **DELETE** | `/api/admin/events/:id` | Internal (Admin) | Stable | Yes (Admin) | `super_admin`, `admin`, `manager` | Delete event profile. |
 | **PUT** | `/api/admin/events/:id` *(memories sub-document)* | Internal (Admin) | Stable | Yes (Admin) | `super_admin`, `admin`, `manager` | Update event including optional `memories` sub-document (publication state, gallery, heading, thank-you message). |
+| **GET** | `/api/admin/events/:eventId/gallery` | Internal (Admin) | Stable | Yes (Admin) | `super_admin`, `admin`, `manager` | Retrieve event gallery items and settings. |
+| **POST** | `/api/admin/events/:eventId/gallery/items` | Internal (Admin) | Stable | Yes (Admin) | `super_admin`, `admin`, `manager` | Add new photos to the event gallery. |
+| **PUT** | `/api/admin/events/:eventId/gallery/items/reorder` | Internal (Admin) | Stable | Yes (Admin) | `super_admin`, `admin`, `manager` | Reorder event gallery items. |
+| **PATCH** | `/api/admin/events/:eventId/gallery/items/:itemId/cover` | Internal (Admin) | Stable | Yes (Admin) | `super_admin`, `admin`, `manager` | Set specific gallery item as the event cover photo. |
+| **PATCH** | `/api/admin/events/:eventId/gallery/items/:itemId` | Internal (Admin) | Stable | Yes (Admin) | `super_admin`, `admin`, `manager` | Update gallery item metadata (caption). |
+| **DELETE** | `/api/admin/events/:eventId/gallery/items/:itemId` | Internal (Admin) | Stable | Yes (Admin) | `super_admin`, `admin`, `manager` | Delete gallery item and trigger asynchronous Cloudinary cleanup. |
+| **PATCH** | `/api/admin/events/:eventId/gallery/settings` | Internal (Admin) | Stable | Yes (Admin) | `super_admin`, `admin`, `manager` | Update gallery publication settings (published toggle). |
 | **POST** | `/api/admin/events/:id/preview-token` | Internal (Admin) | Stable | Yes (Admin) | `super_admin`, `admin`, `manager` | Generate a 15-minute JWT preview token for Event Memories. |
 | **POST** | `/api/admin/dj-operators` | Internal (Admin) | Stable | Yes (Admin) | `super_admin`, `admin`, `manager` | Create DJ Operator. |
 | **GET** | `/api/admin/dj-operators` | Internal (Admin) | Stable | Yes (Admin) | `super_admin` up to `scanner` | List DJ Operators. |
