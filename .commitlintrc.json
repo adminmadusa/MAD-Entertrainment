@@ -16,7 +16,8 @@
         "ci",
         "revert",
         "build",
-        "audit"
+        "audit",
+        "security"
       ]
     ],
     "type-case": [2, "always", "lower-case"],

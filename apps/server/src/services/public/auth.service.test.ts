@@ -54,7 +54,14 @@ vi.mock('../../models/magic-token.schema', () => ({
 vi.mock('../../models/booking.schema', () => ({
   Booking: {
     findOne: vi.fn(),
-    updateMany: vi.fn(),
+    updateMany: vi.fn().mockResolvedValue({ modifiedCount: 0 }),
+  },
+}));
+
+vi.mock('../../models/ticket.schema', () => ({
+  Ticket: {
+    findOne: vi.fn(),
+    updateMany: vi.fn().mockResolvedValue({ modifiedCount: 0 }),
   },
 }));
 
@@ -601,7 +608,10 @@ describe('AuthService - verifyMagicLinkOrOTP', () => {
     await AuthService.verifyMagicLinkOrOTP('123456', 'user@example.com');
 
     expect(Booking.updateMany).toHaveBeenCalledWith(
-      { guestEmail: 'user@example.com', userId: { $exists: false } },
+      {
+        guestEmail: 'user@example.com',
+        $or: [{ userId: { $exists: false } }, { userId: null }],
+      },
       {
         $set: { userId: expect.any(Object) },
       }

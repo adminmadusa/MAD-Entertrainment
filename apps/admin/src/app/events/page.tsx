@@ -26,6 +26,7 @@ export default function AdminEventsPage() {
   const [statusFilter, setStatusFilter] = useState<EventStatus | ''>('');
   const [page, setPage] = useState(1);
   const [deleteTarget, setDeleteTarget] = useState<AdminEvent | null>(null);
+  const [isBulkDeleteModalOpen, setIsBulkDeleteModalOpen] = useState(false);
 
   const [toastMessage, setToastMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
   // Optimistic status overrides keyed by event ID
@@ -48,7 +49,7 @@ export default function AdminEventsPage() {
     }
   };
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ['admin-events', { page, search, status: statusFilter, sortField, sortOrder }],
     queryFn: () => adminGetEvents({ page, limit: 15, search, status: statusFilter, ...(sortField && { sortField }), ...(sortOrder && { sortOrder }) }),
   });
@@ -61,6 +62,10 @@ export default function AdminEventsPage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['admin-events'] });
       setDeleteTarget(null);
+      showToast('success', 'Event deleted successfully');
+    },
+    onError: (err: any) => {
+      showToast('error', extractApiError(err).message || 'Failed to delete event');
     },
   });
 
@@ -79,7 +84,7 @@ export default function AdminEventsPage() {
     onError: (err: any, { id }) => {
       // Rollback optimistic update
       setOptimisticStatuses((prev) => { const next = { ...prev }; delete next[id]; return next; });
-      showToast('error', err.response?.data?.message || 'Failed to update event status');
+      showToast('error', extractApiError(err).message || 'Failed to update event status');
     },
   });
 
@@ -88,6 +93,7 @@ export default function AdminEventsPage() {
     onSuccess: (data) => {
       qc.invalidateQueries({ queryKey: ['admin-events'] });
       clearSelection();
+      setIsBulkDeleteModalOpen(false);
       const { successCount, failedCount } = data;
       if (failedCount > 0) {
         showToast('error', `Deleted ${successCount} events. ${failedCount} failed.`);
@@ -96,7 +102,8 @@ export default function AdminEventsPage() {
       }
     },
     onError: (err: any) => {
-      showToast('error', err.response?.data?.message || 'Failed to bulk delete events');
+      setIsBulkDeleteModalOpen(false);
+      showToast('error', extractApiError(err).message || 'Failed to bulk delete events');
     }
   });
 
@@ -115,6 +122,30 @@ export default function AdminEventsPage() {
           <TableCell className="py-4 px-5"><div className="h-4 bg-white/5 rounded w-20 ml-auto" /></TableCell>
         </TableRow>
       ));
+    }
+
+    if (isError) {
+      const errorMessage = extractApiError(error).message || 'Failed to load events.';
+      return (
+        <TableRow>
+          <TableCell colSpan={6} className="py-8">
+            <EmptyState
+              variant="table"
+              icon={<Search />}
+              title="Unable to load events"
+              description={errorMessage}
+              action={
+                <button
+                  onClick={() => refetch()}
+                  className="px-4 py-2 mt-2 text-sm font-medium text-white bg-accent-purple hover:bg-accent-purple/90 rounded-xl transition-colors"
+                >
+                  Retry Loading
+                </button>
+              }
+            />
+          </TableCell>
+        </TableRow>
+      );
     }
 
     if (events.length === 0) {
@@ -374,7 +405,7 @@ export default function AdminEventsPage() {
       </div>
 
       {/* Table */}
-      <div className="glass rounded-2xl border border-border-subtle overflow-hidden">
+      <div className="glass rounded-2xl border border-border-subtle overflow-x-auto">
         <Table className="min-w-[900px]">
           <TableHeader stickyHeader>
             <TableRow>
@@ -386,13 +417,27 @@ export default function AdminEventsPage() {
                   aria-label="Select all events on this page"
                 />
               </TableHead>
-              <TableHead onClick={() => handleSort('title')} className="py-3.5 px-5 cursor-pointer hover:text-white transition-colors select-none">
+              <TableHead
+                onClick={() => handleSort('title')}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleSort('title'); } }}
+                tabIndex={0}
+                role="columnheader"
+                aria-sort={sortField === 'title' ? (sortOrder === 'asc' ? 'ascending' : 'descending') : 'none'}
+                className="py-3.5 px-5 cursor-pointer hover:text-white transition-colors select-none focus:outline-none focus-visible:ring-1 focus-visible:ring-accent-purple rounded"
+              >
                 Event {sortField === 'title' ? (sortOrder === 'asc' ? '▲' : '▼') : ''}
               </TableHead>
               <TableHead className="py-3.5 px-4 text-text-secondary select-none">
                 Category
               </TableHead>
-              <TableHead onClick={() => handleSort('startDate')} className="py-3.5 px-4 cursor-pointer hover:text-white transition-colors select-none">
+              <TableHead
+                onClick={() => handleSort('startDate')}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleSort('startDate'); } }}
+                tabIndex={0}
+                role="columnheader"
+                aria-sort={sortField === 'startDate' ? (sortOrder === 'asc' ? 'ascending' : 'descending') : 'none'}
+                className="py-3.5 px-4 cursor-pointer hover:text-white transition-colors select-none focus:outline-none focus-visible:ring-1 focus-visible:ring-accent-purple rounded"
+              >
                 Event Starts {sortField === 'startDate' ? (sortOrder === 'asc' ? '▲' : '▼') : ''}
               </TableHead>
               <TableHead className="py-3.5 px-4 text-text-secondary select-none">
@@ -419,7 +464,7 @@ export default function AdminEventsPage() {
         )}
       </div>
 
-      {/* Delete Confirm Modal */}
+      {/* Delete Single Confirm Modal */}
       <Modal
         isOpen={!!deleteTarget}
         onClose={() => setDeleteTarget(null)}
@@ -459,18 +504,50 @@ export default function AdminEventsPage() {
         )}
       </Modal>
 
-
+      {/* Bulk Delete Confirm Modal */}
+      <Modal
+        isOpen={isBulkDeleteModalOpen}
+        onClose={() => setIsBulkDeleteModalOpen(false)}
+        size="sm"
+        showCloseButton={false}
+        closeOnBackdropClick={true}
+        ariaLabelledBy="bulk-delete-event-modal-title"
+        className="glass-strong border border-border-subtle p-6 max-w-sm"
+      >
+        <div>
+          <h2 id="bulk-delete-event-modal-title" className="text-white font-bold text-lg mb-2">Delete {selectedCount} Events?</h2>
+          <p className="text-text-secondary text-sm mb-1">
+            You are about to permanently delete <strong className="text-white">{selectedCount}</strong> selected events.
+          </p>
+          <p className="text-error text-xs mb-5">This action cannot be undone.</p>
+          <div className="flex gap-3">
+            <button
+              onClick={() => setIsBulkDeleteModalOpen(false)}
+              className="flex-1 py-2.5 glass border border-border-subtle rounded-xl text-sm font-medium text-text-secondary hover:text-white transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() => bulkDeleteMutation.mutate(Array.from(selectedIds))}
+              disabled={bulkDeleteMutation.isPending}
+              className="flex-1 py-2.5 bg-error/80 hover:bg-error rounded-xl text-white text-sm font-medium transition-colors disabled:opacity-60"
+            >
+              {bulkDeleteMutation.isPending ? 'Deleting...' : `Delete ${selectedCount}`}
+            </button>
+          </div>
+        </div>
+      </Modal>
 
       <FloatingActionBar
         selectedCount={selectedCount}
         onClearSelection={clearSelection}
       >
         <button
-          onClick={() => bulkDeleteMutation.mutate(Array.from(selectedIds))}
+          onClick={() => setIsBulkDeleteModalOpen(true)}
           disabled={bulkDeleteMutation.isPending}
           className="px-4 py-2 text-sm font-semibold bg-error/80 hover:bg-error text-white rounded-lg transition-colors disabled:opacity-50"
         >
-          {bulkDeleteMutation.isPending ? 'Deleting...' : 'Delete Selected'}
+          Delete Selected ({selectedCount})
         </button>
       </FloatingActionBar>
 

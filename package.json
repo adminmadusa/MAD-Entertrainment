@@ -28,7 +28,8 @@
     "governance:rollback": "tsx scripts/governance/cli/rollback.ts",
     "governance:ui-baseline": "tsx scripts/governance/gather-ui-baseline.ts",
     "governance:branch-cleanup": "tsx scripts/governance/branch-cleanup.ts",
-    "test:ui-governance": "playwright test --config=playwright.config.ts"
+    "test:ui-governance": "playwright test --config=playwright.config.ts",
+    "audit:dead-code": "knip --no-exit-code"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.0.0",
@@ -37,6 +38,7 @@
     "@sentry/nextjs": "^10.53.1",
     "@sentry/node": "^10.53.1",
     "@vitest/coverage-v8": "^4.1.7",
+    "knip": "^5.45.0",
     "turbo": "^2.9.14",
     "typescript": "^5.9.3",
     "vitest": "^4.1.7"
