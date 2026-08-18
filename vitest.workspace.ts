@@ -6,6 +6,15 @@ const __dirname = dirname(__filename);
 
 export default [
   {
+    resolve: {
+      alias: {
+        '@mad/shared': resolve(__dirname, './packages/shared/src'),
+        '@mad/types': resolve(__dirname, './packages/types/src'),
+        '@mad/ui': resolve(__dirname, './packages/ui/src'),
+        '@mad/utils': resolve(__dirname, './packages/utils/src'),
+        '@mad/validations': resolve(__dirname, './packages/validations/src'),
+      }
+    },
     test: {
       name: 'server',
       environment: 'node',

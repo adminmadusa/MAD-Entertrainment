@@ -1,4 +1,4 @@
-import { BookingStatus, PaymentStatus, RefundStatus } from '@mad/shared';
+import { BookingStatus, PaymentStatus, RefundStatus, isFullRefund } from '@mad/shared';
 
 import { AppError } from '../../../middleware/error.middleware';
 import { Booking } from '../../../models/booking.schema';
@@ -228,12 +228,12 @@ export class RefundLifecycleService {
         throw AppError.notFound('Payment record not found');
       }
 
-      const isFullRefund = (totalRefundedSoFar + refund.amount) === payment.amount;
-      const newPaymentStatus = isFullRefund ? PaymentStatus.REFUNDED : PaymentStatus.PARTIALLY_REFUNDED;
+      const isFullRefundStatus = isFullRefund(totalRefundedSoFar, refund.amount, payment.amount);
+      const newPaymentStatus = isFullRefundStatus ? PaymentStatus.REFUNDED : PaymentStatus.PARTIALLY_REFUNDED;
 
       let cancelPostCommitPayload = null;
 
-      if (isFullRefund) {
+      if (isFullRefundStatus) {
         if (freshBooking.status === BookingStatus.CONFIRMED) {
           const cancelResult = await cancelBooking(
             bookingId,
