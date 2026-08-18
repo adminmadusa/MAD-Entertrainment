@@ -144,7 +144,11 @@ export const updatePopupSchema = z.object({
     .superRefine(validatePopupDateRange),
 });
 
-// -- Refund Validation --
+// ─── Refund Validation (SSOT) ───────────────────────────────────────────────
+/**
+ * Validation schema for standalone and ticket-level refund creation.
+ * Supports full refunds, partial monetary refunds, and ticket-scoped refunds.
+ */
 export const createRefundSchema = z.object({
   body: z.object({
     bookingId: objectIdSchema,
@@ -329,7 +333,11 @@ export const updateTicketProfileSchema = z.object({
   body: createTicketProfileSchema.shape.body.partial(),
 });
 
-// -- Booking Validation (remediated from inline routes) --
+// ─── Booking Cancellation Validation (SSOT) ──────────────────────────────────
+/**
+ * Validation schema for booking cancellation and cancellation-refund requests.
+ * Explicitly preserves refundAmount and ticketIds for cancellation refunds.
+ */
 export const cancelBookingSchema = z.object({
   body: z.object({
     reason: z.string().max(500, 'Reason must be under 500 characters').optional(),
