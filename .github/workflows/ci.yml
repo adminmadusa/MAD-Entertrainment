@@ -150,3 +150,46 @@ jobs:
 
       - name: Run Dependency Audit
         run: npx tsx scripts/dependency-audit.ts
+
+  commit-lint:
+    name: Commit Convention Validation
+    # Only meaningful on pull_request — validating commit messages requires
+    # a base..head range. On push to develop/live, all commits have already
+    # passed this gate at PR time, so re-running would be redundant.
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        # actions/checkout v4 — pinned to immutable commit SHA
+        # https://github.com/actions/checkout/releases/tag/v4
+        # fetch-depth: 0 is required so that the full commit range
+        # base..head is available for commitlint to traverse.
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+
+      - name: Install pnpm
+        # pnpm/action-setup v3.0.0 — pinned to immutable commit SHA
+        # https://github.com/pnpm/action-setup/releases/tag/v3.0.0
+        uses: pnpm/action-setup@a3252b78c470c02df07e9d59298aecedc3ccdd6d
+        with:
+          version: 9.15.0
+          run_install: false
+
+      - name: Install Node.js
+        # actions/setup-node v4 — pinned to immutable commit SHA
+        # https://github.com/actions/setup-node/releases/tag/v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 20
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Validate commit messages
+        run: |
+          npx commitlint \
+            --from ${{ github.event.pull_request.base.sha }} \
+            --to ${{ github.event.pull_request.head.sha }} \
+            --verbose
