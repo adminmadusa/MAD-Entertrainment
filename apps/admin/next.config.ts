@@ -50,6 +50,12 @@ const withPWA = withPWAInit({
       {
         urlPattern: /^\/api\/.*/i,
         handler: 'NetworkOnly',
+        method: 'PATCH',
+        options: { cacheName: 'api-patch' },
+      },
+      {
+        urlPattern: /^\/api\/.*/i,
+        handler: 'NetworkOnly',
         method: 'DELETE',
         options: { cacheName: 'api-delete' },
       },

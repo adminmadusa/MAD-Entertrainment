@@ -65,6 +65,7 @@ export default function AdminRefundsPage() {
     setGatewayId('');
     setManualOverride(false);
     setOverrideReason('');
+    processMutation.reset();
   };
 
   const processMutation = useMutation({
@@ -352,14 +353,22 @@ export default function AdminRefundsPage() {
                                 {manualOverride && (
                                   <>
                                     <div className="space-y-1.5">
-                                      <label className="text-xs text-text-secondary block">Override Reason *</label>
+                                      <div className="flex justify-between items-center">
+                                        <label className="text-xs text-text-secondary block">Override Reason *</label>
+                                        <span className={`text-[10px] ${overrideReason.trim().length >= 10 ? 'text-green-400' : 'text-text-muted'}`}>
+                                          {overrideReason.trim().length}/10 min
+                                        </span>
+                                      </div>
                                       <textarea
                                         value={overrideReason}
                                         onChange={(e) => setOverrideReason(e.target.value)}
-                                        placeholder="Provide reason for override..."
+                                        placeholder="Provide reason for override (minimum 10 characters)..."
                                         rows={2}
                                         className="w-full px-4 py-2 rounded-xl bg-background border border-border-subtle text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple resize-none"
                                       />
+                                      {overrideReason.trim().length > 0 && overrideReason.trim().length < 10 && (
+                                        <p className="text-[11px] text-yellow-400">Override reason must be at least 10 characters.</p>
+                                      )}
                                     </div>
                                     <div className="space-y-1.5">
                                       <label className="text-xs text-text-secondary block">Gateway Refund ID *</label>
@@ -390,6 +399,12 @@ export default function AdminRefundsPage() {
                             <input value={gatewayId} onChange={(e) => setGatewayId(e.target.value)} placeholder="e.g. rfnd_xxx from Razorpay" className="w-full px-4 py-2.5 rounded-xl bg-background border border-border-subtle text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple" />
                           </div>
                         )}
+                        {processMutation.isError && (
+                          <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-3 text-xs text-red-400 mt-4">
+                            <p className="font-semibold mb-0.5">Processing Failed</p>
+                            <p>{(processMutation.error as any)?.response?.data?.message || (processMutation.error as Error)?.message || 'Failed to process refund. Please verify inputs and permissions.'}</p>
+                          </div>
+                        )}
                         <div className="flex gap-3 pt-4">
                           <button type="button" onClick={resetStates} className="flex-1 py-2.5 glass border border-border-subtle rounded-xl text-sm text-text-secondary">Cancel</button>
                           <button
@@ -403,7 +418,7 @@ export default function AdminRefundsPage() {
                               (action === 'approve' && needsOverride && (
                                 admin?.role !== AdminRole.SUPER_ADMIN ||
                                 !manualOverride ||
-                                !overrideReason.trim() ||
+                                overrideReason.trim().length < 10 ||
                                 !gatewayId.trim()
                               ))
                             }

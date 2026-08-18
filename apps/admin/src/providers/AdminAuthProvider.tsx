@@ -3,7 +3,10 @@
 import { createContext, useContext, useEffect, useState, useCallback, } from 'react';
 
 import { adminGetMe, adminLogout as apiLogout, AdminUser } from '@/lib/api/admin/auth.service';
+import { createLogger } from '@/lib/logger';
 import { STORAGE_KEYS } from '@mad/shared';
+
+const logger = createLogger('AdminAuthProvider');
 
 interface AdminAuthContextValue {
   admin: AdminUser | null;
@@ -44,11 +47,15 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
         // Validate token by fetching current admin
         const currentAdmin = await adminGetMe();
         setAdmin(currentAdmin);
-      } catch {
-        // Token invalid/expired — clear it
-        localStorage.removeItem(STORAGE_KEYS.ADMIN_TOKEN);
-        setToken(null);
-        setAdmin(null);
+      } catch (err: any) {
+        // Token invalid/expired — only clear on explicit 401 Unauthorized
+        if (err?.response?.status === 401 || err?.statusCode === 401) {
+          localStorage.removeItem(STORAGE_KEYS.ADMIN_TOKEN);
+          setToken(null);
+          setAdmin(null);
+        } else {
+          logger.warn('Failed to refresh admin profile on mount, keeping session:', err);
+        }
       } finally {
         setIsLoading(false);
       }

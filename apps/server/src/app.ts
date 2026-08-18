@@ -2,6 +2,7 @@ import compression from 'compression';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import express, { Application } from 'express';
+import 'express-async-errors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import swaggerUi from 'swagger-ui-express';
@@ -17,7 +18,6 @@ import routes from './routes';
 import { logger } from './utils/logger';
 import { isOriginAllowed } from './utils/origin-validator';
 
-import 'express-async-errors';
 import './models';
 
 export function createApp(): Application {
