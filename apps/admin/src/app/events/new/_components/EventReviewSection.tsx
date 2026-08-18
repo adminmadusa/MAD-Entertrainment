@@ -2,10 +2,11 @@ import React from 'react';
 
 import { type TicketTierInput } from '@/components/events/EventTicketingCard';
 import type { CloudinaryImage } from '@/lib/api/admin/event.service';
-import { EventStatus } from '@mad/shared';
+import { EventStatus, getCountryConfig } from '@mad/shared';
 import { Button, Badge } from '@mad/ui';
 
 interface EventReviewSectionProps {
+  countryCode?: string;
   title: string;
   category: string;
   description: string;
@@ -28,6 +29,7 @@ interface EventReviewSectionProps {
 }
 
 export const EventReviewSection: React.FC<EventReviewSectionProps> = ({
+  countryCode,
   title,
   category,
   description,
@@ -48,6 +50,8 @@ export const EventReviewSection: React.FC<EventReviewSectionProps> = ({
   posterImage,
   onEditStep,
 }) => {
+  const currencySymbol = getCountryConfig(countryCode).symbol;
+
   return (
     <div className="space-y-6">
       {/* Basic Information */}
@@ -151,7 +155,7 @@ export const EventReviewSection: React.FC<EventReviewSectionProps> = ({
                   <div key={idx} className="flex justify-between items-center pb-2 border-b border-border-subtle last:border-0 last:pb-0">
                     <span className="text-white font-medium capitalize">{tier.name}</span>
                     <div className="text-text-muted text-xs text-right">
-                      <div>Price: {tier.price}</div>
+                      <div>Price: {tier.price !== '' ? `${currencySymbol}${tier.price}` : 'Free'}</div>
                       <div>Capacity: {tier.capacity}</div>
                     </div>
                   </div>

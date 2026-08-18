@@ -1,6 +1,7 @@
 import React from 'react';
 
 import { type AdminTier } from '@/lib/api/admin/tier.service';
+import { getCountryConfig } from '@mad/shared';
 import type { TicketProfile } from '@mad/types';
 import { FormField, Input } from '@mad/ui';
 
@@ -37,6 +38,7 @@ export const defaultTier = (): TicketTierInput => ({
 });
 
 export interface EventTicketingCardProps {
+  countryCode?: string;
   ticketingType: 'custom' | 'profile';
   setTicketingType: (val: 'custom' | 'profile') => void;
   tiers: TicketTierInput[];
@@ -58,6 +60,7 @@ export interface EventTicketingCardProps {
 }
 
 export const EventTicketingCard = React.memo(function EventTicketingCard({
+  countryCode,
   ticketingType,
   setTicketingType,
   tiers,
@@ -73,6 +76,8 @@ export const EventTicketingCard = React.memo(function EventTicketingCard({
   activeProfile,
   eventTitle,
 }: EventTicketingCardProps) {
+  const currencySymbol = getCountryConfig(countryCode).symbol;
+
   return (
     <div className="glass rounded-2xl border border-border-subtle p-6 space-y-6">
       <div className="flex items-center justify-between border-b border-white/5 pb-4">
@@ -129,7 +134,7 @@ export const EventTicketingCard = React.memo(function EventTicketingCard({
                   </button>
                 )}
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <FormField label="Tier Name" htmlFor={`tier-name-${i}`}>
                   <select
                     id={`tier-name-${i}`}
@@ -150,11 +155,12 @@ export const EventTicketingCard = React.memo(function EventTicketingCard({
                         ))}
                   </select>
                 </FormField>
-                <FormField label="Price (₹)" htmlFor={`tier-price-${i}`}>
+                <FormField label={`Price (${currencySymbol})`} htmlFor={`tier-price-${i}`}>
                   <Input
                     id={`tier-price-${i}`}
                     type="number"
                     min="0"
+                    step="0.01"
                     value={tier.price}
                     onChange={(e) =>
                       onUpdateTier(i, 'price', e.target.value === '' ? '' : Number(e.target.value))
@@ -163,8 +169,6 @@ export const EventTicketingCard = React.memo(function EventTicketingCard({
                     required
                   />
                 </FormField>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
                 <FormField label="Capacity" htmlFor={`tier-capacity-${i}`} required>
                   <Input
                     id={`tier-capacity-${i}`}
@@ -225,7 +229,7 @@ export const EventTicketingCard = React.memo(function EventTicketingCard({
                             </span>
                             <span className="text-xs text-text-secondary">
                               Tier: <strong className="text-text-secondary">{ticket.tier}</strong> &bull; Price:{' '}
-                              <strong className="text-text-secondary">₹{ticket.price}</strong>
+                              <strong className="text-text-secondary">{currencySymbol}{ticket.price}</strong>
                             </span>
                           </div>
                           <div className="flex flex-wrap items-center gap-4">
@@ -274,3 +278,4 @@ export const EventTicketingCard = React.memo(function EventTicketingCard({
     </div>
   );
 });
+
