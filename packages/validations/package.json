@@ -13,8 +13,7 @@
   },
   "dependencies": {
     "zod": "^3.25.76",
-    "@mad/types": "workspace:*",
-    "@mad/shared": "workspace:*"
+    "@mad/types": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.9.3"
