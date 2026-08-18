@@ -10,6 +10,18 @@ on:
       - develop
       - live
 
+# Least-privilege: only repository contents need to be readable.
+# Individual jobs that need additional scopes (e.g. security-events) must
+# declare those scopes explicitly at the job level.
+permissions:
+  contents: read
+
+# Cancel any in-progress run for the same workflow + branch/PR so that
+# stale runs from rapid commits do not consume runner concurrency.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build-lint-test:
     name: Build, Lint, and Test
@@ -37,16 +49,22 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        # actions/checkout v4 — pinned to immutable commit SHA
+        # https://github.com/actions/checkout/releases/tag/v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
 
       - name: Install pnpm
-        uses: pnpm/action-setup@v3
+        # pnpm/action-setup v3.0.0 — pinned to immutable commit SHA
+        # https://github.com/pnpm/action-setup/releases/tag/v3.0.0
+        uses: pnpm/action-setup@a3252b78c470c02df07e9d59298aecedc3ccdd6d
         with:
           version: 9.15.0
           run_install: false
 
       - name: Install Node.js
-        uses: actions/setup-node@v4
+        # actions/setup-node v4 — pinned to immutable commit SHA
+        # https://github.com/actions/setup-node/releases/tag/v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: 20
           cache: "pnpm"
@@ -68,7 +86,6 @@ jobs:
         env:
           GOVERNANCE_MIN_HEALTH_SCORE: 80
 
-
       - name: Build Workspace
         run: pnpm run build
 
@@ -83,12 +100,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v4
+        # actions/checkout v4 — pinned to immutable commit SHA
+        # https://github.com/actions/checkout/releases/tag/v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           fetch-depth: 0
 
       - name: TruffleHog OSS
-        uses: trufflesecurity/trufflehog@v3.95.7
+        # trufflesecurity/trufflehog v3.95.7 — pinned to immutable commit SHA
+        # https://github.com/trufflesecurity/trufflehog/releases/tag/v3.95.7
+        uses: trufflesecurity/trufflehog@f446421baf832d6356c42c1743d99abff52ff334
         if: |
           github.event_name == 'pull_request' ||
           (github.event_name == 'push' &&
@@ -104,16 +125,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v4
+        # actions/checkout v4 — pinned to immutable commit SHA
+        # https://github.com/actions/checkout/releases/tag/v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
 
       - name: Install pnpm
-        uses: pnpm/action-setup@v3
+        # pnpm/action-setup v3.0.0 — pinned to immutable commit SHA
+        # https://github.com/pnpm/action-setup/releases/tag/v3.0.0
+        uses: pnpm/action-setup@a3252b78c470c02df07e9d59298aecedc3ccdd6d
         with:
           version: 9.15.0
           run_install: false
 
       - name: Install Node.js
-        uses: actions/setup-node@v4
+        # actions/setup-node v4 — pinned to immutable commit SHA
+        # https://github.com/actions/setup-node/releases/tag/v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: 20
           cache: "pnpm"
