@@ -69,9 +69,30 @@ export class AccessibilityValidator implements GovernanceValidator {
       }
 
       const lines = content.split('\n');
-      const hasSharedModalImport =
-        content.includes("import { Modal } from '@mad/ui'") ||
-        content.includes("import Modal");
+
+      let hasSharedModalImport = false;
+      const findModalImport = (node: ts.Node) => {
+        if (ts.isImportDeclaration(node) && ts.isStringLiteral(node.moduleSpecifier)) {
+          const mod = node.moduleSpecifier.text;
+          if (mod === '@mad/ui' || mod.endsWith('/Modal') || mod === '@/components/ui/Modal') {
+            const clause = node.importClause;
+            if (clause) {
+              if (clause.name && clause.name.text === 'Modal') {
+                hasSharedModalImport = true;
+              }
+              if (clause.namedBindings && ts.isNamedImports(clause.namedBindings)) {
+                for (const spec of clause.namedBindings.elements) {
+                  if (spec.name.text === 'Modal') {
+                    hasSharedModalImport = true;
+                  }
+                }
+              }
+            }
+          }
+        }
+        ts.forEachChild(node, findModalImport);
+      };
+      findModalImport(sourceFile);
 
       const reportFinding = (
         line: number,

@@ -75,6 +75,24 @@ describe('UI and Accessibility AST Validators', () => {
       expect(result.warnings.some(e => e.rule === 'VAL-UI-003')).toBe(true);
     });
 
+    it('should NOT flag custom modal when Modal is imported in compound named import from @mad/ui', async () => {
+      vi.mocked(fs.existsSync).mockReturnValue(true);
+      vi.mocked(fs.readFileSync).mockReturnValue(`
+        import { Button, Modal } from '@mad/ui';
+        export function CustomModal() {
+          return (
+            <div className="fixed backdrop-blur-sm">
+              <div>Content</div>
+            </div>
+          );
+        }
+      `);
+
+      const result = await validator.run(['apps/web/src/components/Modal.tsx'], {});
+      expect(result.warnings.some(e => e.rule === 'VAL-UI-002')).toBe(false);
+      expect(result.warnings.some(e => e.rule === 'VAL-UI-003')).toBe(false);
+    });
+
     it('should detect interactive elements with click handlers lacking keyboard accessibility', async () => {
       vi.mocked(fs.existsSync).mockReturnValue(true);
       vi.mocked(fs.readFileSync).mockReturnValue(`
