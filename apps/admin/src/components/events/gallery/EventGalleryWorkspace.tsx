@@ -1,7 +1,11 @@
 'use client';
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import Image from 'next/image';
 import React, { useState, useCallback } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+
+import type { EventGalleryItem } from '@mad/types';
+import { Alert, Spinner } from '@mad/ui';
 
 import {
   adminAddGalleryItems,
@@ -11,9 +15,6 @@ import {
   adminUpdateGallerySettings,
 } from '@/lib/api/admin/event-gallery.service';
 import { adminApiClient } from '@/lib/api/client';
-import { Alert, Spinner } from '@mad/ui';
-import type { EventGalleryItem } from '@mad/types';
-import Image from 'next/image';
 
 import { EventGalleryGrid } from './EventGalleryGrid';
 
