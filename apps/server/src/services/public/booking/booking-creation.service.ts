@@ -277,14 +277,13 @@ export class BookingCreationService {
       }
     }
 
-    // Pricing calculations (fixed convenience fee per ticket + event tax applied on subtotal)
+    // 1. Fee calculations
     const baseFee = event.convenienceFee !== undefined ? event.convenienceFee : countryConfig.defaultConvenienceFee;
     const convenienceFee = baseFee * totalTicketsCount;
     const taxPercentage = event.taxPercentage !== undefined ? event.taxPercentage : countryConfig.defaultTax;
     const convenienceFeeGst = Math.round((convenienceFee * taxPercentage) / 100);
-    const gst = totalGst + convenienceFeeGst;
 
-    // Apply Coupon
+    // 2. Apply Coupon
     let discount = 0;
     let couponId: Types.ObjectId | undefined;
     if (data.couponCode) {
@@ -338,7 +337,14 @@ export class BookingCreationService {
       couponId = coupon._id as Types.ObjectId;
     }
 
-    const totalAmount = Math.max(0, subtotal + convenienceFee + gst - discount);
+    // 3. Tax calculations on net taxable subtotal
+    const netTicketSubtotal = Math.max(0, subtotal - discount);
+    const netTicketGst = subtotal > 0
+      ? Math.round((netTicketSubtotal * (totalGst / subtotal)))
+      : 0;
+    const gst = netTicketGst + convenienceFeeGst;
+
+    const totalAmount = Math.max(0, netTicketSubtotal + convenienceFee + gst);
 
     // Expiry in 10 minutes (logical reservation window)
     const logicalExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
