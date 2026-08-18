@@ -1255,4 +1255,98 @@ describe('Admin Refund Service Tests', () => {
       expect(result?.gatewayRefundId).toBe('re_auto_scan');
     });
   });
+
+  describe('3-Hour Lock & Super Admin Override Policy', () => {
+    const recentDate = new Date(Date.now() - 30 * 60 * 1000); // 30 mins ago (< 3 hours)
+    const oldDate = new Date(Date.now() - 4 * 60 * 60 * 1000); // 4 hours ago (> 3 hours)
+
+    it('should block normal admin approval when refund is recent (< 3 hours) and manualOverride is false', async () => {
+      const mockRefund = {
+        _id: 'refund-recent-001', bookingId: 'booking-recent-001', paymentId: 'payment-recent-001',
+        amount: 300, status: 'requested', origin: 'manual', createdAt: recentDate, save: vi.fn(),
+      };
+      const mockPayment = { _id: 'payment-recent-001', amount: 500, status: PaymentStatus.PAID };
+      const mockBooking = { _id: 'booking-recent-001', status: BookingStatus.CONFIRMED };
+
+      vi.mocked(Refund.findOneAndUpdate).mockReturnValue(createMockQuery(mockRefund));
+      vi.mocked(Payment.findById).mockReturnValue({ session: vi.fn().mockResolvedValue(mockPayment) } as any);
+      vi.mocked(Booking.findById).mockReturnValue({ session: vi.fn().mockResolvedValue(mockBooking) } as any);
+      vi.mocked(Refund.find).mockReturnValue(createMockQuery([]));
+      vi.mocked(Ticket.find).mockReturnValue(createMockQuery([]));
+
+      await expect(
+        processRefund('refund-recent-001', 'approve', 'Admin notes', undefined, false, undefined, { id: 'admin1', role: 'admin' })
+      ).rejects.toThrow('Refund request is locked: Must wait 3 hours before processing');
+    });
+
+    it('should block non-super_admin with 403 when attempting manualOverride on recent refund (< 3 hours)', async () => {
+      const mockRefund = {
+        _id: 'refund-recent-002', bookingId: 'booking-recent-002', paymentId: 'payment-recent-002',
+        amount: 300, status: 'requested', origin: 'manual', createdAt: recentDate, save: vi.fn(),
+      };
+      const mockPayment = { _id: 'payment-recent-002', amount: 500, status: PaymentStatus.PAID };
+      const mockBooking = { _id: 'booking-recent-002', status: BookingStatus.CONFIRMED };
+
+      vi.mocked(Refund.findOneAndUpdate).mockReturnValue(createMockQuery(mockRefund));
+      vi.mocked(Payment.findById).mockReturnValue({ session: vi.fn().mockResolvedValue(mockPayment) } as any);
+      vi.mocked(Booking.findById).mockReturnValue({ session: vi.fn().mockResolvedValue(mockBooking) } as any);
+      vi.mocked(Refund.find).mockReturnValue(createMockQuery([]));
+      vi.mocked(Ticket.find).mockReturnValue(createMockQuery([]));
+
+      await expect(
+        processRefund('refund-recent-002', 'approve', 'Admin notes', 'gate-123', true, 'Reason for early override', { id: 'admin1', role: 'admin' })
+      ).rejects.toThrow('Only super_admin can override the 3-hour wait constraint for refund processing');
+    });
+
+    it('should allow super_admin with manualOverride to process recent refund (< 3 hours)', async () => {
+      const mockRefund = {
+        _id: 'refund-recent-003', bookingId: 'booking-recent-003', paymentId: 'payment-recent-003',
+        amount: 300, status: 'requested', origin: 'manual', createdAt: recentDate, save: vi.fn(),
+      };
+      const mockPayment = { _id: 'payment-recent-003', amount: 500, status: PaymentStatus.PAID };
+      const mockBooking = { _id: 'booking-recent-003', status: BookingStatus.CONFIRMED };
+      const superAdminActor = { id: 'super-admin-001', role: 'super_admin' };
+
+      vi.mocked(Refund.findOneAndUpdate).mockReturnValue(createMockQuery(mockRefund));
+      vi.mocked(Payment.findById).mockReturnValue({ session: vi.fn().mockResolvedValue(mockPayment) } as any);
+      vi.mocked(Booking.findById).mockReturnValue({ session: vi.fn().mockResolvedValue(mockBooking) } as any);
+      vi.mocked(Refund.find).mockReturnValue(createMockQuery([]));
+      vi.mocked(Payment.findByIdAndUpdate).mockResolvedValue({} as any);
+      vi.mocked(Ticket.find).mockReturnValue(createMockQuery([]));
+
+      const result = await processRefund(
+        'refund-recent-003', 'approve', 'Admin notes', 'gate-override-123', true, 'Customer urgent flight cancellation', superAdminActor
+      );
+
+      expect(result?.status).toBe('completed');
+      expect(result?.gatewayRefundId).toBe('gate-override-123');
+      expect(auditLog).toHaveBeenCalledWith(expect.objectContaining({
+        action: 'REFUND_MANUAL_OVERRIDE',
+        actor: expect.objectContaining({ id: 'super-admin-001' }),
+      }));
+    });
+
+    it('should allow normal admin to process refund older than 3 hours without manualOverride', async () => {
+      const mockRefund = {
+        _id: 'refund-old-001', bookingId: 'booking-old-001', paymentId: 'payment-old-001',
+        amount: 300, status: 'requested', origin: 'manual', createdAt: oldDate, save: vi.fn(),
+      };
+      const mockPayment = { _id: 'payment-old-001', amount: 500, status: PaymentStatus.PAID, gateway: 'stripe', gatewayOrderId: 'pi_old_123' };
+      const mockBooking = { _id: 'booking-old-001', status: BookingStatus.CONFIRMED };
+
+      vi.mocked(Refund.findOneAndUpdate).mockReturnValue(createMockQuery(mockRefund));
+      vi.mocked(Payment.findById).mockReturnValue({ session: vi.fn().mockResolvedValue(mockPayment) } as any);
+      vi.mocked(Booking.findById).mockReturnValue({ session: vi.fn().mockResolvedValue(mockBooking) } as any);
+      vi.mocked(Refund.find).mockReturnValue(createMockQuery([]));
+      vi.mocked(Payment.findByIdAndUpdate).mockResolvedValue({} as any);
+      vi.mocked(Ticket.find).mockReturnValue(createMockQuery([]));
+
+      mockStripeRefundsCreate.mockResolvedValue({ id: 're_stripe_old' });
+
+      const result = await processRefund('refund-old-001', 'approve', 'Old refund notes');
+
+      expect(result?.status).toBe('completed');
+      expect(result?.gatewayRefundId).toBe('re_stripe_old');
+    });
+  });
 });

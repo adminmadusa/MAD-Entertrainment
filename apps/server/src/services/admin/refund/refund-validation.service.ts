@@ -230,7 +230,12 @@ export class RefundValidationService {
       if (refund.createdAt) {
         const threeHoursAgo = new Date(Date.now() - 3 * 60 * 60 * 1000);
         if (new Date(refund.createdAt) > threeHoursAgo) {
-          throw AppError.badRequest('Refund request is locked: Must wait 3 hours before processing');
+          if (!manualOverride) {
+            throw AppError.badRequest('Refund request is locked: Must wait 3 hours before processing');
+          }
+          if (!actor || actor.role !== 'super_admin') {
+            throw AppError.forbidden('Only super_admin can override the 3-hour wait constraint for refund processing');
+          }
         }
       }
     }
