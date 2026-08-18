@@ -31,6 +31,7 @@
 9. [QR Validation Dry Run](#9-qr-validation-dry-run)
 10. [Real Booking Flow Test Script](#10-real-booking-flow-test-script)
 11. [Event Memories — Publishing Workflow](#11-event-memories--publishing-workflow)
+12. [Emergency Credential Rotation & Secret Invalidation](#12-emergency-credential-rotation--secret-invalidation)
 
 ---
 
@@ -541,3 +542,95 @@ To permanently remove the memories sub-document from the event:
 | Gallery upload fails | Cloudinary credential misconfiguration | Verify `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` on Render |
 | Preview token expired | Token TTL is 15 minutes | Generate a new preview token from the admin panel |
 | "Event has been modified" error on save | Concurrent update — `eventVersion` mismatch | Refresh the event edit page and reapply memories changes |
+
+---
+
+## 12. Emergency Credential Rotation & Secret Invalidation
+
+> [!CAUTION]
+> This section is the operational Single Source of Truth for P0 emergency credential invalidation and rotation following historical commit exposure or secret leakage.
+> **Zero Secrets Policy**: Never commit, log, or reproduce plaintext credentials in source code, commit messages, PRs, or public channels.
+
+### Scope of Managed Credentials
+
+| Provider / Subsystem | Environment Variables | Target Environments | Immediate Impact |
+| :--- | :--- | :--- | :--- |
+| **MongoDB Atlas** | `MONGODB_URI` | Render (API Staging & Production) | DB connection restart required |
+| **Redis Cache / Queue** | `REDIS_URL` | Render (API Staging & Production) | Rate limiter / queue reconnection |
+| **JWT Authentication** | `JWT_SECRET`, `JWT_ADMIN_SECRET`, `JWT_SESSION_SECRET` | Render (API Staging & Production) | Invalidation of all active user & admin sessions |
+| **Razorpay Gateway** | `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET` | Render (API Staging & Production) | Payment processing / webhook verification |
+| **Cloudinary Media** | `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` | Render (API Staging & Production) | Image uploads & media delivery |
+| **Transactional SMTP** | `SMTP_HOST`, `SMTP_USER`, `SMTP_PASS`, `EMAIL_FROM` | Render (API Staging & Production) | Booking confirmation & OTP delivery |
+
+---
+
+### Step-by-Step Operator Procedures
+
+#### 1. MongoDB Atlas (Database Credentials)
+1. Navigate to **MongoDB Atlas Console** > **Database Access**.
+2. Click **Add New Database User**:
+   - Authentication Method: Password
+   - Username: `mad_app_prod_<timestamp>`
+   - Password: Autogenerate high-entropy string (min 32 chars)
+   - Built-in Roles: `readWriteAnyDatabase` (or specific scoped database access: `mad_production`)
+3. Navigate to **Network Access** and verify IP allowlist contains Render outbound CIDR blocks or current static egress IPs.
+4. Update `MONGODB_URI` in the **Render Dashboard** for the server service.
+5. Trigger manual deploy / restart on Render.
+6. Verify `/api/health` returns status `healthy` and MongoDB connected.
+7. Return to Atlas Console > Database Access and **Delete** the legacy compromised database user.
+
+#### 2. Redis Infrastructure
+1. Navigate to Redis host dashboard (Upstash, Redis Cloud, or managed Render Redis).
+2. Generate new connection password.
+3. Update `REDIS_URL` in **Render Dashboard** environment variables.
+4. Restart Render server service.
+5. Verify `/api/health` reports Redis connected.
+6. Delete or revoke legacy password in Redis provider console.
+
+#### 3. JWT Signing Secrets (Session Invalidation)
+1. Generate three distinct, non-repeating cryptographically secure secrets:
+   ```bash
+   openssl rand -hex 32  # For JWT_SECRET
+   openssl rand -hex 32  # For JWT_ADMIN_SECRET
+   openssl rand -hex 32  # For JWT_SESSION_SECRET
+   ```
+2. Update all three variables in **Render Dashboard**.
+3. Deploy / restart the Render server.
+4. **Expected Effect**: All existing JWT tokens issued with the old secret will fail signature validation with `401 Unauthorized`. Users and admins will be redirected to clean login flows.
+
+#### 4. Razorpay Payment Gateway
+1. Log in to **Razorpay Dashboard** > **Settings** > **API Keys**.
+2. Click **Generate Key**:
+   - Choose **Replace existing key** with a 24-hour overlap window to drain in-flight checkout sessions, or **Immediately revoke** if active fraud is suspected.
+3. Copy new Key ID and Key Secret to Render environment variables (`RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`).
+4. In Razorpay Dashboard > **Webhooks**, rotate the webhook secret and update `RAZORPAY_WEBHOOK_SECRET` on Render.
+5. Restart the server service.
+6. Execute a test booking in Sandbox/Staging mode to confirm end-to-end checkout completion.
+
+#### 5. Cloudinary Media Storage
+1. Log in to **Cloudinary Console** > **Settings** > **Access Keys**.
+2. Generate a new API Key pair.
+3. Update `CLOUDINARY_API_KEY` and `CLOUDINARY_API_SECRET` in the **Render Dashboard**.
+4. Restart the server.
+5. Upload a test banner in Admin Dashboard > Events to confirm upload authorization.
+6. In Cloudinary Console, click **Disable** and then **Delete** on the old compromised API key.
+
+#### 6. Transactional SMTP / Google App Password
+1. Navigate to the identity provider account security console (e.g. Google Account > Security > App Passwords).
+2. Delete the legacy App Password.
+3. Generate a new App Password labeled `MAD Entertrainment Render Production`.
+4. Update `SMTP_PASS` in the **Render Dashboard**.
+5. Trigger an OTP request via `/api/auth/magic-link` to verify email delivery.
+
+---
+
+### Verification Checklist & Sign-Off
+
+After completing all 6 rotation steps:
+
+- [ ] `GET /api/health` returns `200 OK` (`status: "healthy"`, DB and Redis up).
+- [ ] Admin login functions cleanly via OTP/password.
+- [ ] Public customer checkout initializes and webhook signature passes.
+- [ ] TruffleHog secret scan job passes on CI pipeline with zero new findings.
+- [ ] No plaintext secrets or passwords exist in any active workspace file or commit diff.
+
