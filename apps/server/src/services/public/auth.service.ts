@@ -13,6 +13,7 @@ import { AppError } from '../../middleware/error.middleware';
 import { Booking } from '../../models/booking.schema';
 import { MagicTokenModel } from '../../models/magic-token.schema';
 import { RefreshTokenModel } from '../../models/refresh-token.schema';
+import { Ticket } from '../../models/ticket.schema';
 import { UserModel, IUser } from '../../models/user.schema';
 import { normalizeEmail } from '../../utils/email';
 import { signUserToken } from '../../utils/jwt';
@@ -212,8 +213,30 @@ export class AuthService {
           throw err;
         }
       }
-    } else if (!user.isActive) {
-      throw AppError.forbidden('Your account has been deactivated.');
+    } else {
+      if (!user.isActive) {
+        throw AppError.forbidden('Your account has been deactivated.');
+      }
+      // Safe profile persistence from magicRecord registration data (never overwrite existing values)
+      let modified = false;
+      if (magicRecord.firstName && (!user.firstName || user.firstName.trim() === '')) {
+        user.firstName = magicRecord.firstName.trim();
+        modified = true;
+      }
+      if (magicRecord.lastName && (!user.lastName || user.lastName.trim() === '')) {
+        user.lastName = magicRecord.lastName.trim();
+        modified = true;
+      }
+      if (magicRecord.mobileNumber && (!user.mobileNumber || user.mobileNumber.trim() === '')) {
+        user.mobileNumber = magicRecord.mobileNumber.trim();
+        modified = true;
+      }
+      if (modified && (!user.name || user.name.trim() === '')) {
+        user.name = `${user.firstName || ''} ${user.lastName || ''}`.trim();
+      }
+      if (modified) {
+        await user.save();
+      }
     }
 
     user.lastLogin = new Date();
@@ -222,7 +245,7 @@ export class AuthService {
     // 2. Clear the used token immediately (one-time use enforced)
     await MagicTokenModel.deleteOne({ _id: magicRecord._id });
 
-    // 3. Link past guest bookings automatically
+    // 3. Link past guest bookings and assigned tickets automatically
     await this.linkBookingsToUser(userEmail, user._id.toString());
     await this.hydrateUserProfile(user._id.toString(), userEmail);
 
@@ -546,25 +569,50 @@ export class AuthService {
   }
 
   /**
-   * Scans bookings and automatically links unmatched guest bookings to the user profile safely.
+   * Scans bookings and automatically links unmatched guest bookings and assigned tickets to the user profile safely.
    */
   private static async linkBookingsToUser(email: string, userId: string): Promise<void> {
     try {
+      const normalizedEmail = email.trim().toLowerCase();
       // Strictly prevent multiple parallel processes or race conditions from linking the same booking twice
       const result = await Booking.updateMany(
-        { guestEmail: email, userId: { $exists: false } },
+        {
+          guestEmail: normalizedEmail,
+          $or: [{ userId: { $exists: false } }, { userId: null }]
+        },
         {
           $set: { userId: new Types.ObjectId(userId) }
         }
       );
       if (result.modifiedCount > 0) {
         logger.info(
-          { email, userId, count: result.modifiedCount },
+          { email: normalizedEmail, userId, count: result.modifiedCount },
           'Linked historical bookings to newly logged in user account.'
         );
       }
+
+      // Link attendee tickets assigned to this email address
+      const ticketResult = await Ticket.updateMany(
+        {
+          attendeeEmail: normalizedEmail,
+          $or: [{ attendeeUserId: { $exists: false } }, { attendeeUserId: null }],
+        },
+        {
+          $set: {
+            attendeeUserId: new Types.ObjectId(userId),
+            assignmentStatus: 'claimed',
+            claimedAt: new Date(),
+          },
+        }
+      );
+      if (ticketResult.modifiedCount > 0) {
+        logger.info(
+          { email: normalizedEmail, userId, count: ticketResult.modifiedCount },
+          'Linked assigned tickets to newly logged in user account.'
+        );
+      }
     } catch (err) {
-      logger.error({ err, email, userId }, 'Failed to link historical guest bookings.');
+      logger.error({ err, email, userId }, 'Failed to link historical guest bookings or tickets.');
     }
   }
 
