@@ -1412,7 +1412,7 @@ describe('Admin Booking Service Backend Tests', () => {
       );
     });
 
-    it('should decrement coupon usedCount with gt 0 guard if coupon is present', async () => {
+    it('should NOT decrement coupon usedCount when unconfirmed pending booking expires', async () => {
       const mockBooking = {
         _id: 'booking-coupon-expire',
         bookingId: 'MAD-2026-COUPEXP',
@@ -1438,15 +1438,12 @@ describe('Admin Booking Service Backend Tests', () => {
         session: vi.fn().mockResolvedValue(mockEvent),
       } as any);
 
-      vi.mocked(Coupon.updateOne).mockResolvedValue({ modifiedCount: 1 } as any);
+      vi.mocked(Coupon.updateOne).mockClear();
 
       await expireBooking('booking-coupon-expire', 'Timeout');
 
-      expect(Coupon.updateOne).toHaveBeenCalledWith(
-        { _id: 'coupon-expire-123', usedCount: { $gt: 0 } },
-        { $inc: { usedCount: -1 } },
-        { session: undefined }
-      );
+      expect(mockBooking.status).toBe(BookingStatus.EXPIRED);
+      expect(Coupon.updateOne).not.toHaveBeenCalled();
     });
 
     it('should return null if booking is already EXPIRED', async () => {
