@@ -1,9 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
 
-import { BookingStatus } from '@mad/shared';
-
-import { Booking } from '../../models/booking.schema';
-import { Ticket } from '../../models/ticket.schema';
 import * as scannerService from '../../services/admin/scanner.service';
 import { auditLog } from '../../utils/audit';
 
@@ -131,86 +127,6 @@ export const getScannerHistory = async (req: Request, res: Response, next: NextF
       status: 'success',
       data: history,
     });
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const lookupTickets = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const { reference } = req.params;
-    const { eventId } = req.query;
-
-    if (!reference || !eventId) {
-      return res.status(400).json({
-        success: false,
-        message: 'Both reference and eventId are required parameters.',
-      });
-    }
-
-    if (reference.startsWith('MAD-')) {
-      const booking = await Booking.findOne({ bookingId: reference });
-      if (!booking) {
-        return res.status(404).json({
-          success: false,
-          message: 'Booking reference not found.',
-        });
-      }
-
-      const tickets = await Ticket.find({ bookingId: booking._id, eventId, status: 'active' });
-      if (!tickets.length) {
-        if (booking.status === BookingStatus.CONFIRMED) {
-          return res.status(202).json({
-            success: false,
-            status: 'generating',
-            message: 'Tickets are being generated. Please try again in a moment.',
-          });
-        }
-        return res.status(404).json({
-          success: false,
-          message: 'No tickets found for this booking for the selected event.',
-        });
-      }
-
-      return res.status(200).json({
-        status: 'success',
-        data: {
-          booking: {
-            bookingId: booking.bookingId,
-            status: booking.status,
-            guestName: booking.guestName,
-          },
-          tickets: tickets.map(t => ({
-            ticketId: t.ticketId,
-            tierName: t.tierName,
-            admits: t.admits,
-            scannedAt: t.scannedAt ? t.scannedAt.toISOString() : null,
-          })),
-        },
-      });
-    } else {
-      const ticket = await Ticket.findOne({ ticketId: reference, eventId });
-      if (!ticket) {
-        return res.status(404).json({
-          success: false,
-          message: 'Ticket not found.',
-        });
-      }
-
-      return res.status(200).json({
-        status: 'success',
-        data: {
-          tickets: [
-            {
-              ticketId: ticket.ticketId,
-              tierName: ticket.tierName,
-              admits: ticket.admits,
-              scannedAt: ticket.scannedAt ? ticket.scannedAt.toISOString() : null,
-            },
-          ],
-        },
-      });
-    }
   } catch (error) {
     next(error);
   }

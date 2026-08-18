@@ -11,6 +11,24 @@ export interface ScanResponse {
 
 export type ValidationStatus = 'SUCCESS' | 'ALREADY_SCANNED' | 'INVALID' | 'EXPIRED' | 'WRONG_EVENT' | 'OFFLINE_QUEUED' | 'ERROR';
 
+export type ScannerModeState =
+  | 'Idle'
+  | 'CameraInitializing'
+  | 'Scanning'
+  | 'Processing'
+  | 'Success'
+  | 'Duplicate'
+  | 'Invalid'
+  | 'OfflineQueued'
+  | 'Syncing'
+  | 'Error'
+  | 'PermissionDenied'
+  | 'NoCamera'
+  | 'CameraUnavailable'
+  | 'Paused'
+  | 'Offline'
+  | 'SyncFailed';
+
 export interface ValidationResult {
   status: ValidationStatus;
   ticketId: string;
