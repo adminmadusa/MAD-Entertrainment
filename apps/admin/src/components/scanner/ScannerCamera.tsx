@@ -15,8 +15,9 @@ interface ScannerCameraProps {
 export function ScannerCamera({ isOffline, onScan, scannerState, isPaused }: ScannerCameraProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isUserPaused, setIsUserPaused] = useState(false);
 
-  // Refs for pause gate and debounce — checked synchronously in the scan callback
+  // Refs for pause gate and debounce
   const isPausedRef = useRef(isPaused);
   const lastScanTimeRef = useRef<number>(0);
 
@@ -32,10 +33,12 @@ export function ScannerCamera({ isOffline, onScan, scannerState, isPaused }: Sca
       lastScanTimeRef.current = now;
       onScan(decodedText);
     },
-    [onScan],
+    [onScan]
   );
 
   const {
+    devices,
+    selectedDeviceId,
     isInitializing,
     isScanning,
     isTorchOn,
@@ -44,20 +47,30 @@ export function ScannerCamera({ isOffline, onScan, scannerState, isPaused }: Sca
     error: cameraError,
     startScanner,
     stopScanner,
+    switchCamera,
     toggleTorch,
     containerId,
   } = useHtml5QrScanner({ onScanSuccess: handleScanSuccess });
 
-  // Auto-start on mount and after camera stops (except when permission is denied)
+  // Initial camera activation on mount
   useEffect(() => {
-    if (!isScanning && !isInitializing && permissionState !== 'denied') {
+    if (!isScanning && !isInitializing && permissionState !== 'denied' && !isUserPaused) {
       startScanner();
     }
-    // startScanner identity changes when selectedDeviceId changes internally; that is the desired trigger.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isScanning, isInitializing, permissionState]);
+  }, []);
 
-  // Fullscreen API handlers
+  const handlePauseCamera = async () => {
+    setIsUserPaused(true);
+    await stopScanner();
+  };
+
+  const handleResumeCamera = async () => {
+    setIsUserPaused(false);
+    await startScanner();
+  };
+
+  // Fullscreen handlers
   const toggleFullscreen = () => {
     if (!containerRef.current) return;
     try {
@@ -82,7 +95,7 @@ export function ScannerCamera({ isOffline, onScan, scannerState, isPaused }: Sca
     if (scannerState === 'Processing') {
       return { dot: 'bg-blue-500 animate-pulse', text: 'text-blue-400', label: 'Verifying Ticket...' };
     }
-    if (isPaused) {
+    if (isPaused || isUserPaused) {
       return { dot: 'bg-amber-500', text: 'text-amber-400', label: 'Scan Paused' };
     }
     if (isInitializing) {
@@ -103,15 +116,6 @@ export function ScannerCamera({ isOffline, onScan, scannerState, isPaused }: Sca
           : 'bg-background-card/50'
       }`}
     >
-      <style>{`
-        @keyframes scanner-sweep {
-          0% { transform: translateY(0); opacity: 0.7; }
-          50% { transform: translateY(240px); opacity: 1; }
-          100% { transform: translateY(0); opacity: 0.7; }
-        }
-        .scanner-line { animation: scanner-sweep 2.5s ease-in-out infinite; }
-      `}</style>
-
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -134,11 +138,11 @@ export function ScannerCamera({ isOffline, onScan, scannerState, isPaused }: Sca
         >
           {isFullscreen ? (
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M4 14h6v6m10-6h-6v6M4 10h6V4m10 6h-6V4"/>
+              <path d="M4 14h6v6m10-6h-6v6M4 10h6V4m10 6h-6V4" />
             </svg>
           ) : (
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+              <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
             </svg>
           )}
         </button>
@@ -156,72 +160,74 @@ export function ScannerCamera({ isOffline, onScan, scannerState, isPaused }: Sca
         </div>
       </div>
 
-      {/* Camera window */}
+      {/* Camera window — target container remains mounted and measurable */}
       <div className="relative aspect-[3/4] sm:aspect-square w-full max-w-md mx-auto overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-background via-[#0f111a] to-background-card flex flex-col items-center justify-center shadow-inner">
-        {/* html5-qrcode target */}
-        <div
-          id={containerId}
-          className={`w-full h-full object-cover ${isScanning ? 'block' : 'hidden'}`}
-        />
+        {/* html5-qrcode target container */}
+        <div id={containerId} className="w-full h-full object-cover" />
 
-        {/* Not scanning overlay */}
-        {!isScanning && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center space-y-5">
+        {/* Inactive or error overlay */}
+        {(!isScanning || isUserPaused) && (
+          <div className="absolute inset-0 bg-[#0b0f19]/90 backdrop-blur-xs flex flex-col items-center justify-center p-8 text-center space-y-5 z-20">
             {isInitializing ? (
               <>
                 <div className="w-10 h-10 border-4 border-accent-purple border-t-transparent rounded-full animate-spin" />
-                <p className="text-sm font-semibold text-white">Accessing media stream...</p>
+                <p className="text-sm font-semibold text-white">Accessing camera stream...</p>
               </>
             ) : permissionState === 'denied' ? (
               <>
                 <div className="w-12 h-12 bg-red-500/10 text-red-400 rounded-full flex items-center justify-center">
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-                    <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                    <line x1="12" y1="9" x2="12" y2="13" />
+                    <line x1="12" y1="17" x2="12.01" y2="17" />
                   </svg>
                 </div>
                 <div>
                   <p className="text-sm font-bold text-white">Camera Permission Denied</p>
-                  <p className="text-xs text-text-secondary mt-1">
-                    Allow camera access in your browser settings to scan QR codes.
+                  <p className="text-xs text-text-secondary mt-1 max-w-[240px]">
+                    Grant browser camera access to scan QR codes at the event gate.
                   </p>
                 </div>
+                <button
+                  onClick={handleResumeCamera}
+                  type="button"
+                  className="px-5 py-2.5 min-h-[44px] bg-accent-purple hover:bg-accent-purple-light text-white text-xs font-bold rounded-xl transition-all focus-ring"
+                >
+                  Retry Permission
+                </button>
               </>
             ) : (
               <>
                 <div className="w-14 h-14 bg-white/5 text-white/40 rounded-full flex items-center justify-center border border-white/10 shadow-glow-sm">
                   <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-                    <circle cx="12" cy="13" r="4"/>
+                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                    <circle cx="12" cy="13" r="4" />
                   </svg>
                 </div>
                 <div className="flex flex-col items-center">
-                  <p className="text-sm font-bold text-white tracking-wide">Scanner Camera Inactive</p>
+                  <p className="text-sm font-bold text-white tracking-wide">
+                    {isUserPaused ? 'Scanner Camera Paused' : 'Scanner Camera Inactive'}
+                  </p>
                   <button
-                    onClick={startScanner}
+                    onClick={handleResumeCamera}
                     type="button"
                     className="mt-4 px-6 py-3.5 min-h-[44px] bg-accent-purple hover:bg-accent-purple-light text-white text-xs font-bold rounded-xl shadow-glow-sm transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center gap-2 focus-ring"
                   >
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                       <polygon points="5 3 19 12 5 21 5 3" />
                     </svg>
-                    Start Camera Scan
+                    {isUserPaused ? 'Resume Camera' : 'Start Camera Scan'}
                   </button>
-                  <p className="text-text-muted text-[10px] mt-3 max-w-[220px]">
-                    Grant browser camera access to scan QR codes at the event gate.
-                  </p>
                 </div>
               </>
             )}
-            {cameraError && (
-              <p className="text-xs text-red-400 mt-2 font-medium">{cameraError}</p>
-            )}
+            {cameraError && <p className="text-xs text-red-400 mt-2 font-medium">{cameraError}</p>}
           </div>
         )}
 
         {/* Active scanning QR frame overlay */}
-        {isScanning && !isPaused && scannerState !== 'Processing' && (
-          <div className="absolute inset-0 pointer-events-none flex flex-col items-center justify-between p-4">
+        {isScanning && !isPaused && !isUserPaused && scannerState !== 'Processing' && (
+          <div className="absolute inset-0 pointer-events-none flex flex-col items-center justify-between p-4 z-10">
             <div className="bg-black/60 backdrop-blur-sm px-3.5 py-1.5 rounded-full border border-white/5 mt-2">
               <p className="text-[10px] text-emerald-400 font-bold tracking-widest uppercase">
                 Align QR Code Within Frame
@@ -240,15 +246,15 @@ export function ScannerCamera({ isOffline, onScan, scannerState, isPaused }: Sca
 
         {/* Verifying overlay — shown during API call */}
         {scannerState === 'Processing' && (
-          <div className="absolute inset-0 bg-black/75 backdrop-blur-sm flex flex-col items-center justify-center gap-4">
+          <div className="absolute inset-0 bg-black/75 backdrop-blur-sm flex flex-col items-center justify-center gap-4 z-20">
             <div className="w-12 h-12 border-4 border-blue-400 border-t-transparent rounded-full animate-spin" />
             <p className="text-sm font-bold text-white">Verifying Ticket...</p>
           </div>
         )}
 
         {/* Paused overlay — shown after result card is open */}
-        {isPaused && scannerState !== 'Processing' && isScanning && (
-          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center">
+        {isPaused && !isUserPaused && scannerState !== 'Processing' && isScanning && (
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-10">
             <div className="bg-black/60 border border-white/10 rounded-full px-4 py-2">
               <p className="text-xs font-bold text-white/70 tracking-widest uppercase">Paused</p>
             </div>
@@ -256,15 +262,25 @@ export function ScannerCamera({ isOffline, onScan, scannerState, isPaused }: Sca
         )}
       </div>
 
-      {/* Instructions strip */}
-      <p className="text-center text-[11px] text-text-muted">
-        Rear camera · Align QR in frame · Pauses after each scan
-      </p>
+      {/* Camera selection & controls */}
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 w-full max-w-md mx-auto">
+        {devices.length > 1 && (
+          <select
+            value={selectedDeviceId}
+            onChange={(e) => switchCamera(e.target.value)}
+            className="w-full sm:w-auto flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus-ring min-h-[44px]"
+            aria-label="Select camera device"
+          >
+            {devices.map((device) => (
+              <option key={device.id} value={device.id} className="bg-background text-white">
+                {device.label}
+              </option>
+            ))}
+          </select>
+        )}
 
-      {/* Torch + Pause controls */}
-      {isScanning && (
-        <div className="flex justify-center items-center gap-3 w-full max-w-md mx-auto">
-          {hasTorch && (
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          {hasTorch && isScanning && !isUserPaused && (
             <button
               onClick={toggleTorch}
               type="button"
@@ -278,19 +294,31 @@ export function ScannerCamera({ isOffline, onScan, scannerState, isPaused }: Sca
               aria-label="Toggle flashlight"
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M15 2H9v12h6z"/><path d="M12 14v8"/>
+                <path d="M15 2H9v12h6z" />
+                <path d="M12 14v8" />
               </svg>
             </button>
           )}
-          <button
-            onClick={stopScanner}
-            type="button"
-            className="flex-1 py-3 px-4 min-h-[44px] bg-red-500/15 border border-red-500/30 text-red-400 text-xs font-bold rounded-xl hover:bg-red-500/25 transition-all focus-ring"
-          >
-            Pause Camera
-          </button>
+
+          {isScanning && !isUserPaused ? (
+            <button
+              onClick={handlePauseCamera}
+              type="button"
+              className="flex-1 sm:flex-initial py-3 px-4 min-h-[44px] bg-red-500/15 border border-red-500/30 text-red-400 text-xs font-bold rounded-xl hover:bg-red-500/25 transition-all focus-ring"
+            >
+              Pause Camera
+            </button>
+          ) : (
+            <button
+              onClick={handleResumeCamera}
+              type="button"
+              className="flex-1 sm:flex-initial py-3 px-4 min-h-[44px] bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-bold rounded-xl hover:bg-emerald-500/25 transition-all focus-ring"
+            >
+              Start Camera
+            </button>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 }
