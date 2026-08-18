@@ -21,15 +21,15 @@ export function EventOverview({ description = '', organizerName, hideOrganizerCa
     <>
       {/* Organizer card */}
       {!hideOrganizerCard && (
-        <div className="glass rounded-2xl border border-white/5 p-5 flex items-center gap-4 hover:border-white/10 transition-colors">
-          <div className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center font-bold text-lg text-accent-purple-light flex-shrink-0">
+        <div className="glass rounded-2xl border border-white/10 p-4 flex items-center gap-3.5 hover:border-white/20 transition-colors">
+          <div className="w-10 h-10 rounded-full bg-accent-purple/10 border border-accent-purple/20 flex items-center justify-center font-bold text-base text-accent-purple-light flex-shrink-0">
             {organizerName?.charAt(0).toUpperCase() || 'M'}
           </div>
           <div>
-            <div className="text-sm font-bold text-white">
+            <div className="text-sm font-semibold text-white">
               {organizerName || 'MAD Organizer'}
             </div>
-            <div className="text-xs text-text-secondary mt-0.5">Event Organizer</div>
+            <div className="text-xs text-text-muted">Event Organizer</div>
           </div>
         </div>
       )}

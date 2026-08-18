@@ -186,68 +186,62 @@ export default function EventDetailClient({ slug, initialEvent }: EventDetailCli
   const doorsOpenText = event.doorsOpenTime || event.showTime || 'TBA';
 
   return (
-    <div className="min-h-screen bg-background text-white relative">
+    <div className="min-h-screen bg-background text-white relative pb-16">
+      <div className="container-mad max-w-6xl px-4 sm:px-6 lg:px-8 pt-6 md:pt-10">
 
-      {/* ── FULL-BLEED CINEMATIC HERO ─────────────────────────── */}
-      <div className="relative w-full h-[38vh] min-h-[220px] md:h-[58vh] md:min-h-[400px] overflow-hidden">
-        {/* Background glow */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-accent-purple/5 rounded-full blur-[180px] pointer-events-none" />
+        {/* ── CONTAINED 16:9 / CINEMATIC BANNER CARD ── */}
+        <div className="relative w-full aspect-[16/9] sm:aspect-[2.2/1] max-h-[420px] rounded-3xl overflow-hidden border border-white/10 shadow-2xl bg-surface-elevated">
+          {event.bannerImage?.url ? (
+            <div
+              ref={heroImageRef}
+              className="absolute inset-0"
+              style={{ transformOrigin: 'center' }}
+            >
+              <Image
+                src={event.bannerImage.url}
+                alt={event.title}
+                fill
+                priority
+                sizes="(max-width: 1200px) 100vw, 1200px"
+                className="w-full h-full object-cover"
+              />
+            </div>
+          ) : (
+            <div className="w-full h-full bg-gradient-to-br from-accent-purple/20 via-background to-accent-pink/10 flex items-center justify-center">
+              <span className="text-4xl font-extrabold text-white/20">{event.title}</span>
+            </div>
+          )}
 
-        {/* Hero image with parallax */}
-        {event.bannerImage?.url ? (
-          <div
-            ref={heroImageRef}
-            className="absolute inset-0"
-            style={{ transformOrigin: 'center' }}
-          >
-            <Image
-              src={event.bannerImage.url}
-              alt={event.title}
-              fill
-              priority
-              sizes="100vw"
-              className="absolute inset-0 w-full h-full object-cover"
-            />
+          {/* Subtle bottom gradient overlay for badges */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 pointer-events-none" />
+
+          {/* Badges anchored top-left */}
+          <div className="absolute top-4 left-4 flex items-center gap-2 z-10">
+            {event.category && (
+              <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 bg-black/60 backdrop-blur-md border border-white/15 text-white rounded-full">
+                <span>🎭</span> {event.category.replace('_', ' ')}
+              </span>
+            )}
+            {event.lifecycle === 'LIVE' && (
+              <span className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 bg-emerald-500/90 text-white rounded-full shadow-glow-sm backdrop-blur-md">
+                <span className="w-2 h-2 rounded-full bg-white animate-ping" />
+                Live Now
+              </span>
+            )}
+            {isCompleted && (
+              <span className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 bg-black/60 backdrop-blur-md border border-white/10 text-text-muted rounded-full">
+                Ended
+              </span>
+            )}
           </div>
-        ) : (
-          <div className="absolute inset-0 bg-gradient-to-br from-accent-purple/20 to-accent-pink/10" />
-        )}
-
-        {/* Cinema fade overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/30 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-r from-background/20 via-transparent to-background/20" />
-
-        {/* Category & Lifecycle badges anchored to hero bottom */}
-        <div className="absolute bottom-6 left-4 md:left-8 flex items-center gap-2 z-20">
-          {event.category && (
-            <span className="inline-flex items-center gap-1.5 text-[10px] uppercase font-bold tracking-widest px-3 py-1.5 glass border border-white/10 text-text-secondary rounded-full">
-              <svg className="w-3 h-3 text-text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
-              </svg>
-              {event.category}
-            </span>
-          )}
-          {event.lifecycle === 'LIVE' && (
-            <span className="inline-flex items-center gap-1.5 text-[10px] uppercase font-black tracking-widest px-3 py-1.5 bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 rounded-full shadow-glow-sm">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              Live Now
-            </span>
-          )}
-          {isCompleted && (
-            <span className="inline-flex items-center gap-1.5 text-[10px] uppercase font-bold tracking-widest px-3 py-1.5 bg-white/5 border border-white/10 text-text-muted rounded-full">
-              Ended
-            </span>
-          )}
         </div>
-      </div>
 
-      {/* ── CONTENT BELOW HERO ───────────────────────────────── */}
-      <div className="container-mad max-w-7xl px-4 md:px-8 relative z-10">
-
-        {/* Title row + Share action + metadata strip */}
-        <div className="py-6 space-y-3 border-b border-white/5">
-          <div className="flex items-start justify-between gap-4">
-            <h1 className="text-display-md font-black text-white leading-tight">{event.title}</h1>
+        {/* ── HEADER DETAILS ROW ── */}
+        <div className="pt-8 pb-6 border-b border-border-subtle/50 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-white tracking-tight leading-tight">
+              {event.title}
+            </h1>
             <button
               type="button"
               onClick={() => {
@@ -255,50 +249,60 @@ export default function EventDetailClient({ slug, initialEvent }: EventDetailCli
                 setCopied(true);
                 setTimeout(() => setCopied(false), 2000);
               }}
-              className="flex-shrink-0 flex items-center gap-2 px-3 py-2 mt-1 rounded-xl glass border border-white/10 text-sm text-text-secondary hover:text-white hover:border-white/30 transition-all active:scale-95 focus:outline-none focus:ring-2 focus:ring-accent-purple"
+              className="self-start flex-shrink-0 flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-medium text-text-secondary hover:text-white transition-all active:scale-95 focus:outline-none focus:ring-2 focus:ring-accent-purple"
               aria-label={copied ? 'Event link copied to clipboard' : 'Share event'}
             >
               {copied ? (
-                <svg className="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                </svg>
+                <>
+                  <svg className="w-3.5 h-3.5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span className="text-emerald-400 font-semibold">Copied!</span>
+                </>
               ) : (
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M8.684 10.742l5.128-2.564m0 5.644l-5.128-2.564M19 12a3 3 0 11-6 0 3 3 0 016 0zm-10 6a3 3 0 11-6 0 3 3 0 016 0zm0-12a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
+                <>
+                  <svg className="w-3.5 h-3.5 text-text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M8.684 10.742l5.128-2.564m0 5.644l-5.128-2.564M19 12a3 3 0 11-6 0 3 3 0 016 0zm-10 6a3 3 0 11-6 0 3 3 0 016 0zm0-12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                  <span>Share</span>
+                </>
               )}
-              <span>{copied ? 'Copied!' : 'Share'}</span>
             </button>
           </div>
 
-          {/* Metadata: date · doors open · venue */}
-          <div className="flex flex-wrap items-center gap-x-6 gap-y-1.5 text-sm text-text-secondary">
-            <span className="flex items-center gap-1.5">
-              <svg className="w-4 h-4 text-text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          {/* Clean Metadata Pills Strip */}
+          <div className="flex flex-wrap items-center gap-2.5 text-xs text-text-secondary">
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-text-primary font-medium">
+              <svg className="w-4 h-4 text-accent-purple-light" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
-              {showDateTime}
-            </span>
-            <span className="flex items-center gap-1.5">
-              <svg className="w-4 h-4 text-text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <span>{showDateTime}</span>
+            </div>
+
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-text-secondary">
+              <svg className="w-4 h-4 text-accent-pink/80" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              Doors open {doorsOpenText}
-            </span>
-            <span className="flex items-center gap-1.5">
-              <svg className="w-4 h-4 text-text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-              {event.venue}
-            </span>
-            {event.organizerName && (
-              <span className="flex items-center gap-1.5">
-                <svg className="w-4 h-4 text-text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              <span>Doors open {doorsOpenText}</span>
+            </div>
+
+            {event.venue && (
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-text-secondary">
+                <svg className="w-4 h-4 text-accent-cyan/80" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
-                By {event.organizerName}
-              </span>
+                <span className="truncate max-w-xs">{event.venue}</span>
+              </div>
+            )}
+
+            {event.organizerName && (
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-text-secondary">
+                <span className="w-4 h-4 rounded-full bg-accent-purple/20 text-accent-purple-light flex items-center justify-center text-[10px] font-bold">
+                  {event.organizerName[0]}
+                </span>
+                <span>By {event.organizerName}</span>
+              </div>
             )}
           </div>
         </div>
