@@ -479,13 +479,27 @@ export async function revokeTicket(
 }
 
 /**
- * Retrieves all active tickets claimed by the logged-in attendee user.
+ * Retrieves all active tickets associated with the logged-in user,
+ * consolidating both directly claimed attendee tickets and purchaser-owned booking tickets.
  */
 export async function getAttendeeTickets(userId: string): Promise<any[]> {
+  const userObjectId = new Types.ObjectId(userId);
+
+  // 1. Fetch user's confirmed bookings
+  const userBookings = await Booking.find({
+    userId: userObjectId,
+    status: BookingStatus.CONFIRMED,
+  }).select('_id');
+  const userBookingIds = userBookings.map((b) => b._id);
+
+  // 2. Fetch active tickets owned by the user (as claimed attendee OR purchaser)
   const tickets = await Ticket.find({
-    attendeeUserId: new Types.ObjectId(userId),
     status: 'active',
-    assignmentStatus: 'claimed',
+    $or: [
+      { attendeeUserId: userObjectId, assignmentStatus: 'claimed' },
+      { bookingId: { $in: userBookingIds }, assignmentStatus: { $ne: 'claimed' } },
+      { bookingId: { $in: userBookingIds }, attendeeUserId: userObjectId },
+    ],
   }).populate('eventId');
 
   return tickets;
