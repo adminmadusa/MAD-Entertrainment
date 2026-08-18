@@ -47,13 +47,26 @@ export default function ScannerPage() {
   // Camera is paused whenever a result is visible, a scan is in-flight, or not on scan tab
   const isPaused = lastValidationResult !== null || scannerState === 'Processing' || activeTab !== 'scan';
 
-  // Fetch published events for selection
+  // Fetch published events for selection and exclude expired/past events
   const { data: eventsRes, isLoading: isLoadingEvents } = useQuery({
     queryKey: ['admin-events', { status: EventStatus.PUBLISHED }],
     queryFn: () => adminGetEvents({ limit: 100, status: EventStatus.PUBLISHED }),
   });
 
-  const events = eventsRes?.items || [];
+  const now = Date.now();
+  const events = (eventsRes?.items || []).filter((ev) => {
+    if (ev.status === EventStatus.COMPLETED || ev.status === EventStatus.ARCHIVED || ev.status === EventStatus.CANCELLED) {
+      return false;
+    }
+    if (ev.endDate) {
+      return new Date(ev.endDate).getTime() >= now;
+    }
+    if (ev.startDate) {
+      // Allow scan window up to 24 hours after start time if no endDate
+      return new Date(ev.startDate).getTime() + 24 * 60 * 60 * 1000 >= now;
+    }
+    return true;
+  });
 
   const handleNextScan = () => {
     setLastValidationResult(null);

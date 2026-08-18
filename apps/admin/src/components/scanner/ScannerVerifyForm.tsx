@@ -91,6 +91,25 @@ export function ScannerVerifyForm({
           </p>
         </div>
 
+        {(() => {
+          const raw = manualCode.trim();
+          if (!raw) return null;
+          const previewId = !raw.toUpperCase().startsWith('TKT-') && !raw.startsWith('http://') && !raw.startsWith('https://')
+            ? `${defaultPrefix}${raw.toUpperCase()}`
+            : raw;
+          return (
+            <div className="bg-accent-purple/5 border border-accent-purple/30 rounded-xl p-3.5 flex items-center justify-between text-xs animate-fadeIn">
+              <div className="space-y-0.5 min-w-0 pr-2">
+                <span className="text-text-muted text-[10px] uppercase tracking-wider font-semibold block">Target Ticket Preview</span>
+                <p className="font-mono font-bold text-accent-purple-light text-sm truncate">{previewId}</p>
+              </div>
+              <span className="shrink-0 text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-full text-[11px] font-semibold flex items-center gap-1">
+                ✓ Ready
+              </span>
+            </div>
+          );
+        })()}
+
         <div className="space-y-3 pt-2">
           <button
             type="submit"
