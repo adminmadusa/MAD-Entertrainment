@@ -3,7 +3,7 @@ import { z } from 'zod';
 
 import { BookingStatus, EventCategory, PopupTrigger } from '@mad/shared';
 
-import { adminBookingIdentifierParamSchema, adminBookingsQuerySchema, adminIdParamSchema, createCategorySchema, createCouponSchema, createPopupSchema, createRefundSchema, createTierSchema, processRefundSchema, scannerScanSchema, scannerStatsSchema, scannerHistorySchema, updateDJOperatorSchema, updateCategorySchema, updateCouponSchema, updatePopupSchema, updateTicketProfileSchema, updateTierSchema } from './admin-content.validation';
+import { adminBookingIdentifierParamSchema, adminBookingsQuerySchema, adminIdParamSchema, cancelBookingSchema, createCategorySchema, createCouponSchema, createPopupSchema, createRefundSchema, createTierSchema, processRefundSchema, scannerScanSchema, scannerStatsSchema, scannerHistorySchema, updateDJOperatorSchema, updateCategorySchema, updateCouponSchema, updatePopupSchema, updateTicketProfileSchema, updateTierSchema } from './admin-content.validation';
 import { createEventSchema, updateEventSchema } from './event.validation';
 
 const objectId = '507f1f77bcf86cd799439011';
@@ -66,6 +66,9 @@ describe('admin mutation validation schemas', () => {
     ],
     ['update popup', updatePopupSchema, { params: { id: objectId }, body: { title: 'Updated title' } }],
     ['create refund', createRefundSchema, { body: { bookingId: objectId, paymentId: otherObjectId, amount: 500, reason: 'Customer request' } }],
+    ['create ticket-level refund', createRefundSchema, { body: { bookingId: objectId, paymentId: otherObjectId, amount: 200, cancelTickets: true, ticketIds: [objectId] } }],
+    ['cancel booking basic', cancelBookingSchema, { params: { id: objectId }, body: { reason: 'Customer requested' } }],
+    ['cancel booking with refund and tickets', cancelBookingSchema, { params: { id: objectId }, body: { reason: 'Customer requested', refundAmount: 250, ticketIds: [objectId] } }],
     ['process refund', processRefundSchema, { params: { id: objectId }, body: { action: 'approve', adminNotes: '', gatewayRefundId: '' } }],
     ['scanner scan', scannerScanSchema, { body: { ticketId: 'TKT-001', eventId: objectId } }],
     ['create category', createCategorySchema, { body: { name: 'Concerts' } }],
@@ -88,6 +91,8 @@ describe('admin mutation validation schemas', () => {
     ['create popup', createPopupSchema, { body: { name: 'Popup', title: '' } }],
     ['update popup', updatePopupSchema, { params: { id: objectId }, body: { triggerDelay: -1 } }],
     ['create refund', createRefundSchema, { body: { bookingId: objectId, paymentId: otherObjectId, amount: 0 } }],
+    ['cancel booking zero refund', cancelBookingSchema, { params: { id: objectId }, body: { refundAmount: 0 } }],
+    ['cancel booking negative refund', cancelBookingSchema, { params: { id: objectId }, body: { refundAmount: -50 } }],
     ['process refund', processRefundSchema, { params: { id: objectId }, body: { adminNotes: 'Missing action' } }],
     ['scanner scan', scannerScanSchema, { body: { ticketId: '', eventId: objectId } }],
     ['create category', createCategorySchema, { body: { name: '' } }],

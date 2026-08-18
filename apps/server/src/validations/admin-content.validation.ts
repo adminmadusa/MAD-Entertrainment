@@ -153,6 +153,7 @@ export const createRefundSchema = z.object({
     reason: z.string().trim().max(1000).optional(),
     idempotencyKey: z.string().trim().max(100).optional(),
     cancelTickets: z.boolean().optional(),
+    ticketIds: z.array(objectIdSchema).optional(),
   }).strict(),
 });
 
@@ -332,6 +333,8 @@ export const updateTicketProfileSchema = z.object({
 export const cancelBookingSchema = z.object({
   body: z.object({
     reason: z.string().max(500, 'Reason must be under 500 characters').optional(),
+    refundAmount: z.number().positive('Refund amount must be greater than zero').optional(),
+    ticketIds: z.array(objectIdSchema).optional(),
   }),
   params: adminIdParamSchema.shape.params,
 });
