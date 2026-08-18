@@ -193,3 +193,29 @@ jobs:
             --from ${{ github.event.pull_request.base.sha }} \
             --to ${{ github.event.pull_request.head.sha }} \
             --verbose
+
+  branch-name:
+    name: Branch Name Validation
+    # Validates that the source branch follows the naming convention
+    # mandated by AGENTS.md: <prefix>/<lowercase-slug>
+    # Allowed prefixes: feat fix refactor audit docs test chore seo
+    # Runs on pull_request only — direct push branches have already
+    # been validated at PR creation time.
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate branch name
+        env:
+          BRANCH: ${{ github.head_ref }}
+        run: |
+          PATTERN='^(feat|fix|refactor|audit|docs|test|chore|seo)/[a-z0-9]([a-z0-9-]*[a-z0-9])?$'
+          if echo "$BRANCH" | grep -qE "$PATTERN"; then
+            echo "✅ Branch name '$BRANCH' is valid"
+          else
+            echo "❌ Branch name '$BRANCH' does not match the required pattern"
+            echo ""
+            echo "Allowed prefixes (AGENTS.md): feat/ fix/ refactor/ audit/ docs/ test/ chore/ seo/"
+            echo "Pattern: <prefix>/<lowercase-slug-with-hyphens>"
+            echo "Examples: feat/booking-seat-lock  fix/scanner-camera-stop  chore/ci-hardening"
+            exit 1
+          fi
