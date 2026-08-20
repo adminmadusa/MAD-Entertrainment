@@ -46,11 +46,12 @@ export class AuthSessionService {
     refreshTokenString: string,
     providedCsrfToken: string
   ): Promise<{ accessToken: string; refreshToken: string; csrfToken: string }> {
-    if (!refreshTokenString) {
+    if (typeof refreshTokenString !== 'string' || !refreshTokenString.trim()) {
       throw AppError.unauthorized('Refresh token is required');
     }
 
-    const tokenRecord = await RefreshTokenModel.findOne({ token: refreshTokenString });
+    const sanitizedToken = refreshTokenString.trim();
+    const tokenRecord = await RefreshTokenModel.findOne({ token: sanitizedToken });
 
     if (!tokenRecord) {
       throw AppError.unauthorized('Invalid session');
@@ -197,8 +198,10 @@ export class AuthSessionService {
    * Revokes a session upon logout.
    */
   static async revokeSession(refreshTokenString: string): Promise<void> {
-    if (refreshTokenString) {
-      await RefreshTokenModel.updateOne({ token: refreshTokenString }, { isRevoked: true });
+    if (typeof refreshTokenString !== 'string' || !refreshTokenString.trim()) {
+      return;
     }
+    const sanitizedToken = refreshTokenString.trim();
+    await RefreshTokenModel.updateOne({ token: sanitizedToken }, { isRevoked: true });
   }
 }

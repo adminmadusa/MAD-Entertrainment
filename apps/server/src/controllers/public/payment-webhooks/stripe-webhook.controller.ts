@@ -40,7 +40,7 @@ export async function stripeWebhook(req: Request, res: Response): Promise<void> 
       metadata: { gateway: 'stripe', error: err.message },
       description: `Stripe webhook signature validation failed: ${err.message}`,
     });
-    res.status(400).send(`Webhook Error: ${err.message}`);
+    res.status(400).send('Webhook Error');
     return;
   }
 
