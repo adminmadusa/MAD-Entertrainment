@@ -6,7 +6,7 @@ import { BookingStatus } from '@mad/shared';
 import { AppError } from '../../middleware/error.middleware';
 import { Booking } from '../../models/booking.schema';
 import { Ticket } from '../../models/ticket.schema';
-import { canViewTicketQR, buildQrCodeImageUrl, verifyTicketQrToken } from '../../services/public/ticket-ownership.service';
+import { buildQrCodeImageUrl, canViewTicketQR, verifyTicketQrToken } from '../../services/public/ticket-ownership.service';
 import * as ticketService from '../../services/public/ticket.service';
 import { logger } from '../../utils/logger';
 import { sendSuccess } from '../../utils/response';
@@ -48,18 +48,18 @@ export async function getTicketQR(
       throw AppError.forbidden('Associated booking is not confirmed');
     }
 
-    // 2. Validate ticket visibility using token or canViewTicketQR
+    // 2. Validate ticket access
     const rawToken = req.query?.token;
     const token = typeof rawToken === 'string' ? rawToken.trim() : '';
 
-    const hasValidToken = token.length > 0 && verifyTicketQrToken(ticketId, token);
+    const hasValidToken = token ? verifyTicketQrToken(ticket.ticketId, token) : false;
     const hasOwnerAccess = hasValidToken ? true : await canViewTicketQR(ticket, req.user?.sub, req.session?.sessionId);
 
     if (!hasValidToken && !hasOwnerAccess) {
       throw AppError.forbidden('You do not have permission to view this QR code');
     }
 
-    // 3. Generate QR code as a PNG buffer using local 'qrcode' package
+    // 3. Generate QR code buffer
     const qrContent = ticket.qrCode || ticket.ticketId;
     const qrBuffer = await qrcode.toBuffer(qrContent, {
       type: 'png',
@@ -71,10 +71,9 @@ export async function getTicketQR(
     res.setHeader('Content-Type', 'image/png');
     res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
 
-    // 5. Send the image buffer
     res.send(qrBuffer);
-  } catch (err) {
-    next(err);
+  } catch (error) {
+    next(error);
   }
 }
 
