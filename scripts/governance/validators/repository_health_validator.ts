@@ -101,9 +101,6 @@ export class RepositoryHealthValidator implements GovernanceValidator {
     for (const relPath of files) {
       const fullPath = resolve(workspaceRoot, relPath);
       try {
-        const stats = statSync(fullPath);
-        if (!stats.isFile()) continue;
-
         const content = readFileSync(fullPath, 'utf8');
         const links = extractLinks(content, dirname(fullPath));
         for (const link of links) {
@@ -113,7 +110,7 @@ export class RepositoryHealthValidator implements GovernanceValidator {
           }
         }
       } catch {
-        // Safe skip on read/stat errors
+        // Safe skip on read errors (directories, non-existent files)
       }
     }
 
@@ -122,8 +119,6 @@ export class RepositoryHealthValidator implements GovernanceValidator {
       const fullPath = resolve(workspaceRoot, relPath);
       let content = '';
       try {
-        const stats = statSync(fullPath);
-        if (!stats.isFile()) continue;
         content = readFileSync(fullPath, 'utf8');
       } catch {
         continue;

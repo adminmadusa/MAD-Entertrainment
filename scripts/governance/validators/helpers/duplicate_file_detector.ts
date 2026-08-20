@@ -49,16 +49,16 @@ export class DuplicateFileDetector {
       const fullPath = resolve(this.workspaceRoot, file);
 
       try {
-        const stats = statSync(fullPath);
-        if (stats.size < 100) continue;
-
         const content = readFileSync(fullPath, 'utf8');
+        const byteSize = Buffer.byteLength(content, 'utf8');
+        if (byteSize < 100) continue;
+
         const tokens = this.extractTokens(content);
         const detailed = graph.getDetailedData(file);
 
         signatures.push({
           file,
-          size: stats.size,
+          size: byteSize,
           tokens,
           imports: new Set(detailed?.dependencies || []),
           exports: new Set(detailed?.exports || []),

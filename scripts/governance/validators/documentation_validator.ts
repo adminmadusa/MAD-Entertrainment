@@ -135,15 +135,14 @@ export class DocumentationValidator implements GovernanceValidator {
       let content = '';
       let hash = '';
       try {
-        const stats = statSync(fullPath);
-        if (!stats.isFile()) continue;
-        mtime = stats.mtimeMs;
-        fileMtimeMap.set(relPath, mtime);
-
         content = readFileSync(fullPath, 'utf8');
         fileContentMap.set(relPath, content);
         hash = createHash('sha1').update(content).digest('hex');
         fileHashMap.set(relPath, hash);
+
+        const stats = statSync(fullPath);
+        mtime = stats.mtimeMs;
+        fileMtimeMap.set(relPath, mtime);
       } catch {
         continue;
       }
