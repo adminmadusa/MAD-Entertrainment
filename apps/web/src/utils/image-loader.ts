@@ -1,13 +1,23 @@
 import { ImageLoaderProps } from 'next/image';
 
+function getHostname(src: string): string {
+  try {
+    return new URL(src).hostname;
+  } catch {
+    return '';
+  }
+}
+
 /**
  * Custom global loader for Next.js <Image> components.
  * Rewrites remote Cloudinary and Unsplash URLs directly to their optimized CDN
  * counterparts with matching width/quality constraints, bypassing the Next.js server.
  */
 export default function universalLoader({ src, width, quality }: ImageLoaderProps): string {
+  const hostname = getHostname(src);
+
   // 1. Cloudinary CDN Support
-  if (src.includes('res.cloudinary.com')) {
+  if (hostname === 'res.cloudinary.com' || hostname.endsWith('.cloudinary.com')) {
     if (src.includes('/upload/')) {
       const uploadPart = '/upload/';
       const index = src.indexOf(uploadPart);
@@ -29,7 +39,7 @@ export default function universalLoader({ src, width, quality }: ImageLoaderProp
   }
 
   // 2. Unsplash CDN Support
-  if (src.includes('images.unsplash.com')) {
+  if (hostname === 'images.unsplash.com' || hostname.endsWith('.unsplash.com')) {
     try {
       const urlObj = new URL(src);
       urlObj.searchParams.set('w', width.toString());
