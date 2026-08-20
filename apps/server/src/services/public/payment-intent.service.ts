@@ -105,9 +105,10 @@ export class PaymentIntentService {
   ) {
     this.assertProductionPaymentIntegrity([bookingId], { bookingId, gateway });
 
-    const query = Types.ObjectId.isValid(bookingId)
-      ? { _id: bookingId }
-      : { bookingId };
+    const safeBookingId = String(bookingId);
+    const query = Types.ObjectId.isValid(safeBookingId)
+      ? { _id: new Types.ObjectId(safeBookingId) }
+      : { bookingId: safeBookingId };
     const booking = await Booking.findOne(query);
     if (!booking) {
       throw AppError.notFound('Booking not found');
@@ -156,7 +157,7 @@ export class PaymentIntentService {
     // ─── Payment Intent Reuse / Fingerprint check ───────────────────
     const existingPayment = await Payment.findOne({
       bookingId: booking._id,
-      gateway,
+      gateway: String(gateway),
       status: PaymentStatus.PENDING,
     });
 

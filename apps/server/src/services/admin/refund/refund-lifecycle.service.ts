@@ -1,3 +1,4 @@
+import { Types } from 'mongoose';
 import { BookingStatus, PaymentStatus, RefundStatus, isFullRefund } from '@mad/shared';
 
 import { AppError } from '../../../middleware/error.middleware';
@@ -26,7 +27,10 @@ export class RefundLifecycleService {
     ticketIds?: string[];
   }): Promise<IRefund> {
     return await runInTransaction(async (session) => {
-      const payment = await Payment.findById(data.paymentId).session(session);
+      const safePaymentId = String(data.paymentId);
+      const payment = await Payment.findById(
+        Types.ObjectId.isValid(safePaymentId) ? new Types.ObjectId(safePaymentId) : safePaymentId
+      ).session(session);
       if (!payment) {
         throw AppError.notFound('Payment record not found');
       }
@@ -41,14 +45,17 @@ export class RefundLifecycleService {
         existingSum: 0,
       });
 
-      const booking = await Booking.findById(data.bookingId).session(session);
+      const safeBookingId = String(data.bookingId);
+      const booking = await Booking.findById(
+        Types.ObjectId.isValid(safeBookingId) ? new Types.ObjectId(safeBookingId) : safeBookingId
+      ).session(session);
       if (!booking) {
         throw AppError.notFound('Booking record not found');
       }
 
       // Check for existing refund request with same idempotency key if provided
       const existingRefund = await Refund.findOne({
-        idempotencyKey: data.idempotencyKey,
+        idempotencyKey: String(data.idempotencyKey),
         status: { $in: [RefundStatus.REQUESTED, RefundStatus.PROCESSING, RefundStatus.COMPLETED] },
       }).session(session);
       if (existingRefund) {
