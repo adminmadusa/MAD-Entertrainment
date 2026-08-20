@@ -1,5 +1,4 @@
-// scripts/governance/validators/helpers/duplicate_file_detector.ts
-import { readFileSync, existsSync, statSync } from 'fs';
+import { readFileSync, statSync } from 'fs';
 import { resolve } from 'path';
 import { KnowledgeGraph } from '../../core/knowledge_graph';
 import { ValidationError } from '../../core/types';
@@ -48,7 +47,6 @@ export class DuplicateFileDetector {
 
     for (const file of sourceFiles) {
       const fullPath = resolve(this.workspaceRoot, file);
-      if (!existsSync(fullPath)) continue;
 
       try {
         const stats = statSync(fullPath);

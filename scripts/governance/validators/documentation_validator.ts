@@ -1,6 +1,4 @@
-// scripts/governance/validators/documentation_validator.ts
-
-import { existsSync, readFileSync, statSync, writeFileSync } from 'fs';
+import { readFileSync, statSync, writeFileSync, mkdirSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { createHash } from 'crypto';
 import { GovernanceValidator } from '../core/validator';
@@ -97,24 +95,20 @@ export class DocumentationValidator implements GovernanceValidator {
 
     // 1. Load or initialize historical files baseline index
     let historicalFiles = new Set<string>();
-    if (existsSync(historicalFilesPath)) {
-      try {
-        const content = readFileSync(historicalFilesPath, 'utf8');
-        const parsed = JSON.parse(content);
-        if (Array.isArray(parsed)) {
-          historicalFiles = new Set(parsed);
-        }
-      } catch (err) {
-        // Fallback to empty if baseline is corrupted
+    try {
+      const content = readFileSync(historicalFilesPath, 'utf8');
+      const parsed = JSON.parse(content);
+      if (Array.isArray(parsed)) {
+        historicalFiles = new Set(parsed);
       }
+    } catch {
+      // Fallback to empty if baseline does not exist or is corrupted
     }
 
     // 2. Load or initialize content validation cache
     let cache: Record<string, CacheEntry> = {};
     try {
-      if (existsSync(validationCachePath)) {
-        cache = JSON.parse(readFileSync(validationCachePath, 'utf8'));
-      }
+      cache = JSON.parse(readFileSync(validationCachePath, 'utf8'));
     } catch {
       // Ignore cache load errors
     }
@@ -137,19 +131,15 @@ export class DocumentationValidator implements GovernanceValidator {
     // First scan & process files
     for (const relPath of files) {
       const fullPath = resolve(workspaceRoot, relPath);
-      if (!existsSync(fullPath) || !statSync(fullPath).isFile()) {
-        continue;
-      }
-
       let mtime = 0;
-      try {
-        mtime = statSync(fullPath).mtimeMs;
-        fileMtimeMap.set(relPath, mtime);
-      } catch {}
-
       let content = '';
       let hash = '';
       try {
+        const stats = statSync(fullPath);
+        if (!stats.isFile()) continue;
+        mtime = stats.mtimeMs;
+        fileMtimeMap.set(relPath, mtime);
+
         content = readFileSync(fullPath, 'utf8');
         fileContentMap.set(relPath, content);
         hash = createHash('sha1').update(content).digest('hex');
@@ -268,9 +258,9 @@ export class DocumentationValidator implements GovernanceValidator {
 
         // VAL-DOC-002: Absolute local paths
         // Precise check matching /Users/<username>/ or /home/<username>/
-        const absMatch = /(?:\s|^|["'`\`])\/Users\/[a-zA-Z0-9_-]+\//i.test(line) ||
-                         /(?:\s|^|["'`\`])\/home\/[a-zA-Z0-9_-]+\//i.test(line) ||
-                         /(?:\s|^|["'`\`])\/private\/var\//i.test(line) ||
+        const absMatch = /(?:\s|^|["'`])\/Users\/[a-zA-Z0-9_-]+\//i.test(line) ||
+                         /(?:\s|^|["'`])\/home\/[a-zA-Z0-9_-]+\//i.test(line) ||
+                         /(?:\s|^|["'`])\/private\/var\//i.test(line) ||
                          /\b[c-z]:[\\\/]/i.test(line);
         if (absMatch && !trimmed.includes('file:///')) {
           addViolation('VAL-DOC-002', 'Forbidden absolute local filesystem path detected.', lineNum, trimmed);
@@ -476,7 +466,9 @@ export class DocumentationValidator implements GovernanceValidator {
     // Verify configured entrypoints actually exist
     for (const ep of entrypoints) {
       const fullEpPath = resolve(workspaceRoot, ep);
-      if (!existsSync(fullEpPath)) {
+      try {
+        statSync(fullEpPath);
+      } catch {
         errors.push({
           file: 'governance.config.ts',
           rule: 'VAL-DOC-007',
@@ -532,10 +524,7 @@ export class DocumentationValidator implements GovernanceValidator {
     // Write updated validation cache back to disk
     try {
       const baselinesDir = dirname(validationCachePath);
-      if (!existsSync(baselinesDir)) {
-        const { mkdirSync } = require('fs');
-        mkdirSync(baselinesDir, { recursive: true });
-      }
+      mkdirSync(baselinesDir, { recursive: true });
       writeFileSync(validationCachePath, JSON.stringify(newCache, null, 2), 'utf8');
     } catch {
       // Ignore cache write failures
