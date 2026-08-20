@@ -177,15 +177,10 @@ export const governanceConfig = {
       // UI Components
 
       { filePath: 'apps/admin/src/components/events/gallery/EventGalleryWorkspace.tsx', ruleId: 'VAL-QUAL-001', maxLinesCeiling: 390, expiresAt: '2026-10-31', owner: 'Admin UI Team', reason: 'Event gallery admin workspace' },
-      { filePath: 'apps/admin/src/app/scanner/page.tsx', ruleId: 'VAL-QUAL-001', maxLinesCeiling: 350, expiresAt: '2026-10-31', owner: 'Admin UI Team', reason: 'Ticket scanner camera page' },
-      { filePath: 'apps/admin/src/app/ticket-management/_components/TicketProfilesTab.tsx', ruleId: 'VAL-QUAL-001', maxLinesCeiling: 335, expiresAt: '2026-10-31', owner: 'Admin UI Team', reason: 'Ticket profiles tab' },
-      { filePath: 'apps/admin/src/components/scanner/ScannerCamera.tsx', ruleId: 'VAL-QUAL-001', maxLinesCeiling: 335, expiresAt: '2026-10-31', owner: 'Admin UI Team', reason: 'Scanner camera component' },
       { filePath: 'apps/web/src/components/ui/UpcomingEventsSection.tsx', ruleId: 'VAL-QUAL-001', maxLinesCeiling: 330, expiresAt: '2026-09-30', owner: 'Web UI Team', reason: 'Homepage upcoming events carousel' },
       { filePath: 'apps/admin/src/app/bookings/_components/BookingDetailsModal.tsx', ruleId: 'VAL-QUAL-001', maxLinesCeiling: 318, expiresAt: '2026-10-31', owner: 'Admin UI Team', reason: 'Booking details modal' },
 
       // Controllers
-      { filePath: 'apps/server/src/controllers/admin/analytics.controller.ts', ruleId: 'VAL-QUAL-003', maxLinesCeiling: 500, expiresAt: '2026-10-31', owner: 'Server Team', reason: 'Admin analytics report aggregation controller' },
-      { filePath: 'apps/server/src/controllers/admin/diagnostics.controller.ts', ruleId: 'VAL-QUAL-003', maxLinesCeiling: 420, expiresAt: '2026-10-31', owner: 'Server Team', reason: 'Admin system diagnostics controller' },
       { filePath: 'apps/server/src/controllers/public/auth.controller.ts', ruleId: 'VAL-QUAL-003', maxLinesCeiling: 365, expiresAt: '2026-09-30', owner: 'Server Team', reason: 'Auth controller' },
       { filePath: 'apps/server/src/controllers/public/booking/booking-recovery.controller.ts', ruleId: 'VAL-QUAL-003', maxLinesCeiling: 225, expiresAt: '2026-09-30', owner: 'Server Team', reason: 'Booking recovery controller' },
 
@@ -196,8 +191,7 @@ export const governanceConfig = {
       { filePath: 'packages/types/src/index.ts', ruleId: 'VAL-QUAL-005', maxLinesCeiling: 560, expiresAt: '2026-10-31', owner: 'Platform Team', reason: 'Shared root TypeScript definitions' },
 
       // Test Suites
-      { filePath: 'apps/server/src/services/consistency.service.test.ts', ruleId: 'VAL-QUAL-006', maxLinesCeiling: 1530, expiresAt: '2026-10-31', owner: 'Server Team', reason: 'Consistency service test suite' },
-      { filePath: 'apps/server/src/services/admin/refund.service.test.ts', ruleId: 'VAL-QUAL-006', maxLinesCeiling: 1460, expiresAt: '2026-10-31', owner: 'Server Team', reason: 'Admin refund service test suite' },
+
       { filePath: 'apps/server/src/services/public/booking.service.test.ts', ruleId: 'VAL-QUAL-006', maxLinesCeiling: 1290, expiresAt: '2026-09-30', owner: 'Server Team', reason: 'Public booking service test suite' },
     ]
   }
