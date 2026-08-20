@@ -60,8 +60,9 @@ export class PaymentValidationService {
     for (const id of identifiers) {
       if (!id) continue;
       if (mockPatterns.some((pattern) => id.includes(pattern))) {
-        const errorMsg = `MOCK_PAYMENT_IDENTIFIER_DETECTED: Mock payment identifier "${id}" submitted in production.`;
-        const localMetadata = { ...metadata, paymentId: id };
+        const sanitizedId = String(id).replace(/[\r\n]/g, '_');
+        const errorMsg = `MOCK_PAYMENT_IDENTIFIER_DETECTED: Mock payment identifier "${sanitizedId}" submitted in production.`;
+        const localMetadata = { ...metadata, paymentId: sanitizedId };
         logger.error(localMetadata, errorMsg);
         auditLog({
           action: 'MOCK_PAYMENT_IDENTIFIER_DETECTED',
