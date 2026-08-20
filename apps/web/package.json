@@ -2,7 +2,7 @@
   "name": "@mad/web",
   "version": "1.0.0",
   "private": true,
-  "description": "MAD Entertrainment \u2014 Next.js Frontend",
+  "description": "MAD Entertrainment — Next.js Frontend",
   "scripts": {
     "prebuild": "rm -rf .next",
     "dev": "next dev --port 3000",
@@ -44,7 +44,7 @@
     "eslint": "^9.39.4",
     "eslint-config-next": "^16.2.6",
     "jsdom": "^24.1.0",
-    "postcss": "^8.4.49",
+    "postcss": "^8.5.26",
     "tailwindcss": "^3.4.17",
     "typescript": "^5.9.3"
   }

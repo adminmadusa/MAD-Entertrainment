@@ -2,7 +2,7 @@
   "name": "@mad/admin",
   "version": "1.0.0",
   "private": true,
-  "description": "MAD Entertrainment \u2014 Standalone Admin Dashboard",
+  "description": "MAD Entertrainment — Standalone Admin Dashboard",
   "scripts": {
     "prebuild": "rm -rf .next",
     "dev": "next dev --port 3002",
@@ -37,7 +37,7 @@
     "autoprefixer": "^10.4.20",
     "eslint": "^9.39.4",
     "eslint-config-next": "^16.2.6",
-    "postcss": "^8.4.49",
+    "postcss": "^8.5.26",
     "tailwindcss": "^3.4.17",
     "typescript": "^5.9.3"
   }
