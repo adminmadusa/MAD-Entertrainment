@@ -16,11 +16,9 @@ import { Ticket } from '../../models/ticket.schema';
 import {
   canRenderAttendeePDFQR,
   canRenderPurchaserPDFQR,
-  canViewTicketQR,
   generateAuthorizedTicketQR,
   generateTicketQrToken,
   getPurchaserPDFTicketState,
-  verifyTicketQrToken,
 } from './ticket-ownership.service';
 
 vi.mock('qrcode', () => ({
