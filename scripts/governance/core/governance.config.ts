@@ -197,8 +197,6 @@ export const governanceConfig = {
       { filePath: 'packages/types/src/index.ts', ruleId: 'VAL-QUAL-005', maxLinesCeiling: 560, expiresAt: '2026-10-31', owner: 'Platform Team', reason: 'Shared root TypeScript definitions' },
 
       // Test Suites
-      { filePath: 'apps/server/src/services/public/payment.service.test.ts', ruleId: 'VAL-QUAL-006', maxLinesCeiling: 2210, expiresAt: '2026-09-30', owner: 'Server Team', reason: 'Monolithic payment service test suite' },
-      { filePath: 'apps/server/src/services/admin/booking.service.test.ts', ruleId: 'VAL-QUAL-006', maxLinesCeiling: 1920, expiresAt: '2026-10-31', owner: 'Server Team', reason: 'Admin booking service test suite' },
       { filePath: 'apps/server/src/services/consistency.service.test.ts', ruleId: 'VAL-QUAL-006', maxLinesCeiling: 1530, expiresAt: '2026-10-31', owner: 'Server Team', reason: 'Consistency service test suite' },
       { filePath: 'apps/server/src/services/admin/refund.service.test.ts', ruleId: 'VAL-QUAL-006', maxLinesCeiling: 1460, expiresAt: '2026-10-31', owner: 'Server Team', reason: 'Admin refund service test suite' },
       { filePath: 'apps/server/src/services/public/booking.service.test.ts', ruleId: 'VAL-QUAL-006', maxLinesCeiling: 1290, expiresAt: '2026-09-30', owner: 'Server Team', reason: 'Public booking service test suite' },
