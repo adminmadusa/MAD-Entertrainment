@@ -2,19 +2,12 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 import { BookingStatus, PaymentStatus } from '@mad/shared';
 
-import { createRazorpayRefund } from '../../lib/razorpay/refund.client';
-import { AppError } from '../../middleware/error.middleware';
 import { Booking } from '../../models/booking.schema';
-import { Notification } from '../../models/notification.schema';
 import { Payment } from '../../models/payment.schema';
 import { Refund } from '../../models/refund.schema';
 import { Ticket } from '../../models/ticket.schema';
 import { auditLog } from '../../utils/audit';
-import { runInTransaction } from '../../utils/transaction';
-import { createNotificationSafe } from '../notification.service';
-import { QueueService } from '../queue.service';
-import { cancelBooking } from './booking.service';
-import { createRefund, processRefund } from './refund.service';
+import { processRefund } from './refund.service';
 
 vi.mock('../../lib/razorpay/refund.client', () => ({
   createRazorpayRefund: vi.fn(),
