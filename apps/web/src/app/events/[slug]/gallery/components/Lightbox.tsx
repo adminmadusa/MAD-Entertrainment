@@ -2,7 +2,7 @@
 
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
-import Image from 'next/image';
+import { ImageWrapper } from '@/components/common/ImageWrapper';
 import React, { useEffect, useCallback } from 'react';
 
 import type { EventGalleryItem } from '@mad/types';
@@ -140,7 +140,7 @@ export function Lightbox({ items, currentIndex, onClose, onChange }: LightboxPro
             onClick={(e) => e.stopPropagation()} // Prevent clicks on image from closing (if we added close on backdrop click)
           >
             <div className="relative w-full h-full">
-              <Image
+              <ImageWrapper
                 src={currentItem.url}
                 alt={currentItem.caption || `Image ${currentIndex + 1}`}
                 fill
@@ -177,7 +177,7 @@ export function Lightbox({ items, currentIndex, onClose, onChange }: LightboxPro
           {/* Preload Next/Prev Images invisibly */}
           <div className="hidden">
             {currentIndex > 0 && (
-              <Image
+              <ImageWrapper
                 src={items[currentIndex - 1].url}
                 alt="preload previous"
                 width={10}
@@ -186,7 +186,7 @@ export function Lightbox({ items, currentIndex, onClose, onChange }: LightboxPro
               />
             )}
             {currentIndex < items.length - 1 && (
-              <Image
+              <ImageWrapper
                 src={items[currentIndex + 1].url}
                 alt="preload next"
                 width={10}
