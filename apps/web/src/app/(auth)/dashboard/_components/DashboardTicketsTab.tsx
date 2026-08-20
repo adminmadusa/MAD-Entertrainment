@@ -5,6 +5,7 @@ import { useState } from 'react';
 
 import { BookingCard } from '@/components/booking/shared/BookingCard';
 import type { Booking, Ticket } from '@mad/types';
+import { Button } from '@mad/ui';
 
 export function BookingCardSkeleton() {
   return (
@@ -81,12 +82,14 @@ export function DashboardTicketsTab({
         <p className="text-text-secondary text-xs max-w-sm mx-auto">
           We encountered an issue retrieving your ticket records. Please try again.
         </p>
-        <button
+        <Button
+          variant="secondary"
+          size="sm"
           onClick={() => refetch()}
           className="px-5 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-white text-xs font-bold transition-all"
         >
           Retry
-        </button>
+        </Button>
       </div>
     );
   }
