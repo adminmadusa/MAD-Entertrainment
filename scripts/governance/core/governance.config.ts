@@ -203,8 +203,6 @@ export const governanceConfig = {
       // Test Suites
       { filePath: 'apps/server/src/services/public/payment.service.test.ts', ruleId: 'VAL-QUAL-006', maxLinesCeiling: 2210, expiresAt: '2026-09-30', owner: 'Server Team', reason: 'Monolithic payment service test suite' },
       { filePath: 'apps/server/src/services/admin/booking.service.test.ts', ruleId: 'VAL-QUAL-006', maxLinesCeiling: 1920, expiresAt: '2026-10-31', owner: 'Server Team', reason: 'Admin booking service test suite' },
-      { filePath: 'apps/server/src/services/consistency.service.test.ts', ruleId: 'VAL-QUAL-006', maxLinesCeiling: 1530, expiresAt: '2026-10-31', owner: 'Server Team', reason: 'Consistency service test suite' },
-      { filePath: 'apps/server/src/services/admin/refund.service.test.ts', ruleId: 'VAL-QUAL-006', maxLinesCeiling: 1460, expiresAt: '2026-10-31', owner: 'Server Team', reason: 'Admin refund service test suite' },
       { filePath: 'apps/server/src/services/public/booking.service.test.ts', ruleId: 'VAL-QUAL-006', maxLinesCeiling: 1290, expiresAt: '2026-09-30', owner: 'Server Team', reason: 'Public booking service test suite' },
       { filePath: 'apps/server/src/services/public/payment.service.confirm-booking.test.ts', ruleId: 'VAL-QUAL-006', maxLinesCeiling: 1000, expiresAt: '2026-09-30', owner: 'Server Team', reason: 'Payment booking confirmation tests' },
       { filePath: 'apps/server/src/workers/workers.test.ts', ruleId: 'VAL-QUAL-006', maxLinesCeiling: 900, expiresAt: '2026-10-31', owner: 'Server Team', reason: 'Background workers test suite' },
