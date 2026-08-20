@@ -16,13 +16,9 @@ export async function getTicketQR(
   next: NextFunction
 ): Promise<void> {
   try {
-    const rawTicketId = req.params?.ticketId;
-    if (typeof rawTicketId !== 'string' || !rawTicketId.trim()) {
-      throw AppError.badRequest('Ticket ID is required');
-    }
-
+    const { ticketId } = req.params;
     const token = typeof req.query?.token === 'string' ? req.query.token : undefined;
-    const qrBuffer = await generateAuthorizedTicketQR(rawTicketId.trim(), {
+    const qrBuffer = await generateAuthorizedTicketQR(ticketId, {
       token,
       userId: req.user?.sub,
       sessionId: req.session?.sessionId,

@@ -1,4 +1,3 @@
-import crypto from 'crypto';
 import qrcode from 'qrcode';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -144,6 +143,19 @@ describe('Ticket Ownership Service Tests', () => {
 
       await expect(generateAuthorizedTicketQR('t1', { userId: 'unauthorized_user' })).rejects.toThrow(
         'You do not have permission to view this QR code'
+      );
+    });
+
+    it('throws forbidden if token is invalid or expired', async () => {
+      vi.mocked(Ticket.findOne).mockReturnValue({
+        lean: vi.fn().mockResolvedValue({ ticketId: 't1', status: 'active', bookingId: 'b1' }),
+      } as any);
+      vi.mocked(Booking.findById).mockReturnValue({
+        lean: vi.fn().mockResolvedValue({ _id: 'b1', status: BookingStatus.CONFIRMED }),
+      } as any);
+
+      await expect(generateAuthorizedTicketQR('t1', { token: 'invalid.token.123' })).rejects.toThrow(
+        'Invalid or expired ticket QR token'
       );
     });
   });

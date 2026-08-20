@@ -71,6 +71,8 @@ describe('Public Ticket QR Controller Tests', () => {
     });
 
     it('should throw badRequest error if ticketId is missing from parameters', async () => {
+      vi.mocked(generateAuthorizedTicketQR).mockRejectedValue(AppError.badRequest('Ticket ID is required'));
+
       const req = mockRequest({});
       const res = mockResponse();
       const next = vi.fn();
