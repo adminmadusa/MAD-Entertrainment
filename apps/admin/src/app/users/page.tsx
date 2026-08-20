@@ -1,16 +1,16 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import Link from 'next/link';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import React, { useState, useEffect, useCallback } from 'react';
 
 import { adminGetUsers } from '@/lib/api/admin/user.service';
 import { useAdminAuth } from '@/providers/AdminAuthProvider';
 import { AdminRole } from '@mad/shared';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, ErrorState, EmptyState, TablePagination } from '@mad/ui';
-import { Users, Search } from '@mad/ui/icons';
-import { formatDateTime } from '@mad/utils';
+import { ErrorState, TablePagination } from '@mad/ui';
+
+import { UsersMobileCards } from './components/UsersMobileCards';
+import { UsersTable } from './components/UsersTable';
 
 export default function UsersDirectoryPage() {
   const { admin } = useAdminAuth();
@@ -104,173 +104,6 @@ export default function UsersDirectoryPage() {
     });
   };
 
-  // ─── Render Table Body ───────────────────────────────────────
-  const renderTableRows = () => {
-    if (isLoading) {
-      return Array.from({ length: 5 }).map((_, i) => (
-        <TableRow key={i} className="border-b border-border-subtle/50 animate-pulse">
-          <TableCell className="py-4 px-5">
-            <div className="h-4 bg-white/5 rounded w-36 mb-1.5" />
-            <div className="h-3 bg-white/5 rounded w-48" />
-          </TableCell>
-          <TableCell className="py-4 px-4 hidden lg:table-cell">
-            <div className="h-4 bg-white/5 rounded w-28" />
-          </TableCell>
-          <TableCell className="py-4 px-4 hidden md:table-cell">
-            <div className="h-4 bg-white/5 rounded w-16" />
-          </TableCell>
-          <TableCell className="py-4 px-4 hidden lg:table-cell">
-            <div className="h-4 bg-white/5 rounded w-24" />
-          </TableCell>
-          <TableCell className="py-4 px-4">
-            <div className="h-4 bg-white/5 rounded w-16" />
-          </TableCell>
-          <TableCell className="py-4 px-5 text-right">
-            <div className="h-4 bg-white/5 rounded w-16 ml-auto" />
-          </TableCell>
-        </TableRow>
-      ));
-    }
-
-    if (items.length === 0) {
-      return (
-        <TableRow>
-          <TableCell colSpan={6} className="py-8">
-            <EmptyState
-              variant="table"
-              icon={searchParam ? <Search /> : <Users />}
-              title={searchParam ? "No results match your search." : "No customer records found."}
-              description={searchParam ? "Try changing your search criteria." : undefined}
-            />
-          </TableCell>
-        </TableRow>
-      );
-    }
-
-    return items.map((user) => (
-      <TableRow key={user.email} className="border-b border-border-subtle/40 hover:bg-white/2 transition-colors">
-        <TableCell className="py-4 px-5">
-          <div>
-            <p className="text-text-primary font-medium">{user.name}</p>
-            <p className="text-text-secondary text-xs font-mono">{user.email}</p>
-          </div>
-        </TableCell>
-        <TableCell className="py-4 px-4 text-text-secondary hidden lg:table-cell font-mono text-xs">
-          {user.phone}
-        </TableCell>
-        <TableCell className="py-4 px-4 hidden md:table-cell">
-          <span className={`text-[10px] px-2 py-0.5 rounded font-medium border capitalize ${
-            user.loginVia === 'google'
-              ? 'bg-blue-500/10 border-blue-500/20 text-blue-400'
-              : user.loginVia === 'otp'
-              ? 'bg-accent-purple/10 border-accent-purple/20 text-accent-purple'
-              : 'bg-white/5 border-white/10 text-text-secondary'
-          }`}>
-            {user.loginVia || 'Guest'}
-          </span>
-        </TableCell>
-        <TableCell className="py-4 px-4 text-text-secondary hidden lg:table-cell text-xs">
-          {formatDateTime(user.createdAt)}
-        </TableCell>
-        <TableCell className="py-4 px-4">
-          {user.accountType === 'registered' ? (
-            <span className={`text-[10px] px-2.5 py-1 rounded-full border font-medium ${
-              user.isActive
-                ? 'bg-green-500/10 text-green-400 border-green-500/30'
-                : 'bg-red-500/10 text-red-400 border-red-500/30'
-            }`}>
-              {user.isActive ? 'Active' : 'Suspended'}
-            </span>
-          ) : (
-            <span className="text-[10px] px-2.5 py-1 rounded-full border font-medium bg-white/5 text-text-muted border-white/10">
-              Guest Checkout
-            </span>
-          )}
-        </TableCell>
-        <TableCell className="py-4 px-5 text-right">
-          <Link
-            href={
-              user.accountType === 'registered'
-                ? `/users/${user.id}`
-                : `/users/guest/${encodeURIComponent(user.email)}`
-            }
-            className="text-xs font-semibold text-accent-purple hover:underline"
-          >
-            View Profile
-          </Link>
-        </TableCell>
-      </TableRow>
-    ));
-  };
-
-  // ─── Render Mobile Cards ─────────────────────────────────────
-  const renderMobileCards = () => {
-    if (isLoading) {
-      return Array.from({ length: 3 }).map((_, i) => (
-        <div key={i} className="glass p-4 rounded-xl space-y-3 animate-pulse">
-          <div className="h-4 bg-white/5 rounded w-1/2" />
-          <div className="h-3 bg-white/5 rounded w-3/4" />
-          <div className="h-3 bg-white/5 rounded w-1/3" />
-          <div className="h-8 bg-white/5 rounded w-full mt-2" />
-        </div>
-      ));
-    }
-
-    if (items.length === 0) {
-      return (
-        <div className="glass p-8 rounded-xl text-center text-text-muted text-sm">
-          {searchParam ? 'No customers match your search criteria.' : 'No customer records found.'}
-        </div>
-      );
-    }
-
-    return items.map((user) => (
-      <div key={user.email} className="glass p-4 rounded-xl border border-border-subtle/50 space-y-2.5">
-        <div className="flex justify-between items-start">
-          <div>
-            <h4 className="text-white font-semibold text-sm">{user.name}</h4>
-            <p className="text-text-muted text-xs font-mono">{user.email}</p>
-          </div>
-          {user.accountType === 'registered' ? (
-            <span className={`text-[9px] px-2 py-0.5 rounded-full border font-medium ${
-              user.isActive
-                ? 'bg-green-500/10 text-green-400 border-green-500/30'
-                : 'bg-red-500/10 text-red-400 border-red-500/30'
-            }`}>
-              {user.isActive ? 'Active' : 'Suspended'}
-            </span>
-          ) : (
-            <span className="text-[9px] px-2 py-0.5 rounded-full border font-medium bg-white/5 text-text-muted border-white/10">
-              Guest
-            </span>
-          )}
-        </div>
-
-        <div className="grid grid-cols-2 gap-2 pt-1.5 text-xs text-text-secondary border-t border-white/5">
-          <div>
-            <span className="text-[10px] text-text-muted block">Phone</span>
-            <span className="font-mono">{user.phone}</span>
-          </div>
-          <div>
-            <span className="text-[10px] text-text-muted block">Login Via</span>
-            <span className="capitalize">{user.loginVia || 'Guest Checkout'}</span>
-          </div>
-        </div>
-
-        <Link
-          href={
-            user.accountType === 'registered'
-              ? `/users/${user.id}`
-              : `/users/guest/${encodeURIComponent(user.email)}`
-          }
-          className="block w-full py-2 bg-white/5 hover:bg-white/10 border border-border-subtle rounded-lg text-center text-xs font-semibold text-white transition-all mt-2"
-        >
-          View Profile
-        </Link>
-      </div>
-    ));
-  };
-
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -333,33 +166,14 @@ export default function UsersDirectoryPage() {
       {/* Main Grid View */}
       {/* Desktop/Tablet Table Grid */}
       <div className="hidden md:block glass rounded-2xl border border-border-subtle overflow-hidden">
-        <Table className="min-w-[900px]">
-          <TableHeader>
-            <TableRow className="bg-white/[0.01]">
-              <TableHead
-                onClick={() => handleSort('name')}
-                className="py-3.5 px-5 cursor-pointer hover:text-white select-none"
-              >
-                Customer {sortFieldParam === 'name' ? (sortOrderParam === 'asc' ? '↑' : '↓') : ''}
-              </TableHead>
-              <TableHead className="py-3.5 px-4 hidden lg:table-cell">
-                Phone
-              </TableHead>
-              <TableHead className="py-3.5 px-4 hidden md:table-cell">
-                Login Via
-              </TableHead>
-              <TableHead
-                onClick={() => handleSort('createdAt')}
-                className="py-3.5 px-4 hidden lg:table-cell cursor-pointer hover:text-white select-none"
-              >
-                Joined {sortFieldParam === 'createdAt' ? (sortOrderParam === 'asc' ? '↑' : '↓') : ''}
-              </TableHead>
-              <TableHead className="py-3.5 px-4">Status</TableHead>
-              <TableHead className="py-3.5 px-5 text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>{renderTableRows()}</TableBody>
-        </Table>
+        <UsersTable
+          items={items}
+          isLoading={isLoading}
+          searchParam={searchParam}
+          sortFieldParam={sortFieldParam}
+          sortOrderParam={sortOrderParam}
+          onSort={handleSort}
+        />
 
         {pagination && pagination.totalPages > 1 && (
           <TablePagination
@@ -374,7 +188,11 @@ export default function UsersDirectoryPage() {
 
       {/* Mobile Card Grid */}
       <div className="block md:hidden space-y-4">
-        {renderMobileCards()}
+        <UsersMobileCards
+          items={items}
+          isLoading={isLoading}
+          searchParam={searchParam}
+        />
 
         {/* Mobile Pagination */}
         {pagination && pagination.totalPages > 1 && (

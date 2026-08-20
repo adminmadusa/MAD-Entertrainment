@@ -175,10 +175,6 @@ export const governanceConfig = {
       // Custom Hooks (all compliant!)
 
       // UI Components
-      { filePath: 'apps/admin/src/app/dashboard/page.tsx', ruleId: 'VAL-QUAL-001', maxLinesCeiling: 475, expiresAt: '2026-10-31', owner: 'Admin UI Team', reason: 'Admin dashboard analytics widgets container' },
-      { filePath: 'apps/admin/src/app/ticket-management/_components/TicketTiersTab.tsx', ruleId: 'VAL-QUAL-001', maxLinesCeiling: 455, expiresAt: '2026-10-31', owner: 'Admin UI Team', reason: 'Ticket tier management tab' },
-      { filePath: 'apps/admin/src/app/refunds/page.tsx', ruleId: 'VAL-QUAL-001', maxLinesCeiling: 445, expiresAt: '2026-10-31', owner: 'Admin UI Team', reason: 'Refund approvals management table' },
-      { filePath: 'apps/admin/src/app/users/page.tsx', ruleId: 'VAL-QUAL-001', maxLinesCeiling: 410, expiresAt: '2026-10-31', owner: 'Admin UI Team', reason: 'Admin users table' },
       { filePath: 'apps/web/src/app/(auth)/dashboard/page.tsx', ruleId: 'VAL-QUAL-001', maxLinesCeiling: 395, expiresAt: '2026-09-30', owner: 'Web UI Team', reason: 'Customer profile dashboard' },
       { filePath: 'apps/admin/src/components/events/gallery/EventGalleryWorkspace.tsx', ruleId: 'VAL-QUAL-001', maxLinesCeiling: 390, expiresAt: '2026-10-31', owner: 'Admin UI Team', reason: 'Event gallery admin workspace' },
       { filePath: 'apps/web/src/components/booking/TicketSelectionContent.tsx', ruleId: 'VAL-QUAL-001', maxLinesCeiling: 370, expiresAt: '2026-09-30', owner: 'Web Booking Team', reason: 'Ticket selection drawer view' },
@@ -201,12 +197,8 @@ export const governanceConfig = {
       { filePath: 'packages/types/src/index.ts', ruleId: 'VAL-QUAL-005', maxLinesCeiling: 560, expiresAt: '2026-10-31', owner: 'Platform Team', reason: 'Shared root TypeScript definitions' },
 
       // Test Suites
-      { filePath: 'apps/server/src/services/public/payment.service.test.ts', ruleId: 'VAL-QUAL-006', maxLinesCeiling: 2210, expiresAt: '2026-09-30', owner: 'Server Team', reason: 'Monolithic payment service test suite' },
-      { filePath: 'apps/server/src/services/admin/booking.service.test.ts', ruleId: 'VAL-QUAL-006', maxLinesCeiling: 1920, expiresAt: '2026-10-31', owner: 'Server Team', reason: 'Admin booking service test suite' },
+
       { filePath: 'apps/server/src/services/public/booking.service.test.ts', ruleId: 'VAL-QUAL-006', maxLinesCeiling: 1290, expiresAt: '2026-09-30', owner: 'Server Team', reason: 'Public booking service test suite' },
-      { filePath: 'apps/server/src/services/public/payment.service.confirm-booking.test.ts', ruleId: 'VAL-QUAL-006', maxLinesCeiling: 1000, expiresAt: '2026-09-30', owner: 'Server Team', reason: 'Payment booking confirmation tests' },
-      { filePath: 'apps/server/src/workers/workers.test.ts', ruleId: 'VAL-QUAL-006', maxLinesCeiling: 900, expiresAt: '2026-10-31', owner: 'Server Team', reason: 'Background workers test suite' },
-      { filePath: 'apps/server/src/services/public/auth.service.test.ts', ruleId: 'VAL-QUAL-006', maxLinesCeiling: 820, expiresAt: '2026-09-30', owner: 'Server Team', reason: 'Auth service test suite' },
     ]
   }
 };
