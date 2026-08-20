@@ -71,7 +71,13 @@ function isExternalHttpUrl(value: string): boolean {
 }
 
 function isGoogleFontUrl(value: string): boolean {
-  return value.includes('fonts.googleapis.com') || value.includes('fonts.gstatic.com');
+  try {
+    const parsed = new URL(value, 'https://fonts.googleapis.com');
+    const host = parsed.hostname.toLowerCase();
+    return host === 'fonts.googleapis.com' || host === 'fonts.gstatic.com';
+  } catch {
+    return false;
+  }
 }
 
 // ─── AST attribute helpers ─────────────────────────────────────────────

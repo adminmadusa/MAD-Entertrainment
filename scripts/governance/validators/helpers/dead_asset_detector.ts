@@ -219,10 +219,10 @@ export class DeadAssetDetector {
     if (Array.isArray(configuredPatterns)) {
       return files.filter(f => {
         return configuredPatterns.some(pattern => {
-          const regexStr = '^' + pattern
-            .replace(/\//g, '\\/')
+          const escaped = pattern.replace(/[.+?^${}()|[\]\\]/g, '\\$&');
+          const regexStr = '^' + escaped
             .replace(/\*\*/g, '.*')
-            .replace(/\*/g, '[^\\/]*') + '$';
+            .replace(/\*/g, '[^/]*') + '$';
           return new RegExp(regexStr).test(file || f) || f.includes(pattern);
         });
       });
@@ -286,10 +286,10 @@ export class DeadAssetDetector {
 
   private static shouldSkipFile(file: string, ignorePatterns: string[]): boolean {
     const isIgnored = ignorePatterns.some(pattern => {
-      const regexStr = '^' + pattern
-        .replace(/\//g, '\\/')
+      const escaped = pattern.replace(/[.+?^${}()|[\]\\]/g, '\\$&');
+      const regexStr = '^' + escaped
         .replace(/\*\*/g, '.*')
-        .replace(/\*/g, '[^\\/]*') + '$';
+        .replace(/\*/g, '[^/]*') + '$';
       return new RegExp(regexStr).test(file) || file.includes(pattern);
     });
 
