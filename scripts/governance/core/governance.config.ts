@@ -176,7 +176,6 @@ export const governanceConfig = {
 
       // UI Components
 
-      { filePath: 'apps/web/src/components/ui/UpcomingEventsSection.tsx', ruleId: 'VAL-QUAL-001', maxLinesCeiling: 330, expiresAt: '2026-09-30', owner: 'Web UI Team', reason: 'Homepage upcoming events carousel' },
 
       // Controllers
 
