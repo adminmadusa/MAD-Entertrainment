@@ -13,10 +13,10 @@ const workspaceRoot = resolve(__dirname, '../../..');
 function matchesIgnorePattern(file: string, patterns: string[]): boolean {
   const normalizedFile = file.replace(/\\/g, '/');
   return patterns.some(pattern => {
-    const regexStr = '^' + pattern
-      .replace(/\//g, '\\/')
+    const escaped = pattern.replace(/[.+?^${}()|[\]\\]/g, '\\$&');
+    const regexStr = '^' + escaped
       .replace(/\*\*/g, '.*')
-      .replace(/\*/g, '[^\\/]*') + '$';
+      .replace(/\*/g, '[^/]*') + '$';
     return new RegExp(regexStr).test(normalizedFile) || normalizedFile.includes(pattern.replace(/\*\*\//, ''));
   });
 }

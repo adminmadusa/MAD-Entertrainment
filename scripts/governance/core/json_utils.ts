@@ -43,13 +43,10 @@ export function canonicalizeJson(object: any): string {
  * Reads a JSON file if it exists, parsing it. Returns undefined if the file does not exist or fails to parse.
  */
 export function readJsonIfExists<T = any>(filePath: string): T | undefined {
-  if (!existsSync(filePath)) {
-    return undefined;
-  }
   try {
     const content = readFileSync(filePath, 'utf8');
     return JSON.parse(content) as T;
-  } catch (e) {
+  } catch {
     return undefined;
   }
 }
@@ -62,27 +59,22 @@ export function writeJsonIfChanged(filePath: string, object: any): { written: bo
   persistenceStats.examined++;
   const newContent = canonicalizeJson(object);
 
-  if (existsSync(filePath)) {
-    try {
-      const existingContent = readFileSync(filePath, 'utf8');
+  try {
+    const existingContent = readFileSync(filePath, 'utf8');
+    const existingHash = createHash('sha256').update(existingContent).digest('hex');
+    const newHash = createHash('sha256').update(newContent).digest('hex');
 
-      const existingHash = createHash('sha256').update(existingContent).digest('hex');
-      const newHash = createHash('sha256').update(newContent).digest('hex');
-
-      if (existingHash === newHash) {
-        persistenceStats.skipped++;
-        return { written: false, skipped: true };
-      }
-    } catch (e) {
-      // Proceed with write if read or hashing fails
+    if (existingHash === newHash) {
+      persistenceStats.skipped++;
+      return { written: false, skipped: true };
     }
+  } catch {
+    // Proceed with write if read or hashing fails
   }
 
   // Ensure parent directories exist
   const parentDir = dirname(filePath);
-  if (!existsSync(parentDir)) {
-    mkdirSync(parentDir, { recursive: true });
-  }
+  mkdirSync(parentDir, { recursive: true });
 
   writeFileSync(filePath, newContent, 'utf8');
   persistenceStats.written++;

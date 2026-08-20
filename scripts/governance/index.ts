@@ -1,6 +1,4 @@
-// scripts/governance/index.ts
-
-import { readdirSync, statSync, existsSync, readFileSync } from 'fs';
+import { readdirSync, statSync, existsSync, readFileSync, writeFileSync, mkdirSync } from 'fs';
 import { resolve, join, relative, dirname } from 'path';
 import { execSync } from 'child_process';
 import { MetadataProvider } from './core/metadata';
@@ -134,26 +132,17 @@ async function run() {
 
     if (allHistory.length > 0) {
       const dir = dirname(historicalFilesPath);
-      if (!existsSync(dir)) {
-        const fs = require('fs');
-        fs.mkdirSync(dir, { recursive: true });
-      }
-      if (existsSync(historicalFilesPath)) {
-        try {
-          const committed = JSON.parse(readFileSync(historicalFilesPath, 'utf8'));
-          const missing = allHistory.filter(f => !committed.includes(f));
-          if (missing.length > 0) {
-            const fs = require('fs');
-            fs.writeFileSync(historicalFilesPath, JSON.stringify(allHistory, null, 2), 'utf8');
-            console.log(`🔄 Auto-synchronized historical files baseline (${allHistory.length} entries).`);
-          }
-        } catch {
-          const fs = require('fs');
-          fs.writeFileSync(historicalFilesPath, JSON.stringify(allHistory, null, 2), 'utf8');
+      mkdirSync(dir, { recursive: true });
+
+      try {
+        const committed = JSON.parse(readFileSync(historicalFilesPath, 'utf8'));
+        const missing = allHistory.filter(f => !committed.includes(f));
+        if (missing.length > 0) {
+          writeFileSync(historicalFilesPath, JSON.stringify(allHistory, null, 2), 'utf8');
+          console.log(`🔄 Auto-synchronized historical files baseline (${allHistory.length} entries).`);
         }
-      } else {
-        const fs = require('fs');
-        fs.writeFileSync(historicalFilesPath, JSON.stringify(allHistory, null, 2), 'utf8');
+      } catch {
+        writeFileSync(historicalFilesPath, JSON.stringify(allHistory, null, 2), 'utf8');
         console.log(`✅ Initialized local historical baseline (${allHistory.length} entries).`);
       }
     }
