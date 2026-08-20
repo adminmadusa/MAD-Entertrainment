@@ -1,14 +1,8 @@
 import { NextFunction, Request, Response } from 'express';
-import qrcode from 'qrcode';
-
-import { BookingStatus } from '@mad/shared';
 
 import { AppError } from '../../middleware/error.middleware';
-import { Booking } from '../../models/booking.schema';
-import { Ticket } from '../../models/ticket.schema';
-import { buildQrCodeImageUrl, canViewTicketQR, verifyTicketQrToken } from '../../services/public/ticket-ownership.service';
+import { buildQrCodeImageUrl, generateAuthorizedTicketQR } from '../../services/public/ticket-ownership.service';
 import * as ticketService from '../../services/public/ticket.service';
-import { logger } from '../../utils/logger';
 import { sendSuccess } from '../../utils/response';
 
 /**
@@ -26,51 +20,16 @@ export async function getTicketQR(
     if (typeof rawTicketId !== 'string' || !rawTicketId.trim()) {
       throw AppError.badRequest('Ticket ID is required');
     }
-    const ticketId = rawTicketId.trim();
 
-    // 1. Validate ticket existence in DB
-    const ticket = await Ticket.findOne({ ticketId }).lean();
-    if (!ticket) {
-      logger.warn({ ticketId }, 'Attempted QR fetch for non-existent ticket');
-      throw AppError.notFound('Ticket not found');
-    }
-
-    if (ticket.status !== 'active') {
-      throw AppError.forbidden('Ticket is no longer active');
-    }
-
-    const booking = await Booking.findById(ticket.bookingId).lean();
-    if (!booking) {
-      throw AppError.notFound('Associated booking not found');
-    }
-
-    if (booking.status !== BookingStatus.CONFIRMED) {
-      throw AppError.forbidden('Associated booking is not confirmed');
-    }
-
-    // 2. Validate ticket access
-    const rawToken = req.query?.token;
-    const token = typeof rawToken === 'string' ? rawToken.trim() : '';
-
-    const hasValidToken = token ? verifyTicketQrToken(ticket.ticketId, token) : false;
-    const hasOwnerAccess = hasValidToken ? true : await canViewTicketQR(ticket, req.user?.sub, req.session?.sessionId);
-
-    if (!hasValidToken && !hasOwnerAccess) {
-      throw AppError.forbidden('You do not have permission to view this QR code');
-    }
-
-    // 3. Generate QR code buffer
-    const qrContent = ticket.qrCode || ticket.ticketId;
-    const qrBuffer = await qrcode.toBuffer(qrContent, {
-      type: 'png',
-      margin: 1,
-      width: 300,
+    const token = typeof req.query?.token === 'string' ? req.query.token : undefined;
+    const qrBuffer = await generateAuthorizedTicketQR(rawTicketId.trim(), {
+      token,
+      userId: req.user?.sub,
+      sessionId: req.session?.sessionId,
     });
 
-    // 4. Set immutable caching headers & content type
     res.setHeader('Content-Type', 'image/png');
     res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
-
     res.send(qrBuffer);
   } catch (error) {
     next(error);
@@ -173,7 +132,11 @@ export async function getMyTickets(
       return ticketObj;
     });
 
-    sendSuccess(res, { tickets: tokenizedTickets }, 'My tickets retrieved successfully');
+    res.status(200).json({
+      success: true,
+      data: { tickets: tokenizedTickets },
+      message: 'My tickets retrieved successfully',
+    });
   } catch (err) {
     next(err);
   }

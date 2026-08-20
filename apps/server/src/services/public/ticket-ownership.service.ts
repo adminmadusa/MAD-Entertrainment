@@ -1,4 +1,7 @@
 import crypto from 'crypto';
+import qrcode from 'qrcode';
+
+import { BookingStatus } from '@mad/shared';
 
 import { getEnv } from '../../config/env';
 import { AppError } from '../../middleware/error.middleware';
@@ -281,4 +284,50 @@ export function getPurchaserPDFTicketState(ticket: any): { canRenderQR: boolean;
   }
 
   return { canRenderQR: false, message: 'Restricted Access\n\nQR access is unavailable.' };
+}
+
+/**
+ * Verifies authorization and generates a PNG QR code buffer for the specified ticket.
+ */
+export async function generateAuthorizedTicketQR(
+  ticketId: string,
+  auth: { token?: string; userId?: string; sessionId?: string }
+): Promise<Buffer> {
+  const cleanTicketId = String(ticketId || '').trim();
+  if (!cleanTicketId) {
+    throw AppError.badRequest('Ticket ID is required');
+  }
+
+  const ticket = await Ticket.findOne({ ticketId: cleanTicketId }).lean();
+  if (!ticket) {
+    throw AppError.notFound('Ticket not found');
+  }
+
+  if (ticket.status !== 'active') {
+    throw AppError.forbidden('Ticket is no longer active');
+  }
+
+  const booking = await Booking.findById(ticket.bookingId).lean();
+  if (!booking) {
+    throw AppError.notFound('Associated booking not found');
+  }
+
+  if (booking.status !== BookingStatus.CONFIRMED) {
+    throw AppError.forbidden('Associated booking is not confirmed');
+  }
+
+  const token = typeof auth.token === 'string' ? auth.token.trim() : '';
+  const hasValidToken = token ? verifyTicketQrToken(ticket.ticketId, token) : false;
+  const hasOwnerAccess = hasValidToken ? true : await canViewTicketQR(ticket, auth.userId, auth.sessionId);
+
+  if (!hasValidToken && !hasOwnerAccess) {
+    throw AppError.forbidden('You do not have permission to view this QR code');
+  }
+
+  const qrContent = ticket.qrCode || ticket.ticketId;
+  return qrcode.toBuffer(qrContent, {
+    type: 'png',
+    margin: 1,
+    width: 300,
+  });
 }
