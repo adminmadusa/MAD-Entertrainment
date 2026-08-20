@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-import { BookingStatus, PaymentStatus, ReservationStatus, SeatStatus, NotificationType } from '@mad/shared';
+import { BookingStatus, ReservationStatus, SeatStatus, NotificationType } from '@mad/shared';
 
 import { Booking } from '../models/booking.schema';
 import { Event } from '../models/event.schema';
@@ -9,15 +9,9 @@ import { Payment } from '../models/payment.schema';
 import { Refund } from '../models/refund.schema';
 import { Reservation } from '../models/reservation.schema';
 import { SeatLayout } from '../models/seat-layout.schema';
-import { Ticket } from '../models/ticket.schema';
 import { ConsistencyService } from './consistency.service';
-import { BookingConsistencyService } from './consistency/booking-consistency.service';
-import { NotificationConsistencyService } from './consistency/notification-consistency.service';
-import { PaymentConsistencyService } from './consistency/payment-consistency.service';
 import { RefundConsistencyService } from './consistency/refund-consistency.service';
-import { PaymentService } from './public/payment.service';
 import { QueueService } from './queue.service';
-import { ReservationService } from './reservation.service';
 
 vi.mock('mongoose', async (importOriginal) => {
   const original = await importOriginal<typeof import('mongoose')>();
