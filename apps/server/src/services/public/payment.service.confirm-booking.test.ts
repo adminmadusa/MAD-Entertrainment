@@ -227,7 +227,6 @@ const makeIds = () => ({
 });
 
 const makeFutureDate = (offsetMs = 24 * 60 * 60 * 1000) => new Date(Date.now() + offsetMs);
-const makePastDate = (offsetMs = 60 * 60 * 1000) => new Date(Date.now() - offsetMs);
 
 function makeBooking(overrides: Record<string, unknown> = {}) {
   const ids = makeIds();
