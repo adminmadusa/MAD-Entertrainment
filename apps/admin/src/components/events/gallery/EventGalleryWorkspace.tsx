@@ -1,6 +1,5 @@
 'use client';
 
-import Image from 'next/image';
 import React, { useState, useCallback } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
@@ -16,7 +15,9 @@ import {
 } from '@/lib/api/admin/event-gallery.service';
 import { adminApiClient } from '@/lib/api/client';
 
+import { EventGalleryDeleteModal } from './EventGalleryDeleteModal';
 import { EventGalleryGrid } from './EventGalleryGrid';
+import { EventGalleryTopBar } from './EventGalleryTopBar';
 
 export interface EventGalleryWorkspaceProps {
   eventId: string;
@@ -249,59 +250,14 @@ export const EventGalleryWorkspace = React.memo(function EventGalleryWorkspace({
         </Alert>
       )}
 
-      {/* Top Action Bar */}
-      <div className="glass rounded-2xl border border-border-subtle p-4 sm:p-5 flex flex-wrap items-center justify-between gap-4">
-        {/* Left: Stats & Status */}
-        <div className="flex items-center gap-3">
-          <span className="text-xs sm:text-sm font-semibold text-white bg-white/10 px-3 py-1 rounded-full border border-white/10">
-            {items.length} / {MAX_GALLERY_PHOTOS} Photos
-          </span>
-          <span
-            className={`text-xs sm:text-sm font-medium px-3 py-1 rounded-full flex items-center gap-1.5 border ${
-              isPublished
-                ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
-                : 'bg-white/5 text-text-muted border-white/10'
-            }`}
-          >
-            <span
-              className={`w-2 h-2 rounded-full ${
-                isPublished ? 'bg-emerald-400 animate-pulse' : 'bg-text-muted'
-              }`}
-            />
-            {isPublished ? 'Live on Website' : 'Hidden from Website'}
-          </span>
-        </div>
+      <EventGalleryTopBar
+        itemCount={items.length}
+        maxPhotos={MAX_GALLERY_PHOTOS}
+        isPublished={isPublished}
+        isUpdating={updateSettingsMutation.isPending}
+        onTogglePublish={handleTogglePublish}
+      />
 
-        {/* Right: Publish Toggle Control */}
-        <div className="flex items-center gap-3">
-          <div className="text-right hidden sm:block">
-            <div className="text-xs font-semibold text-white">
-              {isPublished ? 'Published' : 'Unpublished'}
-            </div>
-            <div className="text-[10px] text-text-muted">
-              {isPublished ? 'Publicly visible' : 'Hidden from public'}
-            </div>
-          </div>
-
-          <button
-            type="button"
-            onClick={handleTogglePublish}
-            disabled={updateSettingsMutation.isPending}
-            aria-label={isPublished ? 'Unpublish gallery' : 'Publish gallery'}
-            className={`relative inline-flex h-7 w-12 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-accent-purple ${
-              isPublished ? 'bg-accent-purple' : 'bg-surface-elevated'
-            } ${updateSettingsMutation.isPending ? 'opacity-50 cursor-wait' : ''}`}
-          >
-            <span
-              className={`pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                isPublished ? 'translate-x-5' : 'translate-x-0'
-              }`}
-            />
-          </button>
-        </div>
-      </div>
-
-      {/* Main Full-Width Thumbnail Grid with in-grid + tile */}
       <div className="w-full">
         <EventGalleryGrid
           eventId={eventId}
@@ -315,70 +271,13 @@ export const EventGalleryWorkspace = React.memo(function EventGalleryWorkspace({
         />
       </div>
 
-      {/* Delete Confirmation Modal */}
       {itemToDelete && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="delete-dialog-title"
-        >
-          <div className="glass max-w-md w-full rounded-2xl border border-border-subtle p-6 space-y-5 shadow-2xl bg-surface-elevated/90">
-            <div className="flex items-center gap-3 text-red-400">
-              <span className="text-2xl">⚠️</span>
-              <h3 id="delete-dialog-title" className="text-lg font-bold text-white">
-                Delete Gallery Photo?
-              </h3>
-            </div>
-
-            <p className="text-xs sm:text-sm text-text-muted leading-relaxed">
-              Are you sure you want to permanently remove this photo from the event gallery? This action is <strong className="text-white">irreversible</strong> and will automatically purge the image asset from Cloudinary storage.
-            </p>
-
-            {/* Thumbnail Preview */}
-            <div className="relative aspect-video w-full rounded-xl overflow-hidden border border-border-subtle bg-black/40">
-              <Image
-                src={itemToDelete.thumbnail || itemToDelete.url}
-                alt="Photo to delete"
-                fill
-                className="object-contain"
-              />
-            </div>
-
-            {itemToDelete.isCover && (
-              <div className="p-3 bg-accent-purple/10 border border-accent-purple/20 rounded-xl text-xs text-accent-purple-light flex items-center gap-2">
-                <span>⭐</span>
-                <span>This photo is currently the <strong>Cover Photo</strong>. If deleted, cover status will automatically transfer to the next available photo.</span>
-              </div>
-            )}
-
-            <div className="flex items-center justify-end gap-3 pt-2">
-              <button
-                type="button"
-                onClick={() => setItemToDelete(null)}
-                disabled={deleteItemMutation.isPending}
-                className="px-4 py-2 text-xs sm:text-sm font-semibold text-text-secondary hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition-colors focus:outline-none focus:ring-2 focus:ring-accent-purple"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={handleConfirmDelete}
-                disabled={deleteItemMutation.isPending}
-                className="px-4 py-2 text-xs sm:text-sm font-semibold text-white bg-red-600 hover:bg-red-500 rounded-xl transition-colors shadow-lg shadow-red-900/30 flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-red-400 disabled:opacity-50"
-              >
-                {deleteItemMutation.isPending ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    <span>Deleting...</span>
-                  </>
-                ) : (
-                  <span>Confirm Delete</span>
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
+        <EventGalleryDeleteModal
+          item={itemToDelete}
+          isDeleting={deleteItemMutation.isPending}
+          onClose={() => setItemToDelete(null)}
+          onConfirm={handleConfirmDelete}
+        />
       )}
     </div>
   );
