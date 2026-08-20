@@ -11,7 +11,6 @@ import {
   adminBulkDeleteTicketProfiles,
   adminBulkUpdateTicketProfileStatus
 } from '@/lib/api/admin/ticket-profile.service';
-import { extractApiError } from '@/lib/api/client';
 import type { TicketProfile } from '@mad/types';
 import {
   Table,
@@ -21,14 +20,15 @@ import {
   TableHead,
   TableCell,
   ErrorState,
-  Modal,
   FloatingActionBar,
   EmptyState,
   Checkbox,
   useBulkSelection
 } from '@mad/ui';
 import { Ticket } from '@mad/ui/icons';
-import { formatDate } from '@mad/utils';
+
+import { DeleteProfileModal } from './DeleteProfileModal';
+import { TicketProfileRow } from './TicketProfileRow';
 
 interface TabProps {
   canMutate: boolean;
@@ -100,10 +100,6 @@ export function TicketProfilesTab({ canMutate, qc, showToast }: TabProps) {
     );
   }
 
-  const getTicketsCount = (profile: TicketProfile) => {
-    return profile.groups?.reduce((sum, group) => sum + (group.tickets?.length || 0), 0) || 0;
-  };
-
   const renderTableBody = () => {
     if (isLoading) {
       return Array.from({ length: 3 }).map((_, i) => (
@@ -138,80 +134,15 @@ export function TicketProfilesTab({ canMutate, qc, showToast }: TabProps) {
     }
 
     return profiles.map((profile) => (
-      <TableRow key={profile._id} className="border-b border-border-subtle/40 hover:bg-white/2 transition-colors">
-        <TableCell className="w-12 px-4 text-center">
-          <Checkbox
-            checked={isSelected(profile._id)}
-            onChange={() => toggle(profile._id)}
-            aria-label={`Select ${profile.name}`}
-          />
-        </TableCell>
-        <TableCell className="py-4 px-5">
-          <div>
-            <span className="text-white font-bold text-sm block">
-              {profile.name}
-            </span>
-            {profile.description && (
-              <p className="text-text-muted text-xs mt-1 max-w-xs truncate">{profile.description}</p>
-            )}
-          </div>
-        </TableCell>
-        <TableCell className="py-4 px-4 text-text-secondary font-medium">
-          <span className="text-white bg-white/5 px-2.5 py-0.5 rounded-lg border border-white/10 font-mono text-xs">
-            {profile.groups?.length || 0}
-          </span>
-        </TableCell>
-        <TableCell className="py-4 px-4 text-text-secondary font-medium">
-          <span className="text-accent-purple-light font-semibold font-mono text-xs">
-            {getTicketsCount(profile)}
-          </span>
-        </TableCell>
-        <TableCell className="py-4 px-4 text-text-secondary text-xs">
-          {formatDate(profile.createdAt)}
-        </TableCell>
-        <TableCell className="py-4 px-4">
-          {canMutate ? (
-            <button
-              onClick={() => toggleStatusMutation.mutate({ id: profile._id, isActive: !profile.isActive })}
-              className={`text-xs px-2.5 py-1 rounded-full border font-medium transition-all ${
-                profile.isActive
-                  ? 'bg-green-500/10 text-green-400 border-green-500/30 hover:bg-green-500/20'
-                  : 'bg-red-500/10 text-red-400 border-red-500/30 hover:bg-red-500/20'
-              }`}
-            >
-              {profile.isActive ? 'Active' : 'Inactive'}
-            </button>
-          ) : (
-            <span className={`text-xs px-2.5 py-1 rounded-full border font-medium ${
-              profile.isActive
-                ? 'bg-green-500/10 text-green-400 border-green-500/30'
-                : 'bg-red-500/10 text-red-400 border-red-500/30'
-            }`}>
-              {profile.isActive ? 'Active' : 'Inactive'}
-            </span>
-          )}
-        </TableCell>
-        <TableCell className="py-4 px-5">
-          {canMutate ? (
-            <div className="flex items-center justify-end gap-2">
-              <Link
-                href={`/ticket-profiles/${profile._id}/edit`}
-                className="px-3 py-1.5 text-xs font-semibold glass border border-border-subtle rounded-lg text-text-secondary hover:text-white hover:border-accent-purple/40 transition-all"
-              >
-                Edit
-              </Link>
-              <button
-                onClick={() => setDeleteTarget(profile)}
-                className="px-3 py-1.5 text-xs font-semibold glass border border-border-subtle rounded-lg text-text-muted hover:text-red-400 hover:border-red-500/40 transition-all"
-              >
-                Delete
-              </button>
-            </div>
-          ) : (
-            <div className="text-right text-text-muted">—</div>
-          )}
-        </TableCell>
-      </TableRow>
+      <TicketProfileRow
+        key={profile._id}
+        profile={profile}
+        isSelected={isSelected(profile._id)}
+        onToggleSelect={() => toggle(profile._id)}
+        canMutate={canMutate}
+        onToggleStatus={(id, nextStatus) => toggleStatusMutation.mutate({ id, isActive: nextStatus })}
+        onDeleteTarget={setDeleteTarget}
+      />
     ));
   };
 
@@ -260,44 +191,14 @@ export function TicketProfilesTab({ canMutate, qc, showToast }: TabProps) {
         </Table>
       </div>
 
-      {/* Reusable dialog modal */}
-      <Modal
-        isOpen={!!deleteTarget}
+      {/* Delete Modal */}
+      <DeleteProfileModal
+        deleteTarget={deleteTarget}
         onClose={() => setDeleteTarget(null)}
-        size="sm"
-        showCloseButton={false}
-        closeOnBackdropClick={true}
-        ariaLabelledBy="delete-profile-modal-title"
-        className="glass-strong border border-border-subtle p-6 max-w-sm"
-      >
-        {deleteTarget && (
-          <div>
-            <h2 id="delete-profile-modal-title" className="text-white font-bold text-lg mb-2">Delete Ticket Profile?</h2>
-            <p className="text-text-secondary text-sm mb-1">
-              Profile <strong className="text-white">{deleteTarget.name}</strong> will be permanently deleted.
-            </p>
-            <p className="text-error text-xs mb-5 font-semibold">This action cannot be undone.</p>
-            {deleteMutation.error && (
-              <p className="text-red-400 text-xs mb-3">{extractApiError(deleteMutation.error).message}</p>
-            )}
-            <div className="flex gap-3">
-              <button
-                onClick={() => setDeleteTarget(null)}
-                className="flex-1 py-2.5 glass border border-border-subtle rounded-xl text-sm font-medium text-text-secondary hover:text-white transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => deleteMutation.mutate(deleteTarget._id)}
-                disabled={deleteMutation.isPending}
-                className="flex-1 py-2.5 bg-error/80 hover:bg-error rounded-xl text-white text-sm font-medium transition-colors disabled:opacity-60"
-              >
-                {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
-              </button>
-            </div>
-          </div>
-        )}
-      </Modal>
+        onConfirmDelete={(id) => deleteMutation.mutate(id)}
+        isPending={deleteMutation.isPending}
+        error={deleteMutation.error}
+      />
 
       {/* Floating Action Bar */}
       <FloatingActionBar
