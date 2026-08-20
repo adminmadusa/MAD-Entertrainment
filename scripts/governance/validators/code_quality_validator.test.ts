@@ -61,7 +61,7 @@ describe('CodeQualityValidator Unit Tests', () => {
   });
 
   it('passes for a legacy file on an active exception within its frozen ceiling', async () => {
-    // apps/admin/src/components/events/gallery/EventGalleryWorkspace.tsx exception has ceiling of 390 lines
+    // EventGalleryWorkspace.tsx exception has ceiling of 390 lines
     const fakeContent = Array(380).fill('const line = 1;').join('\n');
     vi.mocked(fs.readFileSync).mockReturnValue(fakeContent);
 
