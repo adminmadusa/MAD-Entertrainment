@@ -1,5 +1,3 @@
-import crypto from 'crypto';
-
 import mongoose from 'mongoose';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
@@ -8,7 +6,6 @@ import { BookingStatus, PaymentStatus } from '@mad/shared';
 import { getEnv } from '../../config/env';
 import { getStripe } from '../../config/stripe';
 import { Booking } from '../../models/booking.schema';
-import { Coupon } from '../../models/coupon.schema';
 import { Event } from '../../models/event.schema';
 import { Payment } from '../../models/payment.schema';
 import { Refund } from '../../models/refund.schema';
