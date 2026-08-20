@@ -117,14 +117,14 @@ export function CheckoutForm({ event, isExpired, isDisabled, onSubmit, onErrorSe
 
 
   return (
-    <form id="checkout-form" onSubmit={handlePlaceOrderSubmit} className="space-y-4">
-      <div className="glass rounded-2xl border border-white/5 p-4 sm:p-5 space-y-4">
-        <div className="flex justify-between items-center border-b border-white/10 pb-2.5">
-          <h2 className="text-white font-bold text-base">Billing information</h2>
+    <form id="checkout-form" onSubmit={handlePlaceOrderSubmit} className="space-y-3">
+      <div className="glass rounded-xl border border-white/5 p-3.5 sm:p-4 space-y-3">
+        <div className="flex justify-between items-center border-b border-white/10 pb-2">
+          <h2 className="text-white font-bold text-sm sm:text-base">Billing information</h2>
           <span className="text-[10px] text-text-muted uppercase">* Required</span>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <FormField label="First name" htmlFor="checkout-first-name" required error={fieldErrors.firstName}>
             <Input
               id="checkout-first-name"
@@ -136,7 +136,7 @@ export function CheckoutForm({ event, isExpired, isDisabled, onSubmit, onErrorSe
                 setFieldErrors((prev) => ({ ...prev, firstName: '' }));
               }}
               placeholder="First name"
-              className="text-base md:text-sm"
+              className="h-10 text-sm"
             />
           </FormField>
           <FormField label="Last name" htmlFor="checkout-last-name" required error={fieldErrors.lastName}>
@@ -150,12 +150,12 @@ export function CheckoutForm({ event, isExpired, isDisabled, onSubmit, onErrorSe
                 setFieldErrors((prev) => ({ ...prev, lastName: '' }));
               }}
               placeholder="Last name"
-              className="text-base md:text-sm"
+              className="h-10 text-sm"
             />
           </FormField>
         </div>
 
-        <div className={`grid grid-cols-1 ${!user ? 'md:grid-cols-2' : ''} gap-4`}>
+        <div className={`grid grid-cols-1 ${!user ? 'md:grid-cols-2' : ''} gap-3`}>
           <FormField
             label="Email address"
             htmlFor="checkout-email"
@@ -174,7 +174,7 @@ export function CheckoutForm({ event, isExpired, isDisabled, onSubmit, onErrorSe
                 setFieldErrors((prev) => ({ ...prev, guestEmail: '', guestEmailConfirm: '' }));
               }}
               placeholder="email@example.com"
-              className={user ? 'text-base md:text-sm text-text-muted/60 bg-white/5 cursor-not-allowed border-white/5' : 'text-base md:text-sm'}
+              className={user ? 'h-10 text-sm text-text-muted/60 bg-white/5 cursor-not-allowed border-white/5' : 'h-10 text-sm'}
             />
           </FormField>
 
@@ -198,17 +198,17 @@ export function CheckoutForm({ event, isExpired, isDisabled, onSubmit, onErrorSe
                     setFieldErrors((prev) => ({ ...prev, guestEmailConfirm: '' }));
                   }}
                   placeholder="Confirm email address"
-                  className="text-base md:text-sm"
+                  className="h-10 text-sm"
                 />
                 {!fieldErrors.guestEmailConfirm && emailsMatch && (
-                  <p className="text-emerald-400 text-xs mt-1 font-semibold" role="status" aria-live="polite">✓ Emails match</p>
+                  <p className="text-emerald-400 text-[11px] mt-0.5 font-semibold" role="status" aria-live="polite">✓ Emails match</p>
                 )}
               </FormField>
             );
           })()}
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <FormField label="Mobile Number (Optional)" htmlFor="checkout-phone" error={fieldErrors.guestPhone}>
             <Input
               id="checkout-phone"
@@ -217,12 +217,12 @@ export function CheckoutForm({ event, isExpired, isDisabled, onSubmit, onErrorSe
               disabled={isDisabled}
               onChange={(e) => setGuestPhone(e.target.value)}
               placeholder="+91 98765 43210"
-              className="text-base md:text-sm"
+              className="h-10 text-sm"
             />
           </FormField>
         </div>
 
-        <p className="text-[11px] text-text-muted leading-relaxed pt-3 border-t border-white/5">
+        <p className="text-[10px] sm:text-[11px] text-text-muted leading-relaxed pt-2 border-t border-white/5">
           By completing your booking, you agree to our{' '}
           <Link href="/legal/terms" className="text-accent-purple hover:underline font-semibold">
             Terms of Service
@@ -236,8 +236,8 @@ export function CheckoutForm({ event, isExpired, isDisabled, onSubmit, onErrorSe
 
         {/* Age Confirmation Requirement */}
         {event?.requireAgeConfirmation && (
-          <div className="space-y-1 pt-3 border-t border-white/5">
-            <label className="flex items-center gap-3 min-h-[44px] cursor-pointer text-sm text-white font-medium leading-normal">
+          <div className="space-y-1 pt-2 border-t border-white/5">
+            <label className="flex items-center gap-2.5 min-h-[44px] cursor-pointer text-xs sm:text-sm text-white font-medium leading-normal">
               <input
                 id="checkout-age-confirm"
                 type="checkbox"
@@ -249,12 +249,12 @@ export function CheckoutForm({ event, isExpired, isDisabled, onSubmit, onErrorSe
                     setFieldErrors((prev) => ({ ...prev, ageConfirmed: '' }));
                   }
                 }}
-                className={`w-5 h-5 rounded bg-background accent-accent-purple shrink-0 ${fieldErrors.ageConfirmed ? 'border border-red-500' : 'border-white/20'
+                className={`w-4 h-4 rounded bg-background accent-accent-purple shrink-0 ${fieldErrors.ageConfirmed ? 'border border-red-500' : 'border-white/20'
                   }`}
               />
               <span>I confirm that I am {event?.ageRestriction || 18} years of age or older and legally eligible to attend this event.</span>
             </label>
-            {fieldErrors.ageConfirmed && <p className="text-red-400 text-xs pl-[28px]" role="status" aria-live="polite">{fieldErrors.ageConfirmed}</p>}
+            {fieldErrors.ageConfirmed && <p className="text-red-400 text-xs pl-[24px]" role="status" aria-live="polite">{fieldErrors.ageConfirmed}</p>}
           </div>
         )}
       </div>
