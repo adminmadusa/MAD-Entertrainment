@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-import { BookingStatus, ReservationStatus } from '@mad/shared';
+import { BookingStatus } from '@mad/shared';
 
 import { emitToAdmin, emitToEvent, emitToBooking } from '../../config/socket';
 import { Booking } from '../../models/booking.schema';
@@ -9,7 +9,6 @@ import { Coupon } from '../../models/coupon.schema';
 import { Event } from '../../models/event.schema';
 import { Notification } from '../../models/notification.schema';
 import { Payment } from '../../models/payment.schema';
-import { Refund } from '../../models/refund.schema';
 import { Ticket } from '../../models/ticket.schema';
 import { auditLog } from '../../utils/audit';
 import { CacheService } from '../cache.service';
