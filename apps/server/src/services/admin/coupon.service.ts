@@ -10,40 +10,50 @@ export const getCoupons = async (
   limit: number = 15,
   active?: string
 ): Promise<{ coupons: ICoupon[]; total: number; totalPages: number }> => {
-  const skip = (page - 1) * limit;
+  const safePage = Math.max(1, page);
+  const safeLimit = Math.max(1, Math.min(100, limit));
+  const skip = (safePage - 1) * safeLimit;
   const filter: Record<string, any> = {};
 
   if (active !== undefined && active !== '') {
-    filter.isActive = active === 'true';
+    filter.isActive = String(active) === 'true';
   }
 
   const total = await Coupon.countDocuments(filter);
   const coupons = await Coupon.find(filter)
     .sort({ createdAt: -1 })
     .skip(skip)
-    .limit(limit);
+    .limit(safeLimit);
 
   return {
     coupons,
     total,
-    totalPages: Math.ceil(total / limit),
+    totalPages: Math.ceil(total / safeLimit),
   };
 };
 
 export const getCouponById = async (id: string): Promise<ICoupon | null> => {
-  return await Coupon.findById(id);
+  const cleanId = String(id || '').trim();
+  if (!cleanId) return null;
+  return await Coupon.findById(cleanId);
 };
 
 export const updateCoupon = async (id: string, data: Partial<ICoupon>): Promise<ICoupon | null> => {
-  return await Coupon.findByIdAndUpdate(id, data, { new: true });
+  const cleanId = String(id || '').trim();
+  if (!cleanId) return null;
+  return await Coupon.findByIdAndUpdate(cleanId, data, { new: true });
 };
 
 export const deleteCoupon = async (id: string): Promise<ICoupon | null> => {
-  return await Coupon.findByIdAndDelete(id);
+  const cleanId = String(id || '').trim();
+  if (!cleanId) return null;
+  return await Coupon.findByIdAndDelete(cleanId);
 };
 
 export const toggleCoupon = async (id: string): Promise<ICoupon | null> => {
-  const coupon = await Coupon.findById(id);
+  const cleanId = String(id || '').trim();
+  if (!cleanId) return null;
+  const coupon = await Coupon.findById(cleanId);
   if (!coupon) {
     return null;
   }

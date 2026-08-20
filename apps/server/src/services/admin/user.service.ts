@@ -27,7 +27,8 @@ export class AdminUserService {
     if (type === 'registered') {
       const matchStage: any = {};
       if (search) {
-        const searchRegex = new RegExp(search.trim(), 'i');
+        const escapedSearch = String(search).trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const searchRegex = new RegExp(escapedSearch, 'i');
         matchStage.$or = [
           { email: searchRegex },
           { name: searchRegex },
@@ -110,7 +111,8 @@ export class AdminUserService {
       };
 
       if (search) {
-        const searchRegex = new RegExp(search.trim(), 'i');
+        const escapedSearch = String(search).trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const searchRegex = new RegExp(escapedSearch, 'i');
         matchStage.$or = [
           { guestEmail: searchRegex },
           { guestName: searchRegex },

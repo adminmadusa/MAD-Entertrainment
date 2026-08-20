@@ -6,7 +6,12 @@ import { signAdminToken } from '../../utils/jwt';
 
 export const adminAuthService = {
   async login(email: string, password: string) {
-    const admin = await AdminModel.findOne({ email });
+    const cleanEmail = typeof email === 'string' ? email.trim().toLowerCase() : '';
+    if (!cleanEmail) {
+      throw AppError.unauthorized('Invalid email or password');
+    }
+
+    const admin = await AdminModel.findOne({ email: cleanEmail });
     if (!admin) {
       throw AppError.unauthorized('Invalid email or password');
     }
@@ -42,7 +47,12 @@ export const adminAuthService = {
   },
 
   async getMe(adminId: string) {
-    const admin = await AdminModel.findById(adminId).select('-passwordHash');
+    const cleanAdminId = String(adminId || '').trim();
+    if (!cleanAdminId) {
+      throw AppError.badRequest('Admin ID is required');
+    }
+
+    const admin = await AdminModel.findById(cleanAdminId).select('-passwordHash');
     if (!admin) {
       throw AppError.notFound('Admin not found');
     }
