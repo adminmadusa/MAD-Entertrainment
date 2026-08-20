@@ -141,7 +141,7 @@ export class DependencyAnalyzer {
           if (importPath.startsWith(prefixKey)) {
             const matchPart = importPath.substring(prefixKey.length);
             for (const target of alias.targets) {
-              const targetPath = target.replace('*', matchPart);
+              const targetPath = target.replace(/\*/g, matchPart);
               const abs = resolve(alias.baseDir, targetPath);
               const resolved = this.findFileWithExtension(abs);
               if (resolved) return resolved;

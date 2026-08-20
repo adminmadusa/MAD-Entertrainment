@@ -1,4 +1,4 @@
-import { readFileSync, statSync } from 'fs';
+import { readFileSync } from 'fs';
 import { resolve } from 'path';
 import { KnowledgeGraph } from '../../core/knowledge_graph';
 import { ValidationError } from '../../core/types';

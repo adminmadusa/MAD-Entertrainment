@@ -1,3 +1,21 @@
+function isCloudinaryHost(url: string): boolean {
+  try {
+    const { hostname } = new URL(url);
+    return hostname === 'res.cloudinary.com' || hostname.endsWith('.cloudinary.com');
+  } catch {
+    return false;
+  }
+}
+
+function isUnsplashHost(url: string): boolean {
+  try {
+    const { hostname } = new URL(url);
+    return hostname === 'images.unsplash.com' || hostname.endsWith('.unsplash.com');
+  } catch {
+    return false;
+  }
+}
+
 /**
  * Cloudinary URL transformation parameters:
  * c_scale: Simple scale resizing mode (preserves original aspect ratio)
@@ -6,7 +24,7 @@
  * f_webp: Format image to WebP
  */
 export function getOptimizedCloudinaryUrl(url: string, width: number = 800): string {
-  if (!url || !url.includes('res.cloudinary.com')) return url;
+  if (!url || !isCloudinaryHost(url)) return url;
 
   if (url.includes('/upload/')) {
     const uploadPart = '/upload/';
@@ -33,7 +51,7 @@ export function getOptimizedCloudinaryUrl(url: string, width: number = 800): str
  * auto=format: Automatically deliver AVIF/WebP depending on browser support
  */
 export function getOptimizedUnsplashUrl(url: string, width: number = 800): string {
-  if (!url || !url.includes('images.unsplash.com')) return url;
+  if (!url || !isUnsplashHost(url)) return url;
 
   try {
     const urlObj = new URL(url);
@@ -52,10 +70,10 @@ export function getOptimizedUnsplashUrl(url: string, width: number = 800): strin
  */
 export function getOptimizedImageUrl(url: string, width: number = 800): string {
   if (!url) return url;
-  if (url.includes('res.cloudinary.com')) {
+  if (isCloudinaryHost(url)) {
     return getOptimizedCloudinaryUrl(url, width);
   }
-  if (url.includes('images.unsplash.com')) {
+  if (isUnsplashHost(url)) {
     return getOptimizedUnsplashUrl(url, width);
   }
   return url;

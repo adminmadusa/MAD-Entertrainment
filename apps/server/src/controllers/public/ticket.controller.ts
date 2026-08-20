@@ -22,11 +22,11 @@ export async function getTicketQR(
   next: NextFunction
 ): Promise<void> {
   try {
-    const { ticketId } = req.params;
-
-    if (!ticketId) {
+    const rawTicketId = req.params?.ticketId;
+    if (typeof rawTicketId !== 'string' || !rawTicketId.trim()) {
       throw AppError.badRequest('Ticket ID is required');
     }
+    const ticketId = String(rawTicketId).trim();
 
     // 1. Validate ticket existence in DB
     const ticket = await Ticket.findOne({ ticketId }).lean();
@@ -49,18 +49,13 @@ export async function getTicketQR(
     }
 
     // 2. Validate ticket visibility using token or canViewTicketQR
-    const token = req.query?.token as string;
-    let hasAccess = false;
+    const rawToken = req.query?.token;
+    const token = typeof rawToken === 'string' ? rawToken.trim() : '';
 
-    if (token) {
-      hasAccess = verifyTicketQrToken(ticketId, token);
-    }
+    const hasValidToken = token.length > 0 && verifyTicketQrToken(ticketId, token);
+    const hasOwnerAccess = hasValidToken ? true : await canViewTicketQR(ticket, req.user?.sub, req.session?.sessionId);
 
-    if (!hasAccess) {
-      hasAccess = await canViewTicketQR(ticket, req.user?.sub, req.session?.sessionId);
-    }
-
-    if (!hasAccess) {
+    if (!hasValidToken && !hasOwnerAccess) {
       throw AppError.forbidden('You do not have permission to view this QR code');
     }
 
