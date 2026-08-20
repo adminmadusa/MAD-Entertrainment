@@ -4,17 +4,19 @@ import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { Suspense, useState } from 'react';
+import { Suspense } from 'react';
 
-import { adminGetDashboardSummary, adminGetRevenueChart, adminGetAttendanceSummary, adminGetAttendanceRankings, } from '@/lib/api/admin/analytics.service';
+import { DashboardGlobalSearch } from '@/components/dashboard/DashboardGlobalSearch';
+import { DashboardOperationalAlerts } from '@/components/dashboard/DashboardOperationalAlerts';
+import { DashboardStatsGrid } from '@/components/dashboard/DashboardStatsGrid';
+import { DashboardTodaysEventsFeed } from '@/components/dashboard/DashboardTodaysEventsFeed';
+import { DashboardTopEventsTable } from '@/components/dashboard/DashboardTopEventsTable';
+import { adminGetDashboardSummary, adminGetRevenueChart, adminGetAttendanceSummary, adminGetAttendanceRankings } from '@/lib/api/admin/analytics.service';
 import { adminGetConsistencyReport, adminGetWebhooks, adminGetEmailLogs } from '@/lib/api/admin/diagnostics.service';
 import { adminGetEvents } from '@/lib/api/admin/event.service';
 import { useAdminAuth } from '@/providers/AdminAuthProvider';
-import { AdminRole, EventStatus, BOOKING_REFERENCE_REGEX } from '@mad/shared';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@mad/ui';
-import { Ticket, CalendarDays, Banknote, CreditCard, ShieldCheck, Plus, BarChart2, Scan, Settings } from '@mad/ui/icons';
-import { formatDateTime } from '@mad/utils';
+import { AdminRole } from '@mad/shared';
+import { Ticket, CreditCard, Plus, BarChart2, Scan, Settings } from '@mad/ui/icons';
 
 const RevenueChartWidget = dynamic(
   () => import('@/components/dashboard/RevenueChartWidget'),
@@ -33,10 +35,6 @@ const AttendanceRankingsWidget = dynamic(
 
 function DashboardContent() {
   const { admin } = useAdminAuth();
-
-  const router = useRouter();
-  const [globalSearchQuery, setGlobalSearchQuery] = useState('');
-  const [globalSearchError, setGlobalSearchError] = useState('');
 
   const { data: summary, isLoading } = useQuery({
     queryKey: ['admin-analytics-summary'],
@@ -96,54 +94,12 @@ function DashboardContent() {
     enabled: !!admin?.role && [AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER].includes(admin.role as AdminRole),
   });
 
-  const handleGlobalSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    setGlobalSearchError('');
-    const query = globalSearchQuery.trim();
-    if (!query) return;
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const refRegex = new RegExp(BOOKING_REFERENCE_REGEX.source, 'i');
-
-    if (emailRegex.test(query)) {
-      router.push(`/bookings?search=${encodeURIComponent(query)}`);
-    } else if (refRegex.test(query)) {
-      const normalizedRef = query.toUpperCase();
-      router.push(`/bookings?search=${encodeURIComponent(normalizedRef)}`);
-    } else {
-      setGlobalSearchError('Please enter a valid Booking Reference (MAD-YYYY-XXXXX) or Customer Email.');
-    }
-  };
-
   const failedPaymentRecoveryCount = (consistencyReport?.counts?.orphanPayments ?? 0) + (consistencyReport?.counts?.awaitingPaymentBookings ?? 0);
   const totalDeliveryIssues = failedEmails.length + failedWebhooks.length;
 
   const showAnalytics = !!admin?.role && [AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER].includes(admin.role as AdminRole);
   const showDiagnosticsAlerts = !!admin?.role && [AdminRole.SUPER_ADMIN].includes(admin.role as AdminRole);
   const showBookingsSearch = !!admin?.role && [AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER, AdminRole.SUPPORT].includes(admin.role as AdminRole);
-
-  const stats = [
-    { label: 'Confirmed Bookings', value: summary?.totalBookings, icon: <Ticket className="w-8 h-8 text-accent-purple" />, href: '/bookings' },
-    { label: 'Bookings (Last 30 Days)', value: summary?.recentBookings, icon: <CalendarDays className="w-8 h-8 text-accent-purple" />, href: '/bookings' },
-    {
-      label: 'Lifetime Gross Revenue',
-      value: summary ? `₹${summary.grossRevenue.toLocaleString('en-IN')}` : undefined,
-      icon: <Banknote className="w-8 h-8 text-accent-purple" />,
-      href: '/dashboard',
-    },
-    {
-      label: 'Refund Amount',
-      value: summary ? `₹${summary.refundAmount.toLocaleString('en-IN')}` : undefined,
-      icon: <CreditCard className="w-8 h-8 text-accent-purple" />,
-      href: '/refunds',
-    },
-    {
-      label: 'Lifetime Net Revenue',
-      value: summary ? `₹${summary.netRevenue.toLocaleString('en-IN')}` : undefined,
-      icon: <ShieldCheck className="w-8 h-8 text-accent-purple" />,
-      href: '/dashboard',
-    },
-  ];
 
   const allQuickLinks = [
     { label: 'Create Event', href: '/events/new', icon: <Plus className="w-6 h-6 text-text-secondary group-hover:text-accent-purple transition-colors" />, color: 'border-accent-purple/30 hover:border-accent-purple/60', roles: [AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER] },
@@ -193,19 +149,7 @@ function DashboardContent() {
 
       {/* Stats Cards */}
       {showAnalytics && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5">
-          {stats.map((stat, i) => (
-            <motion.div key={stat.label} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.07 }}>
-              <Link href={stat.href} className="block glass rounded-2xl border border-border-subtle p-6 hover:border-accent-purple/50 hover:scale-[1.01] hover:shadow-glow-sm cursor-pointer transition-all duration-200 group">
-                <div className="mb-3">{stat.icon}</div>
-                <p className="text-text-secondary text-sm">{stat.label}</p>
-                <p className={`text-2xl font-black mt-1 group-hover:text-gradient transition-all ${isLoading ? 'text-text-secondary animate-pulse' : 'text-white'}`}>
-                  {isLoading ? '...' : (stat.value?.toLocaleString?.() ?? stat.value ?? '0')}
-                </p>
-              </Link>
-            </motion.div>
-          ))}
-        </div>
+        <DashboardStatsGrid summary={summary} isLoading={isLoading} />
       )}
 
       {/* Revenue Trend Area Chart */}
@@ -217,111 +161,16 @@ function DashboardContent() {
       )}
 
       {/* Global Search Bar */}
-      {showBookingsSearch && (
-        <div className="glass rounded-2xl border border-border-subtle p-6 space-y-4">
-          <div>
-            <h2 className="text-white font-semibold">Global Operational Search</h2>
-            <p className="text-text-secondary text-xs mt-0.5">Locate customer bookings instantly by email or reference number</p>
-          </div>
-
-          <form onSubmit={handleGlobalSearch} className="space-y-2">
-            <div className="flex flex-col sm:flex-row gap-3">
-              <input
-                type="text"
-                value={globalSearchQuery}
-                onChange={(e) => {
-                  setGlobalSearchQuery(e.target.value);
-                  if (globalSearchError) setGlobalSearchError('');
-                }}
-                placeholder="e.g. MAD-2026-XXXXX or customer@gmail.com"
-                className="flex-1 px-4 py-3 rounded-xl bg-background border border-border-subtle text-sm text-text-primary placeholder:text-text-secondary focus:outline-none focus:ring-2 focus:ring-accent-purple/50 focus:border-accent-purple transition-colors"
-              />
-              <button
-                type="submit"
-                className="px-6 py-3 bg-accent-purple hover:bg-accent-purple-light text-white text-sm font-semibold rounded-xl shadow-glow-sm hover:scale-[1.02] active:scale-[0.98] transition-all shrink-0"
-              >
-                Search Booking
-              </button>
-            </div>
-            {globalSearchError && (
-              <p className="text-red-400 text-xs mt-1 animate-pulse">{globalSearchError}</p>
-            )}
-          </form>
-        </div>
-      )}
+      {showBookingsSearch && <DashboardGlobalSearch />}
 
       {/* Operational Alerts & System Health */}
-      <div className="space-y-4">
-        {summary?.pendingRefundsCount && summary.pendingRefundsCount > 0 ? (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            <Link
-              href="/refunds"
-              className="flex items-center justify-between p-4 bg-amber-500/10 border border-amber-500/30 text-amber-400 rounded-xl text-sm font-semibold hover:bg-amber-500/15 transition-all"
-            >
-              <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 bg-amber-500 rounded-full animate-pulse" />
-                <span>Pending Actions Required: You have {summary.pendingRefundsCount} refund request{summary.pendingRefundsCount > 1 ? 's' : ''} awaiting review.</span>
-              </div>
-              <span className="text-xs font-bold underline bg-amber-500/20 px-2.5 py-1.5 rounded">Process →</span>
-            </Link>
-          </motion.div>
-        ) : null}
-
-        {showDiagnosticsAlerts && (
-          <>
-            {failedPaymentRecoveryCount > 0 ? (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
-              >
-                <Link
-                  href="/diagnostics"
-                  className="flex items-center justify-between p-4 bg-red-500/10 border border-red-500/30 text-red-400 rounded-xl text-sm font-semibold hover:bg-red-500/15 transition-all"
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse" />
-                    <span>Action Required: You have {failedPaymentRecoveryCount} payment recovery drift{failedPaymentRecoveryCount > 1 ? 's' : ''} requiring investigation.</span>
-                  </div>
-                  <span className="text-xs font-bold underline bg-red-500/20 px-2.5 py-1.5 rounded">Investigate →</span>
-                </Link>
-              </motion.div>
-            ) : null}
-
-            {isWebhooksLoading || isEmailsLoading ? (
-              <div className="text-text-secondary text-xs animate-pulse p-4 bg-white/5 rounded-xl border border-border-subtle">Checking system delivery logs...</div>
-            ) : (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
-              >
-                {totalDeliveryIssues === 0 ? (
-                  <div className="flex items-center gap-2 bg-emerald-500/5 border border-emerald-500/10 text-emerald-400 rounded-xl p-4 text-sm font-semibold">
-                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                    <span>System deliverability is operating normally. 0 active transmission issues detected.</span>
-                  </div>
-                ) : (
-                  <Link
-                    href="/diagnostics"
-                    className="flex items-center justify-between p-4 bg-red-500/10 border border-red-500/30 text-red-400 rounded-xl text-sm font-semibold hover:bg-red-500/15 transition-all"
-                  >
-                    <div className="flex items-center gap-2">
-                      <span className="w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse" />
-                      <span>Action Recommended: {totalDeliveryIssues} system delivery issue{totalDeliveryIssues > 1 ? 's' : ''} require{totalDeliveryIssues === 1 ? 's' : ''} attention.</span>
-                    </div>
-                    <span className="text-xs font-bold underline bg-red-500/20 px-2.5 py-1.5 rounded">Resolve in Diagnostics →</span>
-                  </Link>
-                )}
-              </motion.div>
-            )}
-          </>
-        )}
-      </div>
+      <DashboardOperationalAlerts
+        pendingRefundsCount={summary?.pendingRefundsCount}
+        showDiagnosticsAlerts={showDiagnosticsAlerts}
+        failedPaymentRecoveryCount={failedPaymentRecoveryCount}
+        isDeliveryLoading={isWebhooksLoading || isEmailsLoading}
+        totalDeliveryIssues={totalDeliveryIssues}
+      />
 
       {/* Quick Links */}
       <div>
@@ -339,65 +188,10 @@ function DashboardContent() {
 
       {/* Split Row: Happening Today & Live Attendance Overview */}
       <div className={`grid grid-cols-1 ${showAnalytics ? 'lg:grid-cols-2' : ''} gap-5`}>
-        {/* Happening Today Feed */}
-        <div className="glass rounded-2xl border border-border-subtle overflow-hidden flex flex-col justify-between">
-          <div className="px-6 py-4 border-b border-border-subtle flex items-center justify-between">
-            <div>
-              <h2 className="text-white font-semibold">Happening Today</h2>
-              <p className="text-text-secondary text-xs mt-0.5">Today's active event schedules and gate volumes</p>
-            </div>
-            <span className="text-xs px-2.5 py-1 rounded-full border bg-emerald-500/10 text-emerald-400 border-emerald-500/30 font-medium">
-              {todaysEvents.length} Active {todaysEvents.length === 1 ? 'Event' : 'Events'}
-            </span>
-          </div>
-
-          {isEventsLoading ? (
-            <div className="p-8 text-center text-text-secondary animate-pulse">Loading active schedule...</div>
-          ) : todaysEvents.length === 0 ? (
-            <div className="p-12 text-center space-y-3 flex-1 flex flex-col items-center justify-center">
-              <p className="text-text-secondary text-sm">No events scheduled for today.</p>
-              <Link href="/events/new" className="inline-block px-4 py-2 bg-white/5 border border-border-subtle rounded-xl text-xs font-semibold text-white hover:bg-white/10 transition-colors">
-                + Schedule Event
-              </Link>
-            </div>
-          ) : (
-            <div className="divide-y divide-border-subtle/40 flex-1">
-              {todaysEvents.map((event) => {
-                const sold = event.ticketsSold ?? 0;
-                const capacity = event.totalCapacity ?? 1;
-                const pct = Math.min(100, Math.round((sold / capacity) * 100));
-
-                return (
-                  <div key={event._id} className="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-white/2 transition-colors">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <span className={`w-2 h-2 rounded-full ${event.status === EventStatus.PUBLISHED ? 'bg-green-400 animate-pulse' : 'bg-yellow-400'}`} />
-                        <h3 className="text-white font-bold text-base">{event.title}</h3>
-                      </div>
-                      <p className="text-text-secondary text-xs">{event.venue}</p>
-                      <p className="text-text-secondary text-xs font-mono">
-                        Gates: {formatDateTime(event.startDate, { hour: '2-digit', minute: '2-digit' })}
-                      </p>
-                    </div>
-
-                    <div className="w-full sm:w-48 space-y-1.5">
-                      <div className="flex justify-between text-xs">
-                        <span className="text-text-secondary">Capacity Sold ({pct}%)</span>
-                        <span className="text-white font-semibold">{sold} / {capacity}</span>
-                      </div>
-                      <div className="w-full bg-white/5 border border-white/10 rounded-full h-2.5 overflow-hidden">
-                        <div
-                          className="bg-accent-purple h-full rounded-full transition-all duration-500"
-                          style={{ width: `${pct}%` }}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
+        <DashboardTodaysEventsFeed
+          todaysEvents={todaysEvents}
+          isEventsLoading={isEventsLoading}
+        />
 
         {/* Live Attendance Overview */}
         {showAnalytics && (
@@ -419,31 +213,7 @@ function DashboardContent() {
       )}
 
       {/* Top Events Table */}
-      {showAnalytics && Array.isArray(summary?.topEvents) && summary.topEvents.length > 0 && (
-        <div className="glass rounded-2xl border border-border-subtle overflow-hidden">
-          <div className="px-6 py-4 border-b border-border-subtle">
-            <h2 className="text-white font-semibold">Top Events by Revenue</h2>
-          </div>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="py-3 px-6">Event</TableHead>
-                <TableHead className="py-3 px-4">Bookings</TableHead>
-                <TableHead className="py-3 px-6 text-right">Net Revenue</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {summary.topEvents.map((ev) => (
-                <TableRow key={ev._id} className="border-b border-border-subtle/40 hover:bg-white/2">
-                  <TableCell className="py-3.5 px-6 text-text-primary">{ev.event?.title ?? 'Deleted Event'}</TableCell>
-                  <TableCell className="py-3.5 px-4 text-text-secondary">{ev.count}</TableCell>
-                  <TableCell className="py-3.5 px-6 text-right text-white font-semibold">₹{ev.revenue.toLocaleString('en-IN')}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      )}
+      {showAnalytics && <DashboardTopEventsTable topEvents={summary?.topEvents} />}
     </div>
   );
 }
@@ -451,7 +221,7 @@ function DashboardContent() {
 export default function AdminDashboardPage() {
   return (
     <Suspense
-      fallback = {
+      fallback={
         <div className="min-h-screen flex items-center justify-center">
           <div className="w-8 h-8 border-2 border-accent-purple border-t-transparent rounded-full animate-spin" />
         </div>

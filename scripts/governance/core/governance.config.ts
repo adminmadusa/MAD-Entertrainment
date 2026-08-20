@@ -175,10 +175,6 @@ export const governanceConfig = {
       // Custom Hooks (all compliant!)
 
       // UI Components
-      { filePath: 'apps/admin/src/app/dashboard/page.tsx', ruleId: 'VAL-QUAL-001', maxLinesCeiling: 475, expiresAt: '2026-10-31', owner: 'Admin UI Team', reason: 'Admin dashboard analytics widgets container' },
-      { filePath: 'apps/admin/src/app/ticket-management/_components/TicketTiersTab.tsx', ruleId: 'VAL-QUAL-001', maxLinesCeiling: 455, expiresAt: '2026-10-31', owner: 'Admin UI Team', reason: 'Ticket tier management tab' },
-      { filePath: 'apps/admin/src/app/refunds/page.tsx', ruleId: 'VAL-QUAL-001', maxLinesCeiling: 445, expiresAt: '2026-10-31', owner: 'Admin UI Team', reason: 'Refund approvals management table' },
-      { filePath: 'apps/admin/src/app/users/page.tsx', ruleId: 'VAL-QUAL-001', maxLinesCeiling: 410, expiresAt: '2026-10-31', owner: 'Admin UI Team', reason: 'Admin users table' },
       { filePath: 'apps/web/src/app/(auth)/dashboard/page.tsx', ruleId: 'VAL-QUAL-001', maxLinesCeiling: 395, expiresAt: '2026-09-30', owner: 'Web UI Team', reason: 'Customer profile dashboard' },
       { filePath: 'apps/admin/src/components/events/gallery/EventGalleryWorkspace.tsx', ruleId: 'VAL-QUAL-001', maxLinesCeiling: 390, expiresAt: '2026-10-31', owner: 'Admin UI Team', reason: 'Event gallery admin workspace' },
       { filePath: 'apps/web/src/components/booking/TicketSelectionContent.tsx', ruleId: 'VAL-QUAL-001', maxLinesCeiling: 370, expiresAt: '2026-09-30', owner: 'Web Booking Team', reason: 'Ticket selection drawer view' },
