@@ -172,17 +172,17 @@ export class DiagnosticsService {
     queueName?: string,
     search?: string
   ): Promise<{ data: any[]; pagination: { page: number; limit: number; total: number; totalPages: number } }> {
-    const filter: any = {};
+    const filter: Record<string, any> = {};
 
-    if (queueName) {
-      filter.queueName = queueName;
+    if (typeof queueName === 'string' && queueName.trim()) {
+      filter.queueName = queueName.trim();
     }
 
-    if (search) {
-      const searchRegex = new RegExp(search, 'i');
+    if (typeof search === 'string' && search.trim()) {
+      const sanitizedSearch = search.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       filter.$or = [
-        { jobId: searchRegex },
-        { jobName: searchRegex },
+        { jobId: { $regex: sanitizedSearch, $options: 'i' } },
+        { jobName: { $regex: sanitizedSearch, $options: 'i' } },
       ];
     }
 
