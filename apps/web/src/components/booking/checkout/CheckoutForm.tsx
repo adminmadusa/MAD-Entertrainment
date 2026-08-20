@@ -118,10 +118,9 @@ export function CheckoutForm({ event, isExpired, isDisabled, onSubmit, onErrorSe
 
   return (
     <form id="checkout-form" onSubmit={handlePlaceOrderSubmit} className="space-y-3">
-      <div className="glass rounded-xl border border-white/5 p-3.5 sm:p-4 space-y-3">
-        <div className="flex justify-between items-center border-b border-white/10 pb-2">
+      <div className="bg-white/5 rounded-2xl border border-white/10 p-4 sm:p-5 space-y-4">
+        <div className="flex justify-between items-center border-b border-white/10 pb-2.5">
           <h2 className="text-white font-bold text-sm sm:text-base">Billing information</h2>
-          <span className="text-[10px] text-text-muted uppercase">* Required</span>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">

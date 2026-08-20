@@ -1,9 +1,10 @@
 'use client';
 
-import Image from 'next/image';
+import { ImageWrapper } from '@/components/common/ImageWrapper';
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState, type ReactNode } from 'react';
 
 import { CheckoutContent } from '@/components/booking/CheckoutContent';
+import { PromoCodeForm } from '@/components/booking/PromoCodeForm';
 import { TicketSelectionContent } from '@/components/booking/TicketSelectionContent';
 import { formatMoney } from '@mad/shared';
 import type { Event as EventData } from '@mad/types';
@@ -29,6 +30,33 @@ export const EventBookingFlow = forwardRef<EventBookingFlowHandle, EventBookingF
     const [isPending, setIsPending] = useState(false);
     const checkoutTriggerRef = useRef<(() => void) | null>(null);
 
+    const [couponCode, setCouponCode] = useState('');
+    const [couponApplied, setCouponApplied] = useState(false);
+    const [couponMessage, setCouponMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+    const [showCelebration, setShowCelebration] = useState(false);
+
+    const handleApplyCoupon = (e: React.FormEvent) => {
+      e.preventDefault();
+      if (!couponCode.trim()) return;
+      setCouponApplied(true);
+      setCouponMessage(null);
+      setShowCelebration(true);
+    };
+
+    const handleRemoveCoupon = () => {
+      setCouponCode('');
+      setCouponApplied(false);
+      setCouponMessage(null);
+    };
+
+    const handleCouponChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      setCouponCode(e.target.value);
+      if (couponApplied) {
+        setCouponApplied(false);
+        setCouponMessage(null);
+      }
+    };
+
     const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false);
     const [checkoutBookingId, setCheckoutBookingId] = useState<string | null>(null);
     const [isConfirmed, setIsConfirmed] = useState(false);
@@ -53,25 +81,15 @@ export const EventBookingFlow = forwardRef<EventBookingFlowHandle, EventBookingF
       modalFooterBadge = (
         <div className="flex flex-col">
           <span className="text-xs text-text-muted font-medium">
-            {selectedCount} {selectedCount === 1 ? 'ticket' : 'tickets'}
+            {selectedCount} {selectedCount === 1 ? 'ticket' : 'tickets'} selected
           </span>
-          <span className="text-base font-black text-accent-purple-light">{formatMoney(subtotal, currency)}</span>
+          <span className="text-base font-bold text-accent-purple-light">{formatMoney(subtotal, currency)}</span>
         </div>
-      );
-    } else if (ticketsLeft <= 50) {
-      modalFooterBadge = (
-        <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 bg-amber-500/10 border border-amber-500/20 text-amber-400 rounded-md animate-pulse">
-          <svg className="w-3.5 h-3.5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z" />
-            <path strokeLinecap="round" strokeLinejoin="round" d="M9.879 16.121A3 3 0 1012.015 11L11 14H9.879z" />
-          </svg>
-          Few tickets left
-        </span>
       );
     } else {
       modalFooterBadge = (
-        <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-md">
-          Available
+        <span className="text-xs text-text-muted">
+          Select tickets to continue
         </span>
       );
     }
@@ -97,7 +115,7 @@ export const EventBookingFlow = forwardRef<EventBookingFlowHandle, EventBookingF
                 {event.title}
               </h3>
               <p className="text-[11px] text-text-muted mt-0.5 truncate">
-                {showDateTime} · {event.venue}
+                {showDateTime} · {event.venue}{ticketsLeft > 0 && ticketsLeft <= 20 ? ` · Only ${ticketsLeft} left` : ''}
               </p>
             </div>
 
@@ -118,6 +136,15 @@ export const EventBookingFlow = forwardRef<EventBookingFlowHandle, EventBookingF
                   setCheckoutBookingId(bookingId);
                   setIsCheckoutModalOpen(true);
                 }}
+                couponCode={couponCode}
+                couponApplied={couponApplied}
+                couponMessage={couponMessage}
+                showCelebration={showCelebration}
+                setShowCelebration={setShowCelebration}
+                onApplyCoupon={handleApplyCoupon}
+                onRemoveCoupon={handleRemoveCoupon}
+                onCouponChange={handleCouponChange}
+                hidePromoCodeOnDesktop={true}
               />
             </div>
 
@@ -140,9 +167,9 @@ export const EventBookingFlow = forwardRef<EventBookingFlowHandle, EventBookingF
           {/* Right Panel: Cart/Event Image summary */}
           <div className="hidden md:flex md:w-2/5 bg-bg-card flex-col border-l border-white/5">
             {/* Event Image */}
-            <div className="aspect-[16/9] w-full overflow-hidden bg-black/40 relative border-b border-white/10">
+            <div className="aspect-[16/9] w-full overflow-hidden bg-black/40 relative border-b border-white/10 shrink-0">
               {event.bannerImage?.url && (
-                <Image
+                <ImageWrapper
                   src={event.bannerImage.url}
                   alt={event.title}
                   fill
@@ -153,18 +180,18 @@ export const EventBookingFlow = forwardRef<EventBookingFlowHandle, EventBookingF
             </div>
 
             {/* Order Summary details */}
-            <div className="flex-1 flex flex-col justify-between p-5">
-              <div className="space-y-3">
+            <div className="flex-1 flex flex-col justify-between p-5 overflow-y-auto custom-scrollbar">
+              <div className="space-y-4">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-text-secondary">Order Summary</h3>
                 {selectedCount === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-16 text-text-muted space-y-2">
+                  <div className="flex flex-col items-center justify-center py-10 text-text-muted space-y-2">
                     <svg className="w-8 h-8 text-text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
                     <span className="text-xs font-medium">Select tickets to see summary</span>
                   </div>
                 ) : (
-                  <div className="space-y-2.5 max-h-[220px] overflow-y-auto pr-2 custom-scrollbar">
+                  <div className="space-y-2.5 max-h-[180px] overflow-y-auto pr-2 custom-scrollbar">
                     {Object.entries(quantities).map(([tierKey, qty]) => {
                       if (qty === 0) return null;
                       const tier = event.ticketTiers.find((t) => t.tier === tierKey);
@@ -184,17 +211,31 @@ export const EventBookingFlow = forwardRef<EventBookingFlowHandle, EventBookingF
                 )}
               </div>
 
-              {selectedCount > 0 && (
-                <div className="border-t border-white/5 pt-3 space-y-1.5">
-                  <div className="flex justify-between text-xs text-text-secondary">
-                    <span>Subtotal</span>
-                    <span className="font-semibold text-white">{formatMoney(subtotal, currency)}</span>
+              {/* Bottom Section: Promo Code moved down right above Subtotal */}
+              <div className="space-y-3 pt-3 border-t border-white/10 mt-3">
+                <PromoCodeForm
+                  couponCode={couponCode}
+                  couponApplied={couponApplied}
+                  couponMessage={couponMessage}
+                  showCelebration={showCelebration}
+                  setShowCelebration={setShowCelebration}
+                  onApplyCoupon={handleApplyCoupon}
+                  onRemoveCoupon={handleRemoveCoupon}
+                  onCouponChange={handleCouponChange}
+                />
+
+                {selectedCount > 0 && (
+                  <div className="pt-2 border-t border-white/5 space-y-1">
+                    <div className="flex justify-between text-xs text-text-secondary">
+                      <span>Subtotal</span>
+                      <span className="font-semibold text-white">{formatMoney(subtotal, currency)}</span>
+                    </div>
+                    <p className="text-[9px] text-text-muted leading-relaxed">
+                      Convenience fees, GST, and discounts will be calculated at checkout details stage.
+                    </p>
                   </div>
-                  <p className="text-[9px] text-text-muted leading-relaxed">
-                    Convenience fees, GST, and discounts will be calculated at checkout details stage.
-                  </p>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           </div>
         </Modal>

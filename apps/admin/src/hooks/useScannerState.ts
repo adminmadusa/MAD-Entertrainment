@@ -6,7 +6,6 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   adminScanTicket,
   adminGetScannerStats,
-  adminGetScannerHistory,
   ScannerStats,
   ValidationResult,
   ScanResponse,
@@ -15,6 +14,8 @@ import {
 import { extractApiError, normalizeTicketReference } from '@mad/utils';
 import { playSuccess, playFailure } from '../lib/audio/gate-audio';
 import { useOfflineSync } from './useOfflineSync';
+import { useScannerHistoryQuery } from './useScannerHistoryQuery';
+import { computeScannerStats } from './scanner-stats.utils';
 
 export type { ScannerModeState };
 
@@ -28,26 +29,6 @@ export function useScannerState({ initialEventId = '' }: UseScannerStateProps = 
   const [scannerState, setScannerState] = useState<ScannerModeState>('Idle');
   const [lastValidationResult, setLastValidationResult] = useState<ValidationResult | null>(null);
   const [isOffline, setIsOffline] = useState(false);
-
-  // Pagination and filter states for history
-  const [historyPage, setHistoryPage] = useState(1);
-  const [historyFilterStatus, setHistoryFilterStatus] = useState('');
-  const [historySearch, setHistorySearch] = useState('');
-  const [debouncedHistorySearch, setDebouncedHistorySearch] = useState('');
-
-  // Debounce history search input (~300ms)
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedHistorySearch(historySearch.trim());
-      setHistoryPage(1);
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [historySearch]);
-
-  const handleSetFilterStatus = useCallback((status: string) => {
-    setHistoryFilterStatus(status);
-    setHistoryPage(1);
-  }, []);
 
   // 1. Detect network status changes
   useEffect(() => {
@@ -85,57 +66,36 @@ export function useScannerState({ initialEventId = '' }: UseScannerStateProps = 
     onSyncCompleted,
   });
 
-  // 3. React Query: Stats query
-  const { data: serverStats, isLoading: isLoadingStats, refetch: refetchStats } = useQuery({
+  // 3. Scanner History Query Hook
+  const historyQuery = useScannerHistoryQuery({
+    selectedEventId,
+    isOffline,
+  });
+
+  // 4. React Query: Stats query
+  const {
+    data: serverStats,
+    isLoading: isLoadingStats,
+    refetch: refetchStats,
+  } = useQuery({
     queryKey: ['scanner-stats', selectedEventId],
     queryFn: () => adminGetScannerStats(selectedEventId),
     enabled: !!selectedEventId && !isOffline,
     staleTime: 5000,
   });
 
-  // 4. React Query: History query
-  const { data: historyRes, isLoading: isLoadingHistory, refetch: refetchHistory } = useQuery({
-    queryKey: ['scanner-history', selectedEventId, historyPage, historyFilterStatus, debouncedHistorySearch],
-    queryFn: () =>
-      adminGetScannerHistory(selectedEventId, {
-        page: historyPage,
-        limit: 15,
-        status: historyFilterStatus || undefined,
-        search: debouncedHistorySearch || undefined,
-      }),
-    enabled: !!selectedEventId && !isOffline,
-  });
-
   // 5. Unified derived statistics strategy
-  const stats = useMemo<ScannerStats | null>(() => {
-    if (!selectedEventId) return null;
-
-    const base: ScannerStats = serverStats || {
-      totalTickets: 0,
-      checkedIn: 0,
-      remaining: 0,
-      failedScans: 0,
-      duplicateScans: 0,
-      offlinePending: 0,
-      offlineSynced: 0,
-      successRate: 0,
-      lastScanTime: null,
-      averageScanTime: 0,
-    };
-
-    if (isOffline) {
-      const checkedInWithOffline = base.checkedIn + optimisticCheckInCount;
-      return {
-        ...base,
-        checkedIn: checkedInWithOffline,
-        remaining: Math.max(0, base.totalTickets - checkedInWithOffline),
-        offlinePending: offlineCount,
-        successRate: base.totalTickets > 0 ? Number(((checkedInWithOffline / base.totalTickets) * 100).toFixed(2)) : 0,
-      };
-    }
-
-    return { ...base, offlinePending: offlineCount };
-  }, [selectedEventId, serverStats, isOffline, offlineCount, optimisticCheckInCount]);
+  const stats = useMemo<ScannerStats | null>(
+    () =>
+      computeScannerStats(
+        selectedEventId,
+        serverStats,
+        isOffline,
+        offlineCount,
+        optimisticCheckInCount
+      ),
+    [selectedEventId, serverStats, isOffline, offlineCount, optimisticCheckInCount]
+  );
 
   // 6. Online Scan Mutation
   const scanMutation = useMutation({
@@ -159,7 +119,8 @@ export function useScannerState({ initialEventId = '' }: UseScannerStateProps = 
     },
     onError: (err: any, variables) => {
       const apiErr = extractApiError(err);
-      const isDuplicate = apiErr.message?.includes('already used') || apiErr.message?.includes('Already checked');
+      const isDuplicate =
+        apiErr.message?.includes('already used') || apiErr.message?.includes('Already checked');
       playFailure();
 
       const failedTicketId = (apiErr.details as any)?.ticketId || variables?.ticketId || '';
@@ -198,7 +159,9 @@ export function useScannerState({ initialEventId = '' }: UseScannerStateProps = 
 
       if (isOffline) {
         try {
-          const { saveOfflineScan, isDuplicateScan } = await import('../lib/offline-scanner.service');
+          const { saveOfflineScan, isDuplicateScan } = await import(
+            '../lib/offline-scanner.service'
+          );
 
           const duplicate = await isDuplicateScan(ticketId, selectedEventId);
           if (duplicate) {
@@ -238,7 +201,14 @@ export function useScannerState({ initialEventId = '' }: UseScannerStateProps = 
         scanMutation.mutate({ ticketId, requestId });
       }
     },
-    [selectedEventId, isOffline, scanMutation, refreshOfflineCount, setOptimisticCheckInCount, scannerState]
+    [
+      selectedEventId,
+      isOffline,
+      scanMutation,
+      refreshOfflineCount,
+      setOptimisticCheckInCount,
+      scannerState,
+    ]
   );
 
   return {
@@ -255,16 +225,16 @@ export function useScannerState({ initialEventId = '' }: UseScannerStateProps = 
     stats,
     isLoadingStats,
     refetchStats,
-    historyPage,
-    setHistoryPage,
-    historyFilterStatus,
-    setHistoryFilterStatus: handleSetFilterStatus,
-    historySearch,
-    setHistorySearch,
-    historyItems: historyRes?.items || [],
-    historyPagination: historyRes?.pagination || { page: 1, limit: 15, total: 0, totalPages: 1 },
-    isLoadingHistory,
-    refetchHistory,
+    historyPage: historyQuery.historyPage,
+    setHistoryPage: historyQuery.setHistoryPage,
+    historyFilterStatus: historyQuery.historyFilterStatus,
+    setHistoryFilterStatus: historyQuery.setHistoryFilterStatus,
+    historySearch: historyQuery.historySearch,
+    setHistorySearch: historyQuery.setHistorySearch,
+    historyItems: historyQuery.historyItems,
+    historyPagination: historyQuery.historyPagination,
+    isLoadingHistory: historyQuery.isLoadingHistory,
+    refetchHistory: historyQuery.refetchHistory,
     submitScan,
     triggerOfflineSync,
   };

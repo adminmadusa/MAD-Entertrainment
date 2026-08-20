@@ -123,7 +123,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
   };
 
   return (
-    <html lang="en" className={`${outfit.variable} dark`} suppressHydrationWarning>
+    <html lang="en" className={`${outfit.variable} dark`} data-scroll-behavior="smooth" suppressHydrationWarning>
       <body className="bg-background text-text-primary antialiased relative min-h-screen" suppressHydrationWarning>
         {/* A11Y-001 — Skip to Main Content (WCAG 2.4.1 Level A)
             Visually hidden until keyboard-focused. First focusable element

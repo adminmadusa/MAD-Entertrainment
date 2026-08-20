@@ -91,7 +91,7 @@ function HeroSection() {
   return (
     <section
       id="hero"
-      className="relative min-h-[48vh] min-h-[48svh] sm:min-h-[60vh] sm:min-h-[60svh] md:min-h-[75vh] md:min-h-[75dvh] lg:min-h-[80vh] lg:min-h-[80dvh] flex items-center justify-center overflow-hidden"
+      className="relative pt-24 sm:pt-28 pb-10 sm:pb-14 flex items-center justify-center overflow-hidden"
       aria-label="Hero section"
     >
       {/* Animated Background */}
@@ -113,10 +113,10 @@ function HeroSection() {
       />
 
       {/* Content */}
-      <div className="container-mad relative z-10 text-center pt-16 sm:pt-24 pb-4 sm:pb-8">
+      <div className="container-mad relative z-10 text-center pt-8 sm:pt-12 pb-2 sm:pb-4">
 
         {/* Headline */}
-        <h1 className="text-3xl xs:text-4xl sm:text-display-md md:text-display-xl font-black text-white mb-3 sm:mb-6 leading-[1.05] text-glow-neon animate-hero-fade-in animation-delay-200">
+        <h1 className="text-3xl xs:text-4xl sm:text-display-md md:text-display-xl font-black text-white mb-3 sm:mb-5 leading-[1.05] text-glow-neon animate-hero-fade-in animation-delay-200">
           Experience the{' '}
           <span className="text-gradient block">Extraordinary</span>
         </h1>
@@ -126,15 +126,15 @@ function HeroSection() {
           <Link
             id="hero-book-now"
             href="/events"
-            className="px-4 py-2.5 sm:px-8 sm:py-4 btn-gradient text-white font-bold text-xs xs:text-sm sm:text-lg rounded-xl sm:rounded-2xl shadow-glow inline-flex items-center gap-1.5 sm:gap-2 group focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background cursor-pointer"
+            className="px-4 py-2.5 sm:px-8 sm:py-3.5 btn-gradient text-white font-bold text-xs xs:text-sm sm:text-base rounded-xl sm:rounded-2xl shadow-glow inline-flex items-center gap-1.5 sm:gap-2 group focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background cursor-pointer"
           >
             <span>Browse Events</span>
-            <ArrowRight className="w-3.5 h-3.5 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
+            <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 group-hover:translate-x-1 transition-transform" />
           </Link>
           <Link
             id="hero-my-booking"
             href="/tickets"
-            className="px-4 py-2.5 sm:px-8 sm:py-4 glass border border-border-subtle hover:border-accent-purple/50 text-text-primary hover:text-white hover:bg-accent-purple/10 font-semibold text-xs xs:text-sm sm:text-lg rounded-xl sm:rounded-2xl transition-all duration-300 hover:shadow-glow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background cursor-pointer"
+            className="px-4 py-2.5 sm:px-8 sm:py-3.5 glass border border-border-subtle hover:border-accent-purple/50 text-text-primary hover:text-white hover:bg-accent-purple/10 font-semibold text-xs xs:text-sm sm:text-base rounded-xl sm:rounded-2xl transition-all duration-300 hover:shadow-glow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background cursor-pointer"
           >
             My Tickets
           </Link>
@@ -142,7 +142,7 @@ function HeroSection() {
       </div>
 
       {/* Bottom Gradient Fade */}
-      <div className="absolute bottom-0 left-0 right-0 h-24 sm:h-32 bg-gradient-to-t from-background to-transparent" />
+      <div className="absolute bottom-0 left-0 right-0 h-12 sm:h-16 bg-gradient-to-t from-background to-transparent" />
 
     </section>
   );
@@ -195,9 +195,9 @@ const steps = [
 
 function HowItWorksSection() {
   return (
-    <section className="py-20 bg-background-secondary/30 overflow-hidden" aria-label="How booking works">
+    <section className="py-12 sm:py-16 bg-background-secondary/30 overflow-hidden" aria-label="How booking works">
       <div className="container-mad">
-        <Reveal className="text-center mb-14">
+        <Reveal className="text-center mb-8 sm:mb-10">
           <h2 className="text-display-sm font-black text-white text-glow-neon">
             How It Works
           </h2>
@@ -235,28 +235,28 @@ function HowItWorksSection() {
 
 function CTASection() {
   return (
-    <section className="pt-24 pb-32 md:pb-24" aria-label="Call to action">
+    <section className="py-12 sm:py-16" aria-label="Call to action">
       <div className="container-mad">
         <Reveal>
-          <div className="relative glass rounded-3xl border border-accent-purple/20 p-12 md:p-20 text-center overflow-hidden">
+          <div className="relative glass rounded-3xl border border-accent-purple/20 p-8 sm:p-12 md:p-14 text-center overflow-hidden">
             {/* Background glows */}
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-40 bg-accent-purple/20 blur-[80px] rounded-full" />
             <div className="absolute bottom-0 right-1/4 w-64 h-32 bg-accent-pink/15 blur-[60px] rounded-full" />
 
             <div className="relative z-10">
-              <h2 className="text-display-md font-black text-white mb-5 text-glow-neon">
+              <h2 className="text-display-sm sm:text-display-md font-black text-white mb-3 sm:mb-4 text-glow-neon">
                 Ready for an{' '}
                 <span className="text-gradient">Unforgettable</span>{' '}
                 Night?
               </h2>
-              <p className="text-text-secondary text-lg mb-10 max-w-lg mx-auto">
+              <p className="text-text-secondary text-sm sm:text-base mb-6 sm:mb-8 max-w-lg mx-auto">
                 Join thousands of event-goers booking their next great experience on MAD Entertrainment.
               </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
                 <Link
                   id="cta-browse-events"
                   href="/events"
-                  className="px-10 py-4 btn-gradient text-white font-bold text-lg rounded-2xl shadow-glow inline-flex items-center gap-2 group focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                  className="px-8 py-3.5 btn-gradient text-white font-bold text-sm sm:text-base rounded-xl sm:rounded-2xl shadow-glow inline-flex items-center justify-center gap-2 group focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                 >
                   Browse All Events
                   <ArrowRight className="group-hover:translate-x-1 transition-transform" />
@@ -264,7 +264,7 @@ function CTASection() {
                 <Link
                   id="cta-my-booking"
                   href="/tickets"
-                  className="px-10 py-4 glass border border-border-subtle hover:border-accent-purple/50 text-text-primary hover:text-white hover:bg-accent-purple/10 font-semibold text-lg rounded-2xl transition-all duration-300 hover:shadow-glow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                  className="px-8 py-3.5 glass border border-border-subtle hover:border-accent-purple/50 text-text-primary hover:text-white hover:bg-accent-purple/10 font-semibold text-sm sm:text-base rounded-xl sm:rounded-2xl transition-all duration-300 hover:shadow-glow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background flex items-center justify-center"
                 >
                   My Tickets
                 </Link>

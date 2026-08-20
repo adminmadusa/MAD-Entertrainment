@@ -30,7 +30,7 @@ export function EventsList() {
   const pagination = data?.pagination;
 
   return (
-    <div className="pb-16 space-y-8">
+    <div className="pb-4 sm:pb-8 space-y-8">
       {/* Event Grid */}
       {(() => {
         if (isLoading) {
@@ -64,14 +64,14 @@ export function EventsList() {
               isFetching ? 'opacity-50' : 'opacity-100'
             }`}
           >
-            {events.map((event) => (
+            {events.map((event, index) => (
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 key={event._id}
                 className="h-full"
               >
-                <EventCard event={event} variant="catalog" className="h-full" />
+                <EventCard event={event} variant="catalog" priority={index < 2} className="h-full" />
               </motion.div>
             ))}
           </div>

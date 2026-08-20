@@ -1,8 +1,8 @@
 'use client';
 
-import Image from 'next/image';
 import { useState } from 'react';
 
+import { ImageWrapper } from '@/components/common/ImageWrapper';
 import { MediaType, MediaVisibility, type Event as EventData, type EventGalleryItem, type EventGallerySettings } from '@mad/types';
 import { Camera } from '@mad/ui';
 
@@ -110,7 +110,7 @@ export function ExpiredEventView({ event, galleryData }: ExpiredEventViewProps) 
                 className="group relative aspect-square bg-white/5 rounded-2xl overflow-hidden border border-white/5 hover:border-accent-pink/40 transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-pink cursor-pointer"
                 aria-label={`View photo ${index + 1}`}
               >
-                <Image
+                <ImageWrapper
                   src={item.thumbnail || item.url}
                   alt={item.caption || `Event photo ${index + 1}`}
                   fill

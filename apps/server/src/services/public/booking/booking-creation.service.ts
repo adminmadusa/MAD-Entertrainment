@@ -1,14 +1,17 @@
-import crypto from 'crypto';
-
 import { Types } from 'mongoose';
 
-import { BookingStatus, BookingMode, ReservationStatus, SeatStatus, getCountryConfig, deriveBookingEligibility } from '@mad/shared';
+import {
+  BookingStatus,
+  BookingMode,
+  ReservationStatus,
+  SeatStatus,
+  deriveBookingEligibility,
+} from '@mad/shared';
 
 import { getRedis } from '../../../config/redis';
 import { emitToAdmin, emitToEvent } from '../../../config/socket';
 import { AppError } from '../../../middleware/error.middleware';
 import { Booking, IBooking } from '../../../models/booking.schema';
-import { Coupon } from '../../../models/coupon.schema';
 import { Event } from '../../../models/event.schema';
 import { IReservation } from '../../../models/reservation.schema';
 import { SeatLayout } from '../../../models/seat-layout.schema';
@@ -17,39 +20,15 @@ import { logger } from '../../../utils/logger';
 import { runInTransaction } from '../../../utils/transaction';
 import { ReservationService } from '../../reservation.service';
 import { BookingAccessService } from './booking-access.service';
+import {
+  generateSelectionFingerprint,
+  calculateBookingPricing,
+} from './booking-calculation.utils';
+import { expirePreviousBookingForSession } from './booking-expiration.helper';
 import type { CreateBookingRequest, SaveCheckoutRequest } from './booking.types';
 
 export class BookingCreationService {
-  static generateSelectionFingerprint(data: {
-    eventId: string;
-    tickets: {
-      tier: string;
-      quantity: number;
-      seats?: { seatId: string }[];
-    }[];
-    couponCode?: string;
-  }): string {
-    const normalizedCoupon = data.couponCode ? data.couponCode.toUpperCase().trim() : '';
-    const normalizedTickets = data.tickets.map((t) => {
-      const sortedSeats = t.seats
-        ? t.seats.map((s) => s.seatId).filter(Boolean).sort()
-        : [];
-      return {
-        tier: t.tier,
-        quantity: t.quantity,
-        seats: sortedSeats,
-      };
-    }).sort((a, b) => a.tier.localeCompare(b.tier));
-
-    const rawSelection = {
-      eventId: data.eventId,
-      tickets: normalizedTickets,
-      couponCode: normalizedCoupon,
-    };
-
-    const jsonStr = JSON.stringify(rawSelection);
-    return crypto.createHash('sha256').update(jsonStr).digest('hex');
-  }
+  static generateSelectionFingerprint = generateSelectionFingerprint;
 
   static async createBooking(
     data: CreateBookingRequest,
@@ -65,8 +44,15 @@ export class BookingCreationService {
       throw AppError.badRequest('Event is sold out');
     }
 
+    const eligibility = deriveBookingEligibility(event as any);
+    if (!eligibility.bookingAllowed) {
+      throw AppError.badRequest(
+        `This event is no longer available for booking. Reason: ${eligibility.bookingReason}`
+      );
+    }
+
     // Consolidate ticket quantities and seat selection arrays by tier without mutating request DTO
-    const consolidatedMap = new Map<string, typeof data.tickets[0]>();
+    const consolidatedMap = new Map<string, (typeof data.tickets)[0]>();
     for (const ticketReq of data.tickets) {
       const existing = consolidatedMap.get(ticketReq.tier);
       if (existing) {
@@ -84,13 +70,11 @@ export class BookingCreationService {
     }
     const consolidatedTickets = Array.from(consolidatedMap.values());
 
-    // Generate the fingerprint for the current request selection
-    const requestFingerprint = BookingCreationService.generateSelectionFingerprint({
+    const requestFingerprint = generateSelectionFingerprint({
       ...data,
       tickets: consolidatedTickets,
     });
 
-    // Look for an existing AWAITING_PAYMENT booking for this event and session/user
     const query: any = {
       eventId: event._id,
       status: BookingStatus.AWAITING_PAYMENT,
@@ -107,158 +91,54 @@ export class BookingCreationService {
 
     if (existingBooking) {
       if (existingBooking.selectionFingerprint === requestFingerprint) {
-        logger.info({ bookingId: existingBooking._id, eventId: data.eventId, userId, sessionId }, 'Identical retry detected, reusing existing booking.');
+        logger.info(
+          { bookingId: existingBooking._id, eventId: data.eventId, userId, sessionId },
+          'Identical retry detected, reusing existing booking.'
+        );
         (existingBooking as any).isReused = true;
         return existingBooking;
       } else {
-        logger.info({ bookingId: existingBooking._id, eventId: data.eventId, userId, sessionId }, 'Sequential selection change detected. Expiring old booking.');
-        existingBooking.status = BookingStatus.EXPIRED;
-        existingBooking.cancellationReason = 'booking-modified-during-checkout';
-        existingBooking.cancelledAt = new Date();
-        existingBooking.bookingVersion += 1;
-        await existingBooking.save();
-
-        const failedReservations = await ReservationService.transitionForBooking(
-          existingBooking._id,
-          ReservationStatus.FAILED,
-          {
-            reason: 'booking-modified-during-checkout',
-            correlationId: existingBooking.bookingId,
-          }
-        );
-        await ReservationService.releaseCapacityForTerminalReservations(failedReservations);
-
-        if (event.bookingMode === BookingMode.SEAT_BASED) {
-          const oldSeatIds = existingBooking.tickets
-            .flatMap((t: any) => t.seats || [])
-            .map((s: any) => s.seatId);
-          if (oldSeatIds.length > 0) {
-            await SeatLayout.updateOne(
-              { eventId: event._id },
-              {
-                $set: {
-                  'seats.$[seat].status': SeatStatus.AVAILABLE,
-                },
-                $unset: {
-                  'seats.$[seat].lockedBy': '',
-                  'seats.$[seat].lockedAt': '',
-                  'seats.$[seat].bookedByBookingId': '',
-                  'seats.$[seat].reservationId': '',
-                },
-                $inc: {
-                  'seats.$[seat].seatVersion': 1,
-                },
-              },
-              {
-                arrayFilters: [
-                  {
-                    'seat.seatId': { $in: oldSeatIds },
-                    'seat.bookedByBookingId': existingBooking._id.toString(),
-                  },
-                ],
-              }
-            );
-          }
-        }
-
-        try {
-          emitToAdmin('bookings', 'booking:updated', {
-            bookingId: existingBooking._id.toString(),
-            eventId: event._id.toString(),
-            status: existingBooking.status,
-            bookingVersion: existingBooking.bookingVersion,
-          }, existingBooking.bookingId);
-        } catch (err) {
-          logger.debug({ err, bookingId: existingBooking._id }, 'Admin socket emit skipped for booking modification expiration');
-        }
+        await expirePreviousBookingForSession(existingBooking, event, {
+          eventId: data.eventId,
+          userId,
+          sessionId,
+        });
       }
     }
 
-    const eventCountry = event.countryCode || 'US';
-    const countryConfig = getCountryConfig(eventCountry);
-
-    let subtotal = 0;
-    let totalTicketsCount = 0;
-    let totalGst = 0;
-    const finalTickets: any[] = [];
-
-    const eligibility = deriveBookingEligibility(event as any);
-    if (!eligibility.bookingAllowed) {
-      throw AppError.badRequest(`This event is no longer available for booking. Reason: ${eligibility.bookingReason}`);
-    }
-
-    // Validate Tiers and Quantities
-    for (const ticketReq of consolidatedTickets) {
-      const tierConfig = event.ticketTiers.find((t) => t.tier === ticketReq.tier && t.isActive);
-      if (!tierConfig) {
-        throw AppError.badRequest(`Ticket tier "${ticketReq.tier}" is invalid or inactive`);
-      }
-
-      // Check availability window
-      if (tierConfig.availabilityWindow?.startDate && tierConfig.availabilityWindow?.endDate) {
-        const now = new Date();
-        if (now < new Date(tierConfig.availabilityWindow.startDate) || now > new Date(tierConfig.availabilityWindow.endDate)) {
-          throw AppError.badRequest(`Ticket tier "${tierConfig.name}" is not currently available for purchase`);
-        }
-      }
-
-      // Check min per booking
-      if (tierConfig.minPerBooking && ticketReq.quantity < tierConfig.minPerBooking) {
-        throw AppError.badRequest(`Minimum ${tierConfig.minPerBooking} tickets required for tier "${tierConfig.name}"`);
-      }
-
-      // Check max per booking
-      if (tierConfig.maxPerBooking && ticketReq.quantity > tierConfig.maxPerBooking) {
-        throw AppError.badRequest(`Maximum ${tierConfig.maxPerBooking} tickets allowed for tier "${tierConfig.name}"`);
-      }
-
-      // Check tier capacity based on group size (1 package of Friends Pack consumes 4 capacity)
-      const groupSize = tierConfig.groupSize || 1;
-      const capacityConsumed = ticketReq.quantity * groupSize;
-      if (tierConfig.soldCount + capacityConsumed > tierConfig.totalCapacity) {
-        throw AppError.badRequest(`Requested quantity for tier "${tierConfig.name}" exceeds remaining capacity`);
-      }
-
-      // Subtotal after tier discount
-      const tierPriceAfterDiscount = Math.max(0, tierConfig.price - (tierConfig.discount || 0));
-      const tierSubtotal = tierPriceAfterDiscount * ticketReq.quantity;
-
-      // Calculate Tier-specific tax based on event localization country
-      const tierTaxPercent = tierConfig.taxPercent ?? event.taxPercentage ?? countryConfig.defaultTax;
-      const tierGst = Math.round((tierSubtotal * tierTaxPercent) / 100);
-
-      subtotal += tierSubtotal;
-      totalGst += tierGst;
-      totalTicketsCount += ticketReq.quantity * groupSize;
-
-      finalTickets.push({
-        tier: ticketReq.tier,
-        tierName: tierConfig.name,
-        quantity: ticketReq.quantity,
-        pricePerTicket: tierConfig.price,
-        subtotal: tierSubtotal,
-        seats: ticketReq.seats || [],
-      });
-    }
-
-    if (totalTicketsCount <= 0) {
-      throw AppError.badRequest('Must book at least 1 ticket');
-    }
+    const {
+      finalTickets,
+      subtotal,
+      convenienceFee,
+      gst,
+      discount,
+      totalAmount,
+      totalTicketsCount,
+      couponId,
+      countryConfig,
+    } = await calculateBookingPricing({
+      event,
+      consolidatedTickets,
+      couponCode: data.couponCode,
+    });
 
     // Seat lock validation (for seat-based events)
     if (event.bookingMode === BookingMode.SEAT_BASED) {
       const allSeatReqs = consolidatedTickets.flatMap((t) => t.seats || []);
       if (allSeatReqs.length !== totalTicketsCount) {
-        throw AppError.badRequest('Seat selection is required and must match total tickets count for seat-based events');
+        throw AppError.badRequest(
+          'Seat selection is required and must match total tickets count for seat-based events'
+        );
       }
 
       const redis = getRedis();
-      const seatLayout = await SeatLayout.findOne({ eventId: event._id }).select('seats.seatId seats.status').lean();
+      const seatLayout = await SeatLayout.findOne({ eventId: event._id })
+        .select('seats.seatId seats.status')
+        .lean();
       if (!seatLayout) {
         throw AppError.badRequest('Seat layout configuration missing for this event');
       }
 
-      // Verify each seat is available in DB and locked by this session in Redis
       for (const seatReq of allSeatReqs) {
         const dbSeat = seatLayout.seats.find((s) => s.seatId === seatReq.seatId);
         if (!dbSeat) {
@@ -269,89 +149,20 @@ export class BookingCreationService {
           throw AppError.badRequest(`Seat ID "${seatReq.seatId}" is no longer available`);
         }
 
-        // Verify Redis lock
-        const redisLockVal = await redis.get(`mad:lock:event:${event._id}:seat:${seatReq.seatId}`);
+        const redisLockVal = await redis.get(
+          `mad:lock:event:${event._id}:seat:${seatReq.seatId}`
+        );
         if (!redisLockVal || redisLockVal !== sessionId) {
-          throw AppError.badRequest(`Seat ID "${seatReq.seatId}" is not locked by your session. Please lock seats again.`);
+          throw AppError.badRequest(
+            `Seat ID "${seatReq.seatId}" is not locked by your session. Please lock seats again.`
+          );
         }
       }
     }
 
-    // 1. Fee calculations
-    const baseFee = event.convenienceFee !== undefined ? event.convenienceFee : countryConfig.defaultConvenienceFee;
-    const convenienceFee = baseFee * totalTicketsCount;
-    const taxPercentage = event.taxPercentage !== undefined ? event.taxPercentage : countryConfig.defaultTax;
-    const convenienceFeeGst = Math.round((convenienceFee * taxPercentage) / 100);
-
-    // 2. Apply Coupon
-    let discount = 0;
-    let couponId: Types.ObjectId | undefined;
-    if (data.couponCode) {
-      const coupon = await Coupon.findOne({ code: data.couponCode.toUpperCase() });
-      if (!coupon || !coupon.isActive) {
-        throw AppError.badRequest('Coupon is invalid or inactive');
-      }
-
-      const now = new Date();
-      if (now < new Date(coupon.validFrom) || now > new Date(coupon.validUntil)) {
-        throw AppError.badRequest('Coupon validity has expired');
-      }
-
-      if (coupon.usedCount >= coupon.usageLimit) {
-        throw AppError.badRequest('Coupon usage limit reached');
-      }
-
-      if (coupon.minOrderAmount && subtotal < coupon.minOrderAmount) {
-        const eventCountry = event.countryCode || 'US';
-        const countryConfig = getCountryConfig(eventCountry);
-        throw AppError.badRequest(`Minimum subtotal order amount of ${countryConfig.symbol}${coupon.minOrderAmount} is required for this coupon`);
-      }
-
-      // Scope checks
-      if (coupon.applicableEventIds && coupon.applicableEventIds.length > 0) {
-        const hasEvent = coupon.applicableEventIds.some((id: any) => id.toString() === event._id.toString());
-        if (!hasEvent) {
-          throw AppError.badRequest('Coupon is not applicable to this event');
-        }
-      }
-
-      if (coupon.applicableCategories && coupon.applicableCategories.length > 0) {
-        if (!coupon.applicableCategories.includes(event.category)) {
-          throw AppError.badRequest('Coupon is not applicable to this category of events');
-        }
-      }
-
-      if (coupon.discountType === 'percentage') {
-        discount = Math.round((subtotal * coupon.discountValue) / 100);
-        if (coupon.maxDiscount && discount > coupon.maxDiscount) {
-          discount = coupon.maxDiscount;
-        }
-      } else {
-        discount = coupon.discountValue;
-      }
-
-      if (discount > subtotal) {
-        discount = subtotal; // discount can't exceed subtotal ticket cost
-      }
-
-      couponId = coupon._id as Types.ObjectId;
-    }
-
-    // 3. Tax calculations on net taxable subtotal
-    const netTicketSubtotal = Math.max(0, subtotal - discount);
-    const netTicketGst = subtotal > 0
-      ? Math.round((netTicketSubtotal * (totalGst / subtotal)))
-      : 0;
-    const gst = netTicketGst + convenienceFeeGst;
-
-    const totalAmount = Math.max(0, netTicketSubtotal + convenienceFee + gst);
-
-    // Expiry in 10 minutes (logical reservation window)
     const logicalExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
-    // Deferred physical TTL cleanup (30 days) to allow webhook recoveries
     const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
 
-    // Create pending booking
     const booking = new Booking({
       eventId: event._id,
       userId: userId ? new Types.ObjectId(userId) : undefined,
@@ -369,7 +180,8 @@ export class BookingCreationService {
       currency: event.currency || countryConfig.currency,
       countryCode: event.countryCode || countryConfig.countryCode,
       taxLabel: event.taxLabel || countryConfig.taxLabel,
-      taxPercentage: event.taxPercentage !== undefined ? event.taxPercentage : countryConfig.defaultTax,
+      taxPercentage:
+        event.taxPercentage !== undefined ? event.taxPercentage : countryConfig.defaultTax,
       locale: event.locale || countryConfig.locale,
       couponCode: data.couponCode ? data.couponCode.toUpperCase() : undefined,
       couponId,
@@ -388,21 +200,28 @@ export class BookingCreationService {
         const postCommitCallbacks: Array<() => Promise<void>> = [];
         try {
           for (const ticketReq of consolidatedTickets) {
-            const tierConfig = event.ticketTiers.find((t) => t.tier === ticketReq.tier);
+            const tierConfig = event.ticketTiers.find((t: any) => t.tier === ticketReq.tier);
             const groupSize = tierConfig?.groupSize || 1;
-            const { reservations: allocated, postCommit } = await ReservationService.reserveForBooking({
-              eventId: event._id as Types.ObjectId,
-              bookingMode: event.bookingMode,
-              tier: ticketReq.tier as any,
-              quantity: ticketReq.quantity * groupSize,
-              seats: ticketReq.seats?.map((seat) => ({ seatId: seat.seatId, section: seat.section })),
-              sessionId: sessionId ?? booking._id.toString(),
-              userId,
-              bookingId: booking._id as Types.ObjectId,
-              bookingReference: booking.bookingId,
-              correlationId: booking.bookingId,
-              expiresAt: logicalExpiresAt,
-            }, session);
+            const { reservations: allocated, postCommit } =
+              await ReservationService.reserveForBooking(
+                {
+                  eventId: event._id as Types.ObjectId,
+                  bookingMode: event.bookingMode,
+                  tier: ticketReq.tier as any,
+                  quantity: ticketReq.quantity * groupSize,
+                  seats: ticketReq.seats?.map((seat) => ({
+                    seatId: seat.seatId,
+                    section: seat.section,
+                  })),
+                  sessionId: sessionId ?? booking._id.toString(),
+                  userId,
+                  bookingId: booking._id as Types.ObjectId,
+                  bookingReference: booking.bookingId,
+                  correlationId: booking.bookingId,
+                  expiresAt: logicalExpiresAt,
+                },
+                session
+              );
             reservations.push(...allocated);
             postCommitCallbacks.push(postCommit);
           }
@@ -412,14 +231,21 @@ export class BookingCreationService {
             booking.bookingVersion += 1;
             await booking.save().catch(() => {});
             if (reservations.length > 0) {
-              const failedReservations = await ReservationService.transitionForBooking(booking._id, ReservationStatus.FAILED, {
-                reason: 'booking-reservation-allocation-failed',
-                correlationId: booking.bookingId,
-              });
+              const failedReservations = await ReservationService.transitionForBooking(
+                booking._id,
+                ReservationStatus.FAILED,
+                {
+                  reason: 'booking-reservation-allocation-failed',
+                  correlationId: booking.bookingId,
+                }
+              );
               await ReservationService.releaseCapacityForTerminalReservations(failedReservations);
             }
           }
-          logger.warn({ err, bookingId: booking._id, eventId: event._id }, 'Booking failed during reservation allocation');
+          logger.warn(
+            { err, bookingId: booking._id, eventId: event._id },
+            'Booking failed during reservation allocation'
+          );
           throw err;
         }
 
@@ -430,11 +256,12 @@ export class BookingCreationService {
         let allSeatIds: string[] = [];
         let reservationBySeat = new Map<string, string>();
 
-        // Update Seat statuses to LOCKED in MongoDB for the booking (to prevent other checkout threads booking it)
         if (event.bookingMode === BookingMode.SEAT_BASED) {
           allSeatIds = consolidatedTickets.flatMap((t) => t.seats || []).map((s) => s.seatId);
           reservationBySeat = new Map(
-            reservations.filter((reservation) => reservation.seatId).map((reservation) => [reservation.seatId, reservation.reservationId])
+            reservations
+              .filter((reservation) => reservation.seatId)
+              .map((reservation) => [reservation.seatId, reservation.reservationId])
           );
           const result = await SeatLayout.updateOne(
             { eventId: event._id },
@@ -461,7 +288,9 @@ export class BookingCreationService {
           );
 
           if (result.modifiedCount !== allSeatIds.length) {
-            throw AppError.conflict('Some of the selected seats were locked by another user. Please choose different seats.');
+            throw AppError.conflict(
+              'Some of the selected seats were locked by another user. Please choose different seats.'
+            );
           }
 
           for (const [seatId, reservationId] of reservationBySeat.entries()) {
@@ -509,7 +338,6 @@ export class BookingCreationService {
 
     const { allSeatIds, postCommitCallbacks } = txResult;
 
-    // Side effects (Redis lock release, WebSocket emissions, Cache invalidation, and Audit logging) run strictly outside the transaction boundary.
     if (event.bookingMode === BookingMode.SEAT_BASED) {
       const redis = getRedis();
       for (const seatId of allSeatIds) {
@@ -520,41 +348,65 @@ export class BookingCreationService {
             await redis.del(lockKey);
           }
         } catch (err) {
-          logger.warn({ err, seatId, bookingId: booking._id }, 'Redis connection error during lock release');
+          logger.warn(
+            { err, seatId, bookingId: booking._id },
+            'Redis connection error during lock release'
+          );
         }
       }
 
       try {
-        emitToEvent(event._id.toString(), 'seat:reserved', {
-          eventId: event._id.toString(),
-          bookingId: booking._id.toString(),
-          seatIds: allSeatIds,
-        }, booking.bookingId);
+        emitToEvent(
+          event._id.toString(),
+          'seat:reserved',
+          {
+            eventId: event._id.toString(),
+            bookingId: booking._id.toString(),
+            seatIds: allSeatIds,
+          },
+          booking.bookingId
+        );
       } catch (err) {
-        logger.debug({ err, eventId: event._id, bookingId: booking._id }, 'Socket emit skipped for seat reservation');
+        logger.debug(
+          { err, eventId: event._id, bookingId: booking._id },
+          'Socket emit skipped for seat reservation'
+        );
       }
-      logger.info({ eventId: event._id, bookingId: booking._id, seatIds: allSeatIds }, 'Seat inventory reserved for checkout');
+      logger.info(
+        { eventId: event._id, bookingId: booking._id, seatIds: allSeatIds },
+        'Seat inventory reserved for checkout'
+      );
     }
 
-    // Invoke reservation post-commit callbacks (emit socket + invalidate cache), owned by ReservationService.
     for (const postCommit of postCommitCallbacks) {
       try {
         await postCommit();
       } catch (err) {
-        logger.debug({ err, bookingId: booking._id }, 'Reservation post-commit callback failed (non-fatal)');
+        logger.debug(
+          { err, bookingId: booking._id },
+          'Reservation post-commit callback failed (non-fatal)'
+        );
       }
     }
 
     try {
-      emitToAdmin('bookings', 'booking:created', {
-        bookingId: booking._id.toString(),
-        eventId: event._id.toString(),
-        status: booking.status,
-        reservationIds: booking.reservationIds,
-        bookingVersion: booking.bookingVersion,
-      }, booking.bookingId);
+      emitToAdmin(
+        'bookings',
+        'booking:created',
+        {
+          bookingId: booking._id.toString(),
+          eventId: event._id.toString(),
+          status: booking.status,
+          reservationIds: booking.reservationIds,
+          bookingVersion: booking.bookingVersion,
+        },
+        booking.bookingId
+      );
     } catch (err) {
-      logger.debug({ err, bookingId: booking._id }, 'Admin socket emit skipped for booking creation');
+      logger.debug(
+        { err, bookingId: booking._id },
+        'Admin socket emit skipped for booking creation'
+      );
     }
 
     auditLog({
@@ -586,14 +438,12 @@ export class BookingCreationService {
       throw AppError.notFound('Booking not found');
     }
 
-    // Verify ownership
     BookingAccessService.assertBookingAccess(booking, { userId, sessionId }, 'ActiveCheckout');
 
     if (booking.status !== BookingStatus.AWAITING_PAYMENT) {
       throw AppError.badRequest('Booking details can only be updated while awaiting payment');
     }
 
-    // Update details
     booking.firstName = data.firstName;
     booking.lastName = data.lastName;
     booking.guestName = `${data.firstName} ${data.lastName}`.trim();
@@ -605,16 +455,23 @@ export class BookingCreationService {
     booking.bookingVersion += 1;
     await booking.save();
 
-    // Emit socket event to notify admins
     try {
-      emitToAdmin('bookings', 'booking:updated', {
-        bookingId: booking._id.toString(),
-        eventId: booking.eventId.toString(),
-        status: booking.status,
-        bookingVersion: booking.bookingVersion,
-      }, booking.bookingId);
+      emitToAdmin(
+        'bookings',
+        'booking:updated',
+        {
+          bookingId: booking._id.toString(),
+          eventId: booking.eventId.toString(),
+          status: booking.status,
+          bookingVersion: booking.bookingVersion,
+        },
+        booking.bookingId
+      );
     } catch (err) {
-      logger.debug({ err, bookingId: booking._id }, 'Admin socket emit skipped for booking update');
+      logger.debug(
+        { err, bookingId: booking._id },
+        'Admin socket emit skipped for booking update'
+      );
     }
 
     return booking;

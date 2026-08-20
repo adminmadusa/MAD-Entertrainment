@@ -1,5 +1,9 @@
 import type { Metadata } from 'next';
 
+import { SectionBoundary } from '@/components/common/SectionBoundary';
+import { CompletedEventsSection } from '@/components/ui/CompletedEventsSection';
+import { CompletedEventsSkeleton } from '@/components/ui/HomeSkeletons';
+import { serverGetCompletedEvents } from '@/lib/api/server.service';
 import { EventsList } from './EventsList';
 
 export const metadata: Metadata = {
@@ -25,9 +29,16 @@ export const metadata: Metadata = {
   },
 };
 
+export const revalidate = 60;
+
+async function CompletedEventsServerSection() {
+  const events = await serverGetCompletedEvents();
+  return <CompletedEventsSection initialEvents={events} />;
+}
+
 export default function PublicEventsPage() {
   return (
-    <div className="pt-28 pb-16 min-h-screen bg-background">
+    <div className="pt-32 sm:pt-36 md:pt-40 pb-16 min-h-screen bg-background space-y-10 sm:space-y-14">
       <div className="container-mad space-y-8">
         {/* Static SSR header — visible to crawlers immediately */}
         <div className="text-center max-w-xl mx-auto space-y-3">
@@ -40,6 +51,11 @@ export default function PublicEventsPage() {
         {/* Client-side interactive list fetching data on mount */}
         <EventsList />
       </div>
+
+      {/* ─── Relive the Magic: Past Events & Moments ─── */}
+      <SectionBoundary loadingFallback={<CompletedEventsSkeleton />}>
+        <CompletedEventsServerSection />
+      </SectionBoundary>
     </div>
   );
 }
