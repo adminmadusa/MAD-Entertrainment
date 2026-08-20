@@ -39,7 +39,18 @@ export const updateDJOperator = async (id: string, data: Partial<IDJOperator>): 
   const newProfileId = data.profileImage?.publicId;
   const profileReplaced = newProfileId && oldProfileId && oldProfileId !== newProfileId;
 
-  const updated = await DJOperator.findByIdAndUpdate(cleanId, data, { new: true });
+  const updateFields: Partial<IDJOperator> = {};
+  if (data.name !== undefined) updateFields.name = String(data.name).trim();
+  if (data.slug !== undefined) updateFields.slug = String(data.slug).trim().toLowerCase();
+  if (data.bio !== undefined) updateFields.bio = String(data.bio);
+  if (data.specialties !== undefined) updateFields.specialties = data.specialties;
+  if (data.profileImage !== undefined) updateFields.profileImage = data.profileImage;
+  if (data.galleryImages !== undefined) updateFields.galleryImages = data.galleryImages;
+  if (data.experienceYears !== undefined) updateFields.experienceYears = Number(data.experienceYears);
+  if (data.socialLinks !== undefined) updateFields.socialLinks = data.socialLinks;
+  if (data.isActive !== undefined) updateFields.isActive = Boolean(data.isActive);
+
+  const updated = await DJOperator.findByIdAndUpdate(cleanId, { $set: updateFields }, { new: true });
   if (updated) {
     if (profileReplaced && oldProfileId) {
       safeDeleteImages([oldProfileId], 'DJOperator', 'update');
