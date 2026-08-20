@@ -1,3 +1,4 @@
+import type { Request, Response, NextFunction } from 'express';
 import helmet from 'helmet';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
@@ -24,8 +25,8 @@ describe('Server Security Headers & Helmet CSP Suite', () => {
     });
 
     const headers: Record<string, string> = {};
-    const req: any = { headers: {} };
-    const res: any = {
+    const req = { headers: {} } as unknown as Request;
+    const res = {
       setHeader: vi.fn((key: string, value: string) => {
         headers[key.toLowerCase()] = value;
       }),
@@ -33,8 +34,8 @@ describe('Server Security Headers & Helmet CSP Suite', () => {
       removeHeader: vi.fn((key: string) => {
         delete headers[key.toLowerCase()];
       }),
-    };
-    const next = vi.fn();
+    } as unknown as Response;
+    const next = vi.fn() as unknown as NextFunction;
 
     helmetMiddleware(req, res, next);
 
@@ -60,8 +61,8 @@ describe('Server Security Headers & Helmet CSP Suite', () => {
   it('prevents framing attacks and enforces X-Content-Type-Options', () => {
     const helmetMiddleware = helmet();
     const headers: Record<string, string> = {};
-    const req: any = { headers: {} };
-    const res: any = {
+    const req = { headers: {} } as unknown as Request;
+    const res = {
       setHeader: vi.fn((key: string, value: string) => {
         headers[key.toLowerCase()] = value;
       }),
@@ -69,8 +70,8 @@ describe('Server Security Headers & Helmet CSP Suite', () => {
       removeHeader: vi.fn((key: string) => {
         delete headers[key.toLowerCase()];
       }),
-    };
-    const next = vi.fn();
+    } as unknown as Response;
+    const next = vi.fn() as unknown as NextFunction;
 
     helmetMiddleware(req, res, next);
 

@@ -1,6 +1,16 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import nextConfig from '../../next.config';
 
+interface HeaderItem {
+  key: string;
+  value: string;
+}
+
+interface HeaderRouteConfig {
+  source: string;
+  headers: HeaderItem[];
+}
+
 describe('Web Next.js Security Headers & CSP Suite', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -11,11 +21,11 @@ describe('Web Next.js Security Headers & CSP Suite', () => {
       throw new Error('nextConfig.headers is not defined');
     }
 
-    const headerConfigs = await nextConfig.headers();
-    const globalHeaderConfig = headerConfigs.find((h: any) => h.source === '/(.*)');
+    const headerConfigs = (await nextConfig.headers()) as HeaderRouteConfig[];
+    const globalHeaderConfig = headerConfigs.find((h) => h.source === '/(.*)');
 
     expect(globalHeaderConfig).toBeDefined();
-    const headerMap = new Map(globalHeaderConfig?.headers.map((h: any) => [h.key, h.value]));
+    const headerMap = new Map(globalHeaderConfig?.headers.map((h) => [h.key, h.value]));
 
     // Critical clickjacking protection
     expect(headerMap.get('X-Frame-Options')).toBe('DENY');
@@ -42,9 +52,9 @@ describe('Web Next.js Security Headers & CSP Suite', () => {
         throw new Error('nextConfig.headers is not defined');
       }
 
-      const headerConfigs = await nextConfig.headers();
-      const globalHeaderConfig = headerConfigs.find((h: any) => h.source === '/(.*)');
-      const headerMap = new Map(globalHeaderConfig?.headers.map((h: any) => [h.key, h.value]));
+      const headerConfigs = (await nextConfig.headers()) as HeaderRouteConfig[];
+      const globalHeaderConfig = headerConfigs.find((h) => h.source === '/(.*)');
+      const headerMap = new Map(globalHeaderConfig?.headers.map((h) => [h.key, h.value]));
 
       // HSTS 1-year with includeSubDomains
       const hsts = headerMap.get('Strict-Transport-Security');
