@@ -61,21 +61,21 @@ describe('CodeQualityValidator Unit Tests', () => {
   });
 
   it('passes for a legacy file on an active exception within its frozen ceiling', async () => {
-    // apps/admin/src/app/dashboard/page.tsx exception has ceiling of 475 lines
-    const fakeContent = Array(460).fill('const line = 1;').join('\n');
+    // apps/admin/src/components/events/gallery/EventGalleryWorkspace.tsx exception has ceiling of 390 lines
+    const fakeContent = Array(380).fill('const line = 1;').join('\n');
     vi.mocked(fs.readFileSync).mockReturnValue(fakeContent);
 
-    const result = await validator.run(['apps/admin/src/app/dashboard/page.tsx'], {} as any);
+    const result = await validator.run(['apps/admin/src/components/events/gallery/EventGalleryWorkspace.tsx'], {} as any);
     expect(result.success).toBe(true);
     expect(result.errors).toHaveLength(0);
   });
 
   it('fails if a legacy file on exception exceeds its frozen ceiling', async () => {
-    // apps/admin/src/app/dashboard/page.tsx exception has ceiling of 475 lines
-    const fakeContent = Array(480).fill('const line = 1;').join('\n');
+    // apps/admin/src/components/events/gallery/EventGalleryWorkspace.tsx exception has ceiling of 390 lines
+    const fakeContent = Array(400).fill('const line = 1;').join('\n');
     vi.mocked(fs.readFileSync).mockReturnValue(fakeContent);
 
-    const result = await validator.run(['apps/admin/src/app/dashboard/page.tsx'], {} as any);
+    const result = await validator.run(['apps/admin/src/components/events/gallery/EventGalleryWorkspace.tsx'], {} as any);
     expect(result.success).toBe(false);
     expect(result.errors).toHaveLength(1);
     expect(result.errors[0].message).toContain('Code Quality Freeze Violation');
