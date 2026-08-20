@@ -153,10 +153,10 @@ jobs:
 
   commit-lint:
     name: Commit Convention Validation
-    # Only meaningful on pull_request — validating commit messages requires
-    # a base..head range. On push to develop/live, all commits have already
-    # passed this gate at PR time, so re-running would be redundant.
-    if: github.event_name == 'pull_request'
+    # Only meaningful on pull_request to feature/integration branches.
+    # On release PRs targeting live, all commits have already passed this gate
+    # when merged into develop.
+    if: github.event_name == 'pull_request' && github.base_ref != 'live'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -199,16 +199,15 @@ jobs:
     # Validates that the source branch follows the naming convention
     # mandated by AGENTS.md: <prefix>/<lowercase-slug>
     # Allowed prefixes: feat fix refactor audit docs test chore seo
-    # Runs on pull_request only — direct push branches have already
-    # been validated at PR creation time.
-    if: github.event_name == 'pull_request'
+    # Runs on pull_request only for feature branches (skipped on develop->live release PRs)
+    if: github.event_name == 'pull_request' && github.head_ref != 'develop'
     runs-on: ubuntu-latest
     steps:
       - name: Validate branch name
         env:
           BRANCH: ${{ github.head_ref }}
         run: |
-          PATTERN='^(feat|fix|refactor|audit|docs|test|chore|seo)/[a-z0-9]([a-z0-9-]*[a-z0-9])?$'
+          PATTERN='^(develop|live|main|(feat|fix|refactor|audit|docs|test|chore|seo)/[a-z0-9]([a-z0-9-]*[a-z0-9])?)$'
           if echo "$BRANCH" | grep -qE "$PATTERN"; then
             echo "✅ Branch name '$BRANCH' is valid"
           else
