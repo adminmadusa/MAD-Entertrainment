@@ -185,8 +185,7 @@ export const governanceConfig = {
       // Schemas & Types (all compliant!)
 
       // Test Suites
-
-      { filePath: 'apps/server/src/services/public/booking.service.test.ts', ruleId: 'VAL-QUAL-006', maxLinesCeiling: 1290, expiresAt: '2026-09-30', owner: 'Server Team', reason: 'Public booking service test suite' },
+      
     ]
   }
 };
