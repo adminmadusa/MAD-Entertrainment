@@ -3,25 +3,30 @@
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState, Suspense, useMemo } from 'react';
 
-import { ProfileCompletionForm } from '@/components/auth/ProfileCompletionForm';
 import { useBookings } from '@/hooks/use-bookings.hook';
 import { useAuth } from '@/providers/AuthProvider';
 import { BookingStatus } from '@mad/shared';
 
-import { DashboardTicketsTab, BookingCardSkeleton, DashboardAccountTab, DashboardSupportTab } from './_components';
-
-type TabType = 'tickets' | 'account' | 'support';
+import {
+  DashboardTicketsTab,
+  BookingCardSkeleton,
+  DashboardAccountTab,
+  DashboardSupportTab,
+  DashboardHeader,
+  DashboardNavTabs,
+  DashboardMobileStickyBar,
+  DashboardOnboardingView,
+  type DashboardTabType,
+} from './_components';
 
 function DashboardContent() {
   const { user, isAuthenticated, isLoading: isAuthLoading, onboardingRequired, logout } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // Tab and Expand states
-  const [activeTab, setActiveTab] = useState<TabType>('tickets');
+  const [activeTab, setActiveTab] = useState<DashboardTabType>('tickets');
   const [expandedBookingId, setExpandedBookingId] = useState<string | null>(null);
 
-  // Consume SSOT hook for booking retrieval and actions
   const {
     bookings,
     tickets,
@@ -45,16 +50,14 @@ function DashboardContent() {
     refundedBookings,
   } = useBookings();
 
-  // Auth Redirect check — send unauthenticated users to home, not legacy /login
   useEffect(() => {
     if (!isAuthLoading && !isAuthenticated) {
       router.replace('/');
     }
   }, [isAuthenticated, isAuthLoading, router]);
 
-  // Sync tab & reference from query parameters
   useEffect(() => {
-    const tabParam = searchParams.get('tab') as TabType;
+    const tabParam = searchParams.get('tab') as DashboardTabType;
     const refParam = searchParams.get('ref');
 
     if (tabParam && ['tickets', 'account', 'support'].includes(tabParam)) {
@@ -66,7 +69,6 @@ function DashboardContent() {
     }
   }, [searchParams]);
 
-  // Auto-scroll expanded accordion into view
   useEffect(() => {
     if (activeTab === 'tickets' && expandedBookingId) {
       const timer = setTimeout(() => {
@@ -79,15 +81,13 @@ function DashboardContent() {
     }
   }, [expandedBookingId, activeTab]);
 
-  // Update tab in URL
-  const handleTabChange = (tab: TabType) => {
+  const handleTabChange = (tab: DashboardTabType) => {
     setActiveTab(tab);
     const params = new URLSearchParams(window.location.search);
     params.set('tab', tab);
     router.push(`${window.location.pathname}?${params.toString()}`);
   };
 
-  // Share handler: navigator.share primary, clipboard fallback, AbortError silenced
   const handleShare = async (bookingId: string) => {
     const shareUrl = `${window.location.origin}/dashboard?ref=${bookingId}`;
     try {
@@ -117,7 +117,6 @@ function DashboardContent() {
   const showSkeleton = isAuthLoading || !isAuthenticated;
   const userName = user?.name || [user?.firstName, user?.lastName].filter(Boolean).join(' ') || 'Account User';
 
-  // Sticky bar guard: only when confirmed booking expanded AND tickets ready
   const expandedBooking = useMemo(() => {
     return expandedBookingId
       ? bookings.find((b) => b.bookingId === expandedBookingId) ?? null
@@ -133,23 +132,7 @@ function DashboardContent() {
   }, [expandedBooking, ticketsReadyMap]);
 
   if (isAuthenticated && onboardingRequired) {
-    return (
-      <div className="pt-28 sm:pt-32 pb-16 min-h-screen bg-background relative overflow-hidden">
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-accent-purple/10 rounded-full blur-[130px] pointer-events-none" />
-        <div className="absolute -bottom-10 -right-10 w-[300px] h-[300px] bg-purple-500/5 rounded-full blur-[100px] pointer-events-none" />
-
-        <div className="container-mad max-w-md relative z-10 w-full px-4 mt-6 sm:mt-8">
-          <div className="glass-strong rounded-3xl border border-border-subtle p-5 sm:p-8 shadow-2xl transition-all duration-500 hover:border-white/10">
-            <ProfileCompletionForm
-              initialFirstName={user?.firstName || ''}
-              initialLastName={user?.lastName || ''}
-              initialMobileNumber={user?.mobileNumber || ''}
-              onCancel={() => logout()}
-            />
-          </div>
-        </div>
-      </div>
-    );
+    return <DashboardOnboardingView user={user} onCancel={() => logout()} />;
   }
 
   return (
@@ -158,26 +141,11 @@ function DashboardContent() {
       <div className="absolute -bottom-10 -right-10 w-[300px] h-[300px] bg-purple-500/5 rounded-full blur-[100px] pointer-events-none" />
 
       <div className={`container-mad max-w-5xl relative z-10 px-4 space-y-8${stickyBarVisible ? ' pb-28 sm:pb-0' : ''}`}>
-        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 pb-2 border-b border-white/5">
-          <div className="space-y-1">
-            <h1 className="text-2xl sm:text-4xl font-black text-white tracking-tight">
-              My Dashboard
-            </h1>
-            <p className="text-text-secondary text-sm">
-              Welcome back, <span className="text-white font-semibold">{userName}</span>
-            </p>
-          </div>
-          {bookings.length > 0 && (
-            <div className="flex items-center gap-2">
-              <span className="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-xs text-text-secondary font-medium">
-                <span className="text-white font-bold">{upcomingBookings.length}</span> Upcoming {upcomingBookings.length === 1 ? 'Event' : 'Events'}
-              </span>
-              <span className="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-xs text-text-secondary font-medium">
-                <span className="text-white font-bold">{bookings.length}</span> Total {bookings.length === 1 ? 'Pass' : 'Passes'}
-              </span>
-            </div>
-          )}
-        </div>
+        <DashboardHeader
+          userName={userName}
+          totalBookings={bookings.length}
+          upcomingCount={upcomingBookings.length}
+        />
 
         {errorMsg && (
           <div className="p-4 bg-error/10 border border-error/30 rounded-2xl text-xs text-red-400 text-center">
@@ -198,76 +166,12 @@ function DashboardContent() {
           </div>
         ) : (
           <div className="space-y-6">
-            {/* Clean Modern Underline Navigation Tabs */}
-            <div
-              role="tablist"
-              aria-label="Dashboard navigation"
-              className="flex items-center gap-6 sm:gap-8 border-b border-white/10 overflow-x-auto scrollbar-none"
-            >
-              <button
-                type="button"
-                role="tab"
-                id="subtab-tickets"
-                aria-controls="subtab-panel-tickets"
-                aria-selected={activeTab === 'tickets'}
-                onClick={() => handleTabChange('tickets')}
-                className={`pb-3 text-sm font-bold transition-all duration-200 relative whitespace-nowrap min-h-[44px] flex items-center gap-2 ${
-                  activeTab === 'tickets'
-                    ? 'text-white'
-                    : 'text-text-secondary hover:text-white'
-                }`}
-              >
-                <span>My Tickets</span>
-                {bookings.length > 0 && (
-                  <span className={`text-[11px] px-2 py-0.5 rounded-full font-bold ${
-                    activeTab === 'tickets' ? 'bg-accent-purple text-white' : 'bg-white/10 text-text-secondary'
-                  }`}>
-                    {bookings.length}
-                  </span>
-                )}
-                {activeTab === 'tickets' && (
-                  <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-accent-purple to-pink-500 rounded-full" />
-                )}
-              </button>
-              <button
-                type="button"
-                role="tab"
-                id="subtab-account"
-                aria-controls="subtab-panel-account"
-                aria-selected={activeTab === 'account'}
-                onClick={() => handleTabChange('account')}
-                className={`pb-3 text-sm font-bold transition-all duration-200 relative whitespace-nowrap min-h-[44px] flex items-center gap-2 ${
-                  activeTab === 'account'
-                    ? 'text-white'
-                    : 'text-text-secondary hover:text-white'
-                }`}
-              >
-                <span>Account Details</span>
-                {activeTab === 'account' && (
-                  <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-accent-purple to-pink-500 rounded-full" />
-                )}
-              </button>
-              <button
-                type="button"
-                role="tab"
-                id="subtab-support"
-                aria-controls="subtab-panel-support"
-                aria-selected={activeTab === 'support'}
-                onClick={() => handleTabChange('support')}
-                className={`pb-3 text-sm font-bold transition-all duration-200 relative whitespace-nowrap min-h-[44px] flex items-center gap-2 ${
-                  activeTab === 'support'
-                    ? 'text-white'
-                    : 'text-text-secondary hover:text-white'
-                }`}
-              >
-                <span>Help &amp; Support</span>
-                {activeTab === 'support' && (
-                  <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-accent-purple to-pink-500 rounded-full" />
-                )}
-              </button>
-            </div>
+            <DashboardNavTabs
+              activeTab={activeTab}
+              onTabChange={handleTabChange}
+              totalBookings={bookings.length}
+            />
 
-            {/* Active Tab View */}
             <div className="space-y-6">
               {activeTab === 'tickets' && (
                 <div role="tabpanel" id="subtab-panel-tickets" aria-labelledby="subtab-tickets">
@@ -309,68 +213,15 @@ function DashboardContent() {
       </div>
 
       {stickyBarVisible && expandedBooking && (
-        <div
-          className="fixed bottom-0 left-0 right-0 z-40 sm:hidden"
-          style={{ paddingBottom: 'calc(1rem + env(safe-area-inset-bottom))' }}
-          role="toolbar"
-          aria-label="Ticket quick actions"
-        >
-          <div className="mx-4 mb-2 glass border border-white/10 rounded-2xl shadow-2xl backdrop-blur-xl px-4 pt-4 pb-3 flex items-center gap-2">
-            <button
-              type="button"
-              aria-label="Download PDF"
-              disabled={downloadingId === expandedBooking.bookingId}
-              onClick={() => handleDownloadPDF(expandedBooking.bookingId)}
-              className="min-h-[44px] flex-1 flex flex-col items-center justify-center gap-1 px-2 py-1 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white text-[11px] font-semibold transition-all disabled:opacity-50"
-            >
-              {downloadingId === expandedBooking.bookingId ? (
-                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              ) : (
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                </svg>
-              )}
-              {downloadingId === expandedBooking.bookingId ? 'Saving...' : 'Download'}
-            </button>
-
-            <button
-              type="button"
-              aria-label="Resend ticket email"
-              disabled={
-                resendingId === expandedBooking.bookingId ||
-                (resendCooldowns[expandedBooking.bookingId] || 0) > 0
-              }
-              onClick={() => handleResendTickets(expandedBooking.bookingId)}
-              className="min-h-[44px] flex-1 flex flex-col items-center justify-center gap-1 px-2 py-1 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white text-[11px] font-semibold transition-all disabled:opacity-50"
-            >
-              {resendingId === expandedBooking.bookingId ? (
-                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              ) : (
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                </svg>
-              )}
-              {(() => {
-                if ((resendCooldowns[expandedBooking.bookingId] || 0) > 0)
-                  return `${resendCooldowns[expandedBooking.bookingId]}s`;
-                if (resendingId === expandedBooking.bookingId) return 'Sending...';
-                return 'Email';
-              })()}
-            </button>
-
-            <button
-              type="button"
-              aria-label="Share ticket"
-              onClick={() => handleShare(expandedBooking.bookingId)}
-              className="min-h-[44px] flex-1 flex flex-col items-center justify-center gap-1 px-2 py-1 rounded-xl btn-gradient text-white text-[11px] font-semibold shadow-glow-sm transition-all hover:scale-[1.02] active:scale-[0.98]"
-            >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-              </svg>
-              Share
-            </button>
-          </div>
-        </div>
+        <DashboardMobileStickyBar
+          expandedBooking={expandedBooking}
+          downloadingId={downloadingId}
+          resendingId={resendingId}
+          resendCooldowns={resendCooldowns}
+          onDownload={handleDownloadPDF}
+          onResend={handleResendTickets}
+          onShare={handleShare}
+        />
       )}
     </div>
   );
@@ -378,11 +229,13 @@ function DashboardContent() {
 
 export default function UserDashboardPage() {
   return (
-    <Suspense fallback={
-      <div className="pt-20 sm:pt-28 pb-16 min-h-screen bg-background flex items-center justify-center">
-        <div className="text-purple-300 animate-pulse text-sm">Loading Account...</div>
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="pt-20 sm:pt-28 pb-16 min-h-screen bg-background flex items-center justify-center">
+          <div className="text-purple-300 animate-pulse text-sm">Loading Account...</div>
+        </div>
+      }
+    >
       <DashboardContent />
     </Suspense>
   );
