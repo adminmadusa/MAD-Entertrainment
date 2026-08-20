@@ -24,22 +24,22 @@ export function PromoCodeForm({
   onCouponChange,
 }: PromoCodeFormProps) {
   return (
-    <div className="glass rounded-xl border border-white/5 p-3 sm:p-3.5 space-y-1.5">
-      <label htmlFor="promo-code-input" className="text-[11px] text-text-secondary font-semibold">Promo Code</label>
+    <div className="space-y-1.5">
       <form onSubmit={onApplyCoupon} className="flex gap-2">
         <input
           id="promo-code-input"
           type="text"
           value={couponCode}
           onChange={onCouponChange}
-          placeholder="Enter code"
-          className="flex-1 h-9 sm:h-10 px-3 rounded-lg bg-background border border-white/10 text-xs sm:text-sm font-mono uppercase text-white focus:outline-none focus:border-accent-purple transition-colors"
+          placeholder="Promo code (optional)"
+          aria-label="Promo code"
+          className="flex-1 h-9 px-3 rounded-lg bg-white/5 border border-white/10 text-xs font-mono uppercase text-white placeholder:text-text-muted placeholder:font-sans focus:outline-none focus:border-accent-purple transition-colors"
         />
         {!couponApplied ? (
           <button
             type="submit"
             disabled={!couponCode.trim()}
-            className="h-9 sm:h-10 px-4 sm:px-5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 font-bold text-xs text-white transition-all disabled:opacity-40 cursor-pointer"
+            className="h-9 px-3.5 rounded-lg bg-white/10 hover:bg-white/15 border border-white/10 font-semibold text-xs text-white transition-all disabled:opacity-40 cursor-pointer shrink-0"
           >
             Apply
           </button>
@@ -47,7 +47,7 @@ export function PromoCodeForm({
           <button
             type="button"
             onClick={onRemoveCoupon}
-            className="h-9 sm:h-10 px-3.5 rounded-lg border border-red-500/30 text-red-400 hover:bg-red-500/10 font-bold text-xs transition-all flex items-center gap-1.5 cursor-pointer"
+            className="h-9 px-3 rounded-lg border border-red-500/30 text-red-400 hover:bg-red-500/10 font-semibold text-xs transition-all flex items-center gap-1 cursor-pointer shrink-0"
           >
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -59,16 +59,13 @@ export function PromoCodeForm({
 
       {/* Coupon Applied Details Block */}
       {couponApplied && (
-        <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-3 mt-3 flex items-start gap-3">
-          <span className="text-emerald-400 text-lg">
-            <svg className="w-5 h-5 text-emerald-400 inline-block align-text-top" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M7 7h.01M6 20a1 1 0 001-1v-2.586a1 1 0 01.293-.707l7.586-7.586a1 1 0 000-1.414l-4-4a1 1 0 00-1.414 0L2.293 11.293A1 1 0 012 12v6a2 2 0 002 2h2z" />
-            </svg>
-          </span>
-          <div>
-            <div className="text-emerald-400 font-bold text-sm">Coupon Applied</div>
-            <div className="text-text-secondary text-xs mt-0.5">Code: <span className="font-mono text-white font-bold">{couponCode}</span></div>
-            <div className="text-emerald-400/80 text-[10px] mt-1 italic">Discount details will be calculated at checkout.</div>
+        <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-2.5 flex items-start gap-2">
+          <svg className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+          </svg>
+          <div className="text-[11px] leading-tight">
+            <div className="text-emerald-400 font-semibold">Code applied: <span className="font-mono text-white">{couponCode}</span></div>
+            <div className="text-emerald-400/80 text-[10px] mt-0.5">Discount calculated at checkout</div>
           </div>
         </div>
       )}

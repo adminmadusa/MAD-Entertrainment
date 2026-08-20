@@ -148,28 +148,55 @@ export function ProfileCompletionForm({
         </FormField>
       </div>
 
-      <div className="space-y-3">
-        <Button
-          type="submit"
-          variant="primary"
-          fullWidth
-          className="py-3.5 rounded-xl font-bold tracking-wide shadow-lg shadow-accent-purple/20 hover:shadow-accent-purple/40 active:scale-95 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-          disabled={isPending}
-          isLoading={isPending}
-        >
-          {mode === 'edit' ? 'Save Changes' : 'Continue'}
-        </Button>
-
-        {onCancel && (
-          <div className="text-center pt-1">
-            <button
-              type="button"
-              onClick={onCancel}
+      <div className="pt-2">
+        {mode === 'edit' ? (
+          <div className="flex flex-col-reverse sm:flex-row items-center gap-3">
+            {onCancel && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onCancel}
+                disabled={isPending}
+                className="w-full sm:w-auto px-6 py-3 rounded-xl border border-white/10 text-white hover:bg-white/5 font-semibold text-xs min-h-[44px]"
+              >
+                Cancel
+              </Button>
+            )}
+            <Button
+              type="submit"
+              variant="primary"
+              className="w-full sm:flex-1 py-3 rounded-xl font-bold tracking-wide shadow-lg shadow-accent-purple/20 hover:shadow-accent-purple/40 active:scale-95 transition-all duration-200 min-h-[44px]"
               disabled={isPending}
-              className="text-xs text-text-muted hover:text-white transition-colors duration-200 py-2 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent-purple rounded-md px-1"
+              isLoading={isPending}
             >
-              {mode === 'edit' ? 'Cancel' : 'Cancel and Log Out'}
-            </button>
+              Save Changes
+            </Button>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            <Button
+              type="submit"
+              variant="primary"
+              fullWidth
+              className="py-3.5 rounded-xl font-bold tracking-wide shadow-lg shadow-accent-purple/20 hover:shadow-accent-purple/40 active:scale-95 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+              disabled={isPending}
+              isLoading={isPending}
+            >
+              Continue
+            </Button>
+
+            {onCancel && (
+              <div className="text-center pt-1">
+                <button
+                  type="button"
+                  onClick={onCancel}
+                  disabled={isPending}
+                  className="text-xs text-text-muted hover:text-white transition-colors duration-200 py-2 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent-purple rounded-md px-1"
+                >
+                  Cancel and Log Out
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>

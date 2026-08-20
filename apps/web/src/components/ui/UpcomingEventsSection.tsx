@@ -292,12 +292,12 @@ export const UpcomingEventsSection = memo(function UpcomingEventsSection({
 
   return (
     <section
-      className="pt-6 sm:pt-8 pb-12 sm:pb-16 overflow-hidden"
+      className="pt-4 sm:pt-6 pb-8 sm:pb-12 overflow-hidden"
       aria-labelledby="upcoming-events-heading"
     >
       <div className="container-mad">
         <Reveal>
-          <div className="flex items-end justify-between mb-6 sm:mb-8">
+          <div className="flex items-end justify-between mb-4 sm:mb-6">
             <div>
               <p className="text-accent-purple text-xs sm:text-sm font-semibold uppercase tracking-wider mb-1">
                 Don&apos;t Miss Out

@@ -305,12 +305,23 @@ Before editing, present:
 
 # 8. REPOSITORY HYGIENE, FILE SIZES & SECURITY RULES
 
-## File Size Governance
-* **Component**: 0–300 lines (301–500: Review Required, 701+: Refactor Required, 1000+: PR Blocked)
-* **Hook**: 0–250 lines
-* **Schema**: 0–300 lines
-* **Controller**: 0–200 lines
-* **Service**: 0–500 lines (501–700: Review Required, 701+: Refactor Required)
+## File Size & Code Quality Governance (SSOT)
+Canonical configuration SSOT: [`scripts/governance/core/governance.config.ts`](scripts/governance/core/governance.config.ts) (enforced automatically in CI and pre-merge via `CodeQualityValidator` and `pnpm run governance:docs`).
+
+### Automated Thresholds & CI Enforcement Rules:
+* **UI Component / Page (`VAL-QUAL-001`)**: **0–300 lines** (`FAIL_BUILD` if exceeded)
+* **Custom Hook (`VAL-QUAL-002`)**: **0–250 lines** (`FAIL_BUILD` if exceeded)
+* **API Controller (`VAL-QUAL-003`)**: **0–200 lines** (`FAIL_BUILD` if exceeded)
+* **Backend Service (`VAL-QUAL-004`)**: **0–500 lines** (`FAIL_BUILD` if exceeded)
+* **Schema / Types (`VAL-QUAL-005`)**: **0–300 lines** (`FAIL_BUILD` if exceeded)
+* **Test Suite (`VAL-QUAL-006`)**: **0–800 lines** (`FAIL_BUILD` if exceeded; tests must be split by domain/behavior)
+* **Function Complexity (`VAL-QUAL-007`)**: Max cyclomatic complexity **15** (`WARN`)
+* **State Overload (`VAL-QUAL-008`)**: Max **10** `useState`/`useEffect` hooks per component (`WARN`)
+
+### Exception Governance Rules:
+1. **Explicit Registry**: Legacy files exceeding limits must be registered in `codeQuality.exceptions` inside `governance.config.ts`.
+2. **Ceiling Freeze**: A registered exception freezes the file's line ceiling. The file **cannot grow by even 1 line**.
+3. **Time-Bound**: Every exception has a mandatory `expiresAt` ISO date. Expired exceptions automatically trigger a `FAIL_BUILD`.
 
 ## Code Cleanliness (Zero Tolerance)
 The repository must remain clean after every implementation. The following are strictly forbidden:

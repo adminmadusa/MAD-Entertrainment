@@ -2,7 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import Image from 'next/image';
+import { ImageWrapper } from '@/components/common/ImageWrapper';
 import Link from 'next/link';
 import { useState } from 'react';
 
@@ -119,7 +119,7 @@ export default function DJsPage() {
                       {/* Image */}
                       <div className="aspect-[4/3] w-full overflow-hidden relative bg-white/5 flex-shrink-0">
                         {dj.profileImage?.url ? (
-                          <Image
+                          <ImageWrapper
                             src={dj.profileImage.url}
                             alt={dj.name || 'DJ Operator'}
                             fill

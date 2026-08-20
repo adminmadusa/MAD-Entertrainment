@@ -10,7 +10,8 @@ export type RuleCategory =
   | 'DOCUMENTATION'
   | 'HYGIENE'
   | 'REPOSITORY'
-  | 'INFRASTRUCTURE';
+  | 'INFRASTRUCTURE'
+  | 'CODE_QUALITY';
 
 export type RuleSeverity = 'INFO' | 'WARNING' | 'ERROR' | 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
 

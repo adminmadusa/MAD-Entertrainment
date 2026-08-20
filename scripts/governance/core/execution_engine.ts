@@ -26,6 +26,7 @@ import { CircularImportValidator } from '../validators/circular_import_validator
 import { DeepImportValidator } from '../validators/deep_import_validator';
 import { BarrelFileValidator } from '../validators/barrel_file_validator';
 import { TodoInventoryValidator } from '../validators/todo_inventory_validator';
+import { CodeQualityValidator } from '../validators/code_quality_validator';
 
 export class ExecutionEngine {
   private static initialized = false;
@@ -192,6 +193,22 @@ export class ExecutionEngine {
       supportedRules: ['VAL-HYG-007'],
       supportedFileTypes: ['.ts', '.tsx', '.js', '.jsx'],
       priority: 96,
+    });
+
+    ValidatorRegistry.registerValidator(new CodeQualityValidator(), {
+      id: 'CodeQualityValidator',
+      supportedRules: [
+        'VAL-QUAL-001',
+        'VAL-QUAL-002',
+        'VAL-QUAL-003',
+        'VAL-QUAL-004',
+        'VAL-QUAL-005',
+        'VAL-QUAL-006',
+        'VAL-QUAL-007',
+        'VAL-QUAL-008',
+      ],
+      supportedFileTypes: ['.ts', '.tsx'],
+      priority: 97,
     });
 
     // 4. Validate Registry

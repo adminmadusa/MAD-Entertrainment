@@ -22,6 +22,16 @@ interface TicketSelectionContentProps {
   checkoutTriggerRef?: React.MutableRefObject<(() => void) | null>;
   setIsPendingChange?: (isPending: boolean) => void;
   onBookingSuccess?: (bookingId: string) => void;
+  // Controlled Promo Code props
+  couponCode?: string;
+  couponApplied?: boolean;
+  couponMessage?: { type: 'success' | 'error'; text: string } | null;
+  showCelebration?: boolean;
+  setShowCelebration?: (show: boolean) => void;
+  onApplyCoupon?: (e: React.FormEvent) => void;
+  onRemoveCoupon?: () => void;
+  onCouponChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  hidePromoCodeOnDesktop?: boolean;
 }
 
 type TicketTierWithOptionalFields = EventData['ticketTiers'][number] & {
@@ -43,6 +53,15 @@ export function TicketSelectionContent({
   checkoutTriggerRef,
   setIsPendingChange,
   onBookingSuccess,
+  couponCode: propCouponCode,
+  couponApplied: propCouponApplied,
+  couponMessage: propCouponMessage,
+  showCelebration: propShowCelebration,
+  setShowCelebration: propSetShowCelebration,
+  onApplyCoupon: propOnApplyCoupon,
+  onRemoveCoupon: propOnRemoveCoupon,
+  onCouponChange: propOnCouponChange,
+  hidePromoCodeOnDesktop = false,
 }: TicketSelectionContentProps) {
   const router = useRouter();
   const { isAuthenticated } = useAuth();
@@ -52,11 +71,44 @@ export function TicketSelectionContent({
   const [sessionToken, setSessionToken] = useState('');
   const [sessionError, setSessionError] = useState(false);
   const [quantities, setQuantities] = useState<Record<string, number>>({});
-  const [couponCode, setCouponCode] = useState('');
-  const [couponApplied, setCouponApplied] = useState(false);
-  const [couponMessage, setCouponMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
-  const [showCelebration, setShowCelebration] = useState(false);
+  const [internalCouponCode, setInternalCouponCode] = useState('');
+  const [internalCouponApplied, setInternalCouponApplied] = useState(false);
+  const [internalCouponMessage, setInternalCouponMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [internalShowCelebration, setInternalShowCelebration] = useState(false);
   const [error, setError] = useState('');
+
+  const couponCode = propCouponCode !== undefined ? propCouponCode : internalCouponCode;
+  const couponApplied = propCouponApplied !== undefined ? propCouponApplied : internalCouponApplied;
+  const couponMessage = propCouponMessage !== undefined ? propCouponMessage : internalCouponMessage;
+  const showCelebration = propShowCelebration !== undefined ? propShowCelebration : internalShowCelebration;
+  const setShowCelebration = propSetShowCelebration || setInternalShowCelebration;
+
+  const handleInternalApplyCoupon = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!internalCouponCode.trim()) return;
+    setInternalCouponApplied(true);
+    setInternalCouponMessage(null);
+    setInternalShowCelebration(true);
+    setError('');
+  };
+
+  const handleInternalRemoveCoupon = () => {
+    setInternalCouponCode('');
+    setInternalCouponApplied(false);
+    setInternalCouponMessage(null);
+  };
+
+  const handleInternalCouponChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInternalCouponCode(e.target.value);
+    if (internalCouponApplied) {
+      setInternalCouponApplied(false);
+      setInternalCouponMessage(null);
+    }
+  };
+
+  const handleApplyCoupon = propOnApplyCoupon || handleInternalApplyCoupon;
+  const handleRemoveCoupon = propOnRemoveCoupon || handleInternalRemoveCoupon;
+  const handleCouponChange = propOnCouponChange || handleInternalCouponChange;
 
   // Setup signed guest session token — extracted for retry support
   const initGuestSession = useCallback(() => {
@@ -96,8 +148,12 @@ export function TicketSelectionContent({
       setError(apiError);
 
       if (apiError.toLowerCase().includes('coupon') || apiError.toLowerCase().includes('promo')) {
-        setCouponApplied(false);
-        setCouponMessage({ type: 'error', text: '⚠ Unable to apply promo code. Please check and try again.' });
+        if (propOnRemoveCoupon) {
+          propOnRemoveCoupon();
+        } else {
+          setInternalCouponApplied(false);
+          setInternalCouponMessage({ type: 'error', text: '⚠ Unable to apply promo code. Please check and try again.' });
+        }
       }
 
       if (setIsPendingChange) setIsPendingChange(false);
@@ -132,29 +188,6 @@ export function TicketSelectionContent({
       onQuantitiesChange(next, sub, totalCount);
     }
   }, [quantities, event.ticketTiers, onQuantitiesChange]);
-
-  const handleApplyCoupon = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!couponCode.trim()) return;
-    setCouponApplied(true);
-    setCouponMessage(null);
-    setShowCelebration(true);
-    setError('');
-  };
-
-  const handleRemoveCoupon = () => {
-    setCouponCode('');
-    setCouponApplied(false);
-    setCouponMessage(null);
-  };
-
-  const handleCouponChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setCouponCode(e.target.value);
-    if (couponApplied) {
-      setCouponApplied(false);
-      setCouponMessage(null);
-    }
-  };
 
   const handleCheckoutSubmit = useCallback(() => {
     setError('');
@@ -221,17 +254,19 @@ export function TicketSelectionContent({
           {Object.entries(
             event.ticketTiers.reduce<Record<string, TicketTierWithOptionalFields[]>>((acc, tier) => {
               const tierWithMeta = tier as TicketTierWithOptionalFields;
-              const groupName = tierWithMeta.groupName || 'Passes';
+              const groupName = tierWithMeta.groupName || '';
               if (!acc[groupName]) acc[groupName] = [];
               acc[groupName].push(tierWithMeta);
               return acc;
             }, {})
           ).map(([groupName, tiersInGroup]) => (
-            <div key={groupName} className="space-y-2">
-              <h3 className="text-[11px] font-bold uppercase tracking-wider text-accent-purple-light px-1">
-                {groupName}
-              </h3>
-              <div className="space-y-2">
+            <div key={groupName || 'all'} className="space-y-2">
+              {groupName && groupName.toLowerCase() !== 'passes' && (
+                <h3 className="text-[11px] font-bold uppercase tracking-wider text-accent-purple-light px-1">
+                  {groupName}
+                </h3>
+              )}
+              <div className="divide-y divide-white/10">
                 {tiersInGroup.map((tier) => {
                   const isFree = !!tier.isFree || tier.price === 0;
                   const offer = tier.offerRules;
@@ -241,92 +276,66 @@ export function TicketSelectionContent({
                   return (
                     <div
                       key={tier.tier}
-                      className="glass rounded-xl border border-white/5 p-3 sm:p-3.5 flex items-center justify-between gap-3 hover:border-white/15 transition-all"
+                      className="py-4 border-b border-white/10 last:border-b-0 flex items-center justify-between gap-4 transition-colors"
                     >
                       <div className="space-y-1 flex-1 min-w-0">
-                        <div className="flex flex-wrap items-center gap-1.5">
-                          <span className="text-xs sm:text-sm font-bold text-white truncate">{tier.name}</span>
-                          {tier.tier && (
-                            <span className="text-[9px] font-mono text-accent-purple-light uppercase px-1.5 py-0.5 bg-accent-purple/10 rounded-md border border-accent-purple/20">
-                              {tier.tier}
-                            </span>
+                        {/* Line 1: Tier Name & Price */}
+                        <div className="flex items-baseline gap-2 flex-wrap">
+                          <span className="text-sm sm:text-base font-bold text-white capitalize">{tier.name}</span>
+                          <span className="text-accent-purple-light font-bold text-sm">
+                            {isFree ? 'FREE' : formatMoney(finalPrice, currency)}
+                          </span>
+                          {discount > 0 && !isFree && (
+                            <span className="text-xs text-text-muted line-through">{formatMoney(tier.price, currency)}</span>
                           )}
                           {tier.groupSize && tier.groupSize > 1 && (
-                            <span className="text-[9px] text-emerald-400 font-semibold px-1.5 py-0.5 bg-emerald-500/10 rounded-md border border-emerald-500/20">
-                              Admits {tier.groupSize}
-                            </span>
-                          )}
-                          {isFree && (
-                            <span className="text-[9px] text-emerald-400 font-bold px-1.5 py-0.5 bg-emerald-500/15 rounded-md border border-emerald-500/30">
-                              FREE
+                            <span className="text-[11px] text-emerald-400 font-medium">
+                              · Admits {tier.groupSize}
                             </span>
                           )}
                           {offer && offer.discountType !== 'none' && (
-                            <span className="text-[9px] text-accent-pink font-semibold px-1.5 py-0.5 bg-accent-pink/10 rounded-md border border-accent-pink/20">
-                               {offer.discountType === 'percentage'
+                            <span className="text-[11px] text-accent-pink font-medium">
+                              · {offer.discountType === 'percentage'
                                  ? `${offer.discountValue}% OFF`
                                  : `${formatMoney(offer.discountValue, currency)} OFF`}
                             </span>
                           )}
                           {offer && offer.buyQty && offer.freeTicketQty && (
-                            <span className="text-[9px] text-accent-cyan font-semibold px-1.5 py-0.5 bg-accent-cyan/10 rounded-md border border-accent-cyan/20">
-                              Buy {offer.buyQty} Get {offer.freeTicketQty} Free
+                            <span className="text-[11px] text-accent-cyan font-medium">
+                              · Buy {offer.buyQty} Get {offer.freeTicketQty} Free
                             </span>
                           )}
                         </div>
-                        <p className="text-[11px] text-text-muted leading-tight line-clamp-1">
+
+                        {/* Line 2: Description & Sales End */}
+                        <p className="text-xs text-text-muted leading-tight line-clamp-2">
                           {tier.description || 'General Entry Ticket'}
-                        </p>
-                        {tier.groupSize && tier.groupSize > 1 && (
-                          <p className="text-[10px] text-emerald-400 font-medium">
-                            ✓ {tier.groupSize} individual entry passes
-                          </p>
-                        )}
-
-                        <div className="flex items-center gap-1.5 pt-0.5">
-                          {isFree ? (
-                            <span className="text-emerald-400 font-black text-xs uppercase tracking-wider">
-                              FREE
+                          {tier.availabilityWindow?.endDate && (
+                            <span className="text-accent-cyan ml-1.5">
+                              · Sales end {new Date(tier.availabilityWindow.endDate).toLocaleDateString('en-US', { timeZone: 'UTC' })}
                             </span>
-                          ) : (
-                            <>
-                              <span className="text-accent-purple-light font-black text-xs sm:text-sm">
-                                {formatMoney(finalPrice, currency)}
-                              </span>
-                              {discount > 0 && (
-                                <span className="text-[10px] text-text-muted line-through">{formatMoney(tier.price, currency)}</span>
-                              )}
-                            </>
                           )}
-                        </div>
-
-                        {tier.availabilityWindow?.endDate && (
-                          <div className="text-[9px] text-accent-cyan">
-                            Sales end {new Date(tier.availabilityWindow.endDate).toLocaleDateString('en-US', {
-                              timeZone: 'UTC',
-                            })}
-                          </div>
-                        )}
+                        </p>
                       </div>
 
                       {/* Stepper Counter */}
-                      <div className="flex items-center gap-1 bg-background border border-white/10 rounded-xl p-1 shadow-inner shrink-0">
+                      <div className="flex items-center gap-1 bg-white/5 border border-white/10 rounded-lg p-0.5 shrink-0">
                         <button
                           type="button"
                           onClick={() => handleQtyChange(tier.tier, -1)}
                           aria-label={`Decrease ${tier.name} tickets`}
-                          className="w-9 h-9 rounded-lg hover:bg-white/10 flex items-center justify-center text-white text-base font-bold active:scale-90 transition-transform focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple"
+                          className="w-8 h-8 rounded-md hover:bg-white/10 flex items-center justify-center text-white text-sm font-bold active:scale-90 transition-transform focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple cursor-pointer"
                         >
-                          -
+                          −
                         </button>
-                        <span className="w-5 text-center text-xs font-bold text-white">
+                        <span className="w-6 text-center text-xs font-bold text-white">
                           {quantities[tier.tier] || 0}
                         </span>
                         <button
                           type="button"
                           onClick={() => handleQtyChange(tier.tier, 1)}
                           aria-label={`Increase ${tier.name} tickets`}
-                          className="w-9 h-9 rounded-lg hover:bg-white/10 flex items-center justify-center text-white text-base font-bold active:scale-90 transition-transform focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple"
+                          className="w-8 h-8 rounded-md hover:bg-white/10 flex items-center justify-center text-white text-sm font-bold active:scale-90 transition-transform focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple cursor-pointer"
                         >
                           +
                         </button>
@@ -341,16 +350,18 @@ export function TicketSelectionContent({
       </div>
 
       {/* Promo Code Form & Verification */}
-      <PromoCodeForm
-        couponCode={couponCode}
-        couponApplied={couponApplied}
-        couponMessage={couponMessage}
-        showCelebration={showCelebration}
-        setShowCelebration={setShowCelebration}
-        onApplyCoupon={handleApplyCoupon}
-        onRemoveCoupon={handleRemoveCoupon}
-        onCouponChange={handleCouponChange}
-      />
+      <div className={hidePromoCodeOnDesktop ? 'block md:hidden' : 'block'}>
+        <PromoCodeForm
+          couponCode={couponCode}
+          couponApplied={couponApplied}
+          couponMessage={couponMessage}
+          showCelebration={showCelebration}
+          setShowCelebration={setShowCelebration}
+          onApplyCoupon={handleApplyCoupon}
+          onRemoveCoupon={handleRemoveCoupon}
+          onCouponChange={handleCouponChange}
+        />
+      </div>
     </div>
   );
 }

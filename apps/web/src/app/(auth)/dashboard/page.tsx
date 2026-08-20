@@ -134,7 +134,7 @@ function DashboardContent() {
 
   if (isAuthenticated && onboardingRequired) {
     return (
-      <div className="pt-16 sm:pt-20 pb-10 min-h-screen bg-background relative overflow-hidden">
+      <div className="pt-28 sm:pt-32 pb-16 min-h-screen bg-background relative overflow-hidden">
         <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-accent-purple/10 rounded-full blur-[130px] pointer-events-none" />
         <div className="absolute -bottom-10 -right-10 w-[300px] h-[300px] bg-purple-500/5 rounded-full blur-[100px] pointer-events-none" />
 
@@ -153,20 +153,30 @@ function DashboardContent() {
   }
 
   return (
-    <div className="pt-16 sm:pt-20 pb-12 min-h-screen bg-background relative overflow-hidden">
+    <div className="pt-28 sm:pt-32 pb-16 min-h-screen bg-background relative overflow-hidden">
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-accent-purple/10 rounded-full blur-[130px] pointer-events-none" />
       <div className="absolute -bottom-10 -right-10 w-[300px] h-[300px] bg-purple-500/5 rounded-full blur-[100px] pointer-events-none" />
 
-      <div className={`container-mad max-w-3xl relative z-10 px-4 space-y-6${stickyBarVisible ? ' pb-28 sm:pb-0' : ''}`}>
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div className={`container-mad max-w-5xl relative z-10 px-4 space-y-8${stickyBarVisible ? ' pb-28 sm:pb-0' : ''}`}>
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 pb-2 border-b border-white/5">
           <div className="space-y-1">
-            <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+            <h1 className="text-2xl sm:text-4xl font-black text-white tracking-tight">
               My Dashboard
             </h1>
-            <p className="text-text-secondary text-xs sm:text-sm">
-              Welcome back, <span className="text-white font-bold">{userName}</span>
+            <p className="text-text-secondary text-sm">
+              Welcome back, <span className="text-white font-semibold">{userName}</span>
             </p>
           </div>
+          {bookings.length > 0 && (
+            <div className="flex items-center gap-2">
+              <span className="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-xs text-text-secondary font-medium">
+                <span className="text-white font-bold">{upcomingBookings.length}</span> Upcoming {upcomingBookings.length === 1 ? 'Event' : 'Events'}
+              </span>
+              <span className="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-xs text-text-secondary font-medium">
+                <span className="text-white font-bold">{bookings.length}</span> Total {bookings.length === 1 ? 'Pass' : 'Passes'}
+              </span>
+            </div>
+          )}
         </div>
 
         {errorMsg && (
@@ -188,11 +198,11 @@ function DashboardContent() {
           </div>
         ) : (
           <div className="space-y-6">
-            {/* Tab Bar */}
+            {/* Clean Modern Underline Navigation Tabs */}
             <div
               role="tablist"
               aria-label="Dashboard navigation"
-              className="glass p-1 rounded-xl border border-white/5 flex gap-1 w-full sm:w-max overflow-x-auto scrollbar-none"
+              className="flex items-center gap-6 sm:gap-8 border-b border-white/10 overflow-x-auto scrollbar-none"
             >
               <button
                 type="button"
@@ -201,13 +211,23 @@ function DashboardContent() {
                 aria-controls="subtab-panel-tickets"
                 aria-selected={activeTab === 'tickets'}
                 onClick={() => handleTabChange('tickets')}
-                className={`flex-shrink-0 px-5 py-2 text-xs font-extrabold rounded-lg transition-all duration-300 min-h-[40px] flex items-center justify-center whitespace-nowrap ${
+                className={`pb-3 text-sm font-bold transition-all duration-200 relative whitespace-nowrap min-h-[44px] flex items-center gap-2 ${
                   activeTab === 'tickets'
-                    ? 'bg-accent-purple text-white shadow-md'
-                    : 'text-text-secondary hover:text-white hover:bg-white/5'
+                    ? 'text-white'
+                    : 'text-text-secondary hover:text-white'
                 }`}
               >
-                🎟️ My Tickets
+                <span>My Tickets</span>
+                {bookings.length > 0 && (
+                  <span className={`text-[11px] px-2 py-0.5 rounded-full font-bold ${
+                    activeTab === 'tickets' ? 'bg-accent-purple text-white' : 'bg-white/10 text-text-secondary'
+                  }`}>
+                    {bookings.length}
+                  </span>
+                )}
+                {activeTab === 'tickets' && (
+                  <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-accent-purple to-pink-500 rounded-full" />
+                )}
               </button>
               <button
                 type="button"
@@ -216,13 +236,16 @@ function DashboardContent() {
                 aria-controls="subtab-panel-account"
                 aria-selected={activeTab === 'account'}
                 onClick={() => handleTabChange('account')}
-                className={`flex-shrink-0 px-5 py-2 text-xs font-extrabold rounded-lg transition-all duration-300 min-h-[40px] flex items-center justify-center whitespace-nowrap ${
+                className={`pb-3 text-sm font-bold transition-all duration-200 relative whitespace-nowrap min-h-[44px] flex items-center gap-2 ${
                   activeTab === 'account'
-                    ? 'bg-accent-purple text-white shadow-md'
-                    : 'text-text-secondary hover:text-white hover:bg-white/5'
+                    ? 'text-white'
+                    : 'text-text-secondary hover:text-white'
                 }`}
               >
-                👤 Account Details
+                <span>Account Details</span>
+                {activeTab === 'account' && (
+                  <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-accent-purple to-pink-500 rounded-full" />
+                )}
               </button>
               <button
                 type="button"
@@ -231,13 +254,16 @@ function DashboardContent() {
                 aria-controls="subtab-panel-support"
                 aria-selected={activeTab === 'support'}
                 onClick={() => handleTabChange('support')}
-                className={`flex-shrink-0 px-5 py-2 text-xs font-extrabold rounded-lg transition-all duration-300 min-h-[40px] flex items-center justify-center whitespace-nowrap ${
+                className={`pb-3 text-sm font-bold transition-all duration-200 relative whitespace-nowrap min-h-[44px] flex items-center gap-2 ${
                   activeTab === 'support'
-                    ? 'bg-accent-purple text-white shadow-md'
-                    : 'text-text-secondary hover:text-white hover:bg-white/5'
+                    ? 'text-white'
+                    : 'text-text-secondary hover:text-white'
                 }`}
               >
-                ❓ Help &amp; Support
+                <span>Help &amp; Support</span>
+                {activeTab === 'support' && (
+                  <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-accent-purple to-pink-500 rounded-full" />
+                )}
               </button>
             </div>
 

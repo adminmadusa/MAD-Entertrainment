@@ -1,7 +1,7 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import Image from 'next/image';
+import { ImageWrapper } from '@/components/common/ImageWrapper';
 import Link from 'next/link';
 import { useEffect, useState, useCallback } from 'react';
 
@@ -81,7 +81,7 @@ function PopupModal({ popup, onClose }: PopupModalProps) {
       {/* Banner image — full bleed, below header */}
       {popup.image?.url && (
         <div className="relative w-full aspect-[16/7] overflow-hidden">
-          <Image
+          <ImageWrapper
             src={popup.image.url}
             alt=""
             fill

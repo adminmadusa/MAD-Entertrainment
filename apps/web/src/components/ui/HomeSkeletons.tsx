@@ -103,51 +103,54 @@ export function UpcomingEventsSkeleton() {
 export function CompletedEventsSkeleton() {
   return (
     <section
-      className="py-12 sm:py-16 overflow-hidden bg-background/20"
+      className="py-8 sm:py-12 overflow-hidden bg-background/20"
       aria-hidden="true"
     >
       <div className="container-mad">
         {/* Header Shimmer */}
-        <div className="mb-6 sm:mb-8">
-          <Skeleton className="mb-2" width={112} height={14} />
-          <Skeleton width={180} height={28} />
+        <div className="flex items-end justify-between mb-6 sm:mb-8">
+          <div>
+            <Skeleton className="mb-2" width={112} height={14} />
+            <Skeleton width={180} height={28} />
+          </div>
+          <div className="flex gap-2">
+            <Skeleton width={40} height={40} rounded="rounded-full" />
+            <Skeleton width={40} height={40} rounded="rounded-full" />
+          </div>
         </div>
 
-        {/* Grid List */}
-        <div className="max-w-5xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+        {/* Carousel Track Shimmer */}
+        <div className="flex overflow-hidden gap-3 sm:gap-4 pb-4 pt-1 px-1 -mx-1">
           {Array.from({ length: COMPLETED_EVENTS_SKELETON_COUNT }).map((_, index) => (
             <div
               key={index}
-              className="flex flex-col h-full bg-white/2 border border-white/5 rounded-2xl overflow-hidden pointer-events-none"
+              className="w-[200px] xs:w-[220px] sm:w-[240px] md:w-[260px] shrink-0 flex flex-col h-full bg-white/2 border border-white/5 rounded-2xl overflow-hidden pointer-events-none"
             >
               {/* Image Banner Shimmer */}
               <div className="aspect-[16/9] w-full relative bg-white/5 flex-shrink-0">
                 <Skeleton className="absolute inset-0" rounded={false} />
                 {/* Category Badge */}
-                <Skeleton className="absolute top-2.5 left-2.5" width={56} height={16} rounded="rounded-full" />
+                <Skeleton className="absolute top-2.5 left-2.5" width={50} height={14} rounded="rounded-full" />
                 {/* Ended Indicator */}
-                <Skeleton className="absolute top-2.5 right-2.5" width={48} height={16} rounded="rounded-full" />
+                <Skeleton className="absolute top-2.5 right-2.5" width={44} height={14} rounded="rounded-full" />
               </div>
 
               {/* Card Details Shimmer */}
-              <div className="p-2.5 sm:p-3.5 flex-grow flex flex-col justify-between bg-black/10">
-                <div className="space-y-1.5">
+              <div className="p-2.5 sm:p-3 flex-grow flex flex-col justify-between bg-black/10">
+                <div className="space-y-1">
                   {/* Date */}
-                  <Skeleton width={80} height={10} />
+                  <Skeleton width={70} height={9} />
                   {/* Title */}
-                  <Skeleton width={160} height={14} />
+                  <Skeleton width={130} height={12} />
                   {/* Description */}
-                  <div className="space-y-1">
-                    <Skeleton className="w-full" height={10} />
-                    <Skeleton className="w-4/5" height={10} />
-                  </div>
+                  <Skeleton className="w-full" height={9} />
                 </div>
               </div>
 
               {/* Action Panel Shimmer */}
-              <div className="px-2.5 py-2 sm:px-3.5 sm:py-2.5 border-t border-white/5 flex justify-between items-center bg-black/40">
-                <Skeleton width={70} height={10} />
-                <Skeleton width={80} height={28} rounded="rounded-xl" />
+              <div className="px-2.5 py-1.5 sm:px-3 sm:py-2 border-t border-white/5 flex justify-between items-center bg-black/40">
+                <Skeleton width={60} height={9} />
+                <Skeleton width={70} height={24} rounded="rounded-lg" />
               </div>
             </div>
           ))}

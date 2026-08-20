@@ -1,7 +1,7 @@
 'use client';
 
 import { AnimatePresence, motion } from 'framer-motion';
-import Image from 'next/image';
+import { ImageWrapper } from '@/components/common/ImageWrapper';
 import Link from 'next/link';
 import { useState } from 'react';
 
@@ -56,7 +56,7 @@ export function FloatingCountdown({ popup, onClose }: FloatingCountdownProps) {
         {/* Promotional Image Thumbnail */}
         {popup.image?.url && (
           <div className="relative w-16 h-16 rounded-xl overflow-hidden shrink-0 hidden sm:block border border-white/10">
-            <Image src={popup.image.url} alt="" fill className="object-cover" />
+            <ImageWrapper src={popup.image.url} alt="" fill className="object-cover" />
           </div>
         )}
 
@@ -96,7 +96,7 @@ export function FloatingCountdown({ popup, onClose }: FloatingCountdownProps) {
         {/* Banner Image */}
         {popup.image?.url && (
           <div className="relative w-full aspect-video rounded-xl overflow-hidden mb-6 border border-white/10 shadow-glow-sm">
-            <Image src={popup.image.url} alt="" fill className="object-cover" />
+            <ImageWrapper src={popup.image.url} alt="" fill className="object-cover" />
           </div>
         )}
 
