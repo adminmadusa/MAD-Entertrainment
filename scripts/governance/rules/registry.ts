@@ -8,6 +8,7 @@ import { performanceRules } from './metadata/PERFORMANCE';
 import { architectureRules } from './metadata/ARCHITECTURE';
 import { docRules } from './metadata/DOCUMENTATION';
 import { hygieneRules } from './metadata/HYGIENE';
+import { codeQualityRules } from './metadata/CODE_QUALITY';
 
 const VALID_CATEGORIES = new Set<RuleCategory>([
   'UI',
@@ -20,6 +21,7 @@ const VALID_CATEGORIES = new Set<RuleCategory>([
   'HYGIENE',
   'REPOSITORY',
   'INFRASTRUCTURE',
+  'CODE_QUALITY',
 ]);
 
 const VALID_SEVERITIES = new Set<RuleSeverity>([
@@ -72,6 +74,7 @@ export class RuleRegistry {
       ...architectureRules,
       ...docRules,
       ...hygieneRules,
+      ...codeQualityRules,
     ];
 
     const names = new Set<string>();

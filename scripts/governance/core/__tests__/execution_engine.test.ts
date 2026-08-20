@@ -30,7 +30,7 @@ describe('Governance Rule Execution Engine', () => {
   it('should initialize and register all standard validators successfully', () => {
     ExecutionEngine.initialize();
     const allValidators = ValidatorRegistry.getAllValidators();
-    expect(allValidators.length).toBe(21);
+    expect(allValidators.length).toBe(22);
 
     const markdownVal = ValidatorRegistry.getValidator('MarkdownValidator');
     expect(markdownVal).toBeDefined();
