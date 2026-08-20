@@ -175,8 +175,7 @@ export const governanceConfig = {
       // Custom Hooks (all compliant!)
 
       // UI Components
-      { filePath: 'apps/web/src/app/(auth)/dashboard/page.tsx', ruleId: 'VAL-QUAL-001', maxLinesCeiling: 395, expiresAt: '2026-09-30', owner: 'Web UI Team', reason: 'Customer profile dashboard' },
-      { filePath: 'apps/web/src/components/booking/TicketSelectionContent.tsx', ruleId: 'VAL-QUAL-001', maxLinesCeiling: 370, expiresAt: '2026-09-30', owner: 'Web Booking Team', reason: 'Ticket selection drawer view' },
+
       { filePath: 'apps/web/src/components/ui/UpcomingEventsSection.tsx', ruleId: 'VAL-QUAL-001', maxLinesCeiling: 330, expiresAt: '2026-09-30', owner: 'Web UI Team', reason: 'Homepage upcoming events carousel' },
 
       // Controllers
