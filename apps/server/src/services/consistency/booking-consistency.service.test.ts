@@ -1,21 +1,15 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-import { BookingStatus, PaymentStatus, ReservationStatus, SeatStatus, NotificationType } from '@mad/shared';
+import { BookingStatus, ReservationStatus, SeatStatus } from '@mad/shared';
 
 import { Booking } from '../../models/booking.schema';
 import { Event } from '../../models/event.schema';
-import { Notification } from '../../models/notification.schema';
 import { Payment } from '../../models/payment.schema';
-import { Refund } from '../../models/refund.schema';
 import { Reservation } from '../../models/reservation.schema';
 import { SeatLayout } from '../../models/seat-layout.schema';
 import { Ticket } from '../../models/ticket.schema';
 import { ConsistencyService } from '../consistency.service';
 import { BookingConsistencyService } from './booking-consistency.service';
-import { NotificationConsistencyService } from './notification-consistency.service';
-import { PaymentConsistencyService } from './payment-consistency.service';
-import { RefundConsistencyService } from './refund-consistency.service';
-import { PaymentService } from '../public/payment.service';
 import { QueueService } from '../queue.service';
 import { ReservationService } from '../reservation.service';
 
