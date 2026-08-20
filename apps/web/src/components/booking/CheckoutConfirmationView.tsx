@@ -1,13 +1,21 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useState } from 'react';
 
+import { useAuthModal } from '@/providers/AuthModalProvider';
+import { useAuth } from '@/providers/AuthProvider';
 import { formatMoney } from '@mad/shared';
-import type { Booking, Event } from '@mad/types';
+import type { Booking, Event, Ticket } from '@mad/types';
 
 import { TicketSummaryItem } from './shared/TicketSummaryItem';
+
+const EntryPassGrid = dynamic(
+  () => import('./shared/EntryPassGrid').then((mod) => mod.EntryPassGrid),
+  { ssr: false }
+);
 
 export interface CheckoutConfirmationViewProps {
   booking: Booking;
@@ -15,6 +23,8 @@ export interface CheckoutConfirmationViewProps {
   isModal: boolean;
   currency: string;
   onViewTickets: () => void;
+  tickets?: Ticket[];
+  ticketsReady?: boolean;
 }
 
 export function CheckoutConfirmationView({
@@ -23,7 +33,11 @@ export function CheckoutConfirmationView({
   isModal,
   currency,
   onViewTickets,
+  tickets = [],
+  ticketsReady: _ticketsReady,
 }: CheckoutConfirmationViewProps) {
+  const { isAuthenticated } = useAuth();
+  const { openAuthModal } = useAuthModal();
   const [copied, setCopied] = useState(false);
 
   const handleCopy = () => {
@@ -179,10 +193,48 @@ export function CheckoutConfirmationView({
             </li>
             <li className="flex items-start gap-2">
               <span className="text-accent-purple-light font-bold">✓</span>
-              <span>Present your digital QR pass from My Tickets at the gate</span>
+              <span>Present your digital QR pass at the event gate</span>
             </li>
           </ul>
         </div>
+
+        {/* Guest Account Linking & Verification Prompt */}
+        {!isAuthenticated && (
+          <div className="glass rounded-2xl border border-accent-purple/30 bg-accent-purple/5 p-4 text-left space-y-3">
+            <div className="flex items-start gap-3">
+              <div className="w-8 h-8 rounded-full bg-accent-purple/20 flex items-center justify-center shrink-0 text-accent-purple-light text-base">
+                🔒
+              </div>
+              <div className="space-y-0.5 min-w-0">
+                <h4 className="text-white font-bold text-xs">Save tickets to your account</h4>
+                <p className="text-text-secondary text-[11px] leading-relaxed">
+                  Sign in with Google or a 6-digit passcode to access and manage these tickets anytime on any device.
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => openAuthModal({ returnTo: `/dashboard?tab=tickets&ref=${booking.bookingId}` })}
+              className="w-full py-2.5 px-4 btn-gradient text-white font-bold text-xs rounded-xl transition-all shadow-md flex items-center justify-center gap-2 hover:opacity-95 active:scale-98 cursor-pointer"
+            >
+              <span>Sign In with Google / OTP to Save Tickets</span>
+              <span>→</span>
+            </button>
+          </div>
+        )}
+
+        {/* Embedded Entry Passes (Visible immediately for active session) */}
+        {tickets && tickets.length > 0 && (
+          <div id="confirmation-tickets-section" className="space-y-3 pt-2 text-left">
+            <div className="flex items-center justify-between">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-accent-purple-light">
+                Your Entry Passes ({tickets.length})
+              </h4>
+              <span className="text-[10px] text-text-muted">Present at gate</span>
+            </div>
+            <EntryPassGrid tickets={tickets} />
+          </div>
+        )}
 
         {/* Action Buttons: Primary & Secondary */}
         <div className="space-y-2.5 pt-1 w-full">
@@ -203,7 +255,7 @@ export function CheckoutConfirmationView({
                 d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"
               />
             </svg>
-            <span>View My Tickets</span>
+            <span>{isAuthenticated ? 'View in My Tickets' : 'View Pass QR Codes'}</span>
           </button>
 
           <Link

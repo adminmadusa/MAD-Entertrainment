@@ -6,6 +6,7 @@ import { AppError } from '../../../middleware/error.middleware';
 import { AuthService } from '../../../services/public/auth.service';
 import { BookingRecoveryService } from '../../../services/public/booking-recovery.service';
 import { auditLog } from '../../../utils/audit';
+import { setXsrfCookie } from '../../../utils/cookie';
 import { requiresOnboarding } from '../../../utils/user';
 
 const maskTransactionId = (id: string): string => {
@@ -163,9 +164,12 @@ export async function verifyRecoveredBookingOTP(
       httpOnly: true,
       secure: isProd,
       sameSite: isProd ? 'none' : 'lax',
-      domain: env.COOKIE_DOMAIN || (isProd ? '.esparex.in' : undefined),
+      domain: env.COOKIE_DOMAIN || undefined,
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
+
+    // Set CSRF Token cookie
+    setXsrfCookie(res, result.csrfToken);
 
     auditLog({
       action: 'TRANSACTION_RECOVERY_VERIFY_SUCCESS',

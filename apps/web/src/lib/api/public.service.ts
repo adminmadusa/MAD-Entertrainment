@@ -181,7 +181,7 @@ export async function publicGetDJBySlug(slug: string): Promise<DJOperator> {
 
 export async function publicCreateBooking(
   payload: ReserveTicketsInput,
-  sessionToken: string
+  sessionToken?: string
 ): Promise<Booking> {
   const { data } = await apiClient.post<{ data: Booking }>('/bookings', payload, {
     headers: getGuestSessionHeaders(sessionToken),
@@ -192,7 +192,7 @@ export async function publicCreateBooking(
 export async function publicSaveCheckoutDetails(
   bookingId: string,
   payload: CheckoutDetailsInput,
-  sessionToken: string
+  sessionToken?: string
 ): Promise<Booking> {
   const { data } = await apiClient.put<{ data: Booking }>(`/bookings/${bookingId}/checkout-details`, payload, {
     headers: getGuestSessionHeaders(sessionToken),

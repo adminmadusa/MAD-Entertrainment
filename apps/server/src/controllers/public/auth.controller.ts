@@ -71,7 +71,7 @@ export class AuthController {
       httpOnly: true,
       secure: isProd,
       sameSite: isProd ? 'none' : 'lax', // Allows cross-domain cookies between Vercel and Render in production
-      domain: env.COOKIE_DOMAIN || (isProd ? '.esparex.in' : undefined),
+      domain: env.COOKIE_DOMAIN || undefined,
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days TTL
     });
 
@@ -116,7 +116,7 @@ export class AuthController {
       httpOnly: true,
       secure: isProd,
       sameSite: isProd ? 'none' : 'lax',
-      domain: env.COOKIE_DOMAIN || (isProd ? '.esparex.in' : undefined),
+      domain: env.COOKIE_DOMAIN || undefined,
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days TTL
     });
 
@@ -162,7 +162,7 @@ export class AuthController {
       httpOnly: true,
       secure: isProd,
       sameSite: isProd ? 'none' : 'lax',
-      domain: env.COOKIE_DOMAIN || (isProd ? '.esparex.in' : undefined),
+      domain: env.COOKIE_DOMAIN || undefined,
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days TTL
     });
 
@@ -192,7 +192,7 @@ export class AuthController {
       httpOnly: true,
       secure: isProd,
       sameSite: isProd ? 'none' : 'lax',
-      domain: env.COOKIE_DOMAIN || (isProd ? '.esparex.in' : undefined),
+      domain: env.COOKIE_DOMAIN || undefined,
     });
 
     // Clear CSRF Token cookie
