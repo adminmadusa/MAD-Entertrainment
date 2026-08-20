@@ -44,9 +44,10 @@ export const createRefund = async (data: {
   } catch (err: any) {
     const isDuplicateKey = err.code === 11000 || err.code === '11000' || err.message?.includes('E11000');
     if (isDuplicateKey) {
-      RefundAuditService.logDuplicateRefundRace(idempotencyKey);
+      const cleanKey = String(idempotencyKey);
+      RefundAuditService.logDuplicateRefundRace(cleanKey);
       const existing = await Refund.findOne({
-        idempotencyKey,
+        idempotencyKey: cleanKey,
       });
       if (existing) {
         return existing;
@@ -63,10 +64,12 @@ export const getRefunds = async (
   sortField?: string,
   sortOrder?: 'asc' | 'desc'
 ): Promise<{ refunds: IRefund[]; total: number; totalPages: number }> => {
-  const skip = (page - 1) * limit;
+  const safePage = Math.max(1, page);
+  const safeLimit = Math.max(1, Math.min(100, limit));
+  const skip = (safePage - 1) * safeLimit;
   const filter: Record<string, any> = {};
-  if (status) {
-    filter.status = status;
+  if (typeof status === 'string' && status.trim()) {
+    filter.status = status.trim().toLowerCase();
   }
 
   const SORT_FIELDS: Record<string, string> = {
@@ -90,12 +93,12 @@ export const getRefunds = async (
     .populate('paymentId', 'gatewayPaymentId amount status gateway')
     .sort(sortOptions)
     .skip(skip)
-    .limit(limit);
+    .limit(safeLimit);
 
   return {
     refunds,
     total,
-    totalPages: Math.ceil(total / limit),
+    totalPages: Math.ceil(total / safeLimit),
   };
 };
 

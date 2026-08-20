@@ -38,11 +38,16 @@ export class AdminUserService {
         ];
       }
 
-      // Handle sorting
-      const sortStage: any = {};
-      const sortCol = sortField || 'createdAt';
-      const sortDirection = sortOrder === 'asc' ? 1 : -1;
-      sortStage[sortCol] = sortDirection;
+      // Handle sorting using strict whitelist mapping
+      const REGISTERED_SORT_MAP: Record<string, string> = {
+        name: 'name',
+        email: 'email',
+        createdAt: 'createdAt',
+        lastLogin: 'lastLogin',
+      };
+      const sortCol = (sortField && REGISTERED_SORT_MAP[sortField]) || 'createdAt';
+      const sortDirection: 1 | -1 = sortOrder === 'asc' ? 1 : -1;
+      const sortStage: Record<string, 1 | -1> = { [sortCol]: sortDirection };
 
       const total = await UserModel.countDocuments(matchStage);
       const users = await UserModel.aggregate([
@@ -59,21 +64,15 @@ export class AdminUserService {
           },
         },
         {
-          $addFields: {
-            totalBookings: { $size: '$bookings' },
-          },
-        },
-        {
           $project: {
-            _id: 1,
             name: 1,
             email: 1,
             mobileNumber: 1,
             googleId: 1,
-            isActive: 1,
-            lastLogin: 1,
-            totalBookings: 1,
             createdAt: 1,
+            lastLogin: 1,
+            isActive: 1,
+            totalBookings: { $size: '$bookings' },
           },
         },
       ]);
@@ -85,10 +84,10 @@ export class AdminUserService {
         phone: user.mobileNumber || '—',
         accountType: 'registered',
         loginVia: user.googleId ? 'google' : 'otp',
-        isActive: user.isActive ?? true,
-        lastLogin: user.lastLogin || null,
         totalBookings: user.totalBookings,
         createdAt: user.createdAt,
+        lastLogin: user.lastLogin || null,
+        isActive: user.isActive ?? true,
       }));
 
       return {
@@ -130,14 +129,21 @@ export class AdminUserService {
       ]);
       const total = countResult[0]?.total || 0;
 
-      // Group unique guest emails, sorted by newest booking details first
-      const sortCol = sortField || 'createdAt';
-      const sortDirection = sortOrder === 'asc' ? 1 : -1;
+      // Handle guest sorting using strict whitelist mapping
+      const GUEST_SORT_MAP: Record<string, string> = {
+        name: 'guestName',
+        email: '_id',
+        createdAt: 'createdAt',
+        lastLogin: 'createdAt',
+      };
+      const guestSortKey = (sortField && GUEST_SORT_MAP[sortField]) || 'createdAt';
+      const guestSortDirection: 1 | -1 = sortOrder === 'asc' ? 1 : -1;
 
-      // Pipeline matching, grouping, sorting and paginating
+      // Fetch aggregated guest customers
       const guests = await Booking.aggregate([
         { $match: matchStage },
-        { $sort: { createdAt: -1 } }, // Sort bookings descending so we group newest details
+        // Sort individual bookings by date descending first so $first picks the latest info
+        { $sort: { createdAt: -1 } },
         {
           $group: {
             _id: '$guestEmail',
@@ -152,7 +158,7 @@ export class AdminUserService {
         // Sort the grouped results
         {
           $sort: {
-            [sortCol === 'name' ? 'guestName' : sortCol === 'email' ? '_id' : sortCol]: sortDirection,
+            [guestSortKey]: guestSortDirection,
           },
         },
         { $skip: skip },
