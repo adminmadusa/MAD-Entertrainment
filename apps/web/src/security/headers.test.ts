@@ -44,9 +44,10 @@ describe('Web Next.js Security Headers & CSP Suite', () => {
   });
 
   it('includes strict Content-Security-Policy and HSTS in production mode', async () => {
-    const originalEnv = process.env.NODE_ENV;
+    const envObj = process.env as Record<string, string | undefined>;
+    const originalEnv = envObj.NODE_ENV;
     try {
-      process.env.NODE_ENV = 'production';
+      envObj.NODE_ENV = 'production';
 
       if (typeof nextConfig.headers !== 'function') {
         throw new Error('nextConfig.headers is not defined');
@@ -73,7 +74,7 @@ describe('Web Next.js Security Headers & CSP Suite', () => {
       expect(csp).toContain("https://accounts.google.com");
       expect(csp).toContain("https://api.razorpay.com");
     } finally {
-      process.env.NODE_ENV = originalEnv;
+      envObj.NODE_ENV = originalEnv;
     }
   });
 });
