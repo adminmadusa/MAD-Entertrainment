@@ -1,4 +1,4 @@
-import crypto from 'crypto';
+import jwt from 'jsonwebtoken';
 import qrcode from 'qrcode';
 
 import { BookingStatus } from '@mad/shared';
@@ -10,33 +10,23 @@ import { Ticket } from '../../models/ticket.schema';
 import { PublicBookingService } from './booking.service';
 
 // ─────────────────────────────────────────────
-// Stateless HMAC QR Token Helpers
-// Token format: <expiryTimestamp>.<signature>
-// Signature: HMAC-SHA256(ticketId + ":" + expiryTimestamp, JWT_SESSION_SECRET)
+// Stateless JWT QR Token Helpers
 // ─────────────────────────────────────────────
 
 /**
- * Generates a stateless HMAC-signed query token for a ticketId.
+ * Generates a stateless JWT query token for a ticketId.
  * The token is appended to qrCodeImage URLs so browser <img> requests
  * can be authenticated without Authorization headers.
  * TTL: 5 minutes from generation.
  */
 export function generateTicketQrToken(ticketId: string): string {
   const env = getEnv();
-  const expiryTimestamp = Date.now() + 5 * 60 * 1000; // 5 minutes TTL
-  const dataToSign = `${ticketId}:${expiryTimestamp}`;
-
-  const signature = crypto
-    .createHmac('sha256', env.JWT_SESSION_SECRET)
-    .update(dataToSign)
-    .digest('hex');
-
-  return `${expiryTimestamp}.${signature}`;
+  return jwt.sign({ ticketId }, env.JWT_SESSION_SECRET, { expiresIn: '5m' });
 }
 
 /**
  * Constructs the full relative QR code image URL for a ticketId.
- * Generates a fresh 5-minute HMAC token and embeds it as a ?token= query param.
+ * Generates a fresh 5-minute signed JWT token and embeds it as a ?token= query param.
  * This is the single source of truth for the qrCodeImage URL format.
  */
 export function buildQrCodeImageUrl(ticketId: string): string {
@@ -45,41 +35,16 @@ export function buildQrCodeImageUrl(ticketId: string): string {
 }
 
 /**
- * Verifies a stateless HMAC-signed token for a ticketId.
- * Returns true only if the token is well-formed, not expired, and
- * the signature matches exactly (timing-safe comparison).
+ * Verifies a stateless signed JWT token for a ticketId.
+ * Returns true only if the token is valid, not expired, and matches ticketId.
  * Returns false on any validation failure — never throws.
  */
 export function verifyTicketQrToken(ticketId: string, token: string): boolean {
-  if (!token) return false;
-
-  const parts = token.split('.');
-  if (parts.length !== 2) return false;
-
-  const [expiryStr, signature] = parts;
-  const expiryTimestamp = parseInt(expiryStr, 10);
-
-  if (isNaN(expiryTimestamp) || expiryTimestamp < Date.now()) {
-    return false;
-  }
-
+  if (!token || typeof token !== 'string') return false;
   try {
     const env = getEnv();
-    const dataToSign = `${ticketId}:${expiryTimestamp}`;
-
-    const expectedSignature = crypto
-      .createHmac('sha256', env.JWT_SESSION_SECRET)
-      .update(dataToSign)
-      .digest('hex');
-
-    const signatureBuffer = Buffer.from(signature, 'hex');
-    const expectedSignatureBuffer = Buffer.from(expectedSignature, 'hex');
-
-    if (signatureBuffer.length !== expectedSignatureBuffer.length) {
-      return false;
-    }
-
-    return crypto.timingSafeEqual(signatureBuffer, expectedSignatureBuffer);
+    const payload = jwt.verify(token, env.JWT_SESSION_SECRET) as { ticketId?: string };
+    return payload.ticketId === ticketId;
   } catch {
     return false;
   }
