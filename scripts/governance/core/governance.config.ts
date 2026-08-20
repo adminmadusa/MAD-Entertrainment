@@ -194,8 +194,7 @@ export const governanceConfig = {
       { filePath: 'apps/server/src/controllers/public/auth.controller.ts', ruleId: 'VAL-QUAL-003', maxLinesCeiling: 365, expiresAt: '2026-09-30', owner: 'Server Team', reason: 'Auth controller' },
       { filePath: 'apps/server/src/controllers/public/booking/booking-recovery.controller.ts', ruleId: 'VAL-QUAL-003', maxLinesCeiling: 225, expiresAt: '2026-09-30', owner: 'Server Team', reason: 'Booking recovery controller' },
 
-      // Services
-      { filePath: 'apps/server/src/services/admin/booking/booking-query.service.ts', ruleId: 'VAL-QUAL-004', maxLinesCeiling: 520, expiresAt: '2026-10-31', owner: 'Server Team', reason: 'Admin booking query service' },
+      // Services (all compliant!)
 
       // Schemas & Types
       { filePath: 'packages/types/src/index.ts', ruleId: 'VAL-QUAL-005', maxLinesCeiling: 560, expiresAt: '2026-10-31', owner: 'Platform Team', reason: 'Shared root TypeScript definitions' },
