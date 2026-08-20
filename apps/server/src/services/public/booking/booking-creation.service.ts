@@ -35,7 +35,10 @@ export class BookingCreationService {
     sessionId: string | undefined,
     userId?: string
   ): Promise<IBooking> {
-    const event = await Event.findById(data.eventId);
+    const safeEventId = String(data.eventId);
+    const event = await Event.findById(
+      Types.ObjectId.isValid(safeEventId) ? new Types.ObjectId(safeEventId) : safeEventId
+    );
     if (!event || event.status !== 'published' || event.isDeleted === true) {
       throw AppError.notFound('Event not found or not published');
     }

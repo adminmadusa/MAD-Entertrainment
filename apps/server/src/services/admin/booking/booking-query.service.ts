@@ -23,15 +23,18 @@ export const getBookings = async (
   const filter: any = {};
 
   if (status) {
-    filter.status = status;
+    filter.status = String(status);
   }
 
   if (eventId) {
-    filter.eventId = eventId;
+    filter.eventId = Types.ObjectId.isValid(String(eventId))
+      ? new Types.ObjectId(String(eventId))
+      : String(eventId);
   }
 
   if (search) {
-    const searchRegex = new RegExp(search, 'i');
+    const escapedSearch = String(search).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const searchRegex = new RegExp(escapedSearch, 'i');
     filter.$or = [
       { bookingId: searchRegex },
       { guestEmail: searchRegex },

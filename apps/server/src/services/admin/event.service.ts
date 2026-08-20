@@ -1,4 +1,4 @@
-import mongoose, { type FilterQuery } from 'mongoose';
+import mongoose, { Types, type FilterQuery } from 'mongoose';
 
 import { EventStatus, EVENT_STATUS_TRANSITIONS, type EventLifecycleStatus, deriveEventCapabilities, EventLifecycle } from '@mad/shared';
 import type { BulkOperationResult } from '@mad/types';
@@ -128,7 +128,7 @@ export const createEvent = async (data: Partial<IEvent>): Promise<IEvent> => {
   }
 
   if (data.ticketProfileId) {
-    const profile = await TicketProfile.findById(data.ticketProfileId);
+    const profile = await TicketProfile.findById(String(data.ticketProfileId));
     if (profile) {
       const resolvedTiers = resolveEventTickets(
         data.title || '',
@@ -156,7 +156,7 @@ export const getEvents = async (
   const query: FilterQuery<IEvent> = { isDeleted: { $ne: true } };
 
   if (filters.status) {
-    query.status = filters.status;
+    query.status = String(filters.status);
   }
 
   if (filters.search) {
@@ -299,7 +299,7 @@ export const updateEvent = async (id: string, data: Partial<IEvent>): Promise<Ev
 
   const profileId = data.ticketProfileId !== undefined ? data.ticketProfileId : existing.ticketProfileId;
   if (profileId) {
-    const profile = await TicketProfile.findById(profileId);
+    const profile = await TicketProfile.findById(String(profileId));
     if (profile) {
       const overrides = data.ticketOverrides !== undefined ? data.ticketOverrides : existing.ticketOverrides;
       const resolvedTiers = resolveEventTickets(
@@ -340,8 +340,9 @@ export const updateEvent = async (id: string, data: Partial<IEvent>): Promise<Ev
   const posterReplaced = newPosterId && oldPosterId && oldPosterId !== newPosterId;
 
   const { eventVersion: _eventVersion, ...updateData } = data;
+  const safeId = String(id);
   const updated = await Event.findOneAndUpdate(
-    { _id: String(id), eventVersion: expectedVersion },
+    { _id: Types.ObjectId.isValid(safeId) ? new Types.ObjectId(safeId) : safeId, eventVersion: Number(expectedVersion) },
     { $set: updateData, $inc: { eventVersion: 1 } },
     { new: true }
   );
