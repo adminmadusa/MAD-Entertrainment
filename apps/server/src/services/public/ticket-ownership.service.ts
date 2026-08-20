@@ -281,16 +281,11 @@ export async function generateAuthorizedTicketQR(
     throw AppError.forbidden('Associated booking is not confirmed');
   }
 
-  if (auth.token) {
-    const isValidToken = verifyTicketQrToken(ticket.ticketId, auth.token);
-    if (!isValidToken) {
-      throw AppError.forbidden('Invalid or expired ticket QR token');
-    }
-  } else {
-    const isAuthorized = await canViewTicketQR(ticket, auth.userId, auth.sessionId);
-    if (!isAuthorized) {
-      throw AppError.forbidden('You do not have permission to view this QR code');
-    }
+  const isTokenAuthorized = verifyTicketQrToken(ticket.ticketId, String(auth.token || ''));
+  const isOwnerAuthorized = isTokenAuthorized ? true : await canViewTicketQR(ticket, auth.userId, auth.sessionId);
+
+  if (!isTokenAuthorized && !isOwnerAuthorized) {
+    throw AppError.forbidden('You do not have permission to view this QR code');
   }
 
   const qrContent = ticket.qrCode || ticket.ticketId;

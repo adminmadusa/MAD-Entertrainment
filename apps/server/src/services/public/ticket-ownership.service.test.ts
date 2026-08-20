@@ -153,7 +153,7 @@ describe('Ticket Ownership Service Tests', () => {
       } as any);
 
       await expect(generateAuthorizedTicketQR('t1', { token: 'invalid.token.123' })).rejects.toThrow(
-        'Invalid or expired ticket QR token'
+        'You do not have permission to view this QR code'
       );
     });
   });
