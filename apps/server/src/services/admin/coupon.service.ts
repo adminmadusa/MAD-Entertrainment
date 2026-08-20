@@ -43,7 +43,22 @@ export const getCouponById = async (id: string): Promise<ICoupon | null> => {
 export const updateCoupon = async (id: string, data: Partial<ICoupon>): Promise<ICoupon | null> => {
   const cleanId = String(id || '').trim();
   if (!cleanId || !Types.ObjectId.isValid(cleanId)) return null;
-  return await Coupon.findByIdAndUpdate(cleanId, data, { new: true });
+
+  const updateFields: Partial<ICoupon> = {};
+  if (data.code !== undefined) updateFields.code = String(data.code).trim().toUpperCase();
+  if (data.discountType !== undefined) updateFields.discountType = data.discountType;
+  if (data.discountValue !== undefined) updateFields.discountValue = Number(data.discountValue);
+  if (data.maxDiscount !== undefined) updateFields.maxDiscount = Number(data.maxDiscount);
+  if (data.minOrderAmount !== undefined) updateFields.minOrderAmount = Number(data.minOrderAmount);
+  if (data.validFrom !== undefined) updateFields.validFrom = new Date(data.validFrom);
+  if (data.validUntil !== undefined) updateFields.validUntil = new Date(data.validUntil);
+  if (data.usageLimit !== undefined) updateFields.usageLimit = Number(data.usageLimit);
+  if (data.usedCount !== undefined) updateFields.usedCount = Number(data.usedCount);
+  if (data.isActive !== undefined) updateFields.isActive = Boolean(data.isActive);
+  if (data.applicableEventIds !== undefined) updateFields.applicableEventIds = data.applicableEventIds;
+  if (data.applicableCategories !== undefined) updateFields.applicableCategories = data.applicableCategories;
+
+  return await Coupon.findByIdAndUpdate(cleanId, { $set: updateFields }, { new: true });
 };
 
 export const deleteCoupon = async (id: string): Promise<ICoupon | null> => {

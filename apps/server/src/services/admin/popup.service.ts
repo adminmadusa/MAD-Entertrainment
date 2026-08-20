@@ -40,7 +40,25 @@ export const updatePopup = async (
 ): Promise<IPopupCampaign | null> => {
   const cleanId = String(id || '').trim();
   if (!cleanId || !Types.ObjectId.isValid(cleanId)) return null;
-  return await PopupCampaign.findByIdAndUpdate(cleanId, payload, { new: true });
+
+  const updateFields: Partial<IPopupCampaign> = {};
+  if (payload.name !== undefined) updateFields.name = String(payload.name).trim();
+  if (payload.title !== undefined) updateFields.title = String(payload.title).trim();
+  if (payload.description !== undefined) updateFields.description = String(payload.description);
+  if (payload.image !== undefined) updateFields.image = payload.image;
+  if (payload.ctaUrl !== undefined) updateFields.ctaUrl = String(payload.ctaUrl);
+  if (payload.ctaText !== undefined) updateFields.ctaText = String(payload.ctaText);
+  if (payload.trigger !== undefined) updateFields.trigger = payload.trigger;
+  if (payload.triggerDelay !== undefined) updateFields.triggerDelay = Number(payload.triggerDelay);
+  if (payload.cooldownHours !== undefined) updateFields.cooldownHours = Number(payload.cooldownHours);
+  if (payload.priority !== undefined) updateFields.priority = Number(payload.priority);
+  if (payload.showOnPages !== undefined) updateFields.showOnPages = payload.showOnPages;
+  if (payload.isActive !== undefined) updateFields.isActive = Boolean(payload.isActive);
+  if (payload.startDate !== undefined) updateFields.startDate = new Date(payload.startDate);
+  if (payload.endDate !== undefined) updateFields.endDate = new Date(payload.endDate);
+  if (payload.linkedEvent !== undefined) updateFields.linkedEvent = payload.linkedEvent;
+
+  return await PopupCampaign.findByIdAndUpdate(cleanId, { $set: updateFields }, { new: true });
 };
 
 export const deletePopup = async (id: string): Promise<IPopupCampaign | null> => {
