@@ -1,4 +1,4 @@
-import mongoose, { Types } from 'mongoose';
+import { Types } from 'mongoose';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 // ─────────────────────────────────────────────────────────────
@@ -139,44 +139,13 @@ vi.mock('../../utils/logger', () => ({
   logger: { warn: vi.fn(), info: vi.fn(), error: vi.fn(), debug: vi.fn() },
 }));
 
-import { emitToEvent, emitToAdmin } from '../../config/socket';
 import { Booking } from '../../models/booking.schema';
 import { Coupon } from '../../models/coupon.schema';
 import { Event } from '../../models/event.schema';
-import { SeatLayout } from '../../models/seat-layout.schema';
-import { Ticket } from '../../models/ticket.schema';
-import { UserModel } from '../../models/user.schema';
-import { auditLog } from '../../utils/audit';
-import { CacheService } from '../cache.service';
 import { ReservationService } from '../reservation.service';
 import { PublicBookingService } from './booking.service';
 
-// ─────────────────────────────────────────────────────────────
-// Helpers
-// ─────────────────────────────────────────────────────────────
 
-const bookingId = new Types.ObjectId('60c72b2f9b1d8e25b8d29b01');
-
-function makeBooking(totalTickets: number, status = 'confirmed') {
-  return {
-    _id: bookingId,
-    bookingId: 'MAD-2026-ABCDE',
-    status,
-    totalTickets,
-  };
-}
-
-function makeTicket(n: number) {
-  return { _id: new Types.ObjectId(), bookingId, ticketId: `TKT-MAD-2026-ABCDE-${String(n).padStart(3, '0')}` };
-}
-
-function mockFindOne(booking: any) {
-  vi.mocked(Booking.findOne).mockReturnValue({
-    populate: vi.fn().mockReturnValue({
-      populate: vi.fn().mockResolvedValue(booking),
-    }),
-  } as any);
-}
 
 // ─────────────────────────────────────────────────────────────
 // getBookingByReference — ticketsReady

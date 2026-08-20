@@ -141,7 +141,7 @@ vi.mock('../../utils/logger', () => ({
 
 import { emitToEvent, emitToAdmin } from '../../config/socket';
 import { Booking } from '../../models/booking.schema';
-import { Coupon } from '../../models/coupon.schema';
+
 import { Event } from '../../models/event.schema';
 import { SeatLayout } from '../../models/seat-layout.schema';
 import { Ticket } from '../../models/ticket.schema';
