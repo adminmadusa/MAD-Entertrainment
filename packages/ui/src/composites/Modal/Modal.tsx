@@ -18,6 +18,7 @@ import {
   modalContentActiveStates,
   modalCloseButtonClasses,
   modalCloseIconClasses,
+  modalDragHandleClasses,
 } from './Modal.styles';
 import type { ModalProps } from './Modal.types';
 
@@ -129,6 +130,9 @@ export function Modal({
           className
         )}
       >
+        {presentation === 'bottom-sheet' && (
+          <div className={modalDragHandleClasses} aria-hidden="true" />
+        )}
         {showCloseButton && (
           <IconButton
             variant="ghost"

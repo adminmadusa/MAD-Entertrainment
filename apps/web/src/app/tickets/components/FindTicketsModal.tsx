@@ -77,9 +77,9 @@ export function FindTicketsModal({
           </div>
 
           <div className="flex items-center py-2">
-            <div className="flex-grow border-t border-border-subtle/30" />
-            <span className="mx-4 text-xs font-bold text-text-muted/40 uppercase tracking-widest">or</span>
-            <div className="flex-grow border-t border-border-subtle/30" />
+            <div className="flex-grow border-t border-border-subtle" />
+            <span className="mx-4 text-xs font-bold text-text-muted uppercase tracking-widest">or</span>
+            <div className="flex-grow border-t border-border-subtle" />
           </div>
 
           <div className="space-y-1.5">

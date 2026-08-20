@@ -119,9 +119,9 @@ export function LoginForm({
 
       {/* Stacked Divider */}
       <div className="flex items-center my-4 sm:my-6">
-        <div className="flex-grow border-t border-border-subtle/40" />
-        <span className="mx-4 text-xs font-bold text-text-muted/50 uppercase tracking-widest">or</span>
-        <div className="flex-grow border-t border-border-subtle/40" />
+        <div className="flex-grow border-t border-border-subtle" />
+        <span className="mx-4 text-xs font-bold text-text-muted uppercase tracking-widest">or</span>
+        <div className="flex-grow border-t border-border-subtle" />
       </div>
 
       {/* Google SSO button */}
