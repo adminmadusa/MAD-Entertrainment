@@ -189,8 +189,6 @@ export const governanceConfig = {
       { filePath: 'apps/admin/src/app/bookings/_components/BookingDetailsModal.tsx', ruleId: 'VAL-QUAL-001', maxLinesCeiling: 318, expiresAt: '2026-10-31', owner: 'Admin UI Team', reason: 'Booking details modal' },
 
       // Controllers
-      { filePath: 'apps/server/src/controllers/admin/analytics.controller.ts', ruleId: 'VAL-QUAL-003', maxLinesCeiling: 500, expiresAt: '2026-10-31', owner: 'Server Team', reason: 'Admin analytics report aggregation controller' },
-      { filePath: 'apps/server/src/controllers/admin/diagnostics.controller.ts', ruleId: 'VAL-QUAL-003', maxLinesCeiling: 420, expiresAt: '2026-10-31', owner: 'Server Team', reason: 'Admin system diagnostics controller' },
       { filePath: 'apps/server/src/controllers/public/auth.controller.ts', ruleId: 'VAL-QUAL-003', maxLinesCeiling: 365, expiresAt: '2026-09-30', owner: 'Server Team', reason: 'Auth controller' },
       { filePath: 'apps/server/src/controllers/public/booking/booking-recovery.controller.ts', ruleId: 'VAL-QUAL-003', maxLinesCeiling: 225, expiresAt: '2026-09-30', owner: 'Server Team', reason: 'Booking recovery controller' },
 
