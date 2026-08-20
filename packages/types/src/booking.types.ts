@@ -1,0 +1,76 @@
+import type { BookingStatus, TicketTier } from '@mad/shared';
+
+export type Booking = {
+  _id?: string;
+  bookingId: string;
+  eventId: string;
+  userId?: string;
+  guestName?: string;
+  firstName?: string;
+  lastName?: string;
+  guestEmail?: string;
+  guestPhone?: string;
+  birthdate?: string | Date;
+  keepUpdated?: boolean;
+  sendBestEvents?: boolean;
+  sessionId?: string;
+  tickets: {
+    tier: TicketTier;
+    tierName: string;
+    quantity: number;
+    pricePerTicket: number;
+    subtotal: number;
+    seats?: {
+      seatId: string;
+      row: string;
+      number: number;
+      section?: string;
+    }[];
+  }[];
+  totalTickets: number;
+  subtotal: number;
+  convenienceFee: number;
+  gst: number;
+  discount: number;
+  totalAmount: number;
+  currency: string;
+  countryCode?: string;
+  taxLabel?: string;
+  taxPercentage?: number;
+  locale?: string;
+  couponCode?: string;
+  couponId?: string;
+  status: BookingStatus;
+  paymentId?: string;
+  reservationIds?: string[];
+  bookingVersion: number;
+  expiresAt?: string | Date;
+  logicalExpiresAt?: string | Date;
+  cancellationReason?: string;
+  cancelledAt?: string | Date;
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
+};
+
+export type Ticket = {
+  _id?: string;
+  ticketId: string;
+  bookingId: string;
+  eventId: string;
+  userId?: string;
+  tier: TicketTier;
+  tierName: string;
+  price: number;
+  seatId?: string;
+  row?: string;
+  seatNumber?: number;
+  section?: string;
+  guestName?: string;
+  guestEmail?: string;
+  status: string;
+  qrCodeImage: string;
+  checkedInAt?: string | Date;
+  checkedInBy?: string;
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
+};

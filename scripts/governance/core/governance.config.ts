@@ -183,8 +183,7 @@ export const governanceConfig = {
 
       // Services (all compliant!)
 
-      // Schemas & Types
-      { filePath: 'packages/types/src/index.ts', ruleId: 'VAL-QUAL-005', maxLinesCeiling: 560, expiresAt: '2026-10-31', owner: 'Platform Team', reason: 'Shared root TypeScript definitions' },
+      // Schemas & Types (all compliant!)
 
       // Test Suites
 
