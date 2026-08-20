@@ -12,6 +12,22 @@ import { logger } from '../../utils/logger';
 import { sendSuccess } from '../../utils/response';
 
 /**
+ * Validates whether the current request is authorized to view a ticket QR code.
+ */
+async function checkTicketQrAuthorization(
+  ticket: any,
+  token: string,
+  userId?: string,
+  sessionId?: string
+): Promise<boolean> {
+  const isTokenValid = token ? verifyTicketQrToken(ticket.ticketId, token) : false;
+  if (isTokenValid) {
+    return true;
+  }
+  return canViewTicketQR(ticket, userId, sessionId);
+}
+
+/**
  * GET /api/public/tickets/:ticketId/qr
  * Generates and returns a PNG QR code buffer for the specified ticketId.
  * Enforces strict browser-level immutable caching and ownership authorization.
@@ -52,10 +68,8 @@ export async function getTicketQR(
     const rawToken = req.query?.token;
     const token = typeof rawToken === 'string' ? rawToken.trim() : '';
 
-    const hasValidToken = token ? verifyTicketQrToken(ticket.ticketId, token) : false;
-    const hasOwnerAccess = hasValidToken ? true : await canViewTicketQR(ticket, req.user?.sub, req.session?.sessionId);
-
-    if (!hasValidToken && !hasOwnerAccess) {
+    const isAuthorized = await checkTicketQrAuthorization(ticket, token, req.user?.sub, req.session?.sessionId);
+    if (!isAuthorized) {
       throw AppError.forbidden('You do not have permission to view this QR code');
     }
 

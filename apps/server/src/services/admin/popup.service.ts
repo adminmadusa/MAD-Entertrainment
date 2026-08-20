@@ -1,3 +1,5 @@
+import { Types } from 'mongoose';
+
 import { PopupCampaign, IPopupCampaign } from '../../models/popup-campaign.schema';
 
 export const getPopups = async (
@@ -23,7 +25,7 @@ export const getPopups = async (
 
 export const getPopupById = async (id: string): Promise<IPopupCampaign | null> => {
   const cleanId = String(id || '').trim();
-  if (!cleanId) return null;
+  if (!cleanId || !Types.ObjectId.isValid(cleanId)) return null;
   return await PopupCampaign.findById(cleanId);
 };
 
@@ -37,19 +39,19 @@ export const updatePopup = async (
   payload: Partial<IPopupCampaign>
 ): Promise<IPopupCampaign | null> => {
   const cleanId = String(id || '').trim();
-  if (!cleanId) return null;
+  if (!cleanId || !Types.ObjectId.isValid(cleanId)) return null;
   return await PopupCampaign.findByIdAndUpdate(cleanId, payload, { new: true });
 };
 
 export const deletePopup = async (id: string): Promise<IPopupCampaign | null> => {
   const cleanId = String(id || '').trim();
-  if (!cleanId) return null;
+  if (!cleanId || !Types.ObjectId.isValid(cleanId)) return null;
   return await PopupCampaign.findByIdAndDelete(cleanId);
 };
 
 export const togglePopup = async (id: string): Promise<IPopupCampaign | null> => {
   const cleanId = String(id || '').trim();
-  if (!cleanId) return null;
+  if (!cleanId || !Types.ObjectId.isValid(cleanId)) return null;
   const popup = await PopupCampaign.findById(cleanId);
   if (!popup) {
     return null;

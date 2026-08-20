@@ -1,3 +1,5 @@
+import { Types } from 'mongoose';
+
 import { Coupon, ICoupon } from '../../models/coupon.schema';
 
 export const createCoupon = async (data: Partial<ICoupon>): Promise<ICoupon> => {
@@ -34,25 +36,25 @@ export const getCoupons = async (
 
 export const getCouponById = async (id: string): Promise<ICoupon | null> => {
   const cleanId = String(id || '').trim();
-  if (!cleanId) return null;
+  if (!cleanId || !Types.ObjectId.isValid(cleanId)) return null;
   return await Coupon.findById(cleanId);
 };
 
 export const updateCoupon = async (id: string, data: Partial<ICoupon>): Promise<ICoupon | null> => {
   const cleanId = String(id || '').trim();
-  if (!cleanId) return null;
+  if (!cleanId || !Types.ObjectId.isValid(cleanId)) return null;
   return await Coupon.findByIdAndUpdate(cleanId, data, { new: true });
 };
 
 export const deleteCoupon = async (id: string): Promise<ICoupon | null> => {
   const cleanId = String(id || '').trim();
-  if (!cleanId) return null;
+  if (!cleanId || !Types.ObjectId.isValid(cleanId)) return null;
   return await Coupon.findByIdAndDelete(cleanId);
 };
 
 export const toggleCoupon = async (id: string): Promise<ICoupon | null> => {
   const cleanId = String(id || '').trim();
-  if (!cleanId) return null;
+  if (!cleanId || !Types.ObjectId.isValid(cleanId)) return null;
   const coupon = await Coupon.findById(cleanId);
   if (!coupon) {
     return null;
