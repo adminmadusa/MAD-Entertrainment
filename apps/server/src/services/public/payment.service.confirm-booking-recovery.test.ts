@@ -5,14 +5,12 @@ import { BookingStatus, PaymentStatus } from '@mad/shared';
 
 import { getEnv } from '../../config/env';
 import { Booking } from '../../models/booking.schema';
-import { Coupon } from '../../models/coupon.schema';
 import { Event } from '../../models/event.schema';
 import { Notification } from '../../models/notification.schema';
 import { Payment } from '../../models/payment.schema';
 import { Refund } from '../../models/refund.schema';
 import { Reservation } from '../../models/reservation.schema';
 import { SeatLayout } from '../../models/seat-layout.schema';
-import { Ticket } from '../../models/ticket.schema';
 import { UserModel } from '../../models/user.schema';
 import { CacheService } from '../cache.service';
 import { QueueService } from '../queue.service';
