@@ -26,7 +26,7 @@ export async function getTicketQR(
     if (typeof rawTicketId !== 'string' || !rawTicketId.trim()) {
       throw AppError.badRequest('Ticket ID is required');
     }
-    const ticketId = String(rawTicketId).trim();
+    const ticketId = rawTicketId.trim();
 
     // 1. Validate ticket existence in DB
     const ticket = await Ticket.findOne({ ticketId }).lean();
