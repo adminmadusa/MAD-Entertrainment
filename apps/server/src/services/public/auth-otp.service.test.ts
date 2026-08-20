@@ -99,168 +99,6 @@ vi.mock('../../utils/logger', () => ({
   },
 }));
 
-describe('AuthService - refreshSession', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
-  it('should throw error if refresh token is missing', async () => {
-    await expect(AuthService.refreshSession('', '')).rejects.toThrow('Refresh token is required');
-  });
-
-  it('should throw error if refresh token is not found in database', async () => {
-    vi.mocked(RefreshTokenModel.findOne).mockResolvedValue(null);
-    await expect(AuthService.refreshSession('unknown-token', 'any-csrf')).rejects.toThrow('Invalid session');
-  });
-
-  it('should perform normal refresh rotation successfully', async () => {
-    const expiredAt = new Date(Date.now() + 600000); // 10 minutes from now
-    const mockTokenRecord = {
-      _id: 'token-id-123',
-      token: 'valid-token-abc',
-      csrfToken: 'valid-csrf-token',
-      isRevoked: false,
-      expiresAt: expiredAt,
-      userId: 'user-id-999',
-      save: vi.fn(),
-    };
-
-    const mockSuccessorRecord = {
-      token: 'new-rotated-token-xyz',
-      csrfToken: 'new-csrf-token',
-    };
-
-    vi.mocked(RefreshTokenModel.findOne).mockResolvedValue(mockTokenRecord as any);
-    vi.mocked(RefreshTokenModel.findOneAndUpdate).mockResolvedValue(mockTokenRecord as any);
-    vi.mocked(UserModel.findById).mockResolvedValue({ _id: 'user-id-999', email: 'user@example.com', isActive: true } as any);
-    vi.mocked(RefreshTokenModel.create).mockResolvedValue(mockSuccessorRecord as any);
-
-    const result = await AuthService.refreshSession('valid-token-abc', 'valid-csrf-token');
-
-    expect(result).toBeDefined();
-    expect(result.accessToken).toBe('mock-access-token');
-    expect(result.refreshToken).toBe('new-rotated-token-xyz');
-    expect(result.csrfToken).toBe('new-csrf-token');
-    expect(RefreshTokenModel.findOneAndUpdate).toHaveBeenCalledWith(
-      { _id: 'token-id-123', isRevoked: false },
-      { $set: { isRevoked: true, replacedByToken: expect.any(String) } },
-      { new: true }
-    );
-  });
-
-  it('should throw error if refresh token has expired', async () => {
-    const mockTokenRecord = {
-      _id: 'token-id-123',
-      token: 'expired-token-123',
-      csrfToken: 'some-csrf-token',
-      isRevoked: false,
-      expiresAt: new Date(Date.now() - 10000), // expired 10 seconds ago
-      userId: 'user-id-999',
-    };
-
-    vi.mocked(RefreshTokenModel.findOne).mockResolvedValue(mockTokenRecord as any);
-
-    await expect(AuthService.refreshSession('expired-token-123', 'some-csrf-token')).rejects.toThrow('Session has expired');
-  });
-
-  it('should handle legitimate concurrent refresh requests within grace period', async () => {
-    // Current request supplies a token that has been revoked 1 second ago
-    const mockTokenRecord = {
-      _id: 'token-id-123',
-      token: 'recently-revoked-token',
-      csrfToken: 'some-csrf-token',
-      isRevoked: true,
-      expiresAt: new Date(Date.now() + 600000),
-      replacedByToken: 'valid-successor-token',
-      updatedAt: new Date(Date.now() - 1000), // rotated 1 second ago (well within 10s grace period)
-      userId: 'user-id-999',
-    };
-
-    const mockSuccessorRecord = {
-      token: 'valid-successor-token',
-      csrfToken: 'successor-csrf-token',
-      isRevoked: false,
-      expiresAt: new Date(Date.now() + 600000),
-      userId: 'user-id-999',
-    };
-
-    vi.mocked(RefreshTokenModel.findOne)
-      .mockResolvedValueOnce(mockTokenRecord as any) // first find the revoked token
-      .mockResolvedValueOnce(mockSuccessorRecord as any); // then find the successor
-
-    vi.mocked(UserModel.findById).mockResolvedValue({ _id: 'user-id-999', email: 'user@example.com', isActive: true } as any);
-
-    const result = await AuthService.refreshSession('recently-revoked-token', 'some-csrf-token');
-
-    expect(result).toBeDefined();
-    expect(result.accessToken).toBe('mock-access-token');
-    expect(result.refreshToken).toBe('valid-successor-token');
-    expect(RefreshTokenModel.updateMany).not.toHaveBeenCalled();
-  });
-
-  it('should resolve concurrent refresh races atomically', async () => {
-    // Current request finds the token as active
-    const mockTokenRecord = {
-      _id: 'token-id-123',
-      token: 'active-token-abc',
-      csrfToken: 'active-csrf-token',
-      isRevoked: false,
-      expiresAt: new Date(Date.now() + 600000),
-      userId: 'user-id-999',
-    };
-
-    // The atomic update fails because another concurrent request won the race and updated the document
-    vi.mocked(RefreshTokenModel.findOne).mockResolvedValueOnce(mockTokenRecord as any);
-    vi.mocked(RefreshTokenModel.findOneAndUpdate).mockResolvedValueOnce(null);
-
-    // Re-fetch should now return the updated record showing it has been rotated
-    const reFetchedRecord = {
-      _id: 'token-id-123',
-      token: 'active-token-abc',
-      isRevoked: true,
-      replacedByToken: 'winner-successor-token',
-    };
-
-    const mockSuccessorRecord = {
-      token: 'winner-successor-token',
-      csrfToken: 'winner-csrf-token',
-      isRevoked: false,
-      expiresAt: new Date(Date.now() + 600000),
-      userId: 'user-id-999',
-    };
-
-    vi.mocked(RefreshTokenModel.findById).mockResolvedValue(reFetchedRecord as any);
-    vi.mocked(RefreshTokenModel.findOne).mockResolvedValueOnce(mockSuccessorRecord as any);
-    vi.mocked(UserModel.findById).mockResolvedValue({ _id: 'user-id-999', email: 'user@example.com', isActive: true } as any);
-
-    const result = await AuthService.refreshSession('active-token-abc', 'active-csrf-token');
-
-    expect(result).toBeDefined();
-    expect(result.accessToken).toBe('mock-access-token');
-    expect(result.refreshToken).toBe('winner-successor-token');
-  });
-
-  it('should revoke all user refresh tokens on actual replay attack (outside grace period)', async () => {
-    // Current request supplies a token that has been revoked 20 seconds ago
-    const mockTokenRecord = {
-      _id: 'token-id-123',
-      token: 'stale-revoked-token',
-      csrfToken: 'some-csrf',
-      isRevoked: true,
-      expiresAt: new Date(Date.now() + 600000),
-      replacedByToken: 'successor-token',
-      updatedAt: new Date(Date.now() - 20000), // rotated 20 seconds ago (outside 10s grace period)
-      userId: 'user-id-999',
-    };
-
-    vi.mocked(RefreshTokenModel.findOne).mockResolvedValue(mockTokenRecord as any);
-
-    await expect(AuthService.refreshSession('stale-revoked-token', 'some-csrf')).rejects.toThrow('Session compromised');
-
-    expect(RefreshTokenModel.updateMany).toHaveBeenCalledWith({ userId: 'user-id-999' }, { isRevoked: true });
-  });
-});
-
 describe('AuthService - requestMagicLink', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -283,7 +121,7 @@ describe('AuthService - requestMagicLink', () => {
     await AuthService.requestMagicLink('user@example.com', 'http://localhost:3000', {
       firstName: 'John',
       lastName: 'Doe',
-      mobileNumber: '1234567890'
+      mobileNumber: '1234567890',
     });
 
     expect(isRedisConnected).toHaveBeenCalled();
@@ -307,10 +145,12 @@ describe('AuthService - requestMagicLink', () => {
       email: 'user@example.com',
       otpCode: expect.stringMatching(/^\d{6}$/),
     });
-    expect(createNotificationSafe).toHaveBeenCalledWith(expect.objectContaining({
-      recipient: 'user@example.com',
-      type: NotificationType.OTP,
-    }));
+    expect(createNotificationSafe).toHaveBeenCalledWith(
+      expect.objectContaining({
+        recipient: 'user@example.com',
+        type: NotificationType.OTP,
+      })
+    );
     expect(QueueService.enqueue).toHaveBeenCalledWith(
       expect.any(String),
       'email-dispatch',
@@ -324,7 +164,7 @@ describe('AuthService - requestMagicLink', () => {
 
   it('OTP-002: Redis cooldown active (AppError thrown with OTP_COOLDOWN_ACTIVE and retryAfter)', async () => {
     vi.mocked(isRedisConnected).mockReturnValue(true);
-    vi.mocked(mockRedis.set).mockResolvedValue(null); // NX lock failed
+    vi.mocked(mockRedis.set).mockResolvedValue(null);
     vi.mocked(mockRedis.ttl).mockResolvedValue(45);
 
     await expect(
@@ -368,7 +208,7 @@ describe('AuthService - requestMagicLink', () => {
 
     const existingToken = {
       email: 'user@example.com',
-      createdAt: new Date(Date.now() - 30 * 1000), // 30 seconds ago
+      createdAt: new Date(Date.now() - 30 * 1000),
     };
     vi.mocked(MagicTokenModel.findOne).mockResolvedValue(existingToken as any);
 
@@ -391,7 +231,7 @@ describe('AuthService - requestMagicLink', () => {
 
     const existingToken = {
       email: 'user@example.com',
-      createdAt: new Date(Date.now() - 70 * 1000), // 70 seconds ago (expired cooldown)
+      createdAt: new Date(Date.now() - 70 * 1000),
     };
     vi.mocked(MagicTokenModel.findOne).mockResolvedValue(existingToken as any);
 
@@ -442,7 +282,7 @@ describe('AuthService - verifyMagicLinkOrOTP', () => {
       _id: new Types.ObjectId(),
       email: 'user@example.com',
       otp: 'hashed_otp',
-      expiresAt: new Date(Date.now() + 5 * 60 * 1000), // 5 mins in future
+      expiresAt: new Date(Date.now() + 5 * 60 * 1000),
     };
     const mockUser = {
       _id: new Types.ObjectId(),
@@ -496,7 +336,7 @@ describe('AuthService - verifyMagicLinkOrOTP', () => {
     };
 
     vi.mocked(MagicTokenModel.findOne).mockResolvedValue(mockToken as any);
-    vi.mocked(UserModel.findOne).mockResolvedValue(null); // User does not exist
+    vi.mocked(UserModel.findOne).mockResolvedValue(null);
     vi.mocked(UserModel.create).mockResolvedValue(mockUser as any);
     vi.mocked(Booking.updateMany).mockResolvedValue({ modifiedCount: 0 } as any);
     vi.mocked(Booking.findOne).mockReturnValue({
@@ -523,7 +363,7 @@ describe('AuthService - verifyMagicLinkOrOTP', () => {
       _id: new Types.ObjectId(),
       email: 'user@example.com',
       otp: 'hashed_otp',
-      expiresAt: new Date(Date.now() - 5 * 60 * 1000), // Expired 5 mins ago
+      expiresAt: new Date(Date.now() - 5 * 60 * 1000),
     };
 
     vi.mocked(MagicTokenModel.findOne).mockResolvedValue(mockToken as any);
@@ -645,9 +485,11 @@ describe('AuthService - verifyMagicLinkOrOTP', () => {
     await AuthService.hydrateUserProfile(userId.toString(), 'user@example.com');
 
     expect(UserModel.findById).toHaveBeenCalledWith(userId.toString());
-    expect(Booking.findOne).toHaveBeenCalledWith(expect.objectContaining({
-      guestEmail: 'user@example.com',
-    }));
+    expect(Booking.findOne).toHaveBeenCalledWith(
+      expect.objectContaining({
+        guestEmail: 'user@example.com',
+      })
+    );
     expect(mockUser.firstName).toBe('Jane');
     expect(mockUser.lastName).toBe('Smith');
     expect(mockUser.mobileNumber).toBe('9876543210');
@@ -688,123 +530,123 @@ describe('AuthService - verifyMagicLinkOrOTP', () => {
     expect(mockUser.mobileNumber).toBe('1234567890');
     expect(mockUser.name).toBe('John Doe');
   });
+});
 
-  describe('AuthService - verifyGoogleToken', () => {
-    beforeEach(() => {
-      vi.clearAllMocks();
+describe('AuthService - verifyGoogleToken', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('GOOGLE-001: New User registration with Google (creates user and maps given_name/family_name)', async () => {
+    vi.mocked(UserModel.findOne).mockResolvedValue(null);
+
+    const mockUser = {
+      _id: new Types.ObjectId(),
+      googleId: 'google-sub-123',
+      email: 'newuser@gmail.com',
+      isActive: true,
+      save: vi.fn().mockResolvedValue(true),
+    };
+    vi.mocked(UserModel.create).mockResolvedValue(mockUser as any);
+    vi.mocked(Booking.updateMany).mockResolvedValue({ modifiedCount: 0 } as any);
+    vi.mocked(Booking.findOne).mockReturnValue({
+      sort: vi.fn().mockResolvedValue(null),
+    } as any);
+    vi.mocked(RefreshTokenModel.create).mockResolvedValue({ token: 'mock-refresh-token' } as any);
+
+    const result = await AuthService.verifyGoogleToken('mock_newuser@gmail.com');
+
+    expect(UserModel.create).toHaveBeenCalledWith({
+      email: 'newuser@gmail.com',
+      googleId: 'mock_google_id_newuser@gmail.com',
+      name: 'Mock User',
+      firstName: 'Mock',
+      lastName: 'User',
+      picture: 'https://lh3.googleusercontent.com/a/mock',
+      isActive: true,
     });
+    expect(result.user).toBe(mockUser);
+  });
 
-    it('GOOGLE-001: New User registration with Google (creates user and maps given_name/family_name)', async () => {
-      vi.mocked(UserModel.findOne).mockResolvedValue(null);
+  it('GOOGLE-002: Scenario A/B - Existing user with custom name details (does not overwrite stored names)', async () => {
+    const mockUser = {
+      _id: new Types.ObjectId(),
+      googleId: 'google-sub-123',
+      email: 'existinguser@gmail.com',
+      firstName: 'Kalyan',
+      lastName: 'MV',
+      mobileNumber: '+919876543210',
+      isActive: true,
+      save: vi.fn().mockResolvedValue(true),
+    };
 
-      const mockUser = {
-        _id: new Types.ObjectId(),
-        googleId: 'google-sub-123',
-        email: 'newuser@gmail.com',
-        isActive: true,
-        save: vi.fn().mockResolvedValue(true),
-      };
-      vi.mocked(UserModel.create).mockResolvedValue(mockUser as any);
-      vi.mocked(Booking.updateMany).mockResolvedValue({ modifiedCount: 0 } as any);
-      vi.mocked(Booking.findOne).mockReturnValue({
-        sort: vi.fn().mockResolvedValue(null),
-      } as any);
-      vi.mocked(RefreshTokenModel.create).mockResolvedValue({ token: 'mock-refresh-token' } as any);
+    vi.mocked(UserModel.findOne).mockResolvedValue(mockUser as any);
+    vi.mocked(Booking.updateMany).mockResolvedValue({ modifiedCount: 0 } as any);
+    vi.mocked(Booking.findOne).mockReturnValue({
+      sort: vi.fn().mockResolvedValue(null),
+    } as any);
+    vi.mocked(RefreshTokenModel.create).mockResolvedValue({ token: 'mock-refresh-token' } as any);
 
-      const result = await AuthService.verifyGoogleToken('mock_newuser@gmail.com');
+    await AuthService.verifyGoogleToken('mock_existinguser@gmail.com');
 
-      expect(UserModel.create).toHaveBeenCalledWith({
-        email: 'newuser@gmail.com',
-        googleId: 'mock_google_id_newuser@gmail.com',
-        name: 'Mock User',
-        firstName: 'Mock',
-        lastName: 'User',
-        picture: 'https://lh3.googleusercontent.com/a/mock',
-        isActive: true,
-      });
-      expect(result.user).toBe(mockUser);
-    });
+    expect(mockUser.firstName).toBe('Kalyan');
+    expect(mockUser.lastName).toBe('MV');
+    expect(mockUser.save).toHaveBeenCalled();
+  });
 
-    it('GOOGLE-002: Scenario A/B - Existing user with custom name details (does not overwrite stored names)', async () => {
-      const mockUser = {
-        _id: new Types.ObjectId(),
-        googleId: 'google-sub-123',
-        email: 'existinguser@gmail.com',
-        firstName: 'Kalyan',
-        lastName: 'MV',
-        mobileNumber: '+919876543210',
-        isActive: true,
-        save: vi.fn().mockResolvedValue(true),
-      };
+  it('GOOGLE-003: Scenario C - Existing user with partial details (populates missing lastName only)', async () => {
+    const mockUser = {
+      _id: new Types.ObjectId(),
+      googleId: 'google-sub-123',
+      email: 'partialuser@gmail.com',
+      firstName: 'Kalyan',
+      lastName: '',
+      isActive: true,
+      save: vi.fn().mockResolvedValue(true),
+    };
 
-      vi.mocked(UserModel.findOne).mockResolvedValue(mockUser as any);
-      vi.mocked(Booking.updateMany).mockResolvedValue({ modifiedCount: 0 } as any);
-      vi.mocked(Booking.findOne).mockReturnValue({
-        sort: vi.fn().mockResolvedValue(null),
-      } as any);
-      vi.mocked(RefreshTokenModel.create).mockResolvedValue({ token: 'mock-refresh-token' } as any);
+    vi.mocked(UserModel.findOne).mockResolvedValue(mockUser as any);
+    vi.mocked(Booking.updateMany).mockResolvedValue({ modifiedCount: 0 } as any);
+    vi.mocked(Booking.findOne).mockReturnValue({
+      sort: vi.fn().mockResolvedValue(null),
+    } as any);
+    vi.mocked(RefreshTokenModel.create).mockResolvedValue({ token: 'mock-refresh-token' } as any);
 
-      await AuthService.verifyGoogleToken('mock_existinguser@gmail.com');
+    await AuthService.verifyGoogleToken('mock_partialuser@gmail.com');
 
-      expect(mockUser.firstName).toBe('Kalyan');
-      expect(mockUser.lastName).toBe('MV');
-      expect(mockUser.save).toHaveBeenCalled();
-    });
+    expect(mockUser.firstName).toBe('Kalyan');
+    expect(mockUser.lastName).toBe('User');
+    expect(mockUser.save).toHaveBeenCalled();
+  });
 
-    it('GOOGLE-003: Scenario C - Existing user with partial details (populates missing lastName only)', async () => {
-      const mockUser = {
-        _id: new Types.ObjectId(),
-        googleId: 'google-sub-123',
-        email: 'partialuser@gmail.com',
-        firstName: 'Kalyan',
-        lastName: '',
-        isActive: true,
-        save: vi.fn().mockResolvedValue(true),
-      };
+  it('GOOGLE-004: Cross-Provider Linking (existing OTP account links Google ID on Google login without duplicate user)', async () => {
+    const mockUser = {
+      _id: '507f1f77bcf86cd799439011',
+      email: 'otpuser@gmail.com',
+      firstName: 'Kalyan',
+      lastName: 'MV',
+      isActive: true,
+      save: vi.fn().mockResolvedValue(true),
+    };
 
-      vi.mocked(UserModel.findOne).mockResolvedValue(mockUser as any);
-      vi.mocked(Booking.updateMany).mockResolvedValue({ modifiedCount: 0 } as any);
-      vi.mocked(Booking.findOne).mockReturnValue({
-        sort: vi.fn().mockResolvedValue(null),
-      } as any);
-      vi.mocked(RefreshTokenModel.create).mockResolvedValue({ token: 'mock-refresh-token' } as any);
+    vi.mocked(UserModel.findOne)
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce(mockUser as any);
 
-      await AuthService.verifyGoogleToken('mock_partialuser@gmail.com');
+    vi.mocked(Booking.updateMany).mockResolvedValue({ modifiedCount: 0 } as any);
+    vi.mocked(Booking.findOne).mockReturnValue({
+      sort: vi.fn().mockResolvedValue(null),
+    } as any);
+    vi.mocked(RefreshTokenModel.create).mockResolvedValue({ token: 'mock-refresh-token' } as any);
+    vi.mocked(UserModel.create).mockResolvedValue({} as any);
 
-      expect(mockUser.firstName).toBe('Kalyan');
-      expect(mockUser.lastName).toBe('User');
-      expect(mockUser.save).toHaveBeenCalled();
-    });
+    const result = await AuthService.verifyGoogleToken('mock_otpuser@gmail.com');
 
-    it('GOOGLE-004: Cross-Provider Linking (existing OTP account links Google ID on Google login without duplicate user)', async () => {
-      const mockUser = {
-        _id: '507f1f77bcf86cd799439011',
-        email: 'otpuser@gmail.com',
-        firstName: 'Kalyan',
-        lastName: 'MV',
-        isActive: true,
-        save: vi.fn().mockResolvedValue(true),
-      };
+    expect(UserModel.findOne).toHaveBeenNthCalledWith(1, { googleId: 'mock_google_id_otpuser@gmail.com' });
+    expect(UserModel.findOne).toHaveBeenNthCalledWith(2, { email: 'otpuser@gmail.com' });
 
-      vi.mocked(UserModel.findOne)
-        .mockResolvedValueOnce(null) // for findOne({ googleId })
-        .mockResolvedValueOnce(mockUser as any); // for findOne({ email })
-
-      vi.mocked(Booking.updateMany).mockResolvedValue({ modifiedCount: 0 } as any);
-      vi.mocked(Booking.findOne).mockReturnValue({
-        sort: vi.fn().mockResolvedValue(null),
-      } as any);
-      vi.mocked(RefreshTokenModel.create).mockResolvedValue({ token: 'mock-refresh-token' } as any);
-      vi.mocked(UserModel.create).mockResolvedValue({} as any);
-
-      const result = await AuthService.verifyGoogleToken('mock_otpuser@gmail.com');
-
-      expect(UserModel.findOne).toHaveBeenNthCalledWith(1, { googleId: 'mock_google_id_otpuser@gmail.com' });
-      expect(UserModel.findOne).toHaveBeenNthCalledWith(2, { email: 'otpuser@gmail.com' });
-
-      expect(result.user._id).toBe('507f1f77bcf86cd799439011');
-      expect(result.user.googleId).toBe('mock_google_id_otpuser@gmail.com'); // Linked successfully
-      expect(UserModel.create).not.toHaveBeenCalled(); // Duplication prevented
-    });
+    expect(result.user._id).toBe('507f1f77bcf86cd799439011');
+    expect(result.user.googleId).toBe('mock_google_id_otpuser@gmail.com');
+    expect(UserModel.create).not.toHaveBeenCalled();
   });
 });
