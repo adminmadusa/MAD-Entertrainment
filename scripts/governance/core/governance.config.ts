@@ -185,7 +185,6 @@ export const governanceConfig = {
       { filePath: 'apps/admin/src/app/scanner/page.tsx', ruleId: 'VAL-QUAL-001', maxLinesCeiling: 350, expiresAt: '2026-10-31', owner: 'Admin UI Team', reason: 'Ticket scanner camera page' },
       { filePath: 'apps/admin/src/app/ticket-management/_components/TicketProfilesTab.tsx', ruleId: 'VAL-QUAL-001', maxLinesCeiling: 335, expiresAt: '2026-10-31', owner: 'Admin UI Team', reason: 'Ticket profiles tab' },
       { filePath: 'apps/admin/src/components/scanner/ScannerCamera.tsx', ruleId: 'VAL-QUAL-001', maxLinesCeiling: 335, expiresAt: '2026-10-31', owner: 'Admin UI Team', reason: 'Scanner camera component' },
-      { filePath: 'apps/web/src/components/ui/UpcomingEventsSection.tsx', ruleId: 'VAL-QUAL-001', maxLinesCeiling: 330, expiresAt: '2026-09-30', owner: 'Web UI Team', reason: 'Homepage upcoming events carousel' },
       { filePath: 'apps/admin/src/app/bookings/_components/BookingDetailsModal.tsx', ruleId: 'VAL-QUAL-001', maxLinesCeiling: 318, expiresAt: '2026-10-31', owner: 'Admin UI Team', reason: 'Booking details modal' },
 
       // Controllers
