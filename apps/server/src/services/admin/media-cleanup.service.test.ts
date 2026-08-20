@@ -118,7 +118,7 @@ describe('MediaCleanupService', () => {
 
       // Mock EventGallery.exists
       vi.mocked(EventGallery.exists).mockImplementation(async (query: any) => {
-        const hasReferenced = query['items.publicId']?.includes('hash_referenced');
+        const hasReferenced = query.publicId?.includes('hash_referenced');
         return hasReferenced ? ({ _id: 'gallery-1' } as any) : null;
       });
 

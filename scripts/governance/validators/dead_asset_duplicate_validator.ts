@@ -48,7 +48,7 @@ export class DeadAssetDuplicateValidator implements GovernanceValidator {
     // D. Duplicate File Detection (Sliding window token/size Jaccard similarity)
     const duplicateFileScan = DuplicateFileDetector.detect(files, graph, config, ignorePatterns);
 
-    // 4. Aggregate findings and map them as warnings (Rule Registration is Deferred)
+    // 4. Aggregate findings and map them based on severity
     const aggregatedViolations = [
       ...deadScan.violations,
       ...safeDeleteScan.violations,
@@ -69,7 +69,20 @@ export class DeadAssetDuplicateValidator implements GovernanceValidator {
       return lineA - lineB;
     });
 
-    warnings.push(...aggregatedViolations);
+    for (const violation of aggregatedViolations) {
+      if (
+        violation.rule === 'VAL-UI-012' ||
+        violation.rule === 'VAL-UI-013' ||
+        violation.rule === 'VAL-UI-014' ||
+        violation.rule === 'VAL-UI-015' ||
+        violation.rule === 'VAL-UI-016'
+      ) {
+        violation.severity = 'ERROR';
+        errors.push(violation);
+      } else {
+        warnings.push(violation);
+      }
+    }
 
     const executionTimeMs = Date.now() - startTime;
 
@@ -86,7 +99,7 @@ export class DeadAssetDuplicateValidator implements GovernanceValidator {
 
     return {
       name: this.name,
-      success: true, // Always true since registration is deferred and findings are non-blocking warnings
+      success: errors.length === 0,
       errors,
       warnings,
       statistics,

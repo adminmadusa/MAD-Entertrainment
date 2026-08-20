@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+
 import { AdminBooking } from '@/lib/api/admin/booking.service';
 import { Modal } from '@mad/ui';
 
@@ -31,8 +32,8 @@ export default function CancelBookingModal({
   const handleSubmit = () => {
     setHasSubmitted(true);
     onSubmit(
-      cancelReason, 
-      ticketIds, 
+      cancelReason,
+      ticketIds,
       isPaid && refundAmount ? parseFloat(refundAmount) : undefined
     );
   };

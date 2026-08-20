@@ -1,6 +1,4 @@
 import React from 'react';
-import Link from 'next/link';
-import { useParams } from 'next/navigation';
 
 import { UnifiedMediaUpload } from '@/components/UnifiedMediaUpload';
 import { type CloudinaryImage } from '@/lib/api/admin/event.service';
@@ -10,8 +8,8 @@ export interface EventMediaCardProps {
   setBannerImage: (img: CloudinaryImage | null) => void;
   posterImage: CloudinaryImage | null;
   setPosterImage: (img: CloudinaryImage | null) => void;
-  galleryImages: CloudinaryImage[];
-  setGalleryImages: (imgs: CloudinaryImage[]) => void;
+  galleryImages?: CloudinaryImage[];
+  setGalleryImages?: (imgs: CloudinaryImage[]) => void;
 }
 
 export const EventMediaCard = React.memo(function EventMediaCard({
@@ -19,23 +17,16 @@ export const EventMediaCard = React.memo(function EventMediaCard({
   setBannerImage,
   posterImage,
   setPosterImage,
-  galleryImages,
+  galleryImages = [],
   setGalleryImages,
 }: EventMediaCardProps) {
-  const { id } = useParams() as { id: string };
-
   return (
     <div className="glass rounded-2xl border border-border-subtle p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-white font-semibold">Event Media (Unified Gallery)</h2>
-        {id && (
-          <Link
-            href={`/events/${id}/gallery`}
-            className="px-4 py-2 bg-accent-purple/10 text-accent-purple hover:bg-accent-purple/20 transition-colors rounded-lg text-sm font-medium"
-          >
-            Manage Advanced Gallery
-          </Link>
-        )}
+      <div>
+        <h2 className="text-white font-semibold">Event Media</h2>
+        <p className="text-text-muted text-xs mt-0.5">
+          Upload cover banner, promotional poster, and up to 13 marketing photos (15 total)
+        </p>
       </div>
 
       <UnifiedMediaUpload
@@ -45,7 +36,7 @@ export const EventMediaCard = React.memo(function EventMediaCard({
         onChange={(b, p, g) => {
           setBannerImage(b);
           setPosterImage(p);
-          setGalleryImages(g);
+          setGalleryImages?.(g);
         }}
         maxTotalImages={15}
       />

@@ -154,11 +154,53 @@ describe('Admin Scanner Service', () => {
       expect(result.message).toContain('different event');
     });
 
+    it('normalizes ticket references provided as full URLs', async () => {
+      const mockTicket = {
+        _id: 'ticket-1',
+        ticketId: 'TKT-001',
+        eventId,
+        bookingId: 'booking-1',
+        tierName: 'VIP',
+        admits: 1,
+        status: 'active',
+        assignmentStatus: 'claimed',
+        scannedAt: null,
+      };
+
+      const mockBooking = {
+        _id: 'booking-1',
+        bookingId: 'MAD-2026-ABCDE',
+        guestName: 'John Doe',
+        attendeeEmail: 'john@example.com',
+        status: BookingStatus.CONFIRMED,
+      };
+
+      vi.mocked(Ticket.findOne).mockResolvedValue(mockTicket as any);
+      vi.mocked(Booking.findById).mockResolvedValue(mockBooking as any);
+      vi.mocked(Ticket.findOneAndUpdate).mockResolvedValue({
+        ...mockTicket,
+        scannedAt: new Date(),
+      } as any);
+
+      const result = await scannerService.validateAndCheckInTicket({
+        ticketId: 'https://www.madentertainments.net/tickets/TKT-001?ref=gate',
+        eventId,
+        scannerId,
+      });
+
+      expect(result.status).toBe('SUCCESS');
+      expect(result.ticketId).toBe('TKT-001');
+      expect(result.guestName).toBe('John Doe');
+      expect(result.attendeeEmail).toBe('john@example.com');
+      expect(Ticket.findOne).toHaveBeenCalledWith({ ticketId: { $eq: 'TKT-001' } });
+    });
+
     it('returns ALREADY_SCANNED if ticket is already scanned', async () => {
+      const scannedDate = new Date('2026-08-18T00:00:00.000Z');
       const mockTicket = {
         ticketId,
         eventId,
-        scannedAt: new Date(),
+        scannedAt: scannedDate,
         status: 'active',
         assignmentStatus: 'claimed',
       };
@@ -172,6 +214,8 @@ describe('Admin Scanner Service', () => {
       });
 
       expect(result.status).toBe('ALREADY_SCANNED');
+      expect(result.ticketId).toBe(ticketId);
+      expect(result.scannedAt).toBe(scannedDate.toISOString());
     });
   });
 

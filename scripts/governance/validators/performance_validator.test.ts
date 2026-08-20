@@ -101,16 +101,27 @@ describe('PerformanceValidator (PR8B)', () => {
       expect(pfmWarnings[0].message).toContain('next/font/google');
     });
 
-    it('should warn: duplicate font initialization in the same file', async () => {
+    it('should warn: duplicate font initialization of the same font in the same file', async () => {
       setupFile(`
-        import { Inter, Roboto } from 'next/font/google';
-        const inter = Inter({ subsets: ['latin'], display: 'swap' });
-        const roboto = Roboto({ subsets: ['latin'], display: 'swap' });
+        import { Inter } from 'next/font/google';
+        const inter1 = Inter({ subsets: ['latin'], display: 'swap' });
+        const inter2 = Inter({ subsets: ['latin'], display: 'swap' });
       `);
       const result = await validator.run([PROD_LAYOUT], {});
       const pfmWarnings = result.warnings.filter(w => w.rule === 'VAL-PFM-001');
       expect(pfmWarnings.length).toBeGreaterThan(0);
-      expect(pfmWarnings.some(w => w.message.includes('Duplicate font initialization'))).toBe(true);
+      expect(pfmWarnings.some(w => w.message.includes("Duplicate font initialization detected for 'Inter'"))).toBe(true);
+    });
+
+    it('should pass: distinct fonts initialized in the same layout file', async () => {
+      setupFile(`
+        import { Inter, Outfit } from 'next/font/google';
+        const inter = Inter({ subsets: ['latin'], display: 'swap' });
+        const outfit = Outfit({ subsets: ['latin'], display: 'swap' });
+      `);
+      const result = await validator.run([PROD_LAYOUT], {});
+      const pfmWarnings = result.warnings.filter(w => w.rule === 'VAL-PFM-001');
+      expect(pfmWarnings.length).toBe(0);
     });
 
     it('should NOT flag: approved email template using fonts.gstatic.com', async () => {

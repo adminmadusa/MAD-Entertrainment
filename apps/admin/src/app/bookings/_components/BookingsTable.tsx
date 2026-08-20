@@ -67,11 +67,11 @@ export default function BookingsTable({
       return (
         <TableRow>
           <TableCell colSpan={7} className="py-8">
-            <EmptyState 
+            <EmptyState
               variant="table"
               icon={<Search />}
-              title="No results match your search." 
-              description="Try changing your filters or search criteria." 
+              title="No results match your search."
+              description="Try changing your filters or search criteria."
             />
           </TableCell>
         </TableRow>

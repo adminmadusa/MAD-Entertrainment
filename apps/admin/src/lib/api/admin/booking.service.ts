@@ -1,6 +1,6 @@
 import { adminApiClient } from '@/lib/api/client';
-import type { PaginatedItemsResponse } from '@mad/types';
 import { createLogger } from '@/lib/logger';
+import type { PaginatedItemsResponse } from '@mad/types';
 
 const logger = createLogger('Booking Service');
 

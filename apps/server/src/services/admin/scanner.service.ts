@@ -1,6 +1,6 @@
 import { Types } from 'mongoose';
 
-import { BookingStatus } from '@mad/shared';
+import { BookingStatus, normalizeTicketReference } from '@mad/shared';
 
 import { AuditLogModel } from '../../models/audit-log.schema';
 import { Booking } from '../../models/booking.schema';
@@ -30,6 +30,7 @@ export interface ValidationResult {
 
 export async function validateAndCheckInTicket(payload: ScanRequestPayload): Promise<ValidationResult> {
   const { ticketId, eventId, scannerId, requestId } = payload;
+  const canonicalTicketId = typeof ticketId === 'string' ? normalizeTicketReference(ticketId) : String(ticketId || '');
 
   // 1. Idempotency Check via Audit Logs
   if (requestId && typeof requestId === 'string') {
@@ -53,12 +54,12 @@ export async function validateAndCheckInTicket(payload: ScanRequestPayload): Pro
   }
 
   // 2. Fetch Ticket
-  if (typeof ticketId !== 'string') {
+  if (!canonicalTicketId) {
     return { status: 'INVALID', ticketId: String(ticketId), message: 'Invalid ticket reference: Ticket not found.' };
   }
-  const ticket = await Ticket.findOne({ ticketId: { $eq: ticketId } });
+  const ticket = await Ticket.findOne({ ticketId: { $eq: canonicalTicketId } });
   if (!ticket) {
-    return { status: 'INVALID', ticketId, message: 'Invalid ticket reference: Ticket not found.' };
+    return { status: 'INVALID', ticketId: canonicalTicketId, message: 'Invalid ticket reference: Ticket not found.' };
   }
 
   // 3. Event Validation
@@ -128,7 +129,7 @@ export async function validateAndCheckInTicket(payload: ScanRequestPayload): Pro
     tierName: updatedTicket.tierName,
     admits: updatedTicket.admits || 1,
     scannedAt: updatedTicket.scannedAt?.toISOString(),
-    attendeeEmail: updatedTicket.attendeeEmail,
+    attendeeEmail: updatedTicket.attendeeEmail || (booking as any).attendeeEmail || (booking as any).customerEmail,
     guestName: booking.guestName,
     message: 'Ticket scanned and verified successfully.',
   };

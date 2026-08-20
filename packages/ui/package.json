@@ -8,8 +8,7 @@
     ".": "./src/index.tsx",
     "./icons": "./src/icons/index.ts",
     "./styles/*": "./src/styles/*",
-    "./themes/mad": "./src/themes/mad/index.css",
-    "./themes/default": "./src/themes/default/index.css",
+
     "./tailwind/preset": "./src/tailwind/preset.ts",
     "./testing": "./src/internal/testing/index.ts"
   },

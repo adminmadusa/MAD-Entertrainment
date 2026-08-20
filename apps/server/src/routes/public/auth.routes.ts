@@ -1,10 +1,10 @@
 import { Router } from 'express';
 
 import { AuthController } from '../../controllers/public/auth.controller';
-import { csrfProtection } from '../../middleware/security/csrf.middleware';
 import { requireAuth } from '../../middleware/auth.middleware';
-import { uploadMiddleware } from '../../middleware/upload.middleware';
 import { authLimiter } from '../../middleware/rate.middleware';
+import { csrfProtection } from '../../middleware/security/csrf.middleware';
+import { uploadMiddleware } from '../../middleware/upload.middleware';
 import { validateBody } from '../../middleware/validation.middleware';
 import {
   checkEmailSchema,

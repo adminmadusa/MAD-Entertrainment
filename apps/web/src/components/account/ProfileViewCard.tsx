@@ -2,11 +2,11 @@
 
 import React, { useRef, useState } from 'react';
 
-import { useAuth } from '@/providers/AuthProvider';
-import { publicUploadProfilePhoto, publicDeleteProfilePhoto } from '@/lib/api/public.service';
 import { extractApiError } from '@/lib/api/client';
-import { Button } from '@mad/ui';
+import { publicUploadProfilePhoto, publicDeleteProfilePhoto } from '@/lib/api/public.service';
+import { useAuth } from '@/providers/AuthProvider';
 import type { AuthUser } from '@/types/auth';
+import { Button } from '@mad/ui';
 
 interface ProfileViewCardProps {
   user: AuthUser | null;
@@ -82,6 +82,8 @@ export function ProfileViewCard({ user, onEditClick }: ProfileViewCardProps) {
                   <img
                     src={user.picture}
                     alt={userName}
+                    width={64}
+                    height={64}
                     className="w-full h-full object-cover"
                   />
                 ) : (
@@ -111,9 +113,9 @@ export function ProfileViewCard({ user, onEditClick }: ProfileViewCardProps) {
               <button
                 type="button"
                 onClick={handleDeletePhoto}
-                className="text-[10px] font-extrabold text-red-400 hover:text-red-300 transition-colors uppercase tracking-wider min-h-[20px] flex items-center justify-center"
+                className="text-[11px] font-medium text-text-muted hover:text-red-400 transition-colors min-h-[20px] flex items-center justify-center pt-0.5"
               >
-                Remove
+                Remove photo
               </button>
             )}
           </div>
@@ -136,22 +138,22 @@ export function ProfileViewCard({ user, onEditClick }: ProfileViewCardProps) {
         </div>
       </div>
 
-      <div className="border-t border-border-subtle/30 pt-6 grid grid-cols-1 sm:grid-cols-2 gap-6 text-sm">
-        <div className="space-y-1">
-          <span className="text-[10px] text-text-muted uppercase tracking-wider block">First Name</span>
-          <span className="text-white font-semibold block">{user?.firstName || '—'}</span>
+      <div className="border-t border-white/5 pt-6 grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+        <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/5 space-y-1">
+          <span className="text-[10px] text-text-muted uppercase tracking-wider block font-semibold">First Name</span>
+          <span className="text-white font-bold block text-sm">{user?.firstName || '—'}</span>
         </div>
-        <div className="space-y-1">
-          <span className="text-[10px] text-text-muted uppercase tracking-wider block">Last Name</span>
-          <span className="text-white font-semibold block">{user?.lastName || '—'}</span>
+        <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/5 space-y-1">
+          <span className="text-[10px] text-text-muted uppercase tracking-wider block font-semibold">Last Name</span>
+          <span className="text-white font-bold block text-sm">{user?.lastName || '—'}</span>
         </div>
-        <div className="space-y-1">
-          <span className="text-[10px] text-text-muted uppercase tracking-wider block">Email Address</span>
-          <span className="text-white font-semibold block">{userEmail}</span>
+        <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/5 space-y-1">
+          <span className="text-[10px] text-text-muted uppercase tracking-wider block font-semibold">Email Address</span>
+          <span className="text-white font-bold block text-sm break-all">{userEmail}</span>
         </div>
-        <div className="space-y-1">
-          <span className="text-[10px] text-text-muted uppercase tracking-wider block">Phone Number</span>
-          <span className="text-white font-semibold block">{userPhone}</span>
+        <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/5 space-y-1">
+          <span className="text-[10px] text-text-muted uppercase tracking-wider block font-semibold">Phone Number</span>
+          <span className="text-white font-bold block text-sm">{userPhone}</span>
         </div>
       </div>
     </div>

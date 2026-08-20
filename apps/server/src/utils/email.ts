@@ -17,6 +17,9 @@ export function resetTransporter(): void {
 
 export function validateSmtpConfig(): void {
   const env = getEnv();
+  if (env.EMAIL_PROVIDER === 'zeptomail') {
+    return;
+  }
   if (env.SMTP_HOST) {
     const missingFields: string[] = [];
     if (!env.SMTP_PORT) missingFields.push('SMTP_PORT');
@@ -93,6 +96,12 @@ export function getTransporter(): nodemailer.Transporter | null {
 }
 
 export async function verifyTransporter(): Promise<boolean> {
+  const env = getEnv();
+  if (env.EMAIL_PROVIDER === 'zeptomail') {
+    logger.info('Email provider configured as ZeptoMail HTTPS API; skipping SMTP transport verification.');
+    return true;
+  }
+
   const tx = getTransporter();
   if (!tx) {
     logger.warn('SMTP transporter not configured; skipping verification');

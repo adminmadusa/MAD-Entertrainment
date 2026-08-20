@@ -170,7 +170,7 @@ describe('AnalyticsStore', () => {
     for (const file of files) {
       const currentContent = readFileSync(join(testAnalyticsDir, file), 'utf8');
       expect(currentContent).toBe(firstRunContents[file]);
-      
+
       const parsed = JSON.parse(currentContent);
       expect(parsed.generatedAt).toBe(firstGeneratedAt); // Preserved the original timestamp
     }

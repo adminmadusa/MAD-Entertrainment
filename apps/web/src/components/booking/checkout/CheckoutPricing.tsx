@@ -1,5 +1,6 @@
-import type { Booking } from '@mad/types';
 import { formatMoney } from '@mad/shared';
+import type { Booking } from '@mad/types';
+
 import { TicketSummaryItem } from '../shared/TicketSummaryItem';
 
 interface CheckoutPricingProps {
@@ -12,7 +13,7 @@ export function CheckoutPricing({ booking }: CheckoutPricingProps) {
   const taxPercentText = booking.taxPercentage !== undefined && booking.taxPercentage > 0 ? ` (${booking.taxPercentage}%)` : '';
 
   return (
-    <div className="glass rounded-2xl border border-white/5 p-5 space-y-4">
+    <div className="bg-white/5 rounded-2xl border border-white/10 p-5 space-y-4">
       <h2 className="text-white font-bold text-sm uppercase tracking-wider">Your Tickets</h2>
 
       <div className="space-y-2 border-b border-white/5 pb-3">

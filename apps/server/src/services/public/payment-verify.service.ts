@@ -1,6 +1,6 @@
 import { Types } from 'mongoose';
 
-import { PaymentStatus } from '@mad/shared';
+import { PaymentStatus, deriveBookingEligibility } from '@mad/shared';
 
 import { getEnv } from '../../config/env';
 import { AppError } from '../../middleware/error.middleware';
@@ -12,7 +12,7 @@ import { logger } from '../../utils/logger';
 import { PaymentOwnershipContext } from './payment-intent.service';
 import { PaymentValidationService } from './payment-validation.service';
 import { StripeAdapter } from './stripe.adapter';
-import { deriveBookingEligibility } from '@mad/shared';
+
 
 export interface PaymentVerifyPersistence {
   confirmBooking(
@@ -86,11 +86,13 @@ export class PaymentVerifyService {
       }
 
       // Replay protection DB check
-      const duplicateGatewayPayment = await Payment.findOne({
-        gateway: 'razorpay',
-        gatewayPaymentId: razorpay_payment_id,
-        _id: { $ne: payment._id },
-      });
+      const duplicateGatewayPayment = razorpay_payment_id
+        ? await Payment.findOne({
+            gateway: 'razorpay',
+            gatewayPaymentId: String(razorpay_payment_id),
+            _id: { $ne: payment._id },
+          })
+        : null;
 
       PaymentValidationService.validateRazorpayProof({
         booking,
@@ -141,9 +143,10 @@ export class PaymentVerifyService {
     ownershipContext: PaymentOwnershipContext = {},
     persistence: PaymentVerifyPersistence
   ) {
-    const query = Types.ObjectId.isValid(bookingId)
-      ? { _id: bookingId }
-      : { bookingId };
+    const safeBookingId = String(bookingId);
+    const query = Types.ObjectId.isValid(safeBookingId)
+      ? { _id: new Types.ObjectId(safeBookingId) }
+      : { bookingId: safeBookingId };
     const booking = await Booking.findOne(query);
     if (!booking) {
       throw AppError.notFound('Booking not found');

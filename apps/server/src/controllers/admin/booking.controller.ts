@@ -1,5 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 
+import { Booking } from '../../models/booking.schema';
+import { Payment } from '../../models/payment.schema';
 import * as bookingService from '../../services/admin/booking.service';
 import * as refundService from '../../services/admin/refund.service';
 
@@ -28,20 +30,21 @@ export const getBookings = async (req: Request, res: Response, next: NextFunctio
 };
 
 /**
- * Retrieve detailed populated booking DTO representation.
+ * Administrative method to fetch detailed booking DTO with tickets and audit trail.
  */
 export const getBookingById = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const booking = await bookingService.getBookingById(req.params.id);
-    if (!booking) {
+    const result = await bookingService.getBookingById(req.params.id);
+    if (!result) {
       return res.status(404).json({
         success: false,
         message: 'Booking not found',
       });
     }
+
     res.status(200).json({
       success: true,
-      data: booking,
+      data: result,
       message: 'Booking fetched successfully',
     });
   } catch (error) {
@@ -57,23 +60,31 @@ export const cancelBooking = async (req: Request, res: Response, next: NextFunct
     const { reason, refundAmount, ticketIds } = req.body;
     // PRICING-003: Extract verified admin identity for scan-protection RBAC and audit trail
     const actor = { id: req.admin?.sub || 'system', role: req.admin?.role || 'unknown' };
-    
+
     if (refundAmount && Number(refundAmount) > 0) {
-      const booking = await bookingService.getBookingById(req.params.id) as any;
-      if (!booking || !booking.paymentId) {
+      const booking = await Booking.findById(req.params.id);
+      if (!booking) {
+        return res.status(404).json({ success: false, message: 'Booking not found' });
+      }
+
+      const payment = booking.paymentId
+        ? await Payment.findById(booking.paymentId)
+        : await Payment.findOne({ bookingId: booking._id });
+
+      if (!payment) {
         return res.status(400).json({ success: false, message: 'Cannot request refund for booking without payment' });
       }
-      
+
       const refund = await refundService.createRefund({
-        bookingId: req.params.id,
-        paymentId: booking.paymentId.toString(),
+        bookingId: booking._id.toString(),
+        paymentId: payment._id.toString(),
         amount: Number(refundAmount),
         reason,
         origin: 'manual',
         cancelTickets: true,
         ticketIds,
       });
-      
+
       return res.status(201).json({
         success: true,
         data: refund,

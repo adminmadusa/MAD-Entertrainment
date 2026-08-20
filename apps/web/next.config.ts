@@ -102,12 +102,12 @@ const nextConfig: NextConfig = {
     const isDev = process.env.NODE_ENV === 'development';
     const csp = [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' https://accounts.google.com https://checkout.razorpay.com",
+      "script-src 'self' 'unsafe-inline' https://accounts.google.com https://checkout.razorpay.com https://js.stripe.com",
       "style-src 'self' 'unsafe-inline'",
       "font-src 'self'",
       "img-src 'self' data: blob: https://res.cloudinary.com https://images.unsplash.com",
-      "connect-src 'self' https://accounts.google.com https://api.razorpay.com",
-      "frame-src https://api.razorpay.com https://accounts.google.com",
+      "connect-src 'self' https://accounts.google.com https://api.razorpay.com https://api.stripe.com",
+      "frame-src https://api.razorpay.com https://accounts.google.com https://js.stripe.com",
       "object-src 'none'",
       "base-uri 'self'",
       "form-action 'self'",

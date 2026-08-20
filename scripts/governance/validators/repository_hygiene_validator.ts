@@ -63,6 +63,40 @@ Remediation Steps:
       }
     }
 
+    // VAL-HYG-009: Tracked Build Output in Source & VAL-HYG-010: Tracked Bytecode
+    for (const file of files) {
+      const normTracked = file.replace(/\\/g, '/');
+
+      // Check for Python bytecode
+      if (normTracked.endsWith('.pyc') || normTracked.includes('__pycache__/')) {
+        errors.push({
+          file,
+          rule: 'VAL-HYG-010',
+          severity: 'ERROR',
+          message: `Tracked Python bytecode or __pycache__ directory detected in Git: "${file}". Untrack and delete this file and update .gitignore.`,
+          line: 0,
+        });
+      }
+
+      // Check for compiled TS outputs tracked in src/
+      if (
+        (normTracked.startsWith('packages/') || normTracked.startsWith('apps/')) &&
+        normTracked.includes('/src/') &&
+        (normTracked.endsWith('.d.ts') || normTracked.endsWith('.js.map') || (normTracked.endsWith('.js') && existsSync(resolve(workspaceRoot, normTracked.replace(/\.js$/, '.ts')))))
+      ) {
+        // Next.js next-env.d.ts is allowed in app roots
+        if (!normTracked.endsWith('next-env.d.ts')) {
+          errors.push({
+            file,
+            rule: 'VAL-HYG-009',
+            severity: 'ERROR',
+            message: `Tracked build artifact detected inside source directory: "${file}". Build artifacts must reside in dist/ or .next/ and remain untracked.`,
+            line: 0,
+          });
+        }
+      }
+    }
+
     const filteredFiles = files.filter(file => {
       const norm = file.replace(/\\/g, '/');
 

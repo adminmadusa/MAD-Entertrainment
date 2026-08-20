@@ -9,9 +9,6 @@ import { Providers } from '@/providers';
 
 import '@/styles/globals.css';
 
-// Referenced to satisfy VAL-UI-017 for next.config.ts custom loader:
-// import '@/utils/image-loader';
-
 // ─── Fonts ────────────────────────────────────────────────────
 
 const outfit = Outfit({
@@ -27,7 +24,7 @@ export const metadata: Metadata = {
    * metadataBase is required for Next.js to resolve relative URLs in OG images
    * across all pages. Without it, opengraph-image paths are left unresolved.
    */
-  metadataBase: new URL('https://madentertainment.in'),
+  metadataBase: new URL('https://www.madentertainments.net'),
 
   title: {
     default: 'MAD Entertrainment — Book Shows, Events & DJ Nights',
@@ -51,7 +48,7 @@ export const metadata: Metadata = {
   creator: 'MAD Entertrainment',
   publisher: 'MAD Entertrainment',
   alternates: {
-    canonical: 'https://madentertainment.in',
+    canonical: 'https://www.madentertainments.net',
   },
   robots: {
     index: true,
@@ -70,7 +67,7 @@ export const metadata: Metadata = {
     title: 'MAD Entertrainment — Book Shows, Events & DJ Nights',
     description:
       'Book tickets for the hottest shows, events, DJ nights, concerts, comedy shows, and live performances.',
-    url: 'https://madentertainment.in',
+    url: 'https://www.madentertainments.net',
     locale: 'en_IN',
     images: [
       {
@@ -114,20 +111,20 @@ export default function RootLayout({ children }: RootLayoutProps) {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
     name: 'MAD Entertrainment',
-    url: 'https://madentertainment.in',
+    url: 'https://www.madentertainments.net',
   };
 
   const organizationJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Organization',
     name: 'MAD Entertrainment',
-    url: 'https://madentertainment.in',
-    logo: 'https://madentertainment.in/og-image.png',
+    url: 'https://www.madentertainments.net',
+    logo: 'https://www.madentertainments.net/og-image.png',
   };
 
   return (
-    <html lang="en" className={`${outfit.variable} dark`} suppressHydrationWarning>
-      <body className="bg-background text-text-primary antialiased relative min-h-screen">
+    <html lang="en" className={`${outfit.variable} dark`} data-scroll-behavior="smooth" suppressHydrationWarning>
+      <body className="bg-background text-text-primary antialiased relative min-h-screen" suppressHydrationWarning>
         {/* A11Y-001 — Skip to Main Content (WCAG 2.4.1 Level A)
             Visually hidden until keyboard-focused. First focusable element
             in the document. Targets #main-content which is the <main> landmark. */}
@@ -148,11 +145,18 @@ export default function RootLayout({ children }: RootLayoutProps) {
           dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
         />
         <ChunkRecoveryClear />
-        {/* Ambient Entertainment Backdrop (Phase 4) */}
+        {/* Ambient Entertainment Backdrop (Optimized static gradients, 0 GPU compositing overhead) */}
         <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden" aria-hidden="true">
-          <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] rounded-full bg-accent-purple/8 blur-[160px] animate-ambient-shift-1" />
-          <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] rounded-full bg-accent-pink/6 blur-[160px] animate-ambient-shift-2" />
-          <div className="absolute top-[40%] left-[50%] -translate-x-1/2 w-[50%] h-[50%] rounded-full bg-accent-cyan/4 blur-[130px] animate-ambient-shift-3" />
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundImage: `
+                radial-gradient(circle at 15% 15%, rgba(124, 58, 237, 0.08) 0%, transparent 55%),
+                radial-gradient(circle at 85% 85%, rgba(236, 72, 153, 0.06) 0%, transparent 55%),
+                radial-gradient(circle at 50% 45%, rgba(6, 182, 212, 0.04) 0%, transparent 50%)
+              `,
+            }}
+          />
           <div className="absolute inset-0 noise-overlay opacity-[0.25]" />
         </div>
 

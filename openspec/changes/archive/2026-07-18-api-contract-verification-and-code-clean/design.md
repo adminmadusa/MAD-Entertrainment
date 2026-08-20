@@ -28,11 +28,11 @@ Additionally, the backend has both a flat `refund.service.ts` (224 lines) and a 
 ## Decisions
 
 ### Decision 1: Create `apps/admin/src/lib/api/admin/refund.service.ts`
-**Why**: The current `booking.service.ts` violates the Single Responsibility Principle by also owning refund API calls. The backend already has a dedicated `refund.controller.ts`. The frontend client should mirror this boundary.  
+**Why**: The current `booking.service.ts` violates the Single Responsibility Principle by also owning refund API calls. The backend already has a dedicated `refund.controller.ts`. The frontend client should mirror this boundary.
 **Alternative considered**: Keep everything in `booking.service.ts` — rejected because it hides the refund API surface inside a booking file, making it harder for developers to discover refund capabilities.
 
 ### Decision 2: Audit-first, fix-second
-**Why**: Per governance rules, we must never modify production code without first establishing an evidence-based audit of what exists and what needs to change. The code-clean skill mandates this approach.  
+**Why**: Per governance rules, we must never modify production code without first establishing an evidence-based audit of what exists and what needs to change. The code-clean skill mandates this approach.
 **Alternative considered**: Skip audit and go straight to extraction — rejected because assumptions without evidence violate repository governance.
 
 ### Decision 3: Barrel re-export verification

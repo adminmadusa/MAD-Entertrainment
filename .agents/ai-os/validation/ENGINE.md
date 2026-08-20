@@ -26,7 +26,7 @@ interface Validator {
   readonly name: string;             // Human readable title
   readonly targets: string[];        // Glob patterns targeting files to scan
   readonly requiredLayers: string[]; // OS layers needed as knowledge SSOT (e.g. ['Standards', 'Patterns'])
-  
+
   /**
    * Evaluates targets and collects findings.
    * Does not modify codebase files.

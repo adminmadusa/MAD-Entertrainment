@@ -69,8 +69,8 @@ const REQUIRED_SECTIONS: Record<string, string[][]> = {
     ['Verification Requirements']
   ],
   'AGENTS.MD': [
-    ['Responsibilities', 'Applies To', 'PURPOSE', 'Relationship to Repository Governance Policy'],
-    ['Workflow', 'IMPLEMENTATION WORKFLOW']
+    ['Responsibilities', 'Applies To', 'PURPOSE', 'Relationship to Repository Governance Policy', 'PURPOSE & CORE PRINCIPLES'],
+    ['Workflow', 'IMPLEMENTATION WORKFLOW', '13-PHASE EXECUTION PROTOCOL', 'EXECUTION PROTOCOL']
   ]
 };
 

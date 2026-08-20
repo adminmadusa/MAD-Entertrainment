@@ -62,7 +62,7 @@ export default async function PublicGalleryPage({ params }: Props) {
         <p className="text-text-muted mb-8 max-w-md">
           The gallery for {event.title} is currently unavailable.
         </p>
-        <Link 
+        <Link
           href={`/events/${slug}`}
           className="px-6 py-3 bg-surface-elevated hover:bg-white/10 text-white rounded-full transition-colors border border-border-subtle font-medium"
         >
@@ -72,8 +72,9 @@ export default async function PublicGalleryPage({ params }: Props) {
     );
   }
 
-  const items = gallery.items || [];
-  
+  const rawGallery = gallery as { items?: import('@mad/types').EventGalleryItem[]; gallery?: import('@mad/types').EventGalleryItem[] };
+  const items = rawGallery.items || rawGallery.gallery || [];
+
   // Handle empty published gallery state
   if (items.length === 0) {
     return (
@@ -85,7 +86,7 @@ export default async function PublicGalleryPage({ params }: Props) {
         <p className="text-text-muted mb-8 max-w-md">
           No photos have been published yet.<br/>Please check back later.
         </p>
-        <Link 
+        <Link
           href={`/events/${slug}`}
           className="px-6 py-3 bg-surface-elevated hover:bg-white/10 text-white rounded-full transition-colors border border-border-subtle font-medium"
         >
@@ -111,8 +112,8 @@ export default async function PublicGalleryPage({ params }: Props) {
           ),
         }}
       />
-      
-      <PublicGalleryView event={event} gallery={gallery} />
+
+      <PublicGalleryView event={event} gallery={{ ...gallery, items }} />
     </>
   );
 }

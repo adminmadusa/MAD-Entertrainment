@@ -6,31 +6,18 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   adminScanTicket,
   adminGetScannerStats,
-  adminGetScannerHistory,
   ScannerStats,
   ValidationResult,
   ScanResponse,
+  ScannerModeState,
 } from '../lib/api/admin/scanner.service';
-import { extractApiError } from '../lib/api/client';
+import { extractApiError, normalizeTicketReference } from '@mad/utils';
 import { playSuccess, playFailure } from '../lib/audio/gate-audio';
+import { useOfflineSync } from './useOfflineSync';
+import { useScannerHistoryQuery } from './useScannerHistoryQuery';
+import { computeScannerStats } from './scanner-stats.utils';
 
-export type ScannerModeState =
-  | 'Idle'
-  | 'CameraInitializing'
-  | 'Scanning'
-  | 'Processing'
-  | 'Success'
-  | 'Duplicate'
-  | 'Invalid'
-  | 'OfflineQueued'
-  | 'Syncing'
-  | 'Error'
-  | 'PermissionDenied'
-  | 'NoCamera'
-  | 'CameraUnavailable'
-  | 'Paused'
-  | 'Offline'
-  | 'SyncFailed';
+export type { ScannerModeState };
 
 export interface UseScannerStateProps {
   initialEventId?: string;
@@ -42,14 +29,6 @@ export function useScannerState({ initialEventId = '' }: UseScannerStateProps = 
   const [scannerState, setScannerState] = useState<ScannerModeState>('Idle');
   const [lastValidationResult, setLastValidationResult] = useState<ValidationResult | null>(null);
   const [isOffline, setIsOffline] = useState(false);
-  const [offlineCount, setOfflineCount] = useState(0);
-  const [optimisticCheckInCount, setOptimisticCheckInCount] = useState(0);
-  const [syncResultSummary, setSyncResultSummary] = useState<string | null>(null);
-
-  // Pagination and filter states for history
-  const [historyPage, setHistoryPage] = useState(1);
-  const [historyFilterStatus, setHistoryFilterStatus] = useState('');
-  const [historySearch, setHistorySearch] = useState('');
 
   // 1. Detect network status changes
   useEffect(() => {
@@ -67,75 +46,56 @@ export function useScannerState({ initialEventId = '' }: UseScannerStateProps = 
     };
   }, []);
 
-  // 2. Fetch offline queue counts
-  const refreshOfflineCount = useCallback(async () => {
-    try {
-      const { getPendingScans } = await import('../lib/offline-scanner.service');
-      const pending = await getPendingScans();
-      setOfflineCount(pending.length);
-    } catch (err) {
-      console.error('Failed to query offline queue:', err);
-    }
-  }, []);
+  const onSyncCompleted = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: ['scanner-stats', selectedEventId] });
+    queryClient.invalidateQueries({ queryKey: ['scanner-history', selectedEventId] });
+  }, [queryClient, selectedEventId]);
 
-  useEffect(() => {
-    refreshOfflineCount();
-  }, [refreshOfflineCount, isOffline]);
+  // 2. Offline Sync Hook
+  const {
+    offlineCount,
+    optimisticCheckInCount,
+    setOptimisticCheckInCount,
+    syncResultSummary,
+    setSyncResultSummary,
+    refreshOfflineCount,
+    triggerOfflineSync,
+  } = useOfflineSync({
+    selectedEventId,
+    isOffline,
+    onSyncCompleted,
+  });
 
-  // 3. React Query: Stats query
-  const { data: serverStats, isLoading: isLoadingStats, refetch: refetchStats } = useQuery({
+  // 3. Scanner History Query Hook
+  const historyQuery = useScannerHistoryQuery({
+    selectedEventId,
+    isOffline,
+  });
+
+  // 4. React Query: Stats query
+  const {
+    data: serverStats,
+    isLoading: isLoadingStats,
+    refetch: refetchStats,
+  } = useQuery({
     queryKey: ['scanner-stats', selectedEventId],
     queryFn: () => adminGetScannerStats(selectedEventId),
     enabled: !!selectedEventId && !isOffline,
     staleTime: 5000,
   });
 
-  // 4. React Query: History query
-  const { data: historyRes, isLoading: isLoadingHistory, refetch: refetchHistory } = useQuery({
-    queryKey: ['scanner-history', selectedEventId, historyPage, historyFilterStatus, historySearch],
-    queryFn: () =>
-      adminGetScannerHistory(selectedEventId, {
-        page: historyPage,
-        limit: 15,
-        status: historyFilterStatus || undefined,
-        search: historySearch || undefined,
-      }),
-    enabled: !!selectedEventId && !isOffline,
-  });
-
-  // 5. Unified derived statistics strategy (aggregates local optimistic state when offline)
-  const stats = useMemo<ScannerStats | null>(() => {
-    if (!selectedEventId) return null;
-
-    const baseStats: ScannerStats = serverStats || {
-      totalTickets: 0,
-      checkedIn: 0,
-      remaining: 0,
-      failedScans: 0,
-      duplicateScans: 0,
-      offlinePending: 0,
-      offlineSynced: 0,
-      successRate: 0,
-      lastScanTime: null,
-      averageScanTime: 0,
-    };
-
-    if (isOffline) {
-      const checkedInWithOffline = baseStats.checkedIn + optimisticCheckInCount;
-      return {
-        ...baseStats,
-        checkedIn: checkedInWithOffline,
-        remaining: Math.max(0, baseStats.totalTickets - checkedInWithOffline),
-        offlinePending: offlineCount,
-        successRate: baseStats.totalTickets > 0 ? Number(((checkedInWithOffline / baseStats.totalTickets) * 100).toFixed(2)) : 0,
-      };
-    }
-
-    return {
-      ...baseStats,
-      offlinePending: offlineCount,
-    };
-  }, [selectedEventId, serverStats, isOffline, offlineCount, optimisticCheckInCount]);
+  // 5. Unified derived statistics strategy
+  const stats = useMemo<ScannerStats | null>(
+    () =>
+      computeScannerStats(
+        selectedEventId,
+        serverStats,
+        isOffline,
+        offlineCount,
+        optimisticCheckInCount
+      ),
+    [selectedEventId, serverStats, isOffline, offlineCount, optimisticCheckInCount]
+  );
 
   // 6. Online Scan Mutation
   const scanMutation = useMutation({
@@ -149,24 +109,28 @@ export function useScannerState({ initialEventId = '' }: UseScannerStateProps = 
         tierName: data.tierName,
         admits: data.admits,
         scannedAt: data.scannedAt,
+        guestName: data.guestName,
+        attendeeEmail: data.attendeeEmail,
         message: 'Ticket scanned and verified successfully.',
       });
       playSuccess();
-      // Invalidate queries
       queryClient.invalidateQueries({ queryKey: ['scanner-stats', selectedEventId] });
       queryClient.invalidateQueries({ queryKey: ['scanner-history', selectedEventId] });
     },
-    onError: (err: any) => {
+    onError: (err: any, variables) => {
       const apiErr = extractApiError(err);
-      const isDuplicate = apiErr.message?.includes('already used') || apiErr.message?.includes('Already checked');
+      const isDuplicate =
+        apiErr.message?.includes('already used') || apiErr.message?.includes('Already checked');
       playFailure();
+
+      const failedTicketId = (apiErr.details as any)?.ticketId || variables?.ticketId || '';
 
       if (isDuplicate) {
         const details = apiErr.details as any;
         setScannerState('Duplicate');
         setLastValidationResult({
           status: 'ALREADY_SCANNED',
-          ticketId: details?.ticketId || '',
+          ticketId: failedTicketId,
           scannedAt: details?.scannedAt,
           message: apiErr.message,
         });
@@ -174,19 +138,20 @@ export function useScannerState({ initialEventId = '' }: UseScannerStateProps = 
         setScannerState('Invalid');
         setLastValidationResult({
           status: 'INVALID',
-          ticketId: '',
+          ticketId: failedTicketId,
           message: apiErr.message || 'Ticket validation failed.',
         });
       }
     },
   });
 
-  // 7. Submit Ticket Scan coordinator (Online & Offline abstraction)
+  // 7. Submit Ticket Scan coordinator
   const submitScan = useCallback(
-    async (ticketId: string) => {
-      if (!selectedEventId || !ticketId.trim()) return;
+    async (rawTicketId: string) => {
+      const ticketId = normalizeTicketReference(rawTicketId);
+      if (!selectedEventId || !ticketId) return;
       if (scannerState === 'Processing') return;
-      
+
       setScannerState('Processing');
       setLastValidationResult(null);
 
@@ -194,9 +159,10 @@ export function useScannerState({ initialEventId = '' }: UseScannerStateProps = 
 
       if (isOffline) {
         try {
-          const { saveOfflineScan, isDuplicateScan } = await import('../lib/offline-scanner.service');
+          const { saveOfflineScan, isDuplicateScan } = await import(
+            '../lib/offline-scanner.service'
+          );
 
-          // Prevent double-queueing
           const duplicate = await isDuplicateScan(ticketId, selectedEventId);
           if (duplicate) {
             setScannerState('Duplicate');
@@ -222,7 +188,7 @@ export function useScannerState({ initialEventId = '' }: UseScannerStateProps = 
             message: 'Scan saved locally and queued for synchronization.',
           });
           playSuccess();
-        } catch (_err) {
+        } catch {
           setScannerState('Error');
           setLastValidationResult({
             status: 'ERROR',
@@ -235,52 +201,15 @@ export function useScannerState({ initialEventId = '' }: UseScannerStateProps = 
         scanMutation.mutate({ ticketId, requestId });
       }
     },
-    [selectedEventId, isOffline, scanMutation, refreshOfflineCount, scannerState]
+    [
+      selectedEventId,
+      isOffline,
+      scanMutation,
+      refreshOfflineCount,
+      setOptimisticCheckInCount,
+      scannerState,
+    ]
   );
-
-  // 8. Offline synchronization trigger
-  const triggerOfflineSync = useCallback(async () => {
-    if (isOffline || !selectedEventId) return;
-    setScannerState('Syncing');
-    setSyncResultSummary(null);
-
-    try {
-      const { syncScans, getPendingScans } = await import('../lib/offline-scanner.service');
-      const pending = await getPendingScans();
-      if (pending.length === 0) {
-        setScannerState('Idle');
-        return;
-      }
-
-      // Synchronize using adminScanTicket client API
-      const result = await syncScans((tid, evId) => adminScanTicket(tid, evId, `sync-req-${crypto.randomUUID()}`, 'camera', true));
-
-      setSyncResultSummary(
-        `Sync completed: ${result.synced} success, ${result.failed.length} failed.`
-      );
-      setOptimisticCheckInCount(0);
-      await refreshOfflineCount();
-
-      queryClient.invalidateQueries({ queryKey: ['scanner-stats', selectedEventId] });
-      queryClient.invalidateQueries({ queryKey: ['scanner-history', selectedEventId] });
-
-      if (result.failed.length > 0) {
-        setScannerState('SyncFailed');
-      } else {
-        setScannerState('Idle');
-      }
-    } catch (_err) {
-      setScannerState('Error');
-      setSyncResultSummary('Offline queue synchronization failed due to connection issue.');
-    }
-  }, [selectedEventId, isOffline, queryClient, refreshOfflineCount]);
-
-  // 9. Auto-sync on reconnect
-  useEffect(() => {
-    if (!isOffline && selectedEventId) {
-      triggerOfflineSync();
-    }
-  }, [isOffline, selectedEventId, triggerOfflineSync]);
 
   return {
     selectedEventId,
@@ -296,16 +225,16 @@ export function useScannerState({ initialEventId = '' }: UseScannerStateProps = 
     stats,
     isLoadingStats,
     refetchStats,
-    historyPage,
-    setHistoryPage,
-    historyFilterStatus,
-    setHistoryFilterStatus,
-    historySearch,
-    setHistorySearch,
-    historyItems: historyRes?.items || [],
-    historyPagination: historyRes?.pagination || { page: 1, limit: 15, total: 0, totalPages: 1 },
-    isLoadingHistory,
-    refetchHistory,
+    historyPage: historyQuery.historyPage,
+    setHistoryPage: historyQuery.setHistoryPage,
+    historyFilterStatus: historyQuery.historyFilterStatus,
+    setHistoryFilterStatus: historyQuery.setHistoryFilterStatus,
+    historySearch: historyQuery.historySearch,
+    setHistorySearch: historyQuery.setHistorySearch,
+    historyItems: historyQuery.historyItems,
+    historyPagination: historyQuery.historyPagination,
+    isLoadingHistory: historyQuery.isLoadingHistory,
+    refetchHistory: historyQuery.refetchHistory,
     submitScan,
     triggerOfflineSync,
   };

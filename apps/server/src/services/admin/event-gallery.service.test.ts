@@ -1,9 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { AdminEventGalleryService } from './event-gallery.service';
-import { EventGallery, MediaVisibility } from '../../models/event-gallery.schema';
+import { EventGallery } from '../../models/event-gallery.schema';
+import { EventGallerySettings } from '../../models/event-gallery-settings.schema';
 import { Event } from '../../models/event.schema';
+import { safeDeleteImages } from './media-cleanup.service';
 import { Types } from 'mongoose';
-import mongoose from 'mongoose';
 
 vi.mock('../../config/env', () => ({
   getEnv: vi.fn().mockReturnValue({
@@ -17,14 +18,9 @@ vi.mock('../../config/env', () => ({
 vi.mock('../../models/event-gallery.schema');
 vi.mock('../../models/event-gallery-settings.schema');
 vi.mock('../../models/event.schema');
-
-// Mock mongoose transactions
-vi.spyOn(mongoose, 'startSession').mockResolvedValue({
-  startTransaction: vi.fn(),
-  commitTransaction: vi.fn(),
-  abortTransaction: vi.fn(),
-  endSession: vi.fn(),
-} as any);
+vi.mock('./media-cleanup.service', () => ({
+  safeDeleteImages: vi.fn(),
+}));
 
 describe('AdminEventGalleryService', () => {
   const eventId = new Types.ObjectId().toString();
@@ -32,7 +28,7 @@ describe('AdminEventGalleryService', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    
+
     (Event.findById as any).mockReturnValue({
       select: vi.fn().mockReturnValue({
         lean: vi.fn().mockResolvedValue({
@@ -44,6 +40,11 @@ describe('AdminEventGalleryService', () => {
         })
       })
     });
+
+    // Default: gallery not yet published
+    (EventGallerySettings.findOne as any).mockReturnValue({
+      lean: vi.fn().mockResolvedValue(null),
+    });
   });
 
   describe('addItems', () => {
@@ -53,7 +54,7 @@ describe('AdminEventGalleryService', () => {
       });
       (EventGallery.countDocuments as any).mockResolvedValue(0);
       (EventGallery.exists as any).mockResolvedValue(false);
-      
+
       const mockInserted = [
         { _id: '1', publicId: 'p1', isCover: true, toObject: () => ({ isCover: true }) },
         { _id: '2', publicId: 'p2', isCover: false, toObject: () => ({ isCover: false }) }
@@ -73,65 +74,229 @@ describe('AdminEventGalleryService', () => {
       ]);
       expect(items).toHaveLength(2);
     });
-  });
 
-  describe('updateItem', () => {
-    it('should update caption and visibility', async () => {
-      const mockItem = {
-        _id: '1',
-        caption: 'old',
-        visibility: MediaVisibility.PUBLIC,
-        save: vi.fn().mockResolvedValue(true),
-        toObject: function() { return this; }
-      };
-
-      (EventGallery.findOne as any).mockResolvedValue(mockItem);
-
-      await AdminEventGalleryService.updateItem(eventId, '1', {
-        caption: 'new',
-        visibility: MediaVisibility.PRIVATE
+    it('should allow uploads even when gallery is already published', async () => {
+      (EventGallerySettings.findOne as any).mockReturnValue({
+        lean: vi.fn().mockResolvedValue({ published: true }),
       });
+      (EventGallery.find as any).mockReturnValue({
+        distinct: vi.fn().mockResolvedValue([]),
+      });
+      (EventGallery.countDocuments as any).mockResolvedValue(1);
+      (EventGallery.exists as any).mockResolvedValue(true);
 
-      expect(mockItem.caption).toBe('new');
-      expect(mockItem.visibility).toBe(MediaVisibility.PRIVATE);
-      expect(mockItem.save).toHaveBeenCalled();
+      const mockInserted = [
+        { _id: '2', publicId: 'p2', isCover: false, toObject: () => ({ isCover: false }) },
+      ];
+      (EventGallery.insertMany as any).mockResolvedValue(mockInserted);
+
+      const items = await AdminEventGalleryService.addItems(
+        eventId,
+        {
+          items: [{ url: 'url2', publicId: 'p2', mediaType: 'IMAGE' as any, assetProvider: 'cloudinary' }],
+        },
+        adminId
+      );
+
+      expect(items).toHaveLength(1);
+    });
+
+    it('should throw bad request when adding items exceeds 20 items cap', async () => {
+      (EventGallery.find as any).mockReturnValue({
+        distinct: vi.fn().mockResolvedValue([]),
+      });
+      (EventGallery.countDocuments as any).mockResolvedValue(19);
+
+      await expect(
+        AdminEventGalleryService.addItems(
+          eventId,
+          {
+            items: [
+              { url: 'url1', publicId: 'p1', mediaType: 'IMAGE' as any, assetProvider: 'cloudinary' },
+              { url: 'url2', publicId: 'p2', mediaType: 'IMAGE' as any, assetProvider: 'cloudinary' },
+            ],
+          },
+          adminId
+        )
+      ).rejects.toThrow('Event gallery limit reached (maximum 20 photos allowed)');
     });
   });
 
-  describe('setCover', () => {
-    it('should unset previous cover and set new cover', async () => {
-      const mockNewCover = {
-        _id: '2',
+  describe('updateSettings', () => {
+    it('should allow publishing and unpublishing gallery freely', async () => {
+      const mockSettings = {
+        published: true,
+        save: vi.fn().mockResolvedValue(true),
+        toObject: vi.fn().mockReturnValue({ published: false }),
+      };
+      (EventGallerySettings.findOne as any).mockResolvedValue(mockSettings);
+
+      const result = await AdminEventGalleryService.updateSettings(eventId, { published: false }, adminId);
+
+      expect(mockSettings.published).toBe(false);
+      expect(mockSettings.save).toHaveBeenCalled();
+      expect(result.published).toBe(false);
+    });
+  });
+
+  describe('deleteItem', () => {
+    it('should delete non-cover item and trigger safeDeleteImages', async () => {
+      const itemId = 'item-1';
+      (EventGallery.findOne as any).mockResolvedValue({
+        _id: itemId,
+        eventId,
+        publicId: 'cloudinary-p1',
+        isCover: false,
+      });
+      (EventGallery.deleteOne as any).mockResolvedValue({ deletedCount: 1 });
+
+      const result = await AdminEventGalleryService.deleteItem(eventId, itemId, adminId);
+
+      expect(EventGallery.deleteOne).toHaveBeenCalledWith({ _id: itemId, eventId });
+      expect(safeDeleteImages).toHaveBeenCalledWith(['cloudinary-p1'], 'Event', 'delete');
+      expect(result).toEqual({ success: true });
+    });
+
+    it('should delete cover item and automatically reassign cover to next item', async () => {
+      const itemId = 'item-cover';
+      const nextItem = {
+        _id: 'item-2',
         isCover: false,
         save: vi.fn().mockResolvedValue(true),
-        toObject: function() { return this; }
       };
-      
-      const mockSession = {
-        startTransaction: vi.fn(),
-        commitTransaction: vi.fn(),
-        abortTransaction: vi.fn(),
-        endSession: vi.fn(),
-      };
-      (mongoose.startSession as any).mockResolvedValue(mockSession);
 
-      (EventGallery.findOne as any).mockReturnValue({
-        session: vi.fn().mockResolvedValue(mockNewCover)
+      (EventGallery.findOne as any).mockImplementation((query: any) => {
+        if (query._id === itemId) {
+          return Promise.resolve({
+            _id: itemId,
+            eventId,
+            publicId: 'cloudinary-cover',
+            isCover: true,
+          });
+        }
+        return {
+          sort: vi.fn().mockResolvedValue(nextItem),
+        };
+      });
+      (EventGallery.deleteOne as any).mockResolvedValue({ deletedCount: 1 });
+
+      const result = await AdminEventGalleryService.deleteItem(eventId, itemId, adminId);
+
+      expect(EventGallery.deleteOne).toHaveBeenCalledWith({ _id: itemId, eventId });
+      expect(safeDeleteImages).toHaveBeenCalledWith(['cloudinary-cover'], 'Event', 'delete');
+      expect(nextItem.isCover).toBe(true);
+      expect(nextItem.save).toHaveBeenCalled();
+      expect(result).toEqual({ success: true });
+    });
+
+    it('should throw 404 when item does not exist or belongs to another event', async () => {
+      (EventGallery.findOne as any).mockResolvedValue(null);
+
+      await expect(
+        AdminEventGalleryService.deleteItem(eventId, 'missing-item', adminId)
+      ).rejects.toThrow('Gallery item');
+    });
+  });
+
+  describe('setCoverItem', () => {
+    it('should reset previous cover and set new cover on target item', async () => {
+      const itemId = 'item-target';
+      (EventGallery.findOne as any).mockResolvedValue({
+        _id: itemId,
+        eventId,
+        isCover: false,
+      });
+      (EventGallery.updateMany as any).mockResolvedValue({ modifiedCount: 1 });
+      (EventGallery.findByIdAndUpdate as any).mockResolvedValue({
+        _id: itemId,
+        isCover: true,
       });
 
-      (EventGallery.updateMany as any).mockReturnValue({
-        session: vi.fn().mockResolvedValue({ modifiedCount: 1 })
-      });
-
-      await AdminEventGalleryService.setCover(eventId, '2');
+      const result = await AdminEventGalleryService.setCoverItem(eventId, itemId, adminId);
 
       expect(EventGallery.updateMany).toHaveBeenCalledWith(
         { eventId, isCover: true },
-        { $set: { isCover: false } }
+        { isCover: false }
       );
-      expect(mockNewCover.isCover).toBe(true);
-      expect(mockNewCover.save).toHaveBeenCalledWith({ session: mockSession });
-      expect(mockSession.commitTransaction).toHaveBeenCalled();
+      expect(EventGallery.findByIdAndUpdate).toHaveBeenCalledWith(itemId, { isCover: true });
+      expect(result).toEqual({ success: true });
+    });
+
+    it('should throw 404 if item does not exist', async () => {
+      (EventGallery.findOne as any).mockResolvedValue(null);
+
+      await expect(
+        AdminEventGalleryService.setCoverItem(eventId, 'non-existent', adminId)
+      ).rejects.toThrow('Gallery item');
+    });
+  });
+
+  describe('updateItem', () => {
+    it('should update caption of existing item', async () => {
+      const itemId = 'item-1';
+      const mockDoc = {
+        _id: itemId,
+        eventId,
+        caption: 'Old caption',
+        save: vi.fn().mockResolvedValue(true),
+        toObject: () => ({
+          _id: itemId,
+          eventId,
+          caption: 'New exciting caption',
+          mediaType: 'IMAGE',
+          url: 'https://cloudinary.com/img.jpg',
+          publicId: 'img_p1',
+          sortOrder: 0,
+          isCover: true,
+          visibility: 'PUBLIC',
+        }),
+      };
+      (EventGallery.findOne as any).mockResolvedValue(mockDoc);
+
+      const result = await AdminEventGalleryService.updateItem(
+        eventId,
+        itemId,
+        { caption: 'New exciting caption' },
+        adminId
+      );
+
+      expect(mockDoc.caption).toBe('New exciting caption');
+      expect(mockDoc.save).toHaveBeenCalled();
+      expect(result.caption).toBe('New exciting caption');
+    });
+  });
+
+  describe('reorderItems', () => {
+    it('should update sortOrder for all specified item IDs', async () => {
+      const itemIds = ['id-1', 'id-2', 'id-3'];
+      (EventGallery.find as any).mockReturnValue({
+        select: vi.fn().mockResolvedValue([
+          { _id: 'id-1' },
+          { _id: 'id-2' },
+          { _id: 'id-3' },
+        ]),
+      });
+      (EventGallery.bulkWrite as any).mockResolvedValue({ ok: 1 });
+
+      const result = await AdminEventGalleryService.reorderItems(eventId, { itemIds }, adminId);
+
+      expect(EventGallery.bulkWrite).toHaveBeenCalledWith([
+        { updateOne: { filter: { _id: 'id-1', eventId }, update: { $set: { sortOrder: 0 } } } },
+        { updateOne: { filter: { _id: 'id-2', eventId }, update: { $set: { sortOrder: 1 } } } },
+        { updateOne: { filter: { _id: 'id-3', eventId }, update: { $set: { sortOrder: 2 } } } },
+      ]);
+      expect(result).toEqual({ success: true });
+    });
+
+    it('should reject reorder if any item ID does not belong to the event', async () => {
+      const itemIds = ['id-1', 'id-foreign'];
+      (EventGallery.find as any).mockReturnValue({
+        select: vi.fn().mockResolvedValue([{ _id: 'id-1' }]),
+      });
+
+      await expect(
+        AdminEventGalleryService.reorderItems(eventId, { itemIds }, adminId)
+      ).rejects.toThrow('Invalid gallery item IDs in reorder request');
     });
   });
 });

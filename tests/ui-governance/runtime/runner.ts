@@ -1,14 +1,13 @@
 import { Page } from '@playwright/test';
-import { existsSync, mkdirSync, writeFileSync } from 'fs';
-import { resolve, dirname } from 'path';
+import { existsSync, mkdirSync } from 'fs';
+import { resolve } from 'path';
 import { RuntimeValidator } from './validator';
 import { RuntimeFinding } from './runtime-finding';
-import { VIEWPORTS, Viewport } from '../config/viewports';
-import { targets, UITarget } from '../config/pages';
+import { VIEWPORTS } from '../config/viewports';
+import { targets } from '../config/pages';
 import { TelemetryCollector } from './telemetry/collector';
 import { ReporterRegistry, ConsoleReporter, JsonReporter } from './reporters/index';
 import { waitPageStability } from '../utils/browser';
-import { detectDOMOverflows } from '../utils/dom';
 
 const workspaceRoot = resolve(__dirname, '../../..');
 
@@ -88,7 +87,7 @@ export class RuntimeRunner {
               mkdirSync(evidenceDir, { recursive: true });
             }
             const screenshotPath = resolve(evidenceDir, `${sanitizedRoute}_${viewport.name}_failure.png`);
-            
+
             try {
               await page.screenshot({ path: screenshotPath, fullPage: true });
               for (const finding of findings) {

@@ -31,6 +31,12 @@ export default function EditEventPage() {
     queryFn: () => adminGetEvent(id)
   });
 
+  React.useEffect(() => {
+    if (event && event.lifecycle === 'COMPLETED') {
+      router.replace(`/events/${id}/gallery`);
+    }
+  }, [event, id, router]);
+
   const isSubmitting = useRef(false);
 
   const updateMutation = useMutation({
@@ -64,7 +70,7 @@ export default function EditEventPage() {
     if (formRef.current?.validateStep(4) && event) {
       try {
         const payload = formRef.current.getPayload();
-        
+
         // Immutable payload transformation for Edit updates
         const updatePayload = {
           ...payload,
@@ -83,7 +89,7 @@ export default function EditEventPage() {
     }
   };
 
-  if (isEventLoading) {
+  if (isEventLoading || (event && event.lifecycle === 'COMPLETED')) {
     return (
       <div className="py-12 flex justify-center items-center">
         <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-accent-purple" />

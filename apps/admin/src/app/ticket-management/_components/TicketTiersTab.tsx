@@ -13,7 +13,9 @@ import {
 import { extractApiError } from '@/lib/api/client';
 import { EmptyState, ErrorState } from '@mad/ui';
 import { Ticket } from '@mad/ui/icons';
-import { COLOR_PRESETS, ICON_PRESETS, getTierIcon } from './tier-presets';
+
+import { TierAddForm } from './TierAddForm';
+import { TierCardItem } from './TierCardItem';
 import { TierEditModal, TierDeleteModal } from './TierFormModal';
 
 interface TabProps {
@@ -94,7 +96,7 @@ export function TicketTiersTab({ canMutate, qc, showToast }: TabProps) {
       icon: iconInput,
       defaultVisibility: defaultVisInput,
       sortIndex: Number(sortIdxInput),
-      isActive: true
+      isActive: true,
     });
   };
 
@@ -118,13 +120,9 @@ export function TicketTiersTab({ canMutate, qc, showToast }: TabProps) {
         icon: editingTier.icon || 'ticket',
         defaultVisibility: editingTier.defaultVisibility,
         sortIndex: Number(editingTier.sortIndex || 0),
-        isActive: editingTier.isActive
-      }
+        isActive: editingTier.isActive,
+      },
     });
-  };
-
-  const handleDelete = (id: string) => {
-    setDeleteTierId(id);
   };
 
   const confirmDeleteTier = () => {
@@ -208,149 +206,23 @@ export function TicketTiersTab({ canMutate, qc, showToast }: TabProps) {
 
       {/* Grid Layout (Desktop 2-col, Mobile 1-col) */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-        {/* Left column: Visual Configurator Form */}
         {canMutate && (
-          <div className="lg:col-span-1 space-y-6">
-            {/* Live Preview Ticket Card */}
-            <div className="glass rounded-2xl border border-border-subtle p-5 overflow-hidden relative flex flex-col justify-between h-48 bg-gradient-to-br from-white/5 to-white/0 shadow-glow-sm">
-              <div className="absolute top-0 right-0 w-24 h-24 rounded-full filter blur-2xl opacity-20" style={{ backgroundColor: colorInput }} />
-
-              <div className="flex justify-between items-start">
-                <div className="flex items-center gap-2.5">
-                  <div
-                    className="w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-md transition-all"
-                    style={{ backgroundColor: colorInput }}
-                  >
-                    {getTierIcon(iconInput)}
-                  </div>
-                  <div>
-                    <h4 className="text-white font-black text-sm uppercase tracking-wider">{nameInput || 'Tier Title'}</h4>
-                    <p className="text-[10px] text-text-muted font-mono">{nameInput.toLowerCase().replace(/[^a-z0-9]+/g, '-') || 'slug-auto-preview'}</p>
-                  </div>
-                </div>
-                <span className="text-[9px] font-bold tracking-widest uppercase px-2 py-0.5 rounded bg-white/10 text-white/90">
-                  Preview
-                </span>
-              </div>
-
-              <p className="text-text-secondary text-xs line-clamp-2 italic pr-4">
-                {descInput || 'Write a short description to guide customers on checkout...'}
-              </p>
-
-              <div className="flex justify-between items-center border-t border-white/5 pt-3">
-                <span className="text-[10px] text-text-muted">Visibility: {defaultVisInput ? 'Visible' : 'Hidden'}</span>
-                <span className="text-xs font-bold font-mono" style={{ color: colorInput }}>Order: {sortIdxInput}</span>
-              </div>
-            </div>
-
-            {/* Quick Add Form */}
-            <div className="glass rounded-2xl border border-border-subtle p-6 space-y-4">
-              <h3 className="text-white font-bold text-md">Add New Ticket Tier</h3>
-              <form onSubmit={handleAddSubmit} className="space-y-4">
-                <div>
-                  <label className="text-text-secondary text-xs font-bold block mb-1.5">Tier Name</label>
-                  <input
-                    value={nameInput}
-                    onChange={(e) => setNameInput(e.target.value)}
-                    placeholder="e.g. VIP VIP Backstage"
-                    required
-                    className="w-full px-4 py-2.5 rounded-xl bg-background border border-border-subtle text-sm text-text-primary focus:outline-none focus:border-accent-purple"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-text-secondary text-xs font-bold block mb-1.5">Description</label>
-                  <textarea
-                    value={descInput}
-                    onChange={(e) => setDescInput(e.target.value)}
-                    placeholder="Describe tier privileges..."
-                    rows={2}
-                    className="w-full px-4 py-2.5 rounded-xl bg-background border border-border-subtle text-sm text-text-primary focus:outline-none focus:border-accent-purple resize-none"
-                  />
-                </div>
-
-                {/* Swatch Color Picker */}
-                <div>
-                  <label className="text-text-secondary text-xs font-bold block mb-1.5">Accent Color</label>
-                  <div className="flex flex-wrap gap-2 mb-2">
-                    {COLOR_PRESETS.map((preset) => (
-                      <button
-                        key={preset.hex}
-                        type="button"
-                        onClick={() => setColorInput(preset.hex)}
-                        title={preset.name}
-                        className={`w-6 h-6 rounded-full border-2 transition-all ${
-                          colorInput === preset.hex ? 'scale-110 border-white shadow-glow-sm' : 'border-transparent hover:scale-105'
-                        }`}
-                        style={{ backgroundColor: preset.hex }}
-                      />
-                    ))}
-                  </div>
-                  <input
-                    value={colorInput}
-                    onChange={(e) => setColorInput(e.target.value)}
-                    placeholder="#HEX Code"
-                    className="w-full px-4 py-2 rounded-xl bg-background border border-border-subtle text-xs text-text-primary focus:outline-none focus:border-accent-purple font-mono"
-                  />
-                </div>
-
-                {/* Icon Selection Picker */}
-                <div>
-                  <label className="text-text-secondary text-xs font-bold block mb-1.5">Icon Badge</label>
-                  <div className="grid grid-cols-5 gap-2">
-                    {ICON_PRESETS.map((icon) => (
-                      <button
-                        key={icon.id}
-                        type="button"
-                        onClick={() => setIconInput(icon.id)}
-                        title={icon.label}
-                        className={`p-2 rounded-xl border flex items-center justify-center transition-all ${
-                          iconInput === icon.id
-                            ? 'bg-accent-purple/10 text-accent-purple-light border-accent-purple/30 shadow-glow-sm'
-                            : 'glass border-border-subtle text-text-secondary hover:text-white'
-                        }`}
-                      >
-                        {getTierIcon(icon.id)}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Visibility & Sort Order */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-text-secondary text-xs font-bold block mb-1.5">Sort Position</label>
-                    <input
-                      type="number"
-                      min="0"
-                      value={sortIdxInput}
-                      onChange={(e) => setSortIdxInput(Number(e.target.value))}
-                      className="w-full px-4 py-2.5 rounded-xl bg-background border border-border-subtle text-sm text-text-primary focus:outline-none focus:border-accent-purple font-mono"
-                    />
-                  </div>
-                  <div className="flex flex-col justify-end pb-2.5">
-                    <label className="flex items-center gap-2 text-text-secondary text-xs font-bold cursor-pointer select-none">
-                      <input
-                        type="checkbox"
-                        checked={defaultVisInput}
-                        onChange={(e) => setDefaultVisInput(e.target.checked)}
-                        className="rounded bg-background border-border-subtle text-accent-purple focus:ring-accent-purple"
-                      />
-                      Visible by Default
-                    </label>
-                  </div>
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={createMutation.isPending}
-                  className="w-full py-3 btn-gradient text-white text-sm font-bold rounded-xl shadow-glow transition-all active:scale-[0.98] disabled:opacity-60"
-                >
-                  {createMutation.isPending ? 'Saving...' : 'Save & Publish Tier'}
-                </button>
-              </form>
-            </div>
-          </div>
+          <TierAddForm
+            nameInput={nameInput}
+            setNameInput={setNameInput}
+            descInput={descInput}
+            setDescInput={setDescInput}
+            colorInput={colorInput}
+            setColorInput={setColorInput}
+            iconInput={iconInput}
+            setIconInput={setIconInput}
+            defaultVisInput={defaultVisInput}
+            setDefaultVisInput={setDefaultVisInput}
+            sortIdxInput={sortIdxInput}
+            setSortIdxInput={setSortIdxInput}
+            onSubmit={handleAddSubmit}
+            isPending={createMutation.isPending}
+          />
         )}
 
         {/* Right column: Tiers Master Directory List */}
@@ -370,58 +242,16 @@ export function TicketTiersTab({ canMutate, qc, showToast }: TabProps) {
           ) : (
             <div className="space-y-3">
               {filteredTiers.map((tier) => (
-                <div
+                <TierCardItem
                   key={tier._id}
-                  className="glass rounded-2xl border border-border-subtle p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 transition-all hover:border-white/10"
-                >
-                  <div className="flex items-center gap-4">
-                    <div
-                      className="w-12 h-12 rounded-2xl flex items-center justify-center text-white shrink-0 shadow-md"
-                      style={{ backgroundColor: tier.color || '#6366F1' }}
-                    >
-                      {getTierIcon(tier.icon || 'ticket')}
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2.5">
-                        <h4 className="text-white font-bold text-base">{tier.name}</h4>
-                        <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-white/5 border border-white/5 text-text-muted">
-                          {tier.slug}
-                        </span>
-                        {tier.isActive === false && (
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-red-500/10 text-red-400 border border-red-500/20">
-                            Inactive
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-text-secondary text-xs mt-1 line-clamp-1 max-w-md">
-                        {tier.description || 'No description provided.'}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2 w-full sm:w-auto justify-end border-t sm:border-t-0 pt-3 sm:pt-0 border-white/5">
-                    <span className="text-xs text-text-muted font-mono mr-2">Pos: {tier.sortIndex ?? 0}</span>
-                    {canMutate && (
-                      <>
-                        <button
-                          onClick={() => {
-                            setValidationError(null);
-                            setEditingTier({ ...tier });
-                          }}
-                          className="px-3 py-1.5 glass border border-border-subtle hover:border-white/20 text-xs font-semibold text-text-secondary hover:text-white rounded-xl transition-all"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => handleDelete(tier._id)}
-                          className="px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 text-xs font-semibold rounded-xl transition-all"
-                        >
-                          Delete
-                        </button>
-                      </>
-                    )}
-                  </div>
-                </div>
+                  tier={tier}
+                  canMutate={canMutate}
+                  onEdit={(t) => {
+                    setValidationError(null);
+                    setEditingTier({ ...t });
+                  }}
+                  onDelete={(id) => setDeleteTierId(id)}
+                />
               ))}
             </div>
           )}

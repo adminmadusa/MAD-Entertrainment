@@ -2,16 +2,17 @@
 
 import { useMutation } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 import { extractApiError } from '@/lib/api/client';
 import { ensureGuestBookingSession, publicCreateBooking } from '@/lib/api/public.service';
+import { useAuth } from '@/providers/AuthProvider';
 import type { Event as EventData } from '@mad/types';
+import { Button } from '@mad/ui';
 import { ReserveTicketsInput } from '@mad/validations';
 
 import { PromoCodeForm } from './PromoCodeForm';
-import { BookingStickyFooter } from './BookingStickyFooter';
-import { formatMoney } from '@mad/shared';
+import { TicketTierList } from './TicketTierList';
 
 interface TicketSelectionContentProps {
   event: EventData;
@@ -22,18 +23,17 @@ interface TicketSelectionContentProps {
   checkoutTriggerRef?: React.MutableRefObject<(() => void) | null>;
   setIsPendingChange?: (isPending: boolean) => void;
   onBookingSuccess?: (bookingId: string) => void;
+  // Controlled Promo Code props
+  couponCode?: string;
+  couponApplied?: boolean;
+  couponMessage?: { type: 'success' | 'error'; text: string } | null;
+  showCelebration?: boolean;
+  setShowCelebration?: (show: boolean) => void;
+  onApplyCoupon?: (e: React.FormEvent) => void;
+  onRemoveCoupon?: () => void;
+  onCouponChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  hidePromoCodeOnDesktop?: boolean;
 }
-
-type TicketTierWithOptionalFields = EventData['ticketTiers'][number] & {
-  groupName?: string;
-  isFree?: boolean;
-  offerRules?: {
-    discountType?: 'none' | 'percentage' | 'flat';
-    discountValue?: number;
-    buyQty?: number;
-    freeTicketQty?: number;
-  };
-};
 
 export function TicketSelectionContent({
   event,
@@ -43,26 +43,67 @@ export function TicketSelectionContent({
   checkoutTriggerRef,
   setIsPendingChange,
   onBookingSuccess,
+  couponCode: propCouponCode,
+  couponApplied: propCouponApplied,
+  couponMessage: propCouponMessage,
+  showCelebration: propShowCelebration,
+  setShowCelebration: propSetShowCelebration,
+  onApplyCoupon: propOnApplyCoupon,
+  onRemoveCoupon: propOnRemoveCoupon,
+  onCouponChange: propOnCouponChange,
+  hidePromoCodeOnDesktop = false,
 }: TicketSelectionContentProps) {
   const router = useRouter();
+  const { isAuthenticated } = useAuth();
   const eventId = event._id;
   const currency = event.currency || 'USD';
-
-  const totalCapacity = event.totalCapacity || event.ticketTiers?.reduce((acc, t) => acc + (t.quantity || 0), 0) || 0;
-  const soldCount = event.soldCount || event.ticketTiers?.reduce((acc, t) => acc + (t.soldCount || 0), 0) || 0;
-  const ticketsLeft = Math.max(0, totalCapacity - soldCount);
 
   const [sessionToken, setSessionToken] = useState('');
   const [sessionError, setSessionError] = useState(false);
   const [quantities, setQuantities] = useState<Record<string, number>>({});
-  const [couponCode, setCouponCode] = useState('');
-  const [couponApplied, setCouponApplied] = useState(false);
-  const [couponMessage, setCouponMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
-  const [showCelebration, setShowCelebration] = useState(false);
+  const [internalCouponCode, setInternalCouponCode] = useState('');
+  const [internalCouponApplied, setInternalCouponApplied] = useState(false);
+  const [internalCouponMessage, setInternalCouponMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [internalShowCelebration, setInternalShowCelebration] = useState(false);
   const [error, setError] = useState('');
+
+  const couponCode = propCouponCode !== undefined ? propCouponCode : internalCouponCode;
+  const couponApplied = propCouponApplied !== undefined ? propCouponApplied : internalCouponApplied;
+  const couponMessage = propCouponMessage !== undefined ? propCouponMessage : internalCouponMessage;
+  const showCelebration = propShowCelebration !== undefined ? propShowCelebration : internalShowCelebration;
+  const setShowCelebration = propSetShowCelebration || setInternalShowCelebration;
+
+  const handleInternalApplyCoupon = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!internalCouponCode.trim()) return;
+    setInternalCouponApplied(true);
+    setInternalCouponMessage(null);
+    setInternalShowCelebration(true);
+    setError('');
+  };
+
+  const handleInternalRemoveCoupon = () => {
+    setInternalCouponCode('');
+    setInternalCouponApplied(false);
+    setInternalCouponMessage(null);
+  };
+
+  const handleInternalCouponChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInternalCouponCode(e.target.value);
+    if (internalCouponApplied) {
+      setInternalCouponApplied(false);
+      setInternalCouponMessage(null);
+    }
+  };
+
+  const handleApplyCoupon = propOnApplyCoupon || handleInternalApplyCoupon;
+  const handleRemoveCoupon = propOnRemoveCoupon || handleInternalRemoveCoupon;
+  const handleCouponChange = propOnCouponChange || handleInternalCouponChange;
 
   // Setup signed guest session token — extracted for retry support
   const initGuestSession = useCallback(() => {
+    if (isAuthenticated) return;
+
     setSessionError(false);
     setError('');
 
@@ -74,7 +115,7 @@ export function TicketSelectionContent({
         setSessionError(true);
         setError('Secure session initialization failed. Please refresh and try again.');
       });
-  }, []);
+  }, [isAuthenticated]);
 
   useEffect(() => {
     initGuestSession();
@@ -96,13 +137,18 @@ export function TicketSelectionContent({
       setError(apiError);
 
       if (apiError.toLowerCase().includes('coupon') || apiError.toLowerCase().includes('promo')) {
-        setCouponApplied(false);
-        setCouponMessage({ type: 'error', text: '⚠ Unable to apply promo code. Please check and try again.' });
+        if (propOnRemoveCoupon) {
+          propOnRemoveCoupon();
+        } else {
+          setInternalCouponApplied(false);
+          setInternalCouponMessage({ type: 'error', text: '⚠ Unable to apply promo code. Please check and try again.' });
+        }
       }
 
       if (setIsPendingChange) setIsPendingChange(false);
     },
-    mutationFn: (payload: ReserveTicketsInput) => publicCreateBooking(payload, sessionToken),
+    mutationFn: (payload: ReserveTicketsInput) =>
+      publicCreateBooking(payload, isAuthenticated ? undefined : sessionToken),
   });
 
   const handleQtyChange = useCallback((tier: string, change: number) => {
@@ -131,29 +177,6 @@ export function TicketSelectionContent({
       onQuantitiesChange(next, sub, totalCount);
     }
   }, [quantities, event.ticketTiers, onQuantitiesChange]);
-
-  const handleApplyCoupon = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!couponCode.trim()) return;
-    setCouponApplied(true);
-    setCouponMessage(null);
-    setShowCelebration(true);
-    setError('');
-  };
-
-  const handleRemoveCoupon = () => {
-    setCouponCode('');
-    setCouponApplied(false);
-    setCouponMessage(null);
-  };
-
-  const handleCouponChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setCouponCode(e.target.value);
-    if (couponApplied) {
-      setCouponApplied(false);
-      setCouponMessage(null);
-    }
-  };
 
   const handleCheckoutSubmit = useCallback(() => {
     setError('');
@@ -196,178 +219,46 @@ export function TicketSelectionContent({
     };
   }, [checkoutTriggerRef, handleCheckoutSubmit]);
 
-  const { subtotal } = useMemo(() => {
-    let total = 0;
-    event.ticketTiers.forEach((tier) => {
-      const qty = quantities[tier.tier] || 0;
-      if (qty > 0) {
-        const price = Math.max(0, tier.price - (tier.discount || 0));
-        total += price * qty;
-      }
-    });
-    return { subtotal: total };
-  }, [quantities, event.ticketTiers]);
-
   return (
-    <div className={`space-y-6 text-white ${isModal ? '' : 'container-mad max-w-2xl px-4 pb-32 pt-6'}`}>
+    <div className={`space-y-3.5 text-white ${isModal ? '' : 'container-mad max-w-2xl px-4 pb-32 pt-6'}`}>
       {error && (
-        <div className="p-3.5 bg-error/10 border border-error/30 rounded-xl text-xs text-red-400 text-center" role="alert" aria-live="assertive">
+        <div className="py-2 px-3 bg-error/10 border border-error/20 rounded-xl text-xs text-red-400 text-center" role="alert" aria-live="assertive">
           {error}
           {sessionError && (
-            <button
+            <Button
               type="button"
+              variant="outline"
+              size="sm"
               onClick={initGuestSession}
-              className="block mx-auto mt-2 px-4 py-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-300 font-semibold text-xs transition-all"
+              className="block mx-auto mt-1.5 px-3 py-1 rounded-lg bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-300 font-semibold text-[11px] transition-all"
             >
               Try Again
-            </button>
+            </Button>
           )}
         </div>
       )}
 
       {/* Ticket Tiers List */}
-      <div className="space-y-6">
-        <h2 className="text-sm font-black uppercase tracking-wider text-text-secondary">Select Tickets</h2>
-        <div className="space-y-6">
-          {Object.entries(
-            event.ticketTiers.reduce<Record<string, TicketTierWithOptionalFields[]>>((acc, tier) => {
-              const tierWithMeta = tier as TicketTierWithOptionalFields;
-              const groupName = tierWithMeta.groupName || 'Passes';
-              if (!acc[groupName]) acc[groupName] = [];
-              acc[groupName].push(tierWithMeta);
-              return acc;
-            }, {})
-          ).map(([groupName, tiersInGroup]) => (
-            <div key={groupName} className="space-y-3">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-accent-purple-light px-1">
-                {groupName}
-              </h3>
-              <div className="space-y-3">
-                {tiersInGroup.map((tier) => {
-                  const isFree = !!tier.isFree || tier.price === 0;
-                  const offer = tier.offerRules;
-                  const discount = tier.discount || 0;
-                  const finalPrice = isFree ? 0 : Math.max(0, tier.price - discount);
-
-                  return (
-                    <div
-                      key={tier.tier}
-                      className="glass rounded-2xl border border-white/5 p-5 flex items-center justify-between gap-6 hover:border-white/15 transition-all"
-                    >
-                      <div className="space-y-2 flex-1">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <span className="text-base font-bold text-white">{tier.name}</span>
-                          {tier.groupSize && tier.groupSize > 1 && (
-                            <span className="text-[9px] text-emerald-400 font-semibold px-2 py-0.5 bg-emerald-500/10 rounded-full border border-emerald-500/20">
-                              Admits {tier.groupSize}
-                            </span>
-                          )}
-                          {isFree && (
-                            <span className="text-[9px] text-emerald-400 font-bold px-2 py-0.5 bg-emerald-500/15 rounded-full border border-emerald-500/30">
-                              FREE TICKET
-                            </span>
-                          )}
-                          {offer && offer.discountType !== 'none' && (
-                            <span className="text-[9px] text-accent-pink font-semibold px-2 py-0.5 bg-accent-pink/10 rounded-full border border-accent-pink/20">
-                               {offer.discountType === 'percentage'
-                                 ? `${offer.discountValue}% OFF`
-                                 : `${formatMoney(offer.discountValue, currency)} OFF`}
-                            </span>
-                          )}
-                          {offer && offer.buyQty && offer.freeTicketQty && (
-                            <span className="text-[9px] text-accent-cyan font-semibold px-2 py-0.5 bg-accent-cyan/10 rounded-full border border-accent-cyan/20">
-                              Buy {offer.buyQty} Get {offer.freeTicketQty} Free
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-xs text-text-muted leading-relaxed">
-                          {tier.description || 'General Entry Ticket'}
-                        </p>
-                        {tier.groupSize && tier.groupSize > 1 && (
-                          <p className="text-xs text-emerald-400 font-medium mt-1">
-                            ✓ Renders {tier.groupSize} individual entry passes on checkout
-                          </p>
-                        )}
-
-                        <div className="flex items-center gap-2">
-                          {isFree ? (
-                            <span className="text-emerald-400 font-black text-sm uppercase tracking-wider">
-                              FREE
-                            </span>
-                          ) : (
-                            <>
-                              <span className="text-accent-purple-light font-black text-sm">
-                                {formatMoney(finalPrice, currency)}
-                              </span>
-                              {discount > 0 && (
-                                <span className="text-xs text-text-muted line-through">{formatMoney(tier.price, currency)}</span>
-                              )}
-                            </>
-                          )}
-                        </div>
-
-                        {tier.availabilityWindow?.endDate && (
-                          <div className="text-[10px] text-accent-cyan">
-                            Sales end on {new Date(tier.availabilityWindow.endDate).toLocaleDateString('en-US', {
-                              timeZone: 'UTC',
-                            })}
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Counter */}
-                      <div className="flex items-center gap-3 bg-background border border-white/10 rounded-xl p-1 shadow-inner">
-                        <button
-                          type="button"
-                          onClick={() => handleQtyChange(tier.tier, -1)}
-                          aria-label={`Decrease ${tier.name} tickets`}
-                          className="w-11 h-11 rounded-lg hover:bg-white/5 flex items-center justify-center text-white text-base font-bold active:scale-90 transition-transform focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple"
-                        >
-                          -
-                        </button>
-                        <span className="w-5 text-center text-sm font-semibold text-white">
-                          {quantities[tier.tier] || 0}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => handleQtyChange(tier.tier, 1)}
-                          aria-label={`Increase ${tier.name} tickets`}
-                          className="w-11 h-11 rounded-lg hover:bg-white/5 flex items-center justify-center text-white text-base font-bold active:scale-90 transition-transform focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple"
-                        >
-                          +
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Promo Code Form & Verification */}
-      <PromoCodeForm
-        couponCode={couponCode}
-        couponApplied={couponApplied}
-        couponMessage={couponMessage}
-        showCelebration={showCelebration}
-        setShowCelebration={setShowCelebration}
-        onApplyCoupon={handleApplyCoupon}
-        onRemoveCoupon={handleRemoveCoupon}
-        onCouponChange={handleCouponChange}
+      <TicketTierList
+        ticketTiers={event.ticketTiers}
+        currency={currency}
+        quantities={quantities}
+        onQtyChange={handleQtyChange}
       />
 
-      {/* Mobile Sticky bottom footer when not rendered inside modal */}
-      {!isModal && (
-        <BookingStickyFooter
-          ticketsLeft={ticketsLeft}
-          subtotal={subtotal}
-          onCheckoutSubmit={handleCheckoutSubmit}
-          isPending={createBookingMutation.isPending}
-          currency={currency}
+      {/* Promo Code Form & Verification */}
+      <div className={hidePromoCodeOnDesktop ? 'block md:hidden' : 'block'}>
+        <PromoCodeForm
+          couponCode={couponCode}
+          couponApplied={couponApplied}
+          couponMessage={couponMessage}
+          showCelebration={showCelebration}
+          setShowCelebration={setShowCelebration}
+          onApplyCoupon={handleApplyCoupon}
+          onRemoveCoupon={handleRemoveCoupon}
+          onCouponChange={handleCouponChange}
         />
-      )}
+      </div>
     </div>
   );
 }

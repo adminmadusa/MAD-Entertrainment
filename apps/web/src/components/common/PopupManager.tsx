@@ -1,7 +1,7 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import Image from 'next/image';
+import { ImageWrapper } from '@/components/common/ImageWrapper';
 import Link from 'next/link';
 import { useEffect, useState, useCallback } from 'react';
 
@@ -18,7 +18,7 @@ import { FloatingCountdown } from './FloatingCountdown';
 // This is an additive gate — it does NOT change the semantics of an
 // empty showOnPages[] array (which still means "all eligible pages").
 // Adding new marketing routes here makes them eligible automatically.
-export const POPUP_ELIGIBLE_PREFIXES = ['/', '/events', '/past-events', '/gallery'];
+export const POPUP_ELIGIBLE_PREFIXES = ['/', '/events'];
 
 function isEligibleRoute(pathname: string): boolean {
   return POPUP_ELIGIBLE_PREFIXES.some(
@@ -81,7 +81,7 @@ function PopupModal({ popup, onClose }: PopupModalProps) {
       {/* Banner image — full bleed, below header */}
       {popup.image?.url && (
         <div className="relative w-full aspect-[16/7] overflow-hidden">
-          <Image
+          <ImageWrapper
             src={popup.image.url}
             alt=""
             fill

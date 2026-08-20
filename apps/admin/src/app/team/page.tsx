@@ -4,8 +4,9 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
 
+import { adminGetMe } from '@/lib/api/admin/auth.service';
 import { adminCreateAdmin, adminGetAdmins, adminResetAdminPassword, adminToggleAdminActive, adminUpdateAdmin, adminUpdateAdminRole, } from '@/lib/api/admin/team.service';
-import { adminApiClient, extractApiError } from '@/lib/api/client';
+import { extractApiError } from '@/lib/api/client';
 import { useAdminAuth } from '@/providers/AdminAuthProvider';
 import { AdminRole } from '@mad/shared';
 import type { Admin } from '@mad/types';
@@ -39,13 +40,10 @@ export default function AdminTeamPage() {
   const [roleServerError, setRoleServerError] = useState('');
   const [resetServerError, setResetServerError] = useState('');
 
-  // Fetch logged in admin to prevent self-modification (meProfile._id, not currentAdmin.id)
+  // Fetch logged in admin to prevent self-modification (meProfile.id, not currentAdmin.id)
   const { data: meProfile } = useQuery({
     queryKey: ['admin-profile-me'],
-    queryFn: async () => {
-      const { data } = await adminApiClient.get<{ data: { admin: Admin } }>('/admin/auth/me');
-      return data.data.admin;
-    },
+    queryFn: adminGetMe,
   });
 
   const { data, isLoading, error } = useQuery({
@@ -154,7 +152,7 @@ export default function AdminTeamPage() {
         pagination={pagination}
         page={page}
         currentAdmin={currentAdmin}
-        meProfileId={meProfile?._id}
+        meProfileId={meProfile?.id ?? currentAdmin?.id}
         onPageChange={setPage}
         onToggle={(id) => toggleMutation.mutate(id)}
         toggleIsPending={toggleMutation.isPending}
@@ -197,7 +195,7 @@ export default function AdminTeamPage() {
           <EditAdminModal
             key={editTarget._id}
             target={editTarget}
-            meProfileId={meProfile?._id}
+            meProfileId={meProfile?.id ?? currentAdmin?.id}
             onClose={() => {
               setIsEditOpen(false);
               setEditTarget(null);

@@ -1,4 +1,5 @@
 import { z } from 'zod';
+
 import { EventCategory, EventStatus, BookingMode, TicketTier, type EventLifecycleStatus } from '@mad/shared';
 import { objectIdSchema } from '@mad/validations';
 
@@ -34,6 +35,7 @@ export const listEventsQuerySchema = z.object({
   page: z.coerce.number().int().positive().default(1),
   limit: paginationLimitSchema.default(12),
   includeTotal: booleanQuerySchema.optional(),
+  bookableOnly: booleanQuerySchema.optional(),
 }).strict();
 
 export const getEventSeatLayoutParamSchema = z.object({
@@ -50,6 +52,7 @@ type EventImageValidationAsset = {
 type EventImageValidationBody = {
   bannerImage?: EventImageValidationAsset;
   posterImage?: EventImageValidationAsset;
+  galleryImages?: EventImageValidationAsset[];
 };
 
 const eventLifecycleStatuses = Object.values(EventStatus) as [EventLifecycleStatus, ...EventLifecycleStatus[]];
@@ -99,6 +102,21 @@ export const validateEventImages = (body: EventImageValidationBody, ctx: z.Refin
 
   checkImg(banner, 'bannerImage');
   checkImg(poster, 'posterImage');
+
+  if (Array.isArray(body.galleryImages)) {
+    body.galleryImages.forEach((img: any, idx: number) => {
+      checkImg(img, ['galleryImages', idx.toString()]);
+    });
+  }
+
+  const totalImages = (banner ? 1 : 0) + (poster ? 1 : 0) + (Array.isArray(body.galleryImages) ? body.galleryImages.length : 0);
+  if (totalImages > 15) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'Maximum 15 marketing images allowed (banner + poster + gallery images)',
+      path: ['galleryImages'],
+    });
+  }
 };
 
 const validateEventDates = (body: any, ctx: z.RefinementCtx) => {
@@ -154,6 +172,7 @@ const eventBodySchema = z.object({
   bookingMode: z.nativeEnum(BookingMode),
   bannerImage: cloudinaryImageSchema,
   posterImage: cloudinaryImageSchema.optional(),
+  galleryImages: z.array(cloudinaryImageSchema).max(13).optional(),
   startDate: z.string().datetime(),
   endDate: z.string().datetime().optional(),
   doorsOpenTime: z.string().optional(),

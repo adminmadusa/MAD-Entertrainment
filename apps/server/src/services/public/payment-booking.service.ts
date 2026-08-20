@@ -1,6 +1,6 @@
 import { ClientSession } from 'mongoose';
 
-import { BookingStatus, PaymentStatus, ReservationStatus, NotificationType } from '@mad/shared';
+import { BookingStatus, PaymentStatus, ReservationStatus, NotificationType, deriveBookingEligibility } from '@mad/shared';
 
 import { getEnv } from '../../config/env';
 import { AppError } from '../../middleware/error.middleware';
@@ -15,7 +15,7 @@ import { createNotificationSafe } from '../notification.service';
 import { ReservationService } from '../reservation.service';
 import { PaymentInventoryService } from './payment-inventory.service';
 import { PaymentRefundService } from './payment-refund.service';
-import { deriveBookingEligibility } from '@mad/shared';
+
 
 export interface ConfirmationTransactionResult {
   success: boolean;

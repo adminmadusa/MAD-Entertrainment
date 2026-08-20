@@ -4,6 +4,8 @@ export * from './utils/booking-lifecycle';
 export * from './utils/map-link';
 export * from './utils/localization';
 export * from './utils/event-engine';
+export * from './utils/scanner';
+export * from './utils/money';
 
 export type {
   BaseEventForBooking,

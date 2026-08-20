@@ -1,7 +1,7 @@
 # Tasks: Events Frontend Remediation
 
 All changes are consolidated into a single Pull Request:
-**PR Title:** `fix(events): remediate event lifecycle accessibility, responsiveness and UX`  
+**PR Title:** `fix(events): remediate event lifecycle accessibility, responsiveness and UX`
 **Branch:** `feat/events-lifecycle-polish`
 
 ---

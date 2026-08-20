@@ -1,7 +1,7 @@
+import { formatTicketCount } from '@/utils/booking-calculations';
 import { formatEventDate } from '@/utils/date';
 import { getBookingStatusMeta, type BookingStatusTone } from '@mad/shared';
 import type { Booking, Event } from '@mad/types';
-import { formatTicketCount } from '@/utils/booking-calculations';
 
 interface BookingHeaderCardProps {
   booking: Booking;

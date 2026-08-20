@@ -34,35 +34,34 @@ import * as ts from 'typescript';
 import { GovernanceValidator } from '../core/validator';
 import { ValidationResult, ValidationError } from '../core/types';
 import { FileContentCache, ASTParserCache } from '../core/ast_parser_cache';
+import { governanceConfig } from '../core/governance.config';
 
 // ─── Path exclusion helpers ────────────────────────────────────────────
 
-const EXCLUDED_PATH_FRAGMENTS = [
-  // Server-side email renderer — approved exception for fonts.gstatic.com
-  '/email/templates/',
-  'email/templates/',
-  // CSP config string in app.ts — not HTML
-  'apps/server/src/app.ts',
-  // Test / spec files
-  '.test.ts',
-  '.test.tsx',
-  '.spec.ts',
-  '.spec.tsx',
-  // Governance tooling and scripts
-  'scripts/governance/',
-  // Documentation
-  'docs/',
-  // Generated governance baselines
-  '.governance/',
-  // Fixtures / examples in agent skills
-  '.agents/',
-  // Next.js generated env declaration
-  'next-env.d.ts',
-];
-
 function isExcluded(file: string): boolean {
   const normalized = file.replace(/\\/g, '/');
-  return EXCLUDED_PATH_FRAGMENTS.some(frag => normalized.includes(frag));
+
+  // Skip standard test files
+  if (
+    normalized.endsWith('.test.ts') ||
+    normalized.endsWith('.test.tsx') ||
+    normalized.endsWith('.spec.ts') ||
+    normalized.endsWith('.spec.tsx') ||
+    normalized.includes('/tests/') ||
+    normalized.includes('/__tests__/')
+  ) {
+    return true;
+  }
+
+  // Check global scanScope excludedPaths
+  const globalExcluded = governanceConfig.scanScope?.excludedPaths ?? [];
+  if (globalExcluded.some(exc => normalized.startsWith(exc) || normalized.includes(`/${exc}/`))) {
+    return true;
+  }
+
+  // Check performanceExclusions from governanceConfig
+  const perfExcluded = (governanceConfig.scanScope as any)?.performanceExclusions ?? [];
+  return perfExcluded.some((exc: string) => normalized.includes(exc));
 }
 
 // ─── External URL helpers ──────────────────────────────────────────────
@@ -72,7 +71,13 @@ function isExternalHttpUrl(value: string): boolean {
 }
 
 function isGoogleFontUrl(value: string): boolean {
-  return value.includes('fonts.googleapis.com') || value.includes('fonts.gstatic.com');
+  try {
+    const parsed = new URL(value, 'https://fonts.googleapis.com');
+    const host = parsed.hostname.toLowerCase();
+    return host === 'fonts.googleapis.com' || host === 'fonts.gstatic.com';
+  } catch {
+    return false;
+  }
 }
 
 // ─── AST attribute helpers ─────────────────────────────────────────────
@@ -180,7 +185,7 @@ export class PerformanceValidator implements GovernanceValidator {
       // e.g. `import { Outfit, Inter } from 'next/font/google'`
       //       → fontIdentifiers = Set { 'Outfit', 'Inter' }
       const fontIdentifiers = new Set<string>();
-      let fontInitializationCount = 0;
+      const initializedFonts = new Set<string>();
 
       const findImports = (node: ts.Node) => {
         if (
@@ -217,11 +222,11 @@ export class PerformanceValidator implements GovernanceValidator {
             });
           }
 
-          // Count distinct font initializations in this file
+          // Check duplicate initialization of the same font in this file
           const expr = node.expression;
           if (ts.isIdentifier(expr) && fontIdentifiers.has(expr.text)) {
-            fontInitializationCount++;
-            if (fontInitializationCount > 1) {
+            const fontName = expr.text;
+            if (initializedFonts.has(fontName)) {
               const { line } = ts.getLineAndCharacterOfPosition(sourceFile, node.getStart());
               warnings.push({
                 file,
@@ -229,18 +234,18 @@ export class PerformanceValidator implements GovernanceValidator {
                 rule: 'VAL-PFM-001',
                 severity: 'WARNING',
                 snippet: lines[line]?.trim(),
-                message: `Duplicate font initialization detected. Initialize each font exactly once, preferably in the root layout.`,
+                message: `Duplicate font initialization detected for '${fontName}'. Initialize each font exactly once, preferably in the root layout.`,
               });
+            } else {
+              initializedFonts.add(fontName);
             }
           }
         }
 
         // ── VAL-PFM-001: JSX <link href="https://fonts.googleapis.com/..."> ──
         if (ts.isJsxOpeningElement(node) || ts.isJsxSelfClosingElement(node)) {
-          const tagName = getJsxTagName(
-            ts.isJsxOpeningElement(node) ? node.tagName : node.tagName
-          );
-          const attrs = ts.isJsxOpeningElement(node) ? node.attributes : node.attributes;
+          const tagName = getJsxTagName(node.tagName);
+          const attrs = node.attributes;
 
           if (tagName === 'link') {
             const rel = getJsxAttrValue(attrs, 'rel');

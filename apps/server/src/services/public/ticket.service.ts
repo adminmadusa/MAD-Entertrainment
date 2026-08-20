@@ -12,6 +12,7 @@ import { logger } from '../../utils/logger';
 import { runInTransaction } from '../../utils/transaction';
 import { createNotificationSafe } from '../notification.service';
 import { QueueService } from '../queue.service';
+import { sendTicketAssignmentEmail } from './ticket-notification.helper';
 
 /**
  * Assigns or reassigns an unassigned/pending ticket to a guest attendee.
@@ -84,57 +85,12 @@ export async function assignTicket(
   });
 
   // 3. Post-Commit: Queue Invitation Notification
-  try {
-    const frontendUrl = getEnv().FRONTEND_URL || 'http://localhost:3000';
-    const claimLink = `${frontendUrl}/claim?ticketId=${ticketId}`;
-    const subject = `Invitation to claim your ticket for ${booking.guestName || 'the event'}`;
-    const html = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
-        <h2 style="color: #a855f7;">You've Been Invited!</h2>
-        <p>Hi,</p>
-        <p>A ticket has been assigned to you. Click the link below to claim your ticket and access your entry QR code:</p>
-        <p style="text-align: center; margin: 30px 0;">
-          <a href="${claimLink}" style="background-color: #a855f7; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">Claim My Ticket</a>
-        </p>
-        <p>If the button doesn't work, copy and paste this URL into your browser:</p>
-        <p><a href="${claimLink}">${claimLink}</a></p>
-        <br/>
-        <p>MAD Entertainment Team</p>
-      </div>
-    `;
-
-    const jobId = `ticket-assign-${ticketId}-${Date.now()}`;
-    await createNotificationSafe({
-      jobId,
-      status: 'queued',
-      queuedAt: new Date(),
-      type: NotificationType.BOOKING_CONFIRMED,
-      channel: 'email',
-      recipient: normalizedEmail,
-      subject,
-      isSent: false,
-      retryCount: 0,
-      bookingId: booking._id,
-      eventId: ticket.eventId,
-    });
-
-    await QueueService.enqueue(
-      getQueueName('notification-queue'),
-      'email-dispatch',
-      {
-        to: normalizedEmail,
-        subject,
-        html,
-        notificationType: NotificationType.BOOKING_CONFIRMED,
-        bookingId: booking._id.toString(),
-        eventId: ticket.eventId.toString(),
-      },
-      jobId
-    );
-  } catch (err) {
-    // Log failure but do not roll back the db transaction (already committed)
-    logger.error({ err, ticketId }, 'Post-commit enqueue failed for assignment');
-  }
+  await sendTicketAssignmentEmail({
+    ticketId,
+    normalizedEmail,
+    booking,
+    ticket,
+  });
 }
 
 /**
@@ -479,13 +435,27 @@ export async function revokeTicket(
 }
 
 /**
- * Retrieves all active tickets claimed by the logged-in attendee user.
+ * Retrieves all active tickets associated with the logged-in user,
+ * consolidating both directly claimed attendee tickets and purchaser-owned booking tickets.
  */
 export async function getAttendeeTickets(userId: string): Promise<any[]> {
+  const userObjectId = new Types.ObjectId(userId);
+
+  // 1. Fetch user's confirmed bookings
+  const userBookings = await Booking.find({
+    userId: userObjectId,
+    status: BookingStatus.CONFIRMED,
+  }).select('_id');
+  const userBookingIds = userBookings.map((b) => b._id);
+
+  // 2. Fetch active tickets owned by the user (as claimed attendee OR purchaser)
   const tickets = await Ticket.find({
-    attendeeUserId: new Types.ObjectId(userId),
     status: 'active',
-    assignmentStatus: 'claimed',
+    $or: [
+      { attendeeUserId: userObjectId, assignmentStatus: 'claimed' },
+      { bookingId: { $in: userBookingIds }, assignmentStatus: { $ne: 'claimed' } },
+      { bookingId: { $in: userBookingIds }, attendeeUserId: userObjectId },
+    ],
   }).populate('eventId');
 
   return tickets;

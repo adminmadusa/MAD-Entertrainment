@@ -34,7 +34,7 @@ export function detectDOMOverflows(viewportWidth: number): DOMOverflowItem[] {
   const allElements = document.querySelectorAll('*');
   for (let i = 0; i < allElements.length; i++) {
     const el = allElements[i] as HTMLElement;
-    
+
     // Ignore hidden or script/style elements
     const style = window.getComputedStyle(el);
     if (

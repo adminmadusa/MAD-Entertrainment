@@ -80,7 +80,7 @@ export default function AdminPopupsPage() {
           <div className="flex items-center gap-3">
             {popup.image?.url ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={popup.image.url} alt={popup.name} className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />
+              <img src={popup.image.url} alt={popup.name} width={40} height={40} className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />
             ) : (
               <div className="w-10 h-10 rounded-lg bg-accent-purple/10 flex-shrink-0 flex items-center justify-center text-accent-purple text-xs font-bold">
                 💬

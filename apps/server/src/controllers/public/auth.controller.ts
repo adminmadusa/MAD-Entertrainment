@@ -2,105 +2,77 @@ import { Request, Response } from 'express';
 
 import { getEnv } from '../../config/env';
 import { AppError } from '../../middleware/error.middleware';
-import { UserModel } from '../../models/user.schema';
 import { AuthService } from '../../services/public/auth.service';
 import { clearXsrfCookie, setXsrfCookie } from '../../utils/cookie';
 import { logger } from '../../utils/logger';
 import { requiresOnboarding } from '../../utils/user';
-import { UploadService } from '../../services/admin/upload.service';
-import {
-  validateFilenameAndExtension,
-  validateMagicBytes,
-  generateSecureFilename,
-  extractCloudinaryPublicId,
-} from '../../utils/file-security';
+import { UserProfileController } from './user-profile.controller';
+
+function setAuthCookies(res: Response, refreshToken: string, csrfToken: string): void {
+  const env = getEnv();
+  const isProd = env.NODE_ENV === 'production';
+  res.cookie('refreshToken', refreshToken, {
+    httpOnly: true,
+    secure: isProd,
+    sameSite: isProd ? 'none' : 'lax',
+    domain: env.COOKIE_DOMAIN || undefined,
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+  });
+  setXsrfCookie(res, csrfToken);
+}
+
+function formatAuthUser(user: any) {
+  return {
+    id: user._id,
+    email: user.email,
+    name: user.name,
+    picture: user.picture,
+    firstName: user.firstName ?? '',
+    lastName: user.lastName ?? '',
+    mobileNumber: user.mobileNumber ?? '',
+  };
+}
 
 export class AuthController {
-  /**
-   * Checks if an email exists in the system.
-   */
   static async checkEmail(req: Request, res: Response): Promise<void> {
     const { email } = req.body;
     if (!email) {
       throw AppError.badRequest('Email is required');
     }
-
     const exists = await AuthService.checkEmailExists(email);
-
-    res.status(200).json({
-      success: true,
-      data: { exists },
-    });
+    res.status(200).json({ success: true, data: { exists } });
   }
 
-  /**
-   * Triggers the magic link & OTP generation flow.
-   */
   static async requestMagicLink(req: Request, res: Response): Promise<void> {
     const { email, firstName, lastName, mobileNumber } = req.body;
-    logger.info({ email }, "Magic link requested");
-    // Derive client origin, fallback to configured ALLOWED_ORIGINS if unavailable
+    logger.info({ email }, 'Magic link requested');
     const env = getEnv();
     const primaryOrigin = env.ALLOWED_ORIGINS.split(',')[0].trim();
     const origin = req.headers.origin || req.headers.referer || primaryOrigin;
 
     await AuthService.requestMagicLink(email, origin, { firstName, lastName, mobileNumber });
-
-    res.status(200).json({
-      success: true,
-      message: 'Verification code sent to your email.',
-    });
+    res.status(200).json({ success: true, message: 'Verification code sent to your email.' });
   }
 
-  /**
-   * Handles POST /auth/verify for verifying OTP codes.
-   */
   static async verifyMagicLinkOrOTP(req: Request, res: Response): Promise<void> {
     const { otp, email } = req.body;
-
     if (!otp || !email) {
       throw AppError.badRequest('Email and passcode are required');
     }
 
     const result = await AuthService.verifyMagicLinkOrOTP(otp, email);
-
-    // Set secure HTTP-only refresh token cookie (SameSite None for cross-site in production)
-    const env = getEnv();
-    const isProd = env.NODE_ENV === 'production';
-    res.cookie('refreshToken', result.refreshToken, {
-      httpOnly: true,
-      secure: isProd,
-      sameSite: isProd ? 'none' : 'lax', // Allows cross-domain cookies between Vercel and Render in production
-      domain: env.COOKIE_DOMAIN || (isProd ? '.esparex.in' : undefined),
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days TTL
-    });
-
-    // Set CSRF Token cookie
-    setXsrfCookie(res, result.csrfToken);
-
-    const onboardingRequired = requiresOnboarding(result.user);
+    setAuthCookies(res, result.refreshToken, result.csrfToken);
 
     res.status(200).json({
       success: true,
       data: {
-        user: {
-          id: result.user._id,
-          email: result.user.email,
-          name: result.user.name,
-          picture: result.user.picture,
-          firstName: result.user.firstName ?? '',
-          lastName: result.user.lastName ?? '',
-          mobileNumber: result.user.mobileNumber ?? '',
-        },
+        user: formatAuthUser(result.user),
         token: result.accessToken,
-        onboardingRequired,
+        onboardingRequired: requiresOnboarding(result.user),
       },
     });
   }
 
-  /**
-   * Handles Google OAuth logins.
-   */
   static async loginWithGoogle(req: Request, res: Response): Promise<void> {
     const { idToken } = req.body;
     if (!idToken) {
@@ -108,44 +80,18 @@ export class AuthController {
     }
 
     const result = await AuthService.verifyGoogleToken(idToken);
-
-    // Set secure HTTP-only refresh token cookie (SameSite None for cross-site in production)
-    const env = getEnv();
-    const isProd = env.NODE_ENV === 'production';
-    res.cookie('refreshToken', result.refreshToken, {
-      httpOnly: true,
-      secure: isProd,
-      sameSite: isProd ? 'none' : 'lax',
-      domain: env.COOKIE_DOMAIN || (isProd ? '.esparex.in' : undefined),
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days TTL
-    });
-
-    // Set CSRF Token cookie
-    setXsrfCookie(res, result.csrfToken);
-
-    const onboardingRequired = requiresOnboarding(result.user);
+    setAuthCookies(res, result.refreshToken, result.csrfToken);
 
     res.status(200).json({
       success: true,
       data: {
-        user: {
-          id: result.user._id,
-          email: result.user.email,
-          name: result.user.name,
-          picture: result.user.picture,
-          firstName: result.user.firstName ?? '',
-          lastName: result.user.lastName ?? '',
-          mobileNumber: result.user.mobileNumber ?? '',
-        },
+        user: formatAuthUser(result.user),
         token: result.accessToken,
-        onboardingRequired,
+        onboardingRequired: requiresOnboarding(result.user),
       },
     });
   }
 
-  /**
-   * Handles transparent silent session token refreshes.
-   */
   static async refresh(req: Request, res: Response): Promise<void> {
     const refreshToken = req.cookies.refreshToken || req.body.refreshToken;
     if (!refreshToken) {
@@ -154,32 +100,11 @@ export class AuthController {
 
     const providedCsrfToken = req.headers['x-xsrf-token'] || req.headers['x-csrf-token'];
     const result = await AuthService.refreshSession(refreshToken, providedCsrfToken as string);
+    setAuthCookies(res, result.refreshToken, result.csrfToken);
 
-    // Set secure rotated HTTP-only refresh token cookie (SameSite None for cross-site in production)
-    const env = getEnv();
-    const isProd = env.NODE_ENV === 'production';
-    res.cookie('refreshToken', result.refreshToken, {
-      httpOnly: true,
-      secure: isProd,
-      sameSite: isProd ? 'none' : 'lax',
-      domain: env.COOKIE_DOMAIN || (isProd ? '.esparex.in' : undefined),
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days TTL
-    });
-
-    // Set CSRF Token cookie
-    setXsrfCookie(res, result.csrfToken);
-
-    res.status(200).json({
-      success: true,
-      data: {
-        token: result.accessToken,
-      },
-    });
+    res.status(200).json({ success: true, data: { token: result.accessToken } });
   }
 
-  /**
-   * Handles logouts by revoking the refresh token and clearing cookie credentials.
-   */
   static async logout(req: Request, res: Response): Promise<void> {
     const refreshToken = req.cookies.refreshToken || req.body.refreshToken;
     if (refreshToken) {
@@ -192,170 +117,16 @@ export class AuthController {
       httpOnly: true,
       secure: isProd,
       sameSite: isProd ? 'none' : 'lax',
-      domain: env.COOKIE_DOMAIN || (isProd ? '.esparex.in' : undefined),
+      domain: env.COOKIE_DOMAIN || undefined,
     });
-
-    // Clear CSRF Token cookie
     clearXsrfCookie(res);
 
-    res.status(200).json({
-      success: true,
-      message: 'Logged out successfully',
-    });
+    res.status(200).json({ success: true, message: 'Logged out successfully' });
   }
 
-  /**
-   * Fetches the current logged in user details.
-   */
-  static async getMe(req: Request, res: Response): Promise<void> {
-    const userId = req.user?.sub;
-    if (!userId) {
-      throw AppError.unauthorized('Authentication required');
-    }
-
-    const user = await UserModel.findById(userId);
-    if (!user || !user.isActive) {
-      throw AppError.unauthorized('User is deactivated or does not exist');
-    }
-
-    const onboardingRequired = requiresOnboarding(user);
-
-    res.status(200).json({
-      success: true,
-      data: {
-        userId: user._id,
-        email: user.email,
-        name: user.name,
-        firstName: user.firstName ?? '',
-        lastName: user.lastName ?? '',
-        mobileNumber: user.mobileNumber ?? '',
-        phone: user.mobileNumber ?? '', // Alias response-only
-        picture: user.picture,
-        isGuest: false,
-        onboardingRequired,
-      },
-    });
-  }
-
-  /**
-   * Updates the authenticated user's profile details safely.
-   */
-  static async updateProfile(req: Request, res: Response): Promise<void> {
-    const userId = req.user?.sub;
-    if (!userId) {
-      throw AppError.unauthorized('Authentication required');
-    }
-
-    const user = await UserModel.findById(userId);
-    if (!user || !user.isActive) {
-      throw AppError.unauthorized('User is deactivated or does not exist');
-    }
-
-    // Adjustment 2: Immutable Field Handling. Only process allowed fields.
-    const { firstName, lastName, mobileNumber } = req.body;
-
-    user.firstName = firstName.trim();
-    user.lastName = lastName.trim();
-    user.mobileNumber = (mobileNumber && mobileNumber.trim() !== '') ? mobileNumber.trim() : undefined;
-
-    // Recalculate dynamic concatenated name from profile fields programmatically
-    user.name = `${user.firstName} ${user.lastName}`.trim();
-
-    await user.save();
-
-    res.status(200).json({
-      success: true,
-      data: {
-        userId: user._id,
-        email: user.email,
-        name: user.name,
-        firstName: user.firstName ?? '',
-        lastName: user.lastName ?? '',
-        mobileNumber: user.mobileNumber ?? '',
-        phone: user.mobileNumber ?? '', // Alias response-only
-        picture: user.picture,
-        isGuest: false,
-      },
-    });
-  }
-
-  /**
-   * Uploads and updates the authenticated user's profile photo.
-   */
-  static async uploadProfilePhoto(req: Request, res: Response): Promise<void> {
-    const userId = req.user?.sub;
-    if (!userId) {
-      throw AppError.unauthorized('Authentication required');
-    }
-
-    const user = await UserModel.findById(userId);
-    if (!user || !user.isActive) {
-      throw AppError.unauthorized('User is deactivated or does not exist');
-    }
-
-    if (!req.file) {
-      throw AppError.badRequest('No image file provided');
-    }
-
-    const { originalname, buffer, mimetype } = req.file;
-
-    // Security check: filename & magic bytes validation
-    validateFilenameAndExtension(originalname);
-    validateMagicBytes(buffer, mimetype);
-
-    // Delete old profile picture if present
-    if (user.picture) {
-      const oldPublicId = extractCloudinaryPublicId(user.picture);
-      if (oldPublicId) {
-        try {
-          await UploadService.deleteImage(oldPublicId);
-        } catch (err) {
-          logger.error(`Failed to delete old profile photo: ${err}`);
-        }
-      }
-    }
-
-    // Generate secure filename and upload
-    const secureFilename = generateSecureFilename();
-    const result = await UploadService.uploadImageBuffer(buffer, secureFilename, 'profile-photos');
-
-    user.picture = result.url;
-    await user.save();
-
-    res.status(200).json({
-      success: true,
-      data: {
-        picture: user.picture,
-      },
-    });
-  }
-
-  /**
-   * Deletes the authenticated user's profile photo.
-   */
-  static async deleteProfilePhoto(req: Request, res: Response): Promise<void> {
-    const userId = req.user?.sub;
-    if (!userId) {
-      throw AppError.unauthorized('Authentication required');
-    }
-
-    const user = await UserModel.findById(userId);
-    if (!user || !user.isActive) {
-      throw AppError.unauthorized('User is deactivated or does not exist');
-    }
-
-    if (user.picture) {
-      const oldPublicId = extractCloudinaryPublicId(user.picture);
-      if (oldPublicId) {
-        await UploadService.deleteImage(oldPublicId);
-      }
-      user.picture = undefined;
-      await user.save();
-    }
-
-    res.status(200).json({
-      success: true,
-      message: 'Profile photo deleted successfully',
-    });
-  }
+  // Profile & Media Handlers
+  static getMe = UserProfileController.getMe;
+  static updateProfile = UserProfileController.updateProfile;
+  static uploadProfilePhoto = UserProfileController.uploadProfilePhoto;
+  static deleteProfilePhoto = UserProfileController.deleteProfilePhoto;
 }

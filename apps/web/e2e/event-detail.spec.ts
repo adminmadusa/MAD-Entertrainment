@@ -60,22 +60,21 @@ test('event detail page loads and shows dynamic elements', async ({ page }) => {
   await expect(page.locator('text=₹1000 - ₹2300').first()).toBeVisible();
 });
 
-test('overview drawer opens and closes', async ({ page }) => {
+test('overview text expands and collapses inline', async ({ page }) => {
   await page.goto('/events/summer-solstice-2026');
 
-  // Verify Overview drawer opens
+  // Verify Overview expands inline
   const readMoreBtn = page.locator('button:has-text("Read more →")');
   await expect(readMoreBtn).toBeVisible();
   await readMoreBtn.click();
 
-  const drawer = page.locator('div[role="dialog"]');
-  await expect(drawer).toBeVisible();
-  await expect(drawer.locator('h3:text("Overview")')).toBeVisible();
-  await expect(drawer.locator('text=descriptive text of the Summer Solstice festival')).toBeVisible();
+  await expect(page.locator('text=descriptive text of the Summer Solstice festival')).toBeVisible();
+  const showLessBtn = page.locator('button:has-text("Show less ↑")');
+  await expect(showLessBtn).toBeVisible();
 
-  // Verify Overview drawer closes
-  await drawer.locator('button[aria-label="Close overview drawer"]').click();
-  await expect(drawer).not.toBeVisible();
+  // Verify Overview collapses inline
+  await showLessBtn.click();
+  await expect(page.locator('button:has-text("Read more →")')).toBeVisible();
 });
 
 test('ticket selection modal opens and closes with tiers rendered', async ({ page }) => {

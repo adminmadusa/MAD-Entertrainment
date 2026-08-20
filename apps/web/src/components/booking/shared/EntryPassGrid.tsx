@@ -60,10 +60,14 @@ export function EntryPassGrid({ tickets }: EntryPassGridProps) {
 
   return (
     <div className="w-full space-y-4">
-      {/* Responsive layout: flex carousel on mobile, grid on desktop */}
+      {/* Responsive layout: centered for single pass, grid/carousel for multiple */}
       <div
         ref={scrollContainerRef}
-        className="flex overflow-x-auto sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-4 pb-2 snap-x snap-mandatory scrollbar-none px-4 sm:px-0 scroll-smooth"
+        className={`flex overflow-x-auto pb-2 snap-x snap-mandatory scrollbar-none px-4 sm:px-0 scroll-smooth gap-4 ${
+          tickets.length === 1
+            ? 'sm:flex sm:justify-center'
+            : 'sm:grid sm:grid-cols-2 lg:grid-cols-3'
+        }`}
       >
         {tickets.map((ticket, tIndex) => {
           const extTicket = ticket as ExtendedTicket;
@@ -83,9 +87,9 @@ export function EntryPassGrid({ tickets }: EntryPassGridProps) {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: tIndex * 0.05 }}
               key={ticket._id || ticket.ticketId}
-              className="min-w-[85%] sm:min-w-0 snap-center glass-strong rounded-2xl border border-border-subtle/60 overflow-hidden flex flex-col items-center p-6 text-center space-y-4 shadow-sm"
+              className="min-w-[80%] sm:min-w-0 snap-center rounded-2xl border border-white/10 bg-white/5 overflow-hidden flex flex-col items-center p-4 text-center space-y-3 shadow-sm"
             >
-              <div className="w-full pb-2 border-b border-border-subtle/40">
+              <div className="w-full pb-2 border-b border-white/10">
                 <div className="text-accent-purple-light text-xs font-bold uppercase tracking-wider">
                   {ticket.tierName} Entry
                 </div>
@@ -94,7 +98,7 @@ export function EntryPassGrid({ tickets }: EntryPassGridProps) {
                     Seat: <span className="font-mono">{ticket.seatId}</span> (Row {ticket.row}, Seat {ticket.seatNumber})
                   </div>
                 )}
-                <div className="text-text-muted text-[9px] mt-1 font-mono">
+                <div className="text-text-muted text-[9px] mt-0.5 font-mono">
                   ID: {ticket.ticketId}
                 </div>
               </div>
@@ -102,7 +106,7 @@ export function EntryPassGrid({ tickets }: EntryPassGridProps) {
               {(() => {
                 if (isMasked) {
                   return (
-                    <div className="w-44 h-44 rounded-xl border border-white/5 bg-white/[0.03] backdrop-blur-md flex flex-col items-center justify-center p-4 text-center space-y-2 relative overflow-hidden group">
+                    <div className="w-40 h-40 rounded-xl border border-white/5 bg-white/[0.03] backdrop-blur-md flex flex-col items-center justify-center p-4 text-center space-y-2 relative overflow-hidden group">
                       {/* Subtle light glow effect */}
                       <div className="absolute -inset-px bg-gradient-to-r from-accent-purple/20 to-accent-blue/20 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
@@ -142,7 +146,9 @@ export function EntryPassGrid({ tickets }: EntryPassGridProps) {
                       <img
                         src={ticket.qrCodeImage}
                         alt="QR Ticket Code"
-                        className="w-44 h-44 bg-white transition-transform duration-300 group-hover:scale-[1.03]"
+                        width={160}
+                        height={160}
+                        className="w-40 h-40 bg-white transition-transform duration-300 group-hover:scale-[1.03]"
                       />
                       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 flex items-center justify-center transition-colors">
                         <span className="opacity-0 group-hover:opacity-100 bg-black/80 backdrop-blur-sm text-white text-[10px] font-bold px-3 py-1.5 rounded-full transition-opacity shadow-lg flex items-center gap-1">
@@ -154,15 +160,17 @@ export function EntryPassGrid({ tickets }: EntryPassGridProps) {
                 }
 
                 return (
-                  <div className="w-44 h-44 bg-white/5 rounded-xl flex items-center justify-center text-text-muted text-xs">
+                  <div className="w-40 h-40 bg-white/5 rounded-xl flex items-center justify-center text-text-muted text-xs">
                     No QR Available
                   </div>
                 );
               })()}
 
-              <div className="text-[9px] text-text-muted max-w-[200px] leading-relaxed">
-                {helpText}
-              </div>
+              {isMasked && (
+                <div className="text-[9px] text-text-muted max-w-[200px] leading-relaxed">
+                  {helpText}
+                </div>
+              )}
             </motion.div>
           );
         })}
@@ -236,6 +244,8 @@ export function EntryPassGrid({ tickets }: EntryPassGridProps) {
                 <img
                   src={zoomedTicket.qrCodeImage}
                   alt="Enlarged QR Scanner Code"
+                  width={256}
+                  height={256}
                   className="w-64 h-64 mx-auto select-none pointer-events-none"
                 />
               </div>

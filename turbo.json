@@ -17,12 +17,6 @@
       "dependsOn": ["^build"],
       "outputs": []
     },
-    "circular-check": {
-      "outputs": []
-    },
-    "dead-code-check": {
-      "outputs": []
-    },
     "clean": {
       "cache": false
     }

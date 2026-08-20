@@ -74,7 +74,15 @@ export async function safeServerFetch<T>(
 
       clearTimeout(timeoutId);
 
-      // Disable retry for client errors (4xx)
+      // Return fallback cleanly for 404s (e.g. unpublished gallery or optional resource)
+      if (res.status === 404) {
+        if (failFast) {
+          throw new Error(`HTTP 404: Resource not found.`);
+        }
+        return fallback as T;
+      }
+
+      // Disable retry for other client errors (4xx)
       if (res.status >= 400 && res.status < 500) {
         throw new Error(`HTTP ${res.status}: Client request invalid. Skipping retry.`);
       }
@@ -129,7 +137,7 @@ export async function serverGetUpcomingEvents(limit: number = 6): Promise<Event[
       label: 'Upcoming Events',
     }
   );
-  
+
   return Array.isArray(payload.events) ? payload.events : [];
 }
 export async function serverGetCompletedEvents(): Promise<Event[]> {
@@ -175,7 +183,7 @@ export async function serverGetDJs(): Promise<DJOperator[]> {
 }
 
 export async function serverGetGallery(slug: string): Promise<{ items: import('@mad/types').EventGalleryItem[]; settings: import('@mad/types').EventGallerySettings | null }> {
-  const payload = await safeServerFetch<{ items: import('@mad/types').EventGalleryItem[]; settings: import('@mad/types').EventGallerySettings | null }>(
+  const payload = await safeServerFetch<{ items?: import('@mad/types').EventGalleryItem[]; gallery?: import('@mad/types').EventGalleryItem[]; settings: import('@mad/types').EventGallerySettings | null }>(
     `/events/${slug}/gallery`,
     {
       fallback: { items: [], settings: null },
@@ -185,5 +193,9 @@ export async function serverGetGallery(slug: string): Promise<{ items: import('@
       label: 'Event Gallery',
     }
   );
-  return payload;
+  return {
+    settings: payload?.settings ?? null,
+    items: payload?.items ?? payload?.gallery ?? [],
+  };
 }
+

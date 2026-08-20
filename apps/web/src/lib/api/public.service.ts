@@ -122,9 +122,18 @@ export async function publicGetEventBySlug(slug: string): Promise<Event> {
 }
 
 export async function publicGetGallery(slug: string): Promise<{ items: import('@mad/types').EventGalleryItem[]; settings: import('@mad/types').EventGallerySettings | null }> {
-  const { data } = await apiClient.get<{ data: { items: import('@mad/types').EventGalleryItem[]; settings: import('@mad/types').EventGallerySettings | null } }>(`/events/${slug}/gallery`);
-  return data.data;
+  try {
+    const { data } = await apiClient.get<{ data: { items?: import('@mad/types').EventGalleryItem[]; gallery?: import('@mad/types').EventGalleryItem[]; settings: import('@mad/types').EventGallerySettings | null } }>(`/events/${slug}/gallery`);
+    const payload = data?.data;
+    return {
+      settings: payload?.settings ?? null,
+      items: payload?.items ?? payload?.gallery ?? [],
+    };
+  } catch {
+    return { settings: null, items: [] };
+  }
 }
+
 
 // ─── DJ Operators ─────────────────────────────────────────────
 
@@ -172,7 +181,7 @@ export async function publicGetDJBySlug(slug: string): Promise<DJOperator> {
 
 export async function publicCreateBooking(
   payload: ReserveTicketsInput,
-  sessionToken: string
+  sessionToken?: string
 ): Promise<Booking> {
   const { data } = await apiClient.post<{ data: Booking }>('/bookings', payload, {
     headers: getGuestSessionHeaders(sessionToken),
@@ -183,7 +192,7 @@ export async function publicCreateBooking(
 export async function publicSaveCheckoutDetails(
   bookingId: string,
   payload: CheckoutDetailsInput,
-  sessionToken: string
+  sessionToken?: string
 ): Promise<Booking> {
   const { data } = await apiClient.put<{ data: Booking }>(`/bookings/${bookingId}/checkout-details`, payload, {
     headers: getGuestSessionHeaders(sessionToken),

@@ -2,12 +2,12 @@ import jwt from 'jsonwebtoken';
 import { type FilterQuery, Types } from 'mongoose';
 
 import { EventStatus, SeatStatus, deriveEventCapabilities } from '@mad/shared';
-import { EventGallery } from '../../models/event-gallery.schema';
-import { EventGallerySettings } from '../../models/event-gallery-settings.schema';
 
 import { getEnv } from '../../config/env';
 import { getRedis } from '../../config/redis';
 import { AppError } from '../../middleware/error.middleware';
+import { EventGallerySettings } from '../../models/event-gallery-settings.schema';
+import { EventGallery } from '../../models/event-gallery.schema';
 import { Event, IEvent } from '../../models/event.schema';
 import { SeatLayout, ISeatLayout } from '../../models/seat-layout.schema';
 export function verifyPreviewToken(token: string): {
@@ -78,14 +78,14 @@ export class PublicEventService {
     if (state === 'active') {
       matchStage.status = EventStatus.PUBLISHED;
     } else if (state === 'past' || state === 'completed') {
-      matchStage.status = { $in: [EventStatus.PUBLISHED, EventStatus.COMPLETED] };
+      matchStage.status = { $in: [EventStatus.PUBLISHED, EventStatus.COMPLETED, EventStatus.ARCHIVED] };
     } else {
-      matchStage.status = { $in: [EventStatus.PUBLISHED, EventStatus.COMPLETED, EventStatus.POSTPONED] };
+      matchStage.status = { $in: [EventStatus.PUBLISHED, EventStatus.COMPLETED, EventStatus.POSTPONED, EventStatus.ARCHIVED] };
     }
 
     if (filters.bookableOnly) {
       matchStage.$and = matchStage.$and || [];
-      
+
       // 1. Must not be closed (bookingEndDate > now, OR fallback to startDate > now)
       matchStage.$and.push({
         $or: [
@@ -201,7 +201,7 @@ export class PublicEventService {
         $addFields: {
           lifecycle: {
             $cond: {
-              if: { $eq: ["$status", EventStatus.COMPLETED] },
+              if: { $in: ["$status", [EventStatus.COMPLETED, EventStatus.ARCHIVED]] },
               then: "COMPLETED",
               else: {
                 $cond: {
@@ -230,13 +230,18 @@ export class PublicEventService {
     if (state === 'active') {
       pipeline.push({ $match: { lifecycle: "UPCOMING" } });
     } else if (state === 'past' || state === 'completed') {
-      pipeline.push({ $match: { lifecycle: { $in: ["LIVE", "COMPLETED"] } } });
+      pipeline.push({ $match: { lifecycle: "COMPLETED" } });
     }
 
-    pipeline.push(
-      { $addFields: { sortWeight: sortWeightCond } },
-      { $sort: { sortWeight: 1, startDate: 1 } }
-    );
+    const isPastState = state === 'past' || state === 'completed';
+    if (isPastState) {
+      pipeline.push({ $sort: { startDate: -1 as const } });
+    } else {
+      pipeline.push(
+        { $addFields: { sortWeight: sortWeightCond } },
+        { $sort: { sortWeight: 1 as const, startDate: 1 as const } }
+      );
+    }
 
     let events: any[] = [];
     let total = 0;
@@ -300,7 +305,7 @@ export class PublicEventService {
     const event = await Event.findOne(
       {
         slug,
-        status: { $in: [EventStatus.PUBLISHED, EventStatus.COMPLETED] },
+        status: { $in: [EventStatus.PUBLISHED, EventStatus.COMPLETED, EventStatus.ARCHIVED] },
         isDeleted: { $ne: true },
       },
       null,

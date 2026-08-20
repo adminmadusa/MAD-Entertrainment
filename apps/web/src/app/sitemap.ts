@@ -2,7 +2,7 @@ import type { MetadataRoute } from 'next';
 
 import { safeServerFetch } from '@/lib/api/server.service';
 
-const SITE_URL = 'https://madentertainment.in';
+const SITE_URL = 'https://www.madentertainments.net';
 
 /** Static routes that are always in the sitemap */
 const STATIC_ROUTES: MetadataRoute.Sitemap = [

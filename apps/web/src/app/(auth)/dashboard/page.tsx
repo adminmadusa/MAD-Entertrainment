@@ -8,7 +8,15 @@ import { useBookings } from '@/hooks/use-bookings.hook';
 import { useAuth } from '@/providers/AuthProvider';
 import { BookingStatus } from '@mad/shared';
 
-import { DashboardTicketsTab, BookingCardSkeleton, DashboardAccountTab, DashboardSupportTab } from './_components';
+import {
+  DashboardTicketsTab,
+  BookingCardSkeleton,
+  DashboardAccountTab,
+  DashboardSupportTab,
+  DashboardHeader,
+  DashboardNavTabs,
+  DashboardStickyToolbar,
+} from './_components';
 
 type TabType = 'tickets' | 'account' | 'support';
 
@@ -134,7 +142,7 @@ function DashboardContent() {
 
   if (isAuthenticated && onboardingRequired) {
     return (
-      <div className="pt-16 sm:pt-20 pb-10 min-h-screen bg-background relative overflow-hidden">
+      <div className="pt-28 sm:pt-32 pb-16 min-h-screen bg-background relative overflow-hidden">
         <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-accent-purple/10 rounded-full blur-[130px] pointer-events-none" />
         <div className="absolute -bottom-10 -right-10 w-[300px] h-[300px] bg-purple-500/5 rounded-full blur-[100px] pointer-events-none" />
 
@@ -153,21 +161,16 @@ function DashboardContent() {
   }
 
   return (
-    <div className="pt-16 sm:pt-20 pb-12 min-h-screen bg-background relative overflow-hidden">
+    <div className="pt-28 sm:pt-32 pb-16 min-h-screen bg-background relative overflow-hidden">
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-accent-purple/10 rounded-full blur-[130px] pointer-events-none" />
       <div className="absolute -bottom-10 -right-10 w-[300px] h-[300px] bg-purple-500/5 rounded-full blur-[100px] pointer-events-none" />
 
-      <div className={`container-mad max-w-3xl relative z-10 px-4 space-y-6${stickyBarVisible ? ' pb-28 sm:pb-0' : ''}`}>
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div className="space-y-1">
-            <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
-              My Dashboard
-            </h1>
-            <p className="text-text-secondary text-xs sm:text-sm">
-              Welcome back, <span className="text-white font-bold">{userName}</span>
-            </p>
-          </div>
-        </div>
+      <div className={`container-mad max-w-5xl relative z-10 px-4 space-y-8${stickyBarVisible ? ' pb-28 sm:pb-0' : ''}`}>
+        <DashboardHeader
+          userName={userName}
+          bookings={bookings}
+          upcomingBookings={upcomingBookings}
+        />
 
         {errorMsg && (
           <div className="p-4 bg-error/10 border border-error/30 rounded-2xl text-xs text-red-400 text-center">
@@ -188,58 +191,11 @@ function DashboardContent() {
           </div>
         ) : (
           <div className="space-y-6">
-            {/* Tab Bar */}
-            <div
-              role="tablist"
-              aria-label="Dashboard navigation"
-              className="glass p-1 rounded-xl border border-white/5 flex gap-1 w-full sm:w-max overflow-x-auto scrollbar-none"
-            >
-              <button
-                type="button"
-                role="tab"
-                id="subtab-tickets"
-                aria-controls="subtab-panel-tickets"
-                aria-selected={activeTab === 'tickets'}
-                onClick={() => handleTabChange('tickets')}
-                className={`flex-shrink-0 px-5 py-2 text-xs font-extrabold rounded-lg transition-all duration-300 min-h-[40px] flex items-center justify-center whitespace-nowrap ${
-                  activeTab === 'tickets'
-                    ? 'bg-accent-purple text-white shadow-md'
-                    : 'text-text-secondary hover:text-white hover:bg-white/5'
-                }`}
-              >
-                🎟️ My Tickets
-              </button>
-              <button
-                type="button"
-                role="tab"
-                id="subtab-account"
-                aria-controls="subtab-panel-account"
-                aria-selected={activeTab === 'account'}
-                onClick={() => handleTabChange('account')}
-                className={`flex-shrink-0 px-5 py-2 text-xs font-extrabold rounded-lg transition-all duration-300 min-h-[40px] flex items-center justify-center whitespace-nowrap ${
-                  activeTab === 'account'
-                    ? 'bg-accent-purple text-white shadow-md'
-                    : 'text-text-secondary hover:text-white hover:bg-white/5'
-                }`}
-              >
-                👤 Account Details
-              </button>
-              <button
-                type="button"
-                role="tab"
-                id="subtab-support"
-                aria-controls="subtab-panel-support"
-                aria-selected={activeTab === 'support'}
-                onClick={() => handleTabChange('support')}
-                className={`flex-shrink-0 px-5 py-2 text-xs font-extrabold rounded-lg transition-all duration-300 min-h-[40px] flex items-center justify-center whitespace-nowrap ${
-                  activeTab === 'support'
-                    ? 'bg-accent-purple text-white shadow-md'
-                    : 'text-text-secondary hover:text-white hover:bg-white/5'
-                }`}
-              >
-                ❓ Help &amp; Support
-              </button>
-            </div>
+            <DashboardNavTabs
+              activeTab={activeTab}
+              bookingsCount={bookings.length}
+              onTabChange={handleTabChange}
+            />
 
             {/* Active Tab View */}
             <div className="space-y-6">
@@ -283,68 +239,15 @@ function DashboardContent() {
       </div>
 
       {stickyBarVisible && expandedBooking && (
-        <div
-          className="fixed bottom-0 left-0 right-0 z-40 sm:hidden"
-          style={{ paddingBottom: 'calc(1rem + env(safe-area-inset-bottom))' }}
-          role="toolbar"
-          aria-label="Ticket quick actions"
-        >
-          <div className="mx-4 mb-2 glass border border-white/10 rounded-2xl shadow-2xl backdrop-blur-xl px-4 pt-4 pb-3 flex items-center gap-2">
-            <button
-              type="button"
-              aria-label="Download PDF"
-              disabled={downloadingId === expandedBooking.bookingId}
-              onClick={() => handleDownloadPDF(expandedBooking.bookingId)}
-              className="min-h-[44px] flex-1 flex flex-col items-center justify-center gap-1 px-2 py-1 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white text-[11px] font-semibold transition-all disabled:opacity-50"
-            >
-              {downloadingId === expandedBooking.bookingId ? (
-                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              ) : (
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                </svg>
-              )}
-              {downloadingId === expandedBooking.bookingId ? 'Saving...' : 'Download'}
-            </button>
-
-            <button
-              type="button"
-              aria-label="Resend ticket email"
-              disabled={
-                resendingId === expandedBooking.bookingId ||
-                (resendCooldowns[expandedBooking.bookingId] || 0) > 0
-              }
-              onClick={() => handleResendTickets(expandedBooking.bookingId)}
-              className="min-h-[44px] flex-1 flex flex-col items-center justify-center gap-1 px-2 py-1 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white text-[11px] font-semibold transition-all disabled:opacity-50"
-            >
-              {resendingId === expandedBooking.bookingId ? (
-                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              ) : (
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                </svg>
-              )}
-              {(() => {
-                if ((resendCooldowns[expandedBooking.bookingId] || 0) > 0)
-                  return `${resendCooldowns[expandedBooking.bookingId]}s`;
-                if (resendingId === expandedBooking.bookingId) return 'Sending...';
-                return 'Email';
-              })()}
-            </button>
-
-            <button
-              type="button"
-              aria-label="Share ticket"
-              onClick={() => handleShare(expandedBooking.bookingId)}
-              className="min-h-[44px] flex-1 flex flex-col items-center justify-center gap-1 px-2 py-1 rounded-xl btn-gradient text-white text-[11px] font-semibold shadow-glow-sm transition-all hover:scale-[1.02] active:scale-[0.98]"
-            >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-              </svg>
-              Share
-            </button>
-          </div>
-        </div>
+        <DashboardStickyToolbar
+          expandedBooking={expandedBooking}
+          downloadingId={downloadingId}
+          resendingId={resendingId}
+          resendCooldowns={resendCooldowns}
+          onDownload={handleDownloadPDF}
+          onResend={handleResendTickets}
+          onShare={handleShare}
+        />
       )}
     </div>
   );

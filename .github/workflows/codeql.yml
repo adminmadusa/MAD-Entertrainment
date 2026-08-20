@@ -20,25 +20,36 @@ on:
     # Run every Sunday at 00:00 UTC to catch new advisories on the default branch.
     - cron: "0 0 * * 0"
 
+# Least-privilege: grant only the permissions this workflow actually requires.
+# - contents: read   — required to check out repository source.
+# - security-events: write — required to upload SARIF results to GitHub Code Scanning.
+# - actions: read    — required for CodeQL to post PR annotations.
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+
+# Cancel any in-progress run for the same workflow + branch/PR so that
+# stale runs from rapid commits do not consume runner concurrency.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   analyze:
     name: Analyze (javascript-typescript)
     runs-on: ubuntu-latest
 
-    permissions:
-      # Required to read repository contents.
-      contents: read
-      # Required to upload SARIF results to GitHub Code Scanning.
-      security-events: write
-      # Required for CodeQL to post PR annotations.
-      actions: read
-
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        # actions/checkout v4 — pinned to immutable commit SHA
+        # https://github.com/actions/checkout/releases/tag/v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v3
+        # github/codeql-action v3 — pinned to immutable commit SHA
+        # https://github.com/github/codeql-action/releases/tag/v3
+        uses: github/codeql-action/init@d6317709a54fd87078d323eeb0e48ec331c8e621
         with:
           languages: javascript-typescript
           # Use the default security-and-quality query suite.
@@ -47,6 +58,8 @@ jobs:
       # CodeQL auto-builds JavaScript/TypeScript; no manual build step required.
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v3
+        # github/codeql-action v3 — pinned to immutable commit SHA
+        # https://github.com/github/codeql-action/releases/tag/v3
+        uses: github/codeql-action/analyze@d6317709a54fd87078d323eeb0e48ec331c8e621
         with:
           category: "/language:javascript-typescript"

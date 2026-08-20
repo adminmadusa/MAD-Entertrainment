@@ -1,60 +1,102 @@
 import { Types } from 'mongoose';
-import { EventGallery, MediaVisibility } from '../../models/event-gallery.schema';
-import { EventGallerySettings } from '../../models/event-gallery-settings.schema';
-import { Event } from '../../models/event.schema';
-import { AppError } from '../../middleware/error.middleware';
-import mongoose from 'mongoose';
-import { AddGalleryItemsInput, ReorderGalleryItemsInput, UpdateGalleryItemInput, UpdateGallerySettingsInput } from '@mad/validations';
+
 import { deriveEventCapabilities } from '@mad/shared';
+import { type EventGalleryItem, type EventGallerySettings } from '@mad/types';
+import {
+  AddGalleryItemsInput,
+  ReorderGalleryItemsInput,
+  UpdateGalleryItemInput,
+  UpdateGallerySettingsInput,
+} from '@mad/validations';
+
+import { AppError } from '../../middleware/error.middleware';
+import { EventGallerySettings as EventGallerySettingsModel } from '../../models/event-gallery-settings.schema';
+import { EventGallery, MediaVisibility } from '../../models/event-gallery.schema';
+import { Event } from '../../models/event.schema';
+import { safeDeleteImages } from './media-cleanup.service';
+
+export const MAX_EVENT_GALLERY_ITEMS = 20;
 
 export class AdminEventGalleryService {
   /**
    * Retrieves the full gallery (items and settings) for an event.
    */
-  static async getGallery(eventId: string) {
+  static async getGallery(eventId: string): Promise<{
+    items: EventGalleryItem[];
+    settings: EventGallerySettings | { eventId: string; published: boolean };
+  }> {
     const event = await Event.findById(eventId).select('_id').lean();
-    if (!event) throw new AppError('Event not found', 404);
+    if (!event) throw AppError.notFound('Event');
 
     const [items, settings] = await Promise.all([
       EventGallery.find({ eventId }).sort({ isCover: -1, sortOrder: 1, createdAt: 1 }).lean(),
-      EventGallerySettings.findOne({ eventId }).lean(),
+      EventGallerySettingsModel.findOne({ eventId }).lean(),
     ]);
 
     return {
-      items,
-      settings: settings || { eventId, published: false },
+      items: items.map((item) => ({
+        id: item._id ? item._id.toString() : '',
+        eventId: item.eventId ? item.eventId.toString() : eventId,
+        mediaType: item.mediaType,
+        url: item.url,
+        publicId: item.publicId,
+        thumbnail: item.thumbnail,
+        caption: item.caption,
+        sortOrder: item.sortOrder,
+        isCover: item.isCover,
+        visibility: item.visibility,
+        uploadedBy: item.uploadedBy ? item.uploadedBy.toString() : undefined,
+        assetProvider: item.assetProvider,
+        assetVersion: item.assetVersion,
+        createdAt: item.createdAt ? new Date(item.createdAt).toISOString() : new Date().toISOString(),
+        updatedAt: item.updatedAt ? new Date(item.updatedAt).toISOString() : new Date().toISOString(),
+      })),
+      settings: settings
+        ? {
+            id: settings._id.toString(),
+            eventId: settings.eventId.toString(),
+            heading: settings.heading,
+            thankYouMessage: settings.thankYouMessage,
+            highlights: settings.highlights,
+            published: settings.published,
+            publishedAt: settings.publishedAt ? new Date(settings.publishedAt).toISOString() : undefined,
+            publishedBy: settings.publishedBy ? settings.publishedBy.toString() : undefined,
+            createdAt: settings.createdAt ? new Date(settings.createdAt).toISOString() : new Date().toISOString(),
+            updatedAt: settings.updatedAt ? new Date(settings.updatedAt).toISOString() : new Date().toISOString(),
+          }
+        : { eventId, published: false },
     };
   }
 
   /**
-   * Updates the gallery settings (heading, publication state, etc.)
+   * Updates the gallery publication state (publish/unpublish toggle).
    */
-  static async updateSettings(eventId: string, data: UpdateGallerySettingsInput, adminId: string) {
+  static async updateSettings(
+    eventId: string,
+    data: UpdateGallerySettingsInput,
+    adminId: string
+  ): Promise<any> {
     const event = await Event.findById(eventId).select('_id status startDate endDate bookingStartDate bookingEndDate').lean();
-    if (!event) throw new AppError('Event not found', 404);
+    if (!event) throw AppError.notFound('Event');
 
     const caps = deriveEventCapabilities({
       status: event.status,
       startDate: event.startDate,
       endDate: event.endDate,
       bookingStartDate: event.bookingStartDate,
-      bookingEndDate: event.bookingEndDate
+      bookingEndDate: event.bookingEndDate,
     });
 
     if (!caps.capabilities.canPublishGallery) {
-      throw new AppError('Galleries can only be modified once booking is closed', 400);
+      throw AppError.badRequest('Galleries can only be published once the event is completed');
     }
 
-    let settings = await EventGallerySettings.findOne({ eventId });
+    let settings = await EventGallerySettingsModel.findOne({ eventId });
     if (!settings) {
-      settings = new EventGallerySettings({ eventId });
+      settings = new EventGallerySettingsModel({ eventId });
     }
 
-    if (data.heading !== undefined) settings.heading = data.heading;
-    if (data.thankYouMessage !== undefined) settings.thankYouMessage = data.thankYouMessage;
-    if (data.highlights !== undefined) settings.highlights = data.highlights;
-    
-    if (data.published !== undefined && settings.published !== data.published) {
+    if (typeof data.published === 'boolean') {
       settings.published = data.published;
       if (data.published) {
         settings.publishedAt = new Date();
@@ -69,20 +111,24 @@ export class AdminEventGalleryService {
   /**
    * Uploads/registers new gallery items.
    */
-  static async addItems(eventId: string, data: AddGalleryItemsInput, adminId: string) {
+  static async addItems(
+    eventId: string,
+    data: AddGalleryItemsInput,
+    adminId: string
+  ): Promise<EventGalleryItem[]> {
     const event = await Event.findById(eventId).select('_id status startDate endDate bookingStartDate bookingEndDate').lean();
-    if (!event) throw new AppError('Event not found', 404);
+    if (!event) throw AppError.notFound('Event');
 
     const caps = deriveEventCapabilities({
       status: event.status,
       startDate: event.startDate,
       endDate: event.endDate,
       bookingStartDate: event.bookingStartDate,
-      bookingEndDate: event.bookingEndDate
+      bookingEndDate: event.bookingEndDate,
     });
 
     if (!caps.capabilities.canUploadGallery) {
-      throw new AppError('Galleries can only be modified once booking is closed', 400);
+      throw AppError.badRequest('Galleries can only be uploaded once booking is closed');
     }
 
     // Prevent duplicates by publicId
@@ -95,11 +141,17 @@ export class AdminEventGalleryService {
     }
 
     const currentCount = await EventGallery.countDocuments({ eventId });
+    if (currentCount + newItems.length > MAX_EVENT_GALLERY_ITEMS) {
+      throw AppError.badRequest(
+        `Event gallery limit reached (maximum ${MAX_EVENT_GALLERY_ITEMS} photos allowed). Current: ${currentCount}, adding: ${newItems.length}`
+      );
+    }
+
     let hasCover = !!(await EventGallery.exists({ eventId, isCover: true }));
 
     const docsToInsert = newItems.map((item, index) => {
       const isCover = !hasCover && index === 0;
-      if (isCover) hasCover = true; // Only first item gets cover if none exists
+      if (isCover) hasCover = true;
 
       return {
         ...item,
@@ -112,133 +164,155 @@ export class AdminEventGalleryService {
     });
 
     const inserted = await EventGallery.insertMany(docsToInsert);
-    return inserted.map((doc) => doc.toObject());
+    return inserted.map((doc) => {
+      const obj = doc.toObject();
+      return {
+        id: doc._id ? doc._id.toString() : '',
+        eventId: obj.eventId ? obj.eventId.toString() : eventId,
+        mediaType: obj.mediaType,
+        url: obj.url,
+        publicId: obj.publicId,
+        thumbnail: obj.thumbnail,
+        caption: obj.caption,
+        sortOrder: obj.sortOrder,
+        isCover: obj.isCover,
+        visibility: obj.visibility,
+        uploadedBy: obj.uploadedBy ? obj.uploadedBy.toString() : undefined,
+        assetProvider: obj.assetProvider,
+        assetVersion: obj.assetVersion,
+        createdAt: obj.createdAt ? new Date(obj.createdAt).toISOString() : new Date().toISOString(),
+        updatedAt: obj.updatedAt ? new Date(obj.updatedAt).toISOString() : new Date().toISOString(),
+      };
+    });
   }
 
   /**
-   * Deletes a gallery item and reassigns cover if necessary.
+   * Deletes a gallery item, asynchronously purges the asset from Cloudinary,
+   * and automatically reassigns cover if the deleted item was the cover.
    */
-  static async deleteItem(eventId: string, itemId: string) {
-    const session = await mongoose.startSession();
-    session.startTransaction();
-    try {
-      const item = await EventGallery.findOne({ _id: itemId, eventId }).session(session);
-      if (!item) throw new AppError('Gallery item not found', 404);
+  static async deleteItem(
+    eventId: string,
+    itemId: string,
+    _adminId: string
+  ): Promise<{ success: true }> {
+    const event = await Event.findById(eventId).select('_id').lean();
+    if (!event) throw AppError.notFound('Event');
 
-      const wasCover = item.isCover;
-      await EventGallery.deleteOne({ _id: itemId }).session(session);
-
-      if (wasCover) {
-        // Find next candidate for cover
-        const nextCandidate = await EventGallery.findOne({ eventId })
-          .sort({ sortOrder: 1, createdAt: 1 })
-          .session(session);
-        
-        if (nextCandidate) {
-          nextCandidate.isCover = true;
-          await nextCandidate.save({ session });
-        }
-      }
-
-      await this.normalizeSortOrders(eventId, session);
-      await session.commitTransaction();
-    } catch (error) {
-      await session.abortTransaction();
-      throw error;
-    } finally {
-      session.endSession();
-    }
-  }
-
-  /**
-   * Sets a specific item as the cover image.
-   */
-  static async setCover(eventId: string, itemId: string) {
-    const session = await mongoose.startSession();
-    session.startTransaction();
-    try {
-      const newCover = await EventGallery.findOne({ _id: itemId, eventId }).session(session);
-      if (!newCover) throw new AppError('Gallery item not found', 404);
-      if (newCover.isCover) {
-        await session.abortTransaction();
-        return newCover.toObject(); // Already cover
-      }
-
-      // Unset previous cover
-      await EventGallery.updateMany(
-        { eventId, isCover: true },
-        { $set: { isCover: false } }
-      ).session(session);
-
-      // Set new cover
-      newCover.isCover = true;
-      await newCover.save({ session });
-
-      await session.commitTransaction();
-      return newCover.toObject();
-    } catch (error) {
-      await session.abortTransaction();
-      throw error;
-    } finally {
-      session.endSession();
-    }
-  }
-
-  /**
-   * Updates basic properties of a gallery item.
-   */
-  static async updateItem(eventId: string, itemId: string, data: UpdateGalleryItemInput) {
     const item = await EventGallery.findOne({ _id: itemId, eventId });
-    if (!item) throw new AppError('Gallery item not found', 404);
+    if (!item) throw AppError.notFound('Gallery item');
 
-    if (data.caption !== undefined) item.caption = data.caption;
-    if (data.visibility !== undefined) item.visibility = data.visibility;
+    const wasCover = item.isCover;
+    const publicId = item.publicId;
+
+    await EventGallery.deleteOne({ _id: itemId, eventId });
+
+    // Clean up Cloudinary asset asynchronously
+    if (publicId) {
+      safeDeleteImages([publicId], 'Event', 'delete');
+    }
+
+    // If this item was the cover, assign cover to the next available item
+    if (wasCover) {
+      const nextItem = await EventGallery.findOne({ eventId }).sort({ sortOrder: 1, createdAt: 1 });
+      if (nextItem) {
+        nextItem.isCover = true;
+        await nextItem.save();
+      }
+    }
+
+    return { success: true };
+  }
+
+  /**
+   * Sets a specific gallery item as the primary cover photo for the event.
+   */
+  static async setCoverItem(
+    eventId: string,
+    itemId: string,
+    _adminId: string
+  ): Promise<{ success: true }> {
+    const event = await Event.findById(eventId).select('_id').lean();
+    if (!event) throw AppError.notFound('Event');
+
+    const item = await EventGallery.findOne({ _id: itemId, eventId });
+    if (!item) throw AppError.notFound('Gallery item');
+
+    // Atomically reset all existing covers and set the new cover
+    await EventGallery.updateMany({ eventId, isCover: true }, { isCover: false });
+    await EventGallery.findByIdAndUpdate(itemId, { isCover: true });
+
+    return { success: true };
+  }
+
+  /**
+   * Updates metadata (e.g. caption) of a gallery item.
+   */
+  static async updateItem(
+    eventId: string,
+    itemId: string,
+    data: UpdateGalleryItemInput,
+    _adminId: string
+  ): Promise<EventGalleryItem> {
+    const event = await Event.findById(eventId).select('_id').lean();
+    if (!event) throw AppError.notFound('Event');
+
+    const item = await EventGallery.findOne({ _id: itemId, eventId });
+    if (!item) throw AppError.notFound('Gallery item');
+
+    if (data.caption !== undefined) {
+      item.caption = data.caption;
+    }
 
     await item.save();
-    return item.toObject();
+    const obj = item.toObject();
+
+    return {
+      id: item._id ? item._id.toString() : '',
+      eventId: obj.eventId ? obj.eventId.toString() : eventId,
+      mediaType: obj.mediaType,
+      url: obj.url,
+      publicId: obj.publicId,
+      thumbnail: obj.thumbnail,
+      caption: obj.caption,
+      sortOrder: obj.sortOrder,
+      isCover: obj.isCover,
+      visibility: obj.visibility,
+      uploadedBy: obj.uploadedBy ? obj.uploadedBy.toString() : undefined,
+      assetProvider: obj.assetProvider,
+      assetVersion: obj.assetVersion,
+      createdAt: obj.createdAt ? new Date(obj.createdAt).toISOString() : new Date().toISOString(),
+      updatedAt: obj.updatedAt ? new Date(obj.updatedAt).toISOString() : new Date().toISOString(),
+    };
   }
 
   /**
-   * Bulk reorders gallery items and normalizes their sortOrder.
+   * Reorders items within an event's gallery.
    */
-  static async reorderItems(eventId: string, data: ReorderGalleryItemsInput) {
-    const session = await mongoose.startSession();
-    session.startTransaction();
-    try {
-      const items = await EventGallery.find({ eventId }).session(session);
-      const itemMap = new Map(items.map(i => [i.id, i]));
+  static async reorderItems(
+    eventId: string,
+    data: ReorderGalleryItemsInput,
+    _adminId: string
+  ): Promise<{ success: true }> {
+    const event = await Event.findById(eventId).select('_id').lean();
+    if (!event) throw AppError.notFound('Event');
 
-      for (const update of data.items) {
-        const item = itemMap.get(update.id);
-        if (item) {
-          item.sortOrder = update.sortOrder;
-          await item.save({ session });
-        }
-      }
+    const existingItems = await EventGallery.find({
+      _id: { $in: data.itemIds },
+      eventId,
+    }).select('_id');
 
-      await this.normalizeSortOrders(eventId, session);
-      await session.commitTransaction();
-    } catch (error) {
-      await session.abortTransaction();
-      throw error;
-    } finally {
-      session.endSession();
+    if (existingItems.length !== data.itemIds.length) {
+      throw AppError.badRequest('Invalid gallery item IDs in reorder request');
     }
-  }
 
-  /**
-   * Internal helper to ensure sortOrder is contiguous (0, 1, 2, 3...)
-   */
-  private static async normalizeSortOrders(eventId: string, session: mongoose.ClientSession) {
-    const items = await EventGallery.find({ eventId })
-      .sort({ sortOrder: 1, createdAt: 1 })
-      .session(session);
+    const bulkOps = data.itemIds.map((id, index) => ({
+      updateOne: {
+        filter: { _id: id, eventId },
+        update: { $set: { sortOrder: index } },
+      },
+    }));
 
-    for (let i = 0; i < items.length; i++) {
-      if (items[i].sortOrder !== i) {
-        items[i].sortOrder = i;
-        await items[i].save({ session });
-      }
-    }
+    await EventGallery.bulkWrite(bulkOps);
+    return { success: true };
   }
 }

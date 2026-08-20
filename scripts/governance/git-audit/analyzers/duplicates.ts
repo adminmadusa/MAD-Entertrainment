@@ -13,7 +13,7 @@ export function analyzeDuplicateBranches(
   allBranches: BranchInfo[]
 ): DuplicateReport {
   const name = currentBranch.name;
-  
+
   // Exclude protected and integration branches from duplicate checking
   if (name === 'develop' || name === 'live' || name === 'test/remediation-integration' || name === 'origin/develop' || name === 'origin/live') {
     return { isDuplicate: false, duplicateOf: null, reason: null, confidence: '0%' };
@@ -24,7 +24,7 @@ export function analyzeDuplicateBranches(
       if (b.name === 'develop' || b.name === 'live' || b.name === 'origin/develop' || b.name === 'origin/live') {
         continue;
       }
-      
+
       const cleanA = name.replace('origin/', '');
       const cleanB = b.name.replace('origin/', '');
       if (cleanA === cleanB) continue;

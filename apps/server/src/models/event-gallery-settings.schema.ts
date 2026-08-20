@@ -8,6 +8,8 @@ export interface IEventGallerySettings extends Document {
   published: boolean;
   publishedAt?: Date;
   publishedBy?: Types.ObjectId;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 const eventGallerySettingsSchema = new Schema<IEventGallerySettings>(

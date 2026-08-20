@@ -75,11 +75,11 @@ function BookingsContent() {
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['admin-bookings', { page, search, status: statusFilter, eventId: eventFilter, sortField, sortOrder }],
-    queryFn: () => adminGetBookings({ 
-      page, 
-      limit: 15, 
-      ...(search && { search }), 
-      ...(statusFilter && { status: statusFilter }), 
+    queryFn: () => adminGetBookings({
+      page,
+      limit: 15,
+      ...(search && { search }),
+      ...(statusFilter && { status: statusFilter }),
       ...(eventFilter && { eventId: eventFilter }),
       ...(sortField && { sortField }),
       ...(sortOrder && { sortOrder })

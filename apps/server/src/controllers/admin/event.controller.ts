@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+
 import { AppError } from '../../middleware/error.middleware';
 import * as eventService from '../../services/admin/event.service';
 

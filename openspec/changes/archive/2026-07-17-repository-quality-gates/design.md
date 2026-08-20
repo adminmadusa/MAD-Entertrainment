@@ -1,6 +1,6 @@
 ## Context
 
-The repository currently lacks strict local compiler and linter options for checking unused local variables, parameters, and imports. This allows dead variables and unused imports to accumulate, triggering CodeQL security and quality alerts in CI. 
+The repository currently lacks strict local compiler and linter options for checking unused local variables, parameters, and imports. This allows dead variables and unused imports to accumulate, triggering CodeQL security and quality alerts in CI.
 
 This design establishes a clean local quality gate to catch these issues prior to pushing code.
 

@@ -217,9 +217,9 @@ export function CouponForm({
                       }`}
                     >
                       <input
-                        type="checkbox" 
+                        type="checkbox"
                         id={`event-${event._id}`}
-                        checked={isSelected} 
+                        checked={isSelected}
                         readOnly
                         className="w-3.5 h-3.5 accent-accent-purple rounded"
                       />

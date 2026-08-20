@@ -10,7 +10,7 @@
  * a separate 'use client' child component that is only mounted when needed.
  */
 import type { Metadata } from 'next';
-import Image from 'next/image';
+import { ImageWrapper } from '@/components/common/ImageWrapper';
 import Link from 'next/link';
 
 import { NotFoundDJWidget } from './_components/NotFoundDJWidget';
@@ -51,7 +51,7 @@ export default function NotFound() {
         {/* Left: DJ Console illustration */}
         <div className="lg:col-span-6 flex flex-col items-center justify-center">
           <div className="relative group max-w-md w-full aspect-square rounded-3xl overflow-hidden border border-border-subtle shadow-glow-hover transition-all duration-300">
-            <Image
+            <ImageWrapper
               src="/images/dj_turntables_404.png"
               alt="Neon DJ Equipment Lost in Sound"
               fill

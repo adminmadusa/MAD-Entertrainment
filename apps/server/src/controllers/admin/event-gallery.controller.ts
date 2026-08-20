@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+
 import { AdminEventGalleryService } from '../../services/admin/event-gallery.service';
 import { sendSuccess } from '../../utils/response';
 
@@ -23,11 +24,12 @@ export const addItems = async (req: Request, res: Response, next: NextFunction) 
   }
 };
 
-export const updateItem = async (req: Request, res: Response, next: NextFunction) => {
+export const updateSettings = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { eventId, itemId } = req.params;
-    const item = await AdminEventGalleryService.updateItem(eventId, itemId, req.body);
-    sendSuccess(res, item, 'Gallery item updated successfully');
+    const { eventId } = req.params;
+    const adminId = req.admin!.sub;
+    const settings = await AdminEventGalleryService.updateSettings(eventId, req.body, adminId);
+    sendSuccess(res, settings, 'Gallery settings updated successfully');
   } catch (error) {
     next(error);
   }
@@ -36,8 +38,9 @@ export const updateItem = async (req: Request, res: Response, next: NextFunction
 export const deleteItem = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { eventId, itemId } = req.params;
-    await AdminEventGalleryService.deleteItem(eventId, itemId);
-    sendSuccess(res, null, 'Gallery item deleted successfully');
+    const adminId = req.admin!.sub;
+    const result = await AdminEventGalleryService.deleteItem(eventId, itemId, adminId);
+    sendSuccess(res, result, 'Gallery item deleted successfully');
   } catch (error) {
     next(error);
   }
@@ -46,8 +49,20 @@ export const deleteItem = async (req: Request, res: Response, next: NextFunction
 export const setCover = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { eventId, itemId } = req.params;
-    const item = await AdminEventGalleryService.setCover(eventId, itemId);
-    sendSuccess(res, item, 'Cover image set successfully');
+    const adminId = req.admin!.sub;
+    const result = await AdminEventGalleryService.setCoverItem(eventId, itemId, adminId);
+    sendSuccess(res, result, 'Gallery cover updated successfully');
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updateItem = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { eventId, itemId } = req.params;
+    const adminId = req.admin!.sub;
+    const item = await AdminEventGalleryService.updateItem(eventId, itemId, req.body, adminId);
+    sendSuccess(res, item, 'Gallery item updated successfully');
   } catch (error) {
     next(error);
   }
@@ -56,19 +71,9 @@ export const setCover = async (req: Request, res: Response, next: NextFunction) 
 export const reorderItems = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { eventId } = req.params;
-    await AdminEventGalleryService.reorderItems(eventId, req.body);
-    sendSuccess(res, null, 'Gallery items reordered successfully');
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const updateSettings = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const { eventId } = req.params;
     const adminId = req.admin!.sub;
-    const settings = await AdminEventGalleryService.updateSettings(eventId, req.body, adminId);
-    sendSuccess(res, settings, 'Gallery settings updated successfully');
+    const result = await AdminEventGalleryService.reorderItems(eventId, req.body, adminId);
+    sendSuccess(res, result, 'Gallery items reordered successfully');
   } catch (error) {
     next(error);
   }

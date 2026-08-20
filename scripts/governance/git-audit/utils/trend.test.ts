@@ -188,7 +188,7 @@ describe('TrendStore (File persistence and error recovery)', () => {
   it('should backup schema mismatches to .schema-v{version}.json and reset', () => {
     const file = path.resolve(tempDir, '.agents/trend_report.json');
     fs.mkdirSync(path.dirname(file), { recursive: true });
-    
+
     const mismatchedData = {
       schemaVersion: '2.5.9',
       engineVersion: '1.0.0',

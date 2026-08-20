@@ -128,18 +128,19 @@ describe('Dead Asset & Duplicate Detection Validator (Phase 2)', () => {
     const result = await validator.run(mockFiles, { knowledgeGraph: graph });
 
     // 4. Assert correctness
-    expect(result.success).toBe(true);
+    expect(result.errors.length).toBeGreaterThan(0);
     expect(result.warnings.length).toBeGreaterThan(0);
 
-    // Verify Dead Components & Hooks
+    // Verify Dead Components & Hooks (now classified as blocking errors)
+    const errors = result.errors;
+    const deadComponentError = errors.find(w => w.file === 'scratch/test-validator/UnusedComponent.tsx' && w.rule === 'VAL-UI-012');
+    expect(deadComponentError).toBeDefined();
+
+    const deadHookError = errors.find(w => w.file === 'scratch/test-validator/useUnusedHook.ts' && w.rule === 'VAL-UI-013');
+    expect(deadHookError).toBeDefined();
+
+    // Verify Safe Delete Classifications (warnings)
     const warnings = result.warnings;
-    const deadComponentWarning = warnings.find(w => w.file === 'scratch/test-validator/UnusedComponent.tsx' && w.rule === 'VAL-UI-012');
-    expect(deadComponentWarning).toBeDefined();
-
-    const deadHookWarning = warnings.find(w => w.file === 'scratch/test-validator/useUnusedHook.ts' && w.rule === 'VAL-UI-013');
-    expect(deadHookWarning).toBeDefined();
-
-    // Verify Safe Delete Classifications
     const safeDeleteUnused = warnings.find(w => w.file === 'scratch/test-validator/UnusedComponent.tsx' && w.rule === 'VAL-UI-017');
     expect(safeDeleteUnused).toBeDefined();
     expect(safeDeleteUnused?.message).toContain('HIGH_CONFIDENCE_UNUSED');

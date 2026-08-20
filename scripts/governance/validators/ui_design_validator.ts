@@ -196,12 +196,12 @@ export class UIDesignValidator implements GovernanceValidator {
         const classes = classNameStr.split(/\s+/).filter(Boolean);
         const seen = new Map<string, string>(); // modifierKey + ':' + category -> fullClass
         const duplicates: string[] = [];
-        
+
         for (const c of classes) {
           const parts = c.split(':');
           const base = parts[parts.length - 1];
           const modifiers = parts.slice(0, parts.length - 1).sort().join(':');
-          
+
           let category = '';
           if (/^(p|pt|pr|pb|pl|px|py)-/.test(base)) {
             category = 'padding-' + base.split('-')[0];
@@ -212,14 +212,14 @@ export class UIDesignValidator implements GovernanceValidator {
           } else if (base === 'flex' || base === 'grid' || base === 'block' || base === 'inline' || base === 'hidden') {
             category = 'display';
           }
-          
+
           const exactKey = modifiers + ':' + base;
           if (seen.has(exactKey)) {
             duplicates.push(`Duplicate Tailwind class "${c}"`);
             continue;
           }
           seen.set(exactKey, c);
-          
+
           if (category) {
             const catKey = modifiers + ':' + category;
             if (seen.has(catKey)) {

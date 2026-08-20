@@ -22,7 +22,7 @@ This change aims to polish these issues in targeted, low-risk iterations.
 
 ## Impact
 
-- **Affected Code**: 
+- **Affected Code**:
   - `apps/web/src/app/page.tsx`
   - `apps/web/src/components/ui/HomeSkeletons.tsx`
   - `apps/web/src/components/ui/UpcomingEventsSection.tsx`

@@ -90,13 +90,13 @@ export function executeStackPruning(): void {
     if (!fs.existsSync(METRICS_PATH)) {
       runEngine();
     }
-    
+
     const metrics = JSON.parse(fs.readFileSync(METRICS_PATH, 'utf8'));
     const branches = metrics.branches || [];
 
     // Find the next eligible DELETE_READY branch in the AI OS stack
-    const target = branches.find((b: any) => 
-      b.name.startsWith('feat/ai-os-phase-') && 
+    const target = branches.find((b: any) =>
+      b.name.startsWith('feat/ai-os-phase-') &&
       b.lifecycleState === 'DELETE_READY' &&
       b.confidence === 'PROVEN'
     );

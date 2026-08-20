@@ -1,10 +1,12 @@
 import React from 'react';
-import { EventStatus } from '@mad/shared';
-import { Button, Badge } from '@mad/ui';
+
 import { type TicketTierInput } from '@/components/events/EventTicketingCard';
 import type { CloudinaryImage } from '@/lib/api/admin/event.service';
+import { EventStatus, getCountryConfig } from '@mad/shared';
+import { Button, Badge } from '@mad/ui';
 
 interface EventReviewSectionProps {
+  countryCode?: string;
   title: string;
   category: string;
   description: string;
@@ -23,11 +25,11 @@ interface EventReviewSectionProps {
   selectedProfileId: string;
   coverImage: CloudinaryImage | null;
   posterImage: CloudinaryImage | null;
-  galleryImages: CloudinaryImage[];
   onEditStep: (step: number) => void;
 }
 
 export const EventReviewSection: React.FC<EventReviewSectionProps> = ({
+  countryCode,
   title,
   category,
   description,
@@ -46,9 +48,10 @@ export const EventReviewSection: React.FC<EventReviewSectionProps> = ({
   selectedProfileId,
   coverImage,
   posterImage,
-  galleryImages: _galleryImages,
   onEditStep,
 }) => {
+  const currencySymbol = getCountryConfig(countryCode).symbol;
+
   return (
     <div className="space-y-6">
       {/* Basic Information */}
@@ -143,7 +146,7 @@ export const EventReviewSection: React.FC<EventReviewSectionProps> = ({
             <span className="text-text-muted block mb-1">Ticketing Type</span>
             <span className="text-white font-medium capitalize">{ticketingType}</span>
           </div>
-          
+
           {ticketingType === 'custom' && (
             <div className="space-y-2">
               <span className="text-text-muted block">Ticket Tiers</span>
@@ -152,7 +155,7 @@ export const EventReviewSection: React.FC<EventReviewSectionProps> = ({
                   <div key={idx} className="flex justify-between items-center pb-2 border-b border-border-subtle last:border-0 last:pb-0">
                     <span className="text-white font-medium capitalize">{tier.name}</span>
                     <div className="text-text-muted text-xs text-right">
-                      <div>Price: {tier.price}</div>
+                      <div>Price: {tier.price !== '' ? `${currencySymbol}${tier.price}` : 'Free'}</div>
                       <div>Capacity: {tier.capacity}</div>
                     </div>
                   </div>
@@ -206,7 +209,7 @@ export const EventReviewSection: React.FC<EventReviewSectionProps> = ({
             <span className="text-text-muted block mb-2">Cover Image</span>
             {coverImage ? (
               /* eslint-disable-next-line @next/next/no-img-element */
-              <img src={coverImage.url} alt="Cover" className="w-full h-32 object-cover rounded-lg border border-border" />
+              <img src={coverImage.url} alt="Cover" width={320} height={128} className="w-full h-32 object-cover rounded-lg border border-border" />
             ) : (
               <div className="w-full h-32 bg-surface-elevated rounded-lg flex items-center justify-center text-text-muted">No Image</div>
             )}
@@ -215,7 +218,7 @@ export const EventReviewSection: React.FC<EventReviewSectionProps> = ({
             <span className="text-text-muted block mb-2">Poster Image</span>
             {posterImage ? (
               /* eslint-disable-next-line @next/next/no-img-element */
-              <img src={posterImage.url} alt="Poster" className="w-full h-32 object-cover rounded-lg border border-border" />
+              <img src={posterImage.url} alt="Poster" width={320} height={128} className="w-full h-32 object-cover rounded-lg border border-border" />
             ) : (
               <div className="w-full h-32 bg-surface-elevated rounded-lg flex items-center justify-center text-text-muted">No Image</div>
             )}

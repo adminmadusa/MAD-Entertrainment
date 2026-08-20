@@ -1,6 +1,6 @@
-import mongoose, { type FilterQuery } from 'mongoose';
+import mongoose, { Types, type FilterQuery } from 'mongoose';
 
-import { EventStatus, EVENT_STATUS_TRANSITIONS, type EventLifecycleStatus, deriveEventCapabilities } from '@mad/shared';
+import { EventStatus, EVENT_STATUS_TRANSITIONS, type EventLifecycleStatus, deriveEventCapabilities, EventLifecycle } from '@mad/shared';
 import type { BulkOperationResult } from '@mad/types';
 
 import { AppError } from '../../middleware/error.middleware';
@@ -128,7 +128,7 @@ export const createEvent = async (data: Partial<IEvent>): Promise<IEvent> => {
   }
 
   if (data.ticketProfileId) {
-    const profile = await TicketProfile.findById(data.ticketProfileId);
+    const profile = await TicketProfile.findById(String(data.ticketProfileId));
     if (profile) {
       const resolvedTiers = resolveEventTickets(
         data.title || '',
@@ -156,7 +156,7 @@ export const getEvents = async (
   const query: FilterQuery<IEvent> = { isDeleted: { $ne: true } };
 
   if (filters.status) {
-    query.status = filters.status;
+    query.status = String(filters.status);
   }
 
   if (filters.search) {
@@ -176,7 +176,7 @@ export const getEvents = async (
     createdAt: 'createdAt'
   };
   const validSortField = filters.sortField ? (SORT_FIELDS[filters.sortField] ?? 'createdAt') : 'createdAt';
-  const sortDirection = filters.sortOrder === 'asc' ? 1 : -1;
+  const sortDirection = filters.sortOrder ? (filters.sortOrder === 'asc' ? 1 : -1) : (validSortField === 'createdAt' ? -1 : 1);
   const sortOptions: any = { [validSortField]: sortDirection };
   if (validSortField !== 'createdAt') sortOptions.createdAt = -1;
   sortOptions._id = 1;
@@ -238,6 +238,47 @@ export const updateEvent = async (id: string, data: Partial<IEvent>): Promise<Ev
   const existing = await Event.findById(String(id));
   if (!existing) return null;
 
+  const caps = deriveEventCapabilities({
+    status: existing.status,
+    startDate: existing.startDate,
+    endDate: existing.endDate,
+    bookingStartDate: existing.bookingStartDate,
+    bookingEndDate: existing.bookingEndDate,
+    isSoldOut: existing.isSoldOut,
+    totalCapacity: existing.totalCapacity || existing.ticketTiers?.reduce((acc: number, t: any) => acc + (t.totalCapacity || 0), 0) || 0,
+    ticketsSold: existing.soldCount || existing.ticketTiers?.reduce((acc: number, t: any) => acc + (t.soldCount || 0), 0) || 0,
+    galleryPublished: false,
+    galleryItemCount: 0,
+    isDeleted: existing.isDeleted
+  });
+
+  if (caps.lifecycle === EventLifecycle.COMPLETED) {
+    const coreFields: (keyof IEvent)[] = [
+      'title',
+      'description',
+      'startDate',
+      'endDate',
+      'bookingStartDate',
+      'bookingEndDate',
+      'ticketProfileId',
+      'ticketOverrides',
+      'ticketTiers',
+      'totalCapacity',
+      'bannerImage',
+      'posterImage'
+    ];
+
+    const modifiedCoreFields = coreFields.filter(
+      (field) => data[field] !== undefined && JSON.stringify(data[field]) !== JSON.stringify(existing[field])
+    );
+
+    if (modifiedCoreFields.length > 0) {
+      throw AppError.badRequest(
+        `Cannot modify core details of a completed event. Modified fields: ${modifiedCoreFields.join(', ')}`
+      );
+    }
+  }
+
   const rawExpectedVersion = data.eventVersion;
   if (rawExpectedVersion === undefined || rawExpectedVersion === null) {
     throw AppError.badRequest('Event version is required for update');
@@ -258,7 +299,7 @@ export const updateEvent = async (id: string, data: Partial<IEvent>): Promise<Ev
 
   const profileId = data.ticketProfileId !== undefined ? data.ticketProfileId : existing.ticketProfileId;
   if (profileId) {
-    const profile = await TicketProfile.findById(profileId);
+    const profile = await TicketProfile.findById(String(profileId));
     if (profile) {
       const overrides = data.ticketOverrides !== undefined ? data.ticketOverrides : existing.ticketOverrides;
       const resolvedTiers = resolveEventTickets(
@@ -298,10 +339,31 @@ export const updateEvent = async (id: string, data: Partial<IEvent>): Promise<Ev
   const newPosterId = data.posterImage?.publicId;
   const posterReplaced = newPosterId && oldPosterId && oldPosterId !== newPosterId;
 
-  const { eventVersion: _eventVersion, ...updateData } = data;
+  const updateDoc: Record<string, any> = {};
+  if (data.title !== undefined) updateDoc.title = String(data.title);
+  if (data.description !== undefined) updateDoc.description = String(data.description);
+  if (data.category !== undefined) updateDoc.category = String(data.category);
+  if (data.slug !== undefined) updateDoc.slug = String(data.slug);
+  if (data.venue !== undefined) updateDoc.venue = data.venue;
+  if (data.startDate !== undefined) updateDoc.startDate = data.startDate;
+  if (data.endDate !== undefined) updateDoc.endDate = data.endDate;
+  if (data.status !== undefined) updateDoc.status = data.status;
+  if (data.isSoldOut !== undefined) updateDoc.isSoldOut = Boolean(data.isSoldOut);
+  if (data.totalCapacity !== undefined) updateDoc.totalCapacity = Number(data.totalCapacity);
+  if (data.ticketTiers !== undefined) updateDoc.ticketTiers = data.ticketTiers;
+  if (data.ticketProfileId !== undefined) updateDoc.ticketProfileId = data.ticketProfileId;
+  if (data.ticketOverrides !== undefined) updateDoc.ticketOverrides = data.ticketOverrides;
+  if (data.bannerImage !== undefined) updateDoc.bannerImage = data.bannerImage;
+  if (data.posterImage !== undefined) updateDoc.posterImage = data.posterImage;
+  if (data.djOperatorIds !== undefined) updateDoc.djOperatorIds = data.djOperatorIds;
+  if (data.bookingMode !== undefined) updateDoc.bookingMode = data.bookingMode;
+  if (data.seatLayoutId !== undefined) updateDoc.seatLayoutId = data.seatLayoutId;
+  if (data.galleryImages !== undefined) updateDoc.galleryImages = data.galleryImages;
+
+  const safeId = String(id);
   const updated = await Event.findOneAndUpdate(
-    { _id: String(id), eventVersion: expectedVersion },
-    { $set: updateData, $inc: { eventVersion: 1 } },
+    { _id: Types.ObjectId.isValid(safeId) ? new Types.ObjectId(safeId) : safeId, eventVersion: Number(expectedVersion) },
+    { $set: updateDoc, $inc: { eventVersion: 1 } },
     { new: true }
   );
   if (!updated) {

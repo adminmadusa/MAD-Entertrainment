@@ -106,9 +106,15 @@ export class DeadAssetDetector {
     }
 
     // 5. Evaluate reachability for all files in scope
+    const deadCodeExclusions: string[] = (config as any).scanScope?.deadCodeExclusions ?? [];
     for (const file of files) {
       // Skip ignored paths, test files, storybooks, and configuration files
       if (this.shouldSkipFile(file, ignorePatterns)) {
+        continue;
+      }
+      // Skip files explicitly excluded from dead-code detection in governance.config.ts
+      // (e.g., files referenced via config-level APIs outside BFS traversal scope)
+      if (deadCodeExclusions.some(exc => file === exc || file.endsWith('/' + exc))) {
         continue;
       }
 
@@ -213,10 +219,10 @@ export class DeadAssetDetector {
     if (Array.isArray(configuredPatterns)) {
       return files.filter(f => {
         return configuredPatterns.some(pattern => {
-          const regexStr = '^' + pattern
-            .replace(/\//g, '\\/')
+          const escaped = pattern.replace(/[.+?^${}()|[\]\\]/g, '\\$&');
+          const regexStr = '^' + escaped
             .replace(/\*\*/g, '.*')
-            .replace(/\*/g, '[^\\/]*') + '$';
+            .replace(/\*/g, '[^/]*') + '$';
           return new RegExp(regexStr).test(file || f) || f.includes(pattern);
         });
       });
@@ -280,10 +286,10 @@ export class DeadAssetDetector {
 
   private static shouldSkipFile(file: string, ignorePatterns: string[]): boolean {
     const isIgnored = ignorePatterns.some(pattern => {
-      const regexStr = '^' + pattern
-        .replace(/\//g, '\\/')
+      const escaped = pattern.replace(/[.+?^${}()|[\]\\]/g, '\\$&');
+      const regexStr = '^' + escaped
         .replace(/\*\*/g, '.*')
-        .replace(/\*/g, '[^\\/]*') + '$';
+        .replace(/\*/g, '[^/]*') + '$';
       return new RegExp(regexStr).test(file) || file.includes(pattern);
     });
 

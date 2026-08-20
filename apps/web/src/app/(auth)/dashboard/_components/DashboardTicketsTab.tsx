@@ -5,6 +5,7 @@ import { useState } from 'react';
 
 import { BookingCard } from '@/components/booking/shared/BookingCard';
 import type { Booking, Ticket } from '@mad/types';
+import { Button } from '@mad/ui';
 
 export function BookingCardSkeleton() {
   return (
@@ -81,12 +82,14 @@ export function DashboardTicketsTab({
         <p className="text-text-secondary text-xs max-w-sm mx-auto">
           We encountered an issue retrieving your ticket records. Please try again.
         </p>
-        <button
+        <Button
+          variant="secondary"
+          size="sm"
           onClick={() => refetch()}
           className="px-5 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-white text-xs font-bold transition-all"
         >
           Retry
-        </button>
+        </Button>
       </div>
     );
   }
@@ -130,7 +133,7 @@ export function DashboardTicketsTab({
 
     return (
       <div
-        className="glass p-1.5 rounded-2xl border border-white/5 flex gap-1 overflow-x-auto whitespace-nowrap scrollbar-none w-full"
+        className="flex items-center gap-2 overflow-x-auto whitespace-nowrap scrollbar-none py-1 w-full"
         role="tablist"
         aria-label="Ticket categories"
       >
@@ -142,16 +145,19 @@ export function DashboardTicketsTab({
             id={`subtab-${tab.key}`}
             aria-selected={activeTicketSubTab === tab.key}
             aria-controls={`subtab-panel-${tab.key}`}
-            onClick={() => {
-              setActiveTicketSubTab(tab.key);
-            }}
-            className={`flex-shrink-0 px-4 py-2 text-xs font-extrabold rounded-xl transition-all duration-300 min-h-[44px] flex items-center justify-center whitespace-nowrap focus-ring ${
+            onClick={() => setActiveTicketSubTab(tab.key)}
+            className={`flex-shrink-0 px-4 py-2 text-xs font-bold rounded-full transition-all duration-200 min-h-[38px] flex items-center gap-1.5 focus-ring ${
               activeTicketSubTab === tab.key
-                ? 'bg-accent-purple text-white shadow-md font-black'
-                : 'text-text-secondary hover:text-white hover:bg-white/5'
+                ? 'bg-white text-black font-extrabold shadow-md'
+                : 'text-text-secondary hover:text-white bg-white/5 hover:bg-white/10 border border-white/10'
             }`}
           >
-            {tab.label} ({tab.count})
+            <span>{tab.label}</span>
+            <span className={`text-[11px] px-1.5 py-0.5 rounded-full ${
+              activeTicketSubTab === tab.key ? 'bg-black/10 text-black font-black' : 'bg-white/10 text-text-muted'
+            }`}>
+              {tab.count}
+            </span>
           </button>
         ))}
       </div>
@@ -189,10 +195,10 @@ export function DashboardTicketsTab({
         role="tabpanel"
         id={`subtab-panel-${activeTicketSubTab}`}
         aria-labelledby={`subtab-${activeTicketSubTab}`}
-        className="space-y-4"
+        className="grid grid-cols-1 md:grid-cols-2 gap-4"
       >
         {currentTabBookings.length === 0 ? (
-          <div className="glass rounded-3xl border border-border-subtle p-10 text-center space-y-4">
+          <div className="col-span-full glass rounded-3xl border border-border-subtle p-10 text-center space-y-4">
             <div className="text-3xl">🎟️</div>
             <h4 className="text-white font-bold text-sm">No results</h4>
             <p className="text-text-secondary text-xs max-w-sm mx-auto leading-relaxed">
@@ -201,23 +207,27 @@ export function DashboardTicketsTab({
           </div>
         ) : (
           currentTabBookings.map((b) => (
-            <BookingCard
+            <div
               key={b._id}
-              booking={b}
-              tickets={tickets.filter(
-                (t) => t.bookingId === b._id || t.bookingId?.toString() === b._id?.toString()
-              )}
-              ticketsReady={ticketsReadyMap[b._id?.toString() ?? ''] ?? false}
-              isPast={activeTicketSubTab === 'past'}
-              collapsible={true}
-              isExpanded={expandedBookingId === b.bookingId}
-              onToggleExpand={() => onToggleExpand(b.bookingId)}
-              downloading={downloadingId === b.bookingId}
-              resending={resendingId === b.bookingId}
-              resendCooldown={resendCooldowns[b.bookingId] || 0}
-              onDownload={() => onDownload(b.bookingId)}
-              onResend={() => onResend(b.bookingId)}
-            />
+              className={expandedBookingId === b.bookingId ? 'col-span-full' : ''}
+            >
+              <BookingCard
+                booking={b}
+                tickets={tickets.filter(
+                  (t) => t.bookingId === b._id || t.bookingId?.toString() === b._id?.toString()
+                )}
+                ticketsReady={ticketsReadyMap[b._id?.toString() ?? ''] ?? false}
+                isPast={activeTicketSubTab === 'past'}
+                collapsible={true}
+                isExpanded={expandedBookingId === b.bookingId}
+                onToggleExpand={() => onToggleExpand(b.bookingId)}
+                downloading={downloadingId === b.bookingId}
+                resending={resendingId === b.bookingId}
+                resendCooldown={resendCooldowns[b.bookingId] || 0}
+                onDownload={() => onDownload(b.bookingId)}
+                onResend={() => onResend(b.bookingId)}
+              />
+            </div>
           ))
         )}
       </div>

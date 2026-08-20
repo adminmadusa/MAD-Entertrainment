@@ -26,15 +26,15 @@ The gallery feature is already fully built: completed events have a dedicated ga
 ## Decisions
 
 ### Decision 1: Link directly to `/events/[slug]/gallery` instead of `/events/[slug]`
-**Why**: The card is now positioned as a gallery invitation, so it should take the user directly into the gallery experience rather than making them find the gallery tab themselves.  
+**Why**: The card is now positioned as a gallery invitation, so it should take the user directly into the gallery experience rather than making them find the gallery tab themselves.
 **Alternative considered**: Keep linking to `/events/[slug]` — rejected because it adds an extra click and reduces the FOMO impact of clicking a "View Gallery" card.
 
 ### Decision 2: Keep grayscale hover-reveal effect but remove the disabled grayscale baseline
-**Why**: The hover reveal effect (`grayscale-[30%]` → `grayscale-[0%]` on hover) is actually a beautiful effect. The problem is the starting state is too grey. We keep the hover reveal but dial the resting grayscale down to `grayscale-[0%]` (fully colourful) so the card looks alive at rest.  
+**Why**: The hover reveal effect (`grayscale-[30%]` → `grayscale-[0%]` on hover) is actually a beautiful effect. The problem is the starting state is too grey. We keep the hover reveal but dial the resting grayscale down to `grayscale-[0%]` (fully colourful) so the card looks alive at rest.
 **Alternative**: Remove the effect entirely — rejected, the hover colour pop is a premium touch worth keeping.
 
 ### Decision 3: Show photo count only if `galleryCount > 0` — no new API call required
-**Why**: The `CompletedEventsSection` receives `Event[]` from the server. The `Event` type already carries a `galleryCount` field if populated. We should use this if available rather than adding a new data-fetch layer.  
+**Why**: The `CompletedEventsSection` receives `Event[]` from the server. The `Event` type already carries a `galleryCount` field if populated. We should use this if available rather than adding a new data-fetch layer.
 **Risk**: If `galleryCount` is not populated in the event list query, we skip the badge gracefully (no count shown, no error).
 
 ### Decision 4: Change card CTA from "Completed → disabled" to "Happy Moments → View Gallery →"

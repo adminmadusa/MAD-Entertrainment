@@ -1,7 +1,8 @@
 /* eslint-disable no-console */
-import mongoose from 'mongoose';
-import dotenv from 'dotenv';
 import path from 'path';
+
+import dotenv from 'dotenv';
+import mongoose from 'mongoose';
 
 // Load env vars
 dotenv.config({ path: path.join(__dirname, '../../../.env') });

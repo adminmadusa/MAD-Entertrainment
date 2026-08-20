@@ -37,14 +37,10 @@ export function Navbar() {
     return isAuthenticated
       ? [
           { label: 'Events', href: '/events' },
-          { label: 'DJs', href: '/dj-operators' },
-          { label: 'Help Center', href: '/support' },
           { label: 'My Tickets', href: '/dashboard?tab=tickets' },
         ]
       : [
           { label: 'Events', href: '/events' },
-          { label: 'DJs', href: '/dj-operators' },
-          { label: 'Help Center', href: '/support' },
           { label: 'My Tickets', href: '/tickets' },
         ];
   }, [isAuthenticated]);
@@ -95,15 +91,15 @@ export function Navbar() {
   if (isCheckoutOrBook) return null;
 
   const unscrolledNavClass = isEventDetail
-    ? 'bg-background/60 backdrop-blur-md border-white/5 py-5'
-    : 'bg-transparent border-transparent py-5';
+    ? 'bg-background/60 backdrop-blur-md border-white/5 py-2.5 sm:py-5'
+    : 'bg-transparent border-transparent py-2.5 sm:py-5';
 
   return (
     <header
       className={[
         'fixed top-0 left-0 right-0 z-50 transition-all duration-300 border-b',
         scrolled
-          ? 'bg-background/75 backdrop-blur-md border-white/5 py-3 shadow-lg shadow-black/20'
+          ? 'bg-background/75 backdrop-blur-md border-white/5 py-1.5 sm:py-3 shadow-lg shadow-black/20'
           : unscrolledNavClass,
       ].join(' ')}
     >
@@ -125,24 +121,27 @@ export function Navbar() {
           </div>
         </Link>
 
-        {/* Desktop Nav */}
-        <div className="hidden md:flex items-center gap-1">
-          {dynamicLinks.map((link) => (
-            <NavLink key={link.href} href={link.href}>
-              {link.label}
-            </NavLink>
-          ))}
-        </div>
+        {/* Right-Aligned Desktop Navigation & Actions */}
+        <div className="hidden md:flex items-center gap-5">
+          <div className="flex items-center gap-1">
+            {dynamicLinks.map((link) => (
+              <NavLink key={link.href} href={link.href}>
+                {link.label}
+              </NavLink>
+            ))}
+          </div>
 
-        {/* Desktop CTA */}
-        <div className="hidden md:flex items-center gap-3">
-          <UserDropdown />
-          <Link
-            href="/events"
-            className="px-5 py-2.5 text-sm font-semibold btn-gradient text-white rounded-xl shadow-glow-sm hover:scale-[1.03] active:scale-95 transition-transform focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-          >
-            Book Now
-          </Link>
+          <div className="h-5 w-px bg-white/10" aria-hidden="true" />
+
+          <div className="flex items-center gap-3">
+            <UserDropdown />
+            <Link
+              href="/events"
+              className="px-5 py-2.5 text-sm font-semibold btn-gradient text-white rounded-xl shadow-glow-sm hover:scale-[1.03] active:scale-95 transition-transform focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            >
+              Book Now
+            </Link>
+          </div>
         </div>
 
         {/* Mobile Hamburger */}

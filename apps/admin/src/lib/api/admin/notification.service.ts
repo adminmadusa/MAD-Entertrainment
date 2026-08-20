@@ -1,6 +1,6 @@
 import { adminApiClient } from '@/lib/api/client';
-import type { Notification, PaginatedDataResponse, PaginatedItemsResponse } from '@mad/types';
 import { createLogger } from '@/lib/logger';
+import type { Notification, PaginatedDataResponse, PaginatedItemsResponse } from '@mad/types';
 
 const logger = createLogger('Notification Service');
 

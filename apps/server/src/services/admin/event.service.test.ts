@@ -509,4 +509,58 @@ describe('Admin Event Service', () => {
     });
   });
 
+  describe('updateEvent - Completed Event Governance', () => {
+    it('throws bad request if attempting to modify core fields of a completed event', async () => {
+      const pastDate = new Date(Date.now() - 3600 * 1000); // completed 1 hour ago
+      const existingEvent = {
+        _id: 'event-1',
+        title: 'Original Title',
+        startDate: pastDate,
+        endDate: pastDate,
+        status: 'published',
+        eventVersion: 1,
+        ticketTiers: [],
+        toObject: () => ({}),
+      };
+
+      vi.mocked(Event.findById).mockResolvedValue(existingEvent as any);
+
+      await expect(
+        eventService.updateEvent('event-1', {
+          eventVersion: 1,
+          title: 'Modified Title',
+        } as any)
+      ).rejects.toThrow('Cannot modify core details of a completed event');
+    });
+
+    it('allows non-core fields to be modified (like status transitions to archived) even if completed', async () => {
+      const pastDate = new Date(Date.now() - 3600 * 1000); // completed
+      const existingEvent = {
+        _id: 'event-1',
+        title: 'Original Title',
+        startDate: pastDate,
+        endDate: pastDate,
+        status: 'published',
+        eventVersion: 1,
+        ticketTiers: [],
+        toObject: () => ({}),
+      };
+
+      vi.mocked(Event.findById).mockResolvedValue(existingEvent as any);
+      vi.mocked(Event.findOneAndUpdate).mockResolvedValue({ ...existingEvent, status: 'archived' } as any);
+
+      const result = await eventService.updateEvent('event-1', {
+        eventVersion: 1,
+        status: 'archived',
+      } as any);
+
+      expect(result).toBeDefined();
+      expect(Event.findOneAndUpdate).toHaveBeenCalledWith(
+        { _id: 'event-1', eventVersion: 1 },
+        expect.objectContaining({ $set: expect.objectContaining({ status: 'archived' }) }),
+        expect.any(Object)
+      );
+    });
+  });
+
 });

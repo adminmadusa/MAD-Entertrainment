@@ -2,11 +2,11 @@
 
 import { forwardRef, useEffect, useRef } from 'react';
 
-import { useFocusTrap } from '../../hooks/useFocusTrap';
 import { useDelayedUnmount } from '../../hooks/useDelayedUnmount';
-import { MotionTokens } from '../../lib/motionTokens';
+import { useFocusTrap } from '../../hooks/useFocusTrap';
 import { X } from '../../icons';
 import { cn } from '../../lib/cn';
+import { MotionTokens } from '../../lib/motionTokens';
 import { IconButton } from '../../primitives/IconButton';
 import {
   drawerContentBaseClasses,

@@ -1,27 +1,15 @@
 'use client';
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState, useRef } from 'react';
 
 import { adminGetRefunds, adminProcessRefund, type AdminRefund } from '@/lib/api/admin/refund.service';
-import type { AdminBooking } from '@/lib/api/admin/booking.service';
 import { useAdminAuth } from '@/providers/AdminAuthProvider';
-import { AdminRole, QUERY_KEYS, formatMoney } from '@mad/shared';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, Modal, EmptyState, ErrorState, TablePagination } from '@mad/ui';
-import { Receipt, Search } from '@mad/ui/icons';
-import { formatDateTime, formatEventDate } from '@mad/utils';
+import { AdminRole, QUERY_KEYS } from '@mad/shared';
+import { ErrorState, TablePagination } from '@mad/ui';
 
-
-interface PopulatedAdminRefund extends Omit<AdminRefund, 'bookingId' | 'paymentId'> {
-  bookingId: AdminBooking;
-  ticketIds?: string[];
-  paymentId: {
-    _id: string;
-    amount: number;
-    gateway: string;
-    gatewayPaymentId?: string;
-  };
-}
-
+import { ProcessRefundModal } from './components/ProcessRefundModal';
+import { RefundsTable } from './components/RefundsTable';
 
 export default function AdminRefundsPage() {
   const { admin } = useAdminAuth();
@@ -50,9 +38,9 @@ export default function AdminRefundsPage() {
 
   const { data, isLoading, error } = useQuery({
     queryKey: QUERY_KEYS.admin.refunds.list({ page, status: statusFilter, sortField, sortOrder }),
-    queryFn: () => adminGetRefunds({ 
-      page: String(page), 
-      limit: '15', 
+    queryFn: () => adminGetRefunds({
+      page: String(page),
+      limit: '15',
       ...(statusFilter && { status: statusFilter }),
       ...(sortField && { sortField }),
       ...(sortOrder && { sortOrder })
@@ -65,6 +53,7 @@ export default function AdminRefundsPage() {
     setGatewayId('');
     setManualOverride(false);
     setOverrideReason('');
+    processMutation.reset();
   };
 
   const processMutation = useMutation({
@@ -91,67 +80,6 @@ export default function AdminRefundsPage() {
   const refunds = data?.items ?? [];
   const pagination = data?.pagination;
 
-  const getActionClass = (a: 'approve' | 'reject') => {
-    if (action === a) {
-      return a === 'approve'
-        ? 'bg-green-500/20 border-green-500/50 text-green-400'
-        : 'bg-red-500/20 border-red-500/50 text-red-400';
-    }
-    return 'glass border-border-subtle text-text-secondary';
-  };
-
-  const renderTableBody = () => {
-    if (isLoading) {
-      return Array.from({ length: 5 }).map((_, i) => (
-        <TableRow key={i} className="border-b border-border-subtle/40 animate-pulse">
-          {Array.from({ length: 6 }).map((__, j) => <TableCell key={j} className="py-4 px-4"><div className="h-3.5 bg-white/5 rounded w-20" /></TableCell>)}
-        </TableRow>
-      ));
-    }
-
-    if (refunds.length === 0) {
-      return (
-        <TableRow>
-          <TableCell colSpan={6} className="py-8">
-            <EmptyState
-              variant="table"
-              icon={statusFilter !== '' ? <Search /> : <Receipt />}
-              title={statusFilter !== '' ? "No results match your search." : "No refunds processed yet."}
-              description={statusFilter !== '' ? "Try changing your filters." : undefined}
-            />
-          </TableCell>
-        </TableRow>
-      );
-    }
-
-    return refunds.map((refund) => (
-      <TableRow key={refund._id} className="border-b border-border-subtle/40 hover:bg-white/2">
-        <TableCell className="py-3.5 px-4 font-mono text-xs text-accent-purple">
-          <div>{(refund.bookingId as { bookingId?: string })?.bookingId ?? String(refund.bookingId).slice(-8)}</div>
-          {refund.ticketIds && refund.ticketIds.length > 0 && (
-            <div className="text-[10px] text-text-muted mt-0.5">{refund.ticketIds.length} tickets</div>
-          )}
-        </TableCell>
-        <TableCell className="py-3.5 px-4 text-white font-semibold">{formatMoney(refund.amount, refund.currency)}</TableCell>
-        <TableCell className="py-3.5 px-4 text-text-secondary max-w-40 truncate">{refund.reason ?? '—'}</TableCell>
-        <TableCell className="py-3.5 px-4">
-          <span className={`text-xs px-2.5 py-1 rounded-full border font-medium ${STATUS_COLORS[refund.status] ?? ''}`}>
-            {refund.status}
-          </span>
-        </TableCell>
-        <TableCell className="py-3.5 px-4 text-text-muted text-xs">{formatDateTime(refund.createdAt)}</TableCell>
-        <TableCell className="py-3.5 px-4">
-          {canProcessRefund && refund.status === 'requested' && (
-            <button onClick={() => setProcessTarget(refund)}
-              className="px-3 py-1.5 text-xs glass border border-accent-purple/30 rounded-lg text-accent-purple hover:bg-accent-purple/10 transition-all">
-              Process
-            </button>
-          )}
-        </TableCell>
-      </TableRow>
-    ));
-  };
-
   if (error) {
     return (
       <div className="py-12">
@@ -159,13 +87,6 @@ export default function AdminRefundsPage() {
       </div>
     );
   }
-
-  const STATUS_COLORS: Record<string, string> = {
-    requested: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/30',
-    processing: 'bg-blue-500/10 text-blue-400 border-blue-500/30',
-    completed: 'bg-green-500/10 text-green-400 border-green-500/30',
-    failed: 'bg-red-500/10 text-red-400 border-red-500/30',
-  };
 
   return (
     <div className="space-y-6">
@@ -185,27 +106,16 @@ export default function AdminRefundsPage() {
       </div>
 
       <div className="glass rounded-2xl border border-border-subtle overflow-hidden">
-        <Table className="min-w-[900px]">
-          <TableHeader>
-            <TableRow>
-              <TableHead className="py-3.5 px-4">Booking</TableHead>
-              <TableHead onClick={() => handleSort('amount')} className="py-3.5 px-4 cursor-pointer hover:text-white transition-colors select-none">
-                Amount {sortField === 'amount' ? (sortOrder === 'asc' ? '▲' : '▼') : ''}
-              </TableHead>
-              <TableHead className="py-3.5 px-4">Reason</TableHead>
-              <TableHead onClick={() => handleSort('status')} className="py-3.5 px-4 cursor-pointer hover:text-white transition-colors select-none">
-                Status {sortField === 'status' ? (sortOrder === 'asc' ? '▲' : '▼') : ''}
-              </TableHead>
-              <TableHead onClick={() => handleSort('createdAt')} className="py-3.5 px-4 cursor-pointer hover:text-white transition-colors select-none">
-                Requested {sortField === 'createdAt' ? (sortOrder === 'asc' ? '▲' : '▼') : ''}
-              </TableHead>
-              <TableHead className="py-3.5 px-4">Action</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {renderTableBody()}
-          </TableBody>
-        </Table>
+        <RefundsTable
+          refunds={refunds}
+          isLoading={isLoading}
+          statusFilter={statusFilter}
+          canProcessRefund={canProcessRefund}
+          sortField={sortField}
+          sortOrder={sortOrder}
+          onSort={handleSort}
+          onProcess={(refund) => setProcessTarget(refund)}
+        />
         {pagination && pagination.totalPages > 1 && (
           <TablePagination
             currentPage={page}
@@ -215,212 +125,28 @@ export default function AdminRefundsPage() {
         )}
       </div>
 
-      <Modal
-        isOpen={!!processTarget}
+      <ProcessRefundModal
+        processTarget={processTarget}
         onClose={resetStates}
-        size="md"
-        showCloseButton={false}
-        closeOnBackdropClick={true}
-        ariaLabelledBy="process-refund-modal-title"
-        className="glass-strong border border-border-subtle p-6 max-w-2xl"
-      >
-        {processTarget && (() => {
-          const target = processTarget as unknown as PopulatedAdminRefund;
-          const booking = target.bookingId;
-          const customer = booking?.guestInfo ?? booking?.userId;
-          const event = booking?.eventId;
-          const payment = target.paymentId;
-
-          return (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 overflow-y-auto max-h-[90vh]">
-              {/* Context Column (Left) */}
-              <div className="space-y-4 text-sm border-r border-white/5 pr-4 md:block hidden">
-
-                <div>
-                  <span className="text-[10px] text-text-muted uppercase tracking-wider block font-semibold">Booking ID</span>
-                  <span className="text-accent-purple font-mono font-bold">{booking?.bookingId ?? '—'}</span>
-                  {target.ticketIds && target.ticketIds.length > 0 && (
-                    <div className="mt-2">
-                      <span className="text-[10px] text-text-muted uppercase tracking-wider block font-semibold">Selected Tickets</span>
-                      <div className="flex flex-wrap gap-1 mt-1">
-                        {target.ticketIds.map(tid => (
-                          <span key={tid} className="text-[10px] font-mono bg-white/5 border border-white/10 px-1.5 py-0.5 rounded text-text-secondary">{tid}</span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                <div>
-                  <span className="text-[10px] text-text-muted uppercase tracking-wider block font-semibold">Customer Info</span>
-                  <p className="text-white font-medium">{customer?.name ?? '—'}</p>
-                  <p className="text-text-secondary text-xs">{customer?.email ?? '—'}</p>
-                  {customer?.phone && <p className="text-text-secondary text-xs">{customer.phone}</p>}
-                </div>
-
-                <div>
-                  <span className="text-[10px] text-text-muted uppercase tracking-wider block font-semibold">Event Parameters</span>
-                  <p className="text-white font-semibold">{event?.title ?? '—'}</p>
-                  {event?.startDate && (
-                    <p className="text-text-muted text-xs mt-0.5">
-                      {formatEventDate(event.startDate)}
-                    </p>
-                  )}
-                  {event?.venue && <p className="text-text-muted text-xs mt-0.5">{event.venue}</p>}
-                </div>
-
-                <div>
-                  <span className="text-[10px] text-text-muted uppercase tracking-wider block font-semibold">Payment / Gateway details</span>
-                  <p className="text-white font-medium">{payment ? formatMoney(payment.amount, target.currency) : '—'} via <span className="uppercase text-accent-purple font-mono">{payment?.gateway ?? '—'}</span></p>
-                  {payment?.gatewayPaymentId && <p className="text-text-muted font-mono text-[10px] truncate mt-0.5" title={payment.gatewayPaymentId}>ID: {payment.gatewayPaymentId}</p>}
-                </div>
-
-                <div>
-                  <span className="text-[10px] text-text-muted uppercase tracking-wider block font-semibold">Requested Refund Reason</span>
-                  <p className="text-text-secondary italic text-xs bg-white/3 p-2 rounded-lg mt-1">&ldquo;{processTarget.reason ?? 'No reason provided'}&rdquo;</p>
-                </div>
-              </div>
-
-              {/* Action Column (Right) */}
-              <div className="space-y-4 flex flex-col justify-between">
-                <div className="space-y-4">
-                  <div>
-                    <h2 id="process-refund-modal-title" className="text-white font-bold text-lg">Process Refund</h2>
-                    <p className="text-text-muted text-xs">Authorize or reject refund request</p>
-                  </div>
-
-
-
-                  {/* Mobiles-only quick summary */}
-                  <div className="md:hidden block bg-white/3 rounded-xl p-3 text-xs space-y-1">
-                    <p className="text-white">Booking: <span className="font-mono font-semibold text-accent-purple">{booking?.bookingId}</span></p>
-                    {processTarget.ticketIds && processTarget.ticketIds.length > 0 && (
-                      <p className="text-white">Tickets: <span className="font-mono text-text-secondary">{processTarget.ticketIds.length}</span></p>
-                    )}
-                    <p className="text-white">Customer: {customer?.name}</p>
-                    <p className="text-white font-medium">Amount: {formatMoney(processTarget.amount, processTarget.currency)}</p>
-                    {processTarget.reason && <p className="text-text-secondary italic">Reason: &ldquo;{processTarget.reason}&rdquo;</p>}
-                  </div>
-
-                  {(() => {
-                    const threeHoursAgo = new Date(Date.now() - 3 * 60 * 60 * 1000);
-                    const isLockedByTime = new Date(processTarget.createdAt) > threeHoursAgo;
-                    const hasScannedTickets = booking?.ticketsScanned !== undefined && booking.ticketsScanned > 0;
-                    const needsOverride = isLockedByTime || hasScannedTickets;
-
-                    return (
-                      <>
-                        {hasScannedTickets && (
-                          <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-xl p-3 text-xs text-yellow-300">
-                            <p className="font-semibold mb-1">⚠️ Checked-in Tickets Protection</p>
-                            <p>This booking has {booking.ticketsScanned} scanned ticket(s). Approving this refund requires super_admin manual override.</p>
-                          </div>
-                        )}
-                        {isLockedByTime && (
-                          <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-3 text-xs text-blue-300">
-                            <p className="font-semibold mb-1">🕒 3-Hour Verification Lock</p>
-                            <p>This refund request was made recently. It must wait 3 hours before processing to allow for check-in sync. Approving now requires super_admin manual override.</p>
-                          </div>
-                        )}
-                        <div className="bg-white/5 border border-white/10 rounded-xl p-3 text-center mt-4">
-                          <span className="text-xs text-text-muted block">Refund Amount</span>
-                          <span className="text-2xl font-black text-white">{formatMoney(processTarget.amount, processTarget.currency)}</span>
-                        </div>
-
-                        <div className="flex gap-3 mt-4">
-                          {(['approve', 'reject'] as const).map((a) => (
-                            <button key={a} type="button" onClick={() => setAction(a)}
-                              className={`flex-1 py-2 rounded-xl text-sm font-medium border transition-all capitalize ${getActionClass(a)}`}>
-                              {a}
-                            </button>
-                          ))}
-                        </div>
-
-                        {action === 'approve' && needsOverride && (
-                          <div className="space-y-4 border border-white/5 bg-white/3 rounded-xl p-3 mt-4">
-                            {admin?.role === AdminRole.SUPER_ADMIN ? (
-                              <>
-                                <label className="flex items-center gap-2 text-sm text-text-secondary cursor-pointer select-none">
-                                  <input
-                                    type="checkbox"
-                                    checked={manualOverride}
-                                    onChange={(e) => setManualOverride(e.target.checked)}
-                                    className="w-4 h-4 rounded bg-background border-border-subtle text-accent-purple focus:ring-accent-purple"
-                                  />
-                                  <span>Manual Override Refund Check</span>
-                                </label>
-                                {manualOverride && (
-                                  <>
-                                    <div className="space-y-1.5">
-                                      <label className="text-xs text-text-secondary block">Override Reason *</label>
-                                      <textarea
-                                        value={overrideReason}
-                                        onChange={(e) => setOverrideReason(e.target.value)}
-                                        placeholder="Provide reason for override..."
-                                        rows={2}
-                                        className="w-full px-4 py-2 rounded-xl bg-background border border-border-subtle text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple resize-none"
-                                      />
-                                    </div>
-                                    <div className="space-y-1.5">
-                                      <label className="text-xs text-text-secondary block">Gateway Refund ID *</label>
-                                      <input
-                                        value={gatewayId}
-                                        onChange={(e) => setGatewayId(e.target.value)}
-                                        placeholder="e.g. rfnd_xxx from Razorpay"
-                                        className="w-full px-4 py-2.5 rounded-xl bg-background border border-border-subtle text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple"
-                                      />
-                                    </div>
-                                  </>
-                                )}
-                              </>
-                            ) : (
-                              <p className="text-xs text-red-400 font-medium">
-                                ❌ Only super_admin accounts can override this security lock.
-                              </p>
-                            )}
-                          </div>
-                        )}
-                        <div className="space-y-1.5 mt-4">
-                          <label className="text-sm text-text-secondary">Admin Notes</label>
-                          <input value={adminNotes} onChange={(e) => setAdminNotes(e.target.value)} placeholder="Notes for audit log..." className="w-full px-4 py-2.5 rounded-xl bg-background border border-border-subtle text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple" />
-                        </div>
-                        {action === 'approve' && !needsOverride && (
-                          <div className="space-y-1.5 mt-4">
-                            <label className="text-sm text-text-secondary">Gateway Refund ID (optional)</label>
-                            <input value={gatewayId} onChange={(e) => setGatewayId(e.target.value)} placeholder="e.g. rfnd_xxx from Razorpay" className="w-full px-4 py-2.5 rounded-xl bg-background border border-border-subtle text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple" />
-                          </div>
-                        )}
-                        <div className="flex gap-3 pt-4">
-                          <button type="button" onClick={resetStates} className="flex-1 py-2.5 glass border border-border-subtle rounded-xl text-sm text-text-secondary">Cancel</button>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              if (isSubmitting.current) return;
-                              processMutation.mutate();
-                            }}
-                            disabled={
-                              processMutation.isPending ||
-                              (action === 'approve' && needsOverride && (
-                                admin?.role !== AdminRole.SUPER_ADMIN ||
-                                !manualOverride ||
-                                !overrideReason.trim() ||
-                                !gatewayId.trim()
-                              ))
-                            }
-                            className={`flex-1 py-2.5 rounded-xl text-white text-sm font-medium disabled:opacity-60 ${action === 'approve' ? 'bg-green-600 hover:bg-green-500' : 'bg-red-600 hover:bg-red-500'}`}
-                          >
-                            {processMutation.isPending ? 'Processing...' : `Confirm ${action}`}
-                          </button>
-                        </div>
-                      </>
-                    );
-                  })()}
-                </div>
-              </div>
-            </div>
-          );
-        })()}
-      </Modal>
+        adminRole={admin?.role}
+        action={action}
+        setAction={setAction}
+        adminNotes={adminNotes}
+        setAdminNotes={setAdminNotes}
+        gatewayId={gatewayId}
+        setGatewayId={setGatewayId}
+        manualOverride={manualOverride}
+        setManualOverride={setManualOverride}
+        overrideReason={overrideReason}
+        setOverrideReason={setOverrideReason}
+        onConfirm={() => {
+          if (isSubmitting.current) return;
+          processMutation.mutate();
+        }}
+        isPending={processMutation.isPending}
+        isError={processMutation.isError}
+        errorMessage={(processMutation.error as any)?.response?.data?.message || (processMutation.error as Error)?.message}
+      />
     </div>
   );
 }

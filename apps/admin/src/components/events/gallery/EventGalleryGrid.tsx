@@ -1,225 +1,249 @@
 'use client';
 
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import React, { useState } from 'react';
 import Image from 'next/image';
-import { type EventGalleryItem, MediaVisibility } from '@mad/types';
-import {
-  adminUpdateGalleryItem,
-  adminSetGalleryCover,
-  adminReorderGalleryItems,
-  adminDeleteGalleryItem,
-} from '@/lib/api/admin/event-gallery.service';
+import React, { useRef, useState } from 'react';
+
+import type { EventGalleryItem } from '@mad/types';
+
+import { EventGalleryLightbox } from './EventGalleryLightbox';
 
 export interface EventGalleryGridProps {
   eventId: string;
   items: EventGalleryItem[];
+  onUpload?: (files: File[]) => void;
+  onSetCover?: (item: EventGalleryItem) => void;
+  onDelete?: (item: EventGalleryItem) => void;
+  isUploading?: boolean;
+  isMutating?: boolean;
+  canUpload?: boolean;
 }
 
 export const EventGalleryGrid = React.memo(function EventGalleryGrid({
-  eventId,
   items,
+  onUpload,
+  onSetCover,
+  onDelete,
+  isUploading = false,
+  isMutating = false,
+  canUpload = true,
 }: EventGalleryGridProps) {
-  const queryClient = useQueryClient();
-  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Invalidate wrapper for mutations
-  const refreshGallery = () => {
-    queryClient.invalidateQueries({ queryKey: ['admin-gallery', eventId] });
-  };
-
-  const updateItemMutation = useMutation({
-    mutationFn: ({ itemId, payload }: { itemId: string; payload: any }) => adminUpdateGalleryItem(eventId, itemId, payload),
-    onSuccess: refreshGallery,
-  });
-
-  const setCoverMutation = useMutation({
-    mutationFn: (itemId: string) => adminSetGalleryCover(eventId, itemId),
-    onSuccess: refreshGallery,
-  });
-
-  const reorderMutation = useMutation({
-    mutationFn: (payload: { id: string; sortOrder: number }[]) => adminReorderGalleryItems(eventId, payload),
-    onMutate: async (newOrder) => {
-      await queryClient.cancelQueries({ queryKey: ['admin-gallery', eventId] });
-      const previousGallery = queryClient.getQueryData(['admin-gallery', eventId]);
-      
-      // Optimistically update
-      queryClient.setQueryData(['admin-gallery', eventId], (old: any) => {
-        if (!old) return old;
-        const newItems = [...old.items];
-        newOrder.forEach((update) => {
-          const item = newItems.find((i) => i.id === update.id);
-          if (item) item.sortOrder = update.sortOrder;
-        });
-        newItems.sort((a, b) => a.sortOrder - b.sortOrder);
-        return { ...old, items: newItems };
-      });
-
-      return { previousGallery };
-    },
-    onError: (_err, _newOrder, context: any) => {
-      queryClient.setQueryData(['admin-gallery', eventId], context.previousGallery);
-    },
-    onSettled: refreshGallery,
-  });
-
-  const deleteItemMutation = useMutation({
-    mutationFn: (itemId: string) => adminDeleteGalleryItem(eventId, itemId),
-    onMutate: async (itemId) => {
-      await queryClient.cancelQueries({ queryKey: ['admin-gallery', eventId] });
-      const previousGallery = queryClient.getQueryData(['admin-gallery', eventId]);
-      
-      queryClient.setQueryData(['admin-gallery', eventId], (old: any) => {
-        if (!old) return old;
-        return {
-          ...old,
-          items: old.items.filter((i: any) => i.id !== itemId),
-        };
-      });
-
-      return { previousGallery };
-    },
-    onError: (_err, _itemId, context: any) => {
-      queryClient.setQueryData(['admin-gallery', eventId], context.previousGallery);
-    },
-    onSettled: () => {
-      setDeletingId(null);
-      refreshGallery();
-    },
-  });
-
-  const moveItem = (index: number, direction: 'up' | 'down') => {
-    const targetIndex = direction === 'up' ? index - 1 : index + 1;
-    if (targetIndex < 0 || targetIndex >= items.length) return;
-
-    const newItems = [...items];
-    const temp = newItems[index];
-    newItems[index] = newItems[targetIndex];
-    newItems[targetIndex] = temp;
-
-    // Recalculate sortOrders
-    const payload = newItems.map((item, idx) => ({
-      id: item.id,
-      sortOrder: idx,
-    }));
-
-    reorderMutation.mutate(payload);
-  };
-
-  const handleDelete = (id: string) => {
-    if (window.confirm('Are you sure you want to delete this media item?')) {
-      setDeletingId(id);
-      deleteItemMutation.mutate(id);
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files && files.length > 0) {
+      onUpload?.(Array.from(files));
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     }
   };
 
-  if (items.length === 0) {
-    return (
-      <div className="glass rounded-2xl border border-border-subtle p-12 text-center">
-        <div className="w-16 h-16 bg-surface-elevated rounded-full flex items-center justify-center mx-auto mb-4">
-          <span className="text-2xl">📸</span>
-        </div>
-        <h3 className="text-white font-semibold text-lg mb-2">No gallery items yet</h3>
-        <p className="text-text-muted">Upload your first event photos using the upload zone above.</p>
-      </div>
-    );
-  }
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    if (canUpload && !isUploading) {
+      setIsDragging(true);
+    }
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    if (!canUpload || isUploading) return;
+
+    const files = e.dataTransfer.files;
+    if (files && files.length > 0) {
+      const imageFiles = Array.from(files).filter((file) =>
+        file.type.startsWith('image/')
+      );
+      if (imageFiles.length > 0) {
+        onUpload?.(imageFiles);
+      }
+    }
+  };
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
-      {items.map((item, index) => (
-        <div 
-          key={item.id} 
-          className={`glass rounded-2xl border ${item.isCover ? 'border-accent-purple shadow-[0_0_15px_rgba(139,92,246,0.3)]' : 'border-border-subtle'} overflow-hidden relative group`}
-        >
-          {/* Image */}
-          <div className="aspect-square w-full relative bg-surface-elevated">
-            <Image
-              src={item.url}
-              alt={item.caption || 'Gallery Image'}
-              fill
-              className="object-cover"
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            />
-            {/* Cover Badge */}
-            {item.isCover && (
-              <div className="absolute top-3 left-3 bg-accent-purple text-white text-xs px-2.5 py-1 rounded-full font-medium flex items-center gap-1 shadow-lg">
-                <span>⭐</span> Cover
+    <div
+      className={`relative transition-colors duration-200 ${
+        isDragging ? 'ring-2 ring-accent-purple ring-offset-2 ring-offset-background-dark rounded-2xl' : ''
+      }`}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
+      <input
+        ref={fileInputRef}
+        type="file"
+        multiple
+        accept="image/jpeg,image/png,image/webp,image/jpg,image/pjpeg,image/x-png,image/avif,image/heic,image/heif"
+        className="hidden"
+        onChange={handleFileChange}
+        disabled={!canUpload || isUploading}
+      />
+
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
+        {/* + Add Photos Tile */}
+        {canUpload && (
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isUploading || isMutating}
+            className={`aspect-square rounded-xl border-2 border-dashed transition-all duration-200 flex flex-col items-center justify-center p-2 text-center group focus:outline-none focus:ring-2 focus:ring-accent-purple ${
+              isUploading
+                ? 'border-accent-purple/50 bg-accent-purple/5 cursor-wait'
+                : isDragging
+                ? 'border-accent-purple bg-accent-purple/15 scale-[1.02]'
+                : 'border-border-subtle hover:border-accent-purple/70 bg-surface-elevated/20 hover:bg-surface-elevated/40'
+            }`}
+            aria-label="Upload photos"
+          >
+            {isUploading ? (
+              <div className="flex flex-col items-center gap-1.5">
+                <div className="w-6 h-6 border-2 border-accent-purple border-t-transparent rounded-full animate-spin" />
+                <span className="text-[10px] sm:text-xs text-accent-purple font-semibold">Uploading...</span>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center gap-1">
+                <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white/5 group-hover:bg-accent-purple/20 text-white/70 group-hover:text-accent-purple-light flex items-center justify-center transition-colors">
+                  <span className="text-xl sm:text-2xl font-light leading-none">+</span>
+                </div>
+                <span className="text-[11px] sm:text-xs text-text-secondary group-hover:text-white font-medium transition-colors">
+                  Add Photos
+                </span>
               </div>
             )}
-            {/* Order Controls */}
-            <div className="absolute top-3 right-3 flex gap-1 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity">
-              <button
-                onClick={() => moveItem(index, 'up')}
-                disabled={index === 0}
-                className="p-1.5 bg-black/50 hover:bg-black/80 text-white rounded backdrop-blur-sm disabled:opacity-30 disabled:cursor-not-allowed"
-                title="Move Up"
-              >
-                ↑
-              </button>
-              <button
-                onClick={() => moveItem(index, 'down')}
-                disabled={index === items.length - 1}
-                className="p-1.5 bg-black/50 hover:bg-black/80 text-white rounded backdrop-blur-sm disabled:opacity-30 disabled:cursor-not-allowed"
-                title="Move Down"
-              >
-                ↓
-              </button>
-            </div>
+          </button>
+        )}
+
+        {/* Existing Thumbnail Items */}
+        {items.map((item, index) => (
+          <ThumbnailItem
+            key={item.id || item.publicId || index}
+            item={item}
+            isMutating={isMutating}
+            onPreview={() => setLightboxIndex(index)}
+            onSetCover={onSetCover}
+            onDelete={onDelete}
+          />
+        ))}
+      </div>
+
+      {/* Empty State when no items and cannot upload */}
+      {items.length === 0 && !canUpload && (
+        <div className="glass rounded-2xl border border-border-subtle p-12 text-center">
+          <div className="w-16 h-16 bg-surface-elevated rounded-full flex items-center justify-center mx-auto mb-4">
+            <span className="text-2xl">📸</span>
           </div>
-
-          {/* Details / Controls */}
-          <div className="p-4 space-y-4">
-            
-            <div className="flex items-center justify-between">
-              <label className="text-sm text-text-muted">Visibility</label>
-              <select
-                value={item.visibility}
-                onChange={(e) => updateItemMutation.mutate({ itemId: item.id, payload: { visibility: e.target.value } })}
-                className="bg-surface-elevated border border-border-subtle text-white text-sm rounded-lg px-2 py-1 outline-none focus:border-accent-purple"
-              >
-                <option value={MediaVisibility.PUBLIC}>🌍 Public</option>
-                <option value={MediaVisibility.PRIVATE}>🔒 Private</option>
-              </select>
-            </div>
-
-            <div>
-              <input
-                type="text"
-                defaultValue={item.caption || ''}
-                placeholder="Add a caption..."
-                onBlur={(e) => {
-                  if (e.target.value !== item.caption) {
-                    updateItemMutation.mutate({ itemId: item.id, payload: { caption: e.target.value } });
-                  }
-                }}
-                className="w-full bg-transparent border-b border-border-subtle text-white text-sm py-1 focus:outline-none focus:border-accent-purple transition-colors"
-              />
-            </div>
-
-            <div className="pt-2 flex gap-2">
-              {!item.isCover && (
-                <button
-                  onClick={() => setCoverMutation.mutate(item.id)}
-                  disabled={setCoverMutation.isPending}
-                  className="flex-1 text-xs py-1.5 rounded-lg border border-border-subtle text-text-muted hover:text-white hover:border-text-muted transition-colors disabled:opacity-50"
-                >
-                  Set as Cover
-                </button>
-              )}
-              <button
-                onClick={() => handleDelete(item.id)}
-                disabled={deletingId === item.id}
-                className={`flex-1 text-xs py-1.5 rounded-lg border border-red-500/30 text-red-400 hover:bg-red-500/10 transition-colors disabled:opacity-50 ${item.isCover ? 'w-full' : ''}`}
-              >
-                {deletingId === item.id ? 'Deleting...' : 'Delete'}
-              </button>
-            </div>
-
-          </div>
+          <h3 className="text-white font-semibold text-lg mb-2">No gallery items yet</h3>
+          <p className="text-text-muted text-sm">Gallery uploads are not available for this event.</p>
         </div>
-      ))}
+      )}
+
+      {/* Lightbox Modal */}
+      {lightboxIndex !== null && (
+        <EventGalleryLightbox
+          items={items}
+          currentIndex={lightboxIndex}
+          onClose={() => setLightboxIndex(null)}
+          onChange={(newIndex) => setLightboxIndex(newIndex)}
+        />
+      )}
+    </div>
+  );
+});
+
+const ThumbnailItem = React.memo(function ThumbnailItem({
+  item,
+  isMutating = false,
+  onPreview,
+  onSetCover,
+  onDelete,
+}: {
+  item: EventGalleryItem;
+  isMutating?: boolean;
+  onPreview: () => void;
+  onSetCover?: (item: EventGalleryItem) => void;
+  onDelete?: (item: EventGalleryItem) => void;
+}) {
+  const [imgError, setImgError] = useState(false);
+
+  return (
+    <div
+      className={`aspect-square w-full relative rounded-xl border overflow-hidden group transition-all duration-200 bg-surface-elevated/40 ${
+        item.isCover
+          ? 'border-accent-purple/80 shadow-[0_0_12px_rgba(139,92,246,0.3)]'
+          : 'border-border-subtle hover:border-white/40'
+      }`}
+    >
+      {imgError ? (
+        <div className="absolute inset-0 flex flex-col items-center justify-center text-text-muted p-1">
+          <span className="text-lg">🖼️</span>
+          <span className="text-[9px] text-center mt-0.5">Error</span>
+        </div>
+      ) : (
+        <Image
+          src={item.thumbnail || item.url}
+          alt={item.caption || 'Gallery thumbnail'}
+          fill
+          className="object-cover transition-transform duration-300 group-hover:scale-105"
+          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 160px"
+          onError={() => setImgError(true)}
+        />
+      )}
+
+      {/* Star Cover Badge */}
+      {item.isCover && (
+        <div className="absolute top-1.5 left-1.5 bg-accent-purple/90 text-white text-[10px] px-1.5 py-0.5 rounded-md font-bold flex items-center gap-0.5 shadow backdrop-blur-sm z-10">
+          <span>⭐</span>
+          <span>Cover</span>
+        </div>
+      )}
+
+      {/* Hover / Focus Action Panel */}
+      <div className="absolute inset-0 bg-black/75 backdrop-blur-xs opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-200 flex flex-col items-center justify-center gap-1.5 p-2.5 z-20">
+        <button
+          type="button"
+          onClick={onPreview}
+          className="w-full py-1 text-[11px] font-semibold text-white bg-white/20 hover:bg-white/30 rounded-lg transition-colors flex items-center justify-center gap-1 focus:outline-none focus:ring-1 focus:ring-white"
+          aria-label="Preview image full screen"
+        >
+          <span>🔍</span>
+          <span>Preview</span>
+        </button>
+
+        {!item.isCover && onSetCover && (
+          <button
+            type="button"
+            onClick={() => onSetCover(item)}
+            disabled={isMutating}
+            className="w-full py-1 text-[11px] font-semibold text-accent-purple-light bg-accent-purple/25 hover:bg-accent-purple/40 border border-accent-purple/40 rounded-lg transition-colors flex items-center justify-center gap-1 focus:outline-none focus:ring-1 focus:ring-accent-purple disabled:opacity-50"
+            aria-label="Set photo as event cover"
+          >
+            <span>⭐</span>
+            <span>Set as Cover</span>
+          </button>
+        )}
+
+        {onDelete && (
+          <button
+            type="button"
+            onClick={() => onDelete(item)}
+            disabled={isMutating}
+            className="w-full py-1 text-[11px] font-semibold text-red-300 bg-red-500/20 hover:bg-red-500/35 border border-red-500/30 rounded-lg transition-colors flex items-center justify-center gap-1 focus:outline-none focus:ring-1 focus:ring-red-400 disabled:opacity-50"
+            aria-label="Delete photo from gallery"
+          >
+            <span>🗑️</span>
+            <span>Delete</span>
+          </button>
+        )}
+      </div>
     </div>
   );
 });

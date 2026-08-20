@@ -144,7 +144,11 @@ export const updatePopupSchema = z.object({
     .superRefine(validatePopupDateRange),
 });
 
-// -- Refund Validation --
+// ─── Refund Validation (SSOT) ───────────────────────────────────────────────
+/**
+ * Validation schema for standalone and ticket-level refund creation.
+ * Supports full refunds, partial monetary refunds, and ticket-scoped refunds.
+ */
 export const createRefundSchema = z.object({
   body: z.object({
     bookingId: objectIdSchema,
@@ -153,6 +157,7 @@ export const createRefundSchema = z.object({
     reason: z.string().trim().max(1000).optional(),
     idempotencyKey: z.string().trim().max(100).optional(),
     cancelTickets: z.boolean().optional(),
+    ticketIds: z.array(objectIdSchema).optional(),
   }).strict(),
 });
 
@@ -179,13 +184,6 @@ export const processRefundSchema = z.object({
 });
 
 // -- Scanner Validation --
-const scannerReferenceSchema = z
-  .string()
-  .trim()
-  .min(1, 'Reference is required')
-  .max(100, 'Reference is too long')
-  .regex(/^[A-Za-z0-9][A-Za-z0-9_-]*$/, 'Invalid scanner reference format');
-
 export const scannerScanSchema = z.object({
   body: z.object({
     ticketId: z.string().trim().min(1, 'Ticket ID is required').max(100),
@@ -193,15 +191,6 @@ export const scannerScanSchema = z.object({
     requestId: z.string().optional(),
     source: z.enum(['camera', 'manual', 'hardware']).optional(),
     offline: z.boolean().optional(),
-  }).strict(),
-});
-
-export const scannerLookupSchema = z.object({
-  params: z.object({
-    reference: scannerReferenceSchema,
-  }).strict(),
-  query: z.object({
-    eventId: objectIdSchema,
   }).strict(),
 });
 
@@ -344,10 +333,16 @@ export const updateTicketProfileSchema = z.object({
   body: createTicketProfileSchema.shape.body.partial(),
 });
 
-// -- Booking Validation (remediated from inline routes) --
+// ─── Booking Cancellation Validation (SSOT) ──────────────────────────────────
+/**
+ * Validation schema for booking cancellation and cancellation-refund requests.
+ * Explicitly preserves refundAmount and ticketIds for cancellation refunds.
+ */
 export const cancelBookingSchema = z.object({
   body: z.object({
     reason: z.string().max(500, 'Reason must be under 500 characters').optional(),
+    refundAmount: z.number().positive('Refund amount must be greater than zero').optional(),
+    ticketIds: z.array(objectIdSchema).optional(),
   }),
   params: adminIdParamSchema.shape.params,
 });

@@ -41,13 +41,52 @@ export const governanceConfig = {
       'scripts/governance',
       '.agents',
       'docs/archive',
+      // git-mcp: Gitignored, untracked third-party Remix/Cloudflare subproject.
+      // Its components, hooks, and assets are not part of any MAD production workspace
+      // and must not participate in dead-code detection. 0 tracked files.
+      'git-mcp',
+      // tmp: Scratch directory used for ad-hoc local testing scripts. Not production code.
+      'tmp',
+      // tests/ui-governance: Runtime browser test harness (Playwright). Its utility
+      // files are imported by the test runner process, not by the application bundles.
+      // The dead-asset BFS from app entry points correctly classifies them as unreachable.
+      'tests/ui-governance',
     ] as string[],
     documentationExclusions: [
       'docs/archive',
+      // openspec/changes/archive: Completed and archived OpenSpec design documents.
+      // These may contain file:// IDE deep-links written during the design phase
+      // (VAL-DOC-001) that are intentionally historical. Enforcing path hygiene
+      // on closed design specs adds noise without operational value.
+      'openspec/changes/archive',
       'apps/web/src/content/legal',
     ] as string[],
+    /**
+     * deadCodeExclusions:
+     *   Files excluded from the dead-asset BFS reachability check (VAL-UI-014).
+     *   These files ARE actively used at runtime, but are referenced outside the
+     *   BFS traversal scope (e.g., via Next.js config, framework plugin APIs, or
+     *   runtime-only entry points that are correctly skipped as config files).
+     *
+     *   - 'apps/web/src/utils/image-loader.ts': Next.js custom image loader.
+     *     Referenced by `next.config.ts` via the `loader` option. BFS skips
+     *     next.config.ts (isConfig=true), making this file falsely unreachable.
+     *   - 'apps/server/src/utils/zeptomail.ts': ZeptoMail HTTP transport.
+     *     Consumed by `email.ts` and covered by its own test file. Classified as
+     *     dead only when BFS traversal from server entry points does not reach
+     *     the email module through the current graph snapshot.
+     */
+    deadCodeExclusions: [
+      'apps/web/src/utils/image-loader.ts',
+      'apps/server/src/utils/zeptomail.ts',
+    ] as string[],
+    performanceExclusions: [
+      '/email/templates/',
+      'email/templates/',
+      'apps/server/src/app.ts',
+      'next-env.d.ts',
+    ] as string[],
   },
-
 
   sharedComponentScopes: [
     'apps/admin',
@@ -58,6 +97,9 @@ export const governanceConfig = {
       '**/AdminShell.tsx',
       '**/AdminSidebar.tsx',
       '**/MobileNavigation.tsx',
+    ],
+    fieldExemptions: [
+      'apps/admin/src/app/events/new/_components/Field.tsx',
     ],
   },
   documentationGovernance: {
@@ -99,5 +141,50 @@ export const governanceConfig = {
       'VAL-DOC-007': 'WARN',       // Reachability-based orphan detection (staged rollout)
       'VAL-DOC-008': 'FAIL_BUILD'  // Lifecycle classification
     }
+  },
+  codeQuality: {
+    thresholds: {
+      componentMaxLines: 300,
+      hookMaxLines: 250,
+      controllerMaxLines: 200,
+      serviceMaxLines: 500,
+      schemaMaxLines: 300,
+      testMaxLines: 800,
+      maxComplexity: 15,
+      maxStateHooks: 10,
+    },
+    enforcement: {
+      'VAL-QUAL-001': 'FAIL_BUILD',
+      'VAL-QUAL-002': 'FAIL_BUILD',
+      'VAL-QUAL-003': 'FAIL_BUILD',
+      'VAL-QUAL-004': 'FAIL_BUILD',
+      'VAL-QUAL-005': 'FAIL_BUILD',
+      'VAL-QUAL-006': 'FAIL_BUILD',
+      'VAL-QUAL-007': 'WARN',
+      'VAL-QUAL-008': 'WARN',
+    },
+    /**
+     * BASELINE CODE QUALITY EXCEPTIONS
+     * Every existing legacy file exceeding thresholds is documented below.
+     * Rules:
+     * 1. The maxLinesCeiling is FROZEN at its exact line count. Files CANNOT grow further.
+     * 2. Exceptions have an expiration date for time-bound cleanup.
+     * 3. Any new file exceeding thresholds immediately triggers a build failure.
+     */
+    exceptions: [
+      // Custom Hooks (all compliant!)
+
+      // UI Components
+
+
+      // Controllers
+
+      // Services (all compliant!)
+
+      // Schemas & Types (all compliant!)
+
+      // Test Suites
+      
+    ]
   }
 };

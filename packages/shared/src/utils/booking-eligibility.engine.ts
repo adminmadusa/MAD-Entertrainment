@@ -29,7 +29,7 @@ export interface EventBookingState {
 /**
  * Single Source of Truth for computing event booking eligibility.
  * All backends and APIs must use this engine to produce the booking state.
- * 
+ *
  * @param event The event data
  * @returns The comprehensive booking state including the computed CTA
  */
@@ -88,4 +88,3 @@ export function deriveBookingEligibility(event: BaseEventForBooking): EventBooki
     bookingCTA: cta
   };
 }
-

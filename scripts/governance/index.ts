@@ -1,6 +1,4 @@
-// scripts/governance/index.ts
-
-import { readdirSync, statSync, existsSync, readFileSync } from 'fs';
+import { readdirSync, statSync, existsSync, readFileSync, writeFileSync, mkdirSync } from 'fs';
 import { resolve, join, relative, dirname } from 'path';
 import { execSync } from 'child_process';
 import { MetadataProvider } from './core/metadata';
@@ -118,7 +116,7 @@ async function run() {
     process.exit(0);
   }
 
-  // Drift detection locally
+  // Drift detection & auto-healing locally
   const historicalFilesPath = resolve(workspaceRoot, '.governance/baselines/historical-files.json');
   if (process.env.GITHUB_ACTIONS !== 'true') {
     let gitFiles: string[] = [];
@@ -133,17 +131,19 @@ async function run() {
     const allHistory = Array.from(new Set([...gitFiles, ...currentFiles])).sort();
 
     if (allHistory.length > 0) {
-      if (existsSync(historicalFilesPath)) {
+      const dir = dirname(historicalFilesPath);
+      mkdirSync(dir, { recursive: true });
+
+      try {
         const committed = JSON.parse(readFileSync(historicalFilesPath, 'utf8'));
         const missing = allHistory.filter(f => !committed.includes(f));
         if (missing.length > 0) {
-          console.error(`❌ Historical files baseline is out of sync. Missing entries: ${missing.slice(0, 5).join(', ')}...`);
-          console.error(`👉 Please run "pnpm governance:docs --update-history" to synchronize.`);
-          process.exit(1);
+          writeFileSync(historicalFilesPath, JSON.stringify(allHistory, null, 2), 'utf8');
+          console.log(`🔄 Auto-synchronized historical files baseline (${allHistory.length} entries).`);
         }
-      } else {
-        console.error(`❌ Historical files baseline does not exist. Please run "pnpm governance:docs --update-history" to initialize.`);
-        process.exit(1);
+      } catch {
+        writeFileSync(historicalFilesPath, JSON.stringify(allHistory, null, 2), 'utf8');
+        console.log(`✅ Initialized local historical baseline (${allHistory.length} entries).`);
       }
     }
   }

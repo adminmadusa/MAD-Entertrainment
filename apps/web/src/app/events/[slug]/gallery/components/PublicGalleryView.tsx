@@ -1,13 +1,17 @@
 'use client';
 
-import React, { useState } from 'react';
-import Image from 'next/image';
-import Link from 'next/link';
-import { Calendar, MapPin, ArrowLeft, Image as ImageIcon } from 'lucide-react';
-import type { Event, EventGalleryItem, EventGallerySettings } from '@mad/types';
-import { Lightbox } from './Lightbox';
 import { useQuery } from '@tanstack/react-query';
+import { Calendar, MapPin, ArrowLeft, Image as ImageIcon, Sparkles } from 'lucide-react';
+import { ImageWrapper } from '@/components/common/ImageWrapper';
+import Link from 'next/link';
+import React, { useState } from 'react';
+
+import { EventCard } from '@/components/common/EventCard';
 import { publicGetEvents } from '@/lib/api/public.service';
+import type { Event, EventGalleryItem, EventGallerySettings } from '@mad/types';
+
+import { CardFanCarousel } from './CardFanCarousel';
+import { Lightbox } from './Lightbox';
 
 interface Props {
   event: Event;
@@ -18,14 +22,16 @@ interface Props {
 }
 
 export function PublicGalleryView({ event, gallery }: Props) {
-  const { items, settings } = gallery;
+  const rawGallery = gallery as { items?: EventGalleryItem[]; gallery?: EventGalleryItem[] };
+  const items = rawGallery.items || rawGallery.gallery || [];
+  const settings = gallery.settings;
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
   const coverItem = items.find((item) => item.isCover) || items[0];
   const coverUrl = coverItem?.url || event.bannerImage?.url;
 
   const eventDate = event.startDate ? new Date(event.startDate) : null;
-  
+
   let headerSubtitle = 'Gallery';
   if (event.status === 'completed') {
     headerSubtitle = 'Happy Moments';
@@ -53,8 +59,8 @@ export function PublicGalleryView({ event, gallery }: Props) {
 
       {/* Hero Cover */}
       {coverUrl && (
-        <div className="relative w-full h-[40vh] md:h-[60vh] bg-surface-elevated overflow-hidden">
-          <Image
+        <div className="relative w-full h-[36vh] md:h-[50vh] bg-surface-elevated overflow-hidden">
+          <ImageWrapper
             src={coverUrl}
             alt={`${event.title} Cover`}
             fill
@@ -64,28 +70,28 @@ export function PublicGalleryView({ event, gallery }: Props) {
             placeholder="blur"
             blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mN8/wQAAgMBBNN+f6YAAAAASUVORK5CYII="
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
-          
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
+
           {/* Event Context Overlay */}
           <div className="absolute bottom-0 left-0 right-0 p-6 md:p-12 container mx-auto">
-            <h1 className="text-4xl md:text-6xl font-black text-white mb-4 drop-shadow-md">
+            <h1 className="text-3xl md:text-5xl font-black text-white mb-3 drop-shadow-md">
               {event.title}
             </h1>
-            <div className="flex flex-wrap items-center gap-4 text-text-muted drop-shadow-sm font-medium">
+            <div className="flex flex-wrap items-center gap-4 text-text-muted drop-shadow-sm font-medium text-sm">
               {eventDate && (
                 <div className="flex items-center">
-                  <Calendar className="w-5 h-5 mr-2" />
+                  <Calendar className="w-4 h-4 mr-1.5" />
                   {new Intl.DateTimeFormat('en-US', { month: 'long', day: 'numeric', year: 'numeric' }).format(eventDate)}
                 </div>
               )}
               {event.venue && (
                 <div className="flex items-center">
-                  <MapPin className="w-5 h-5 mr-2" />
+                  <MapPin className="w-4 h-4 mr-1.5" />
                   {event.venue}
                 </div>
               )}
               <div className="flex items-center">
-                <ImageIcon className="w-5 h-5 mr-2" />
+                <ImageIcon className="w-4 h-4 mr-1.5" />
                 {items.length} Photos
               </div>
             </div>
@@ -93,26 +99,53 @@ export function PublicGalleryView({ event, gallery }: Props) {
         </div>
       )}
 
-      <div className="container mx-auto px-4 py-12">
+      <div className="container mx-auto px-4 py-8 sm:py-12 space-y-12">
+        {/* Interactive 3D Card Fan Carousel Showcase */}
+        {items.length > 0 && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="p-1 rounded-lg bg-accent-pink/10 text-accent-pink border border-accent-pink/20">
+                  <Sparkles className="w-3.5 h-3.5" />
+                </span>
+                <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
+                  Featured Highlights
+                </h2>
+              </div>
+              <span className="text-xs text-text-muted hidden sm:inline-block">
+                Hover to expand · Click to view full size
+              </span>
+            </div>
+
+            <div className="glass rounded-3xl border border-white/10 p-2 sm:p-4 shadow-2xl relative overflow-hidden bg-white/[0.02]">
+              <div className="absolute inset-0 bg-gradient-to-tr from-accent-purple/10 via-transparent to-accent-pink/10 pointer-events-none" />
+              <CardFanCarousel
+                items={items}
+                onSelectCard={(index) => setLightboxIndex(index)}
+              />
+            </div>
+          </div>
+        )}
+
         {/* Gallery Settings Info */}
         {(settings.heading || settings.thankYouMessage || (settings.highlights && settings.highlights.length > 0)) && (
-          <div className="max-w-3xl mx-auto text-center mb-16 space-y-6">
+          <div className="max-w-3xl mx-auto text-center space-y-6 pt-4">
             {settings.heading && (
-              <h2 className="text-3xl md:text-4xl font-bold text-white">
+              <h2 className="text-2xl md:text-3xl font-bold text-white">
                 {settings.heading}
               </h2>
             )}
             {settings.thankYouMessage && (
-              <p className="text-lg text-text-muted leading-relaxed">
+              <p className="text-base text-text-muted leading-relaxed">
                 {settings.thankYouMessage}
               </p>
             )}
             {settings.highlights && settings.highlights.length > 0 && (
-              <div className="flex flex-wrap justify-center gap-3 pt-4">
+              <div className="flex flex-wrap justify-center gap-2.5 pt-2">
                 {settings.highlights.map((highlight, idx) => (
                   <span
                     key={idx}
-                    className="px-4 py-2 bg-brand/10 text-brand rounded-full text-sm font-medium"
+                    className="px-3.5 py-1.5 bg-accent-purple/10 border border-accent-purple/20 text-accent-purple text-xs font-semibold rounded-full"
                   >
                     {highlight}
                   </span>
@@ -122,28 +155,36 @@ export function PublicGalleryView({ event, gallery }: Props) {
           </div>
         )}
 
-        {/* Gallery Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-          {items.map((item, index) => (
-            <button
-              key={item.id}
-              onClick={() => setLightboxIndex(index)}
-              className="group relative aspect-square bg-surface rounded-xl overflow-hidden cursor-pointer focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-              aria-label={`View full screen image ${index + 1} of ${items.length}`}
-            >
-              <Image
-                src={item.thumbnail || item.url}
-                alt={item.caption || `Gallery photo ${index + 1}`}
-                fill
-                className="object-cover transition-transform duration-500 group-hover:scale-105"
-                sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                loading={index < 8 ? 'eager' : 'lazy'}
-                placeholder="blur"
-                blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mN8/wQAAgMBBNN+f6YAAAAASUVORK5CYII="
-              />
-              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />
-            </button>
-          ))}
+        {/* Full Gallery Grid */}
+        <div className="space-y-4 pt-4 border-t border-white/5">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg sm:text-xl font-bold text-white">
+              All Photos ({items.length})
+            </h3>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
+            {items.map((item, index) => (
+              <button
+                key={item.id}
+                onClick={() => setLightboxIndex(index)}
+                className="group relative aspect-square bg-surface rounded-xl overflow-hidden cursor-pointer focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-background border border-white/5 hover:border-accent-pink/40 transition-all duration-300"
+                aria-label={`View full screen image ${index + 1} of ${items.length}`}
+              >
+                <ImageWrapper
+                  src={item.thumbnail || item.url}
+                  alt={item.caption || `Gallery photo ${index + 1}`}
+                  fill
+                  className="object-cover transition-transform duration-500 group-hover:scale-105"
+                  sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                  loading={index < 8 ? 'eager' : 'lazy'}
+                  placeholder="blur"
+                  blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mN8/wQAAgMBBNN+f6YAAAAASUVORK5CYII="
+                />
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -175,53 +216,15 @@ function RecommendedEventsSection({ currentEvent }: { currentEvent: Event }) {
   return (
     <div className="container mx-auto px-4 pb-20 mt-10 pt-10 border-t border-border-subtle/40">
       <h3 className="text-2xl font-bold text-white mb-8">Other Events You Might Like</h3>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {recommendedEvents.map((recEvent) => {
-          const minPrice = recEvent.ticketTiers?.length > 0 ? Math.min(...recEvent.ticketTiers.map((t) => t.price)) : 0;
-          return (
-            <Link
-              href={`/events/${recEvent.slug}`}
-              key={recEvent._id}
-              className="group relative glass rounded-xl border border-border-subtle overflow-hidden hover:border-accent-purple/40 hover:shadow-glow-sm transition-all duration-300 flex flex-col h-full"
-            >
-              <div className="aspect-[16/10] w-full relative bg-white/5 overflow-hidden">
-                {recEvent.bannerImage?.url ? (
-                  <Image
-                    src={recEvent.bannerImage.url}
-                    alt={recEvent.title}
-                    fill
-                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 250px"
-                    className="object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-accent-purple text-3xl">
-                    🎧
-                  </div>
-                )}
-                {recEvent.lifecycle === 'LIVE' && (
-                  <span className="absolute top-2 right-2 px-2 py-0.5 text-[8px] font-black uppercase tracking-wider bg-black/85 text-emerald-400 rounded-full border border-emerald-500/20 flex items-center gap-1 shadow-glow-sm">
-                    <span className="w-1 h-1 rounded-full bg-emerald-400 animate-pulse" />
-                    Live
-                  </span>
-                )}
-              </div>
-              <div className="p-4 flex flex-col flex-grow">
-                <div className="text-[9px] text-text-muted font-bold uppercase tracking-wider mb-1">
-                  {recEvent.category}
-                </div>
-                <h4 className="text-white font-bold text-sm line-clamp-1 mb-2 group-hover:text-accent-purple-light transition-colors">
-                  {recEvent.title}
-                </h4>
-                <div className="mt-auto pt-2 flex items-center justify-between text-xs border-t border-white/5">
-                  <span className="text-text-secondary">Tickets from</span>
-                  <span className="text-white font-bold">
-                    {new Intl.NumberFormat('en-US', { style: 'currency', currency: recEvent.currency || 'USD' }).format(minPrice)}
-                  </span>
-                </div>
-              </div>
-            </Link>
-          );
-        })}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+        {recommendedEvents.map((recEvent) => (
+          <EventCard
+            key={recEvent._id}
+            event={recEvent}
+            variant="catalog"
+            className="h-full"
+          />
+        ))}
       </div>
     </div>
   );

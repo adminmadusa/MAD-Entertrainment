@@ -47,8 +47,11 @@ export class ConfidenceEngine {
       return 'WARN';
     }
 
-    // 4. 95% to 100% confidence honors the rule definition's severity
+    // 4. 95% to 100% confidence honors the rule definition's ciPolicy and severity
     if (rule) {
+      if (rule.ciPolicy) {
+        return rule.ciPolicy;
+      }
       const severity = rule.severity;
       if (severity === 'CRITICAL') {
         return 'FAIL_BUILD';
@@ -60,13 +63,10 @@ export class ConfidenceEngine {
       if (severity === 'MEDIUM' || severity === 'WARNING') {
         return 'WARN';
       }
-      if (severity === 'LOW') {
+      if (severity === 'LOW' || severity === 'INFO') {
         return 'INFO_ONLY';
       }
-      if (severity === 'INFO') {
-        return 'INFO_ONLY';
-      }
-      return rule.ciPolicy;
+      return 'FAIL_BUILD';
     }
 
     return 'FAIL_BUILD';
