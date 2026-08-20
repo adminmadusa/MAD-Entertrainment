@@ -339,11 +339,31 @@ export const updateEvent = async (id: string, data: Partial<IEvent>): Promise<Ev
   const newPosterId = data.posterImage?.publicId;
   const posterReplaced = newPosterId && oldPosterId && oldPosterId !== newPosterId;
 
-  const { eventVersion: _eventVersion, ...updateData } = data;
+  const updateDoc: Record<string, any> = {};
+  if (data.title !== undefined) updateDoc.title = String(data.title);
+  if (data.description !== undefined) updateDoc.description = String(data.description);
+  if (data.category !== undefined) updateDoc.category = String(data.category);
+  if (data.slug !== undefined) updateDoc.slug = String(data.slug);
+  if (data.venue !== undefined) updateDoc.venue = data.venue;
+  if (data.startDate !== undefined) updateDoc.startDate = data.startDate;
+  if (data.endDate !== undefined) updateDoc.endDate = data.endDate;
+  if (data.status !== undefined) updateDoc.status = data.status;
+  if (data.isSoldOut !== undefined) updateDoc.isSoldOut = Boolean(data.isSoldOut);
+  if (data.totalCapacity !== undefined) updateDoc.totalCapacity = Number(data.totalCapacity);
+  if (data.ticketTiers !== undefined) updateDoc.ticketTiers = data.ticketTiers;
+  if (data.ticketProfileId !== undefined) updateDoc.ticketProfileId = data.ticketProfileId;
+  if (data.ticketOverrides !== undefined) updateDoc.ticketOverrides = data.ticketOverrides;
+  if (data.bannerImage !== undefined) updateDoc.bannerImage = data.bannerImage;
+  if (data.posterImage !== undefined) updateDoc.posterImage = data.posterImage;
+  if (data.djOperatorIds !== undefined) updateDoc.djOperatorIds = data.djOperatorIds;
+  if (data.bookingMode !== undefined) updateDoc.bookingMode = data.bookingMode;
+  if (data.seatLayoutId !== undefined) updateDoc.seatLayoutId = data.seatLayoutId;
+  if (data.galleryImages !== undefined) updateDoc.galleryImages = data.galleryImages;
+
   const safeId = String(id);
   const updated = await Event.findOneAndUpdate(
     { _id: Types.ObjectId.isValid(safeId) ? new Types.ObjectId(safeId) : safeId, eventVersion: Number(expectedVersion) },
-    { $set: updateData, $inc: { eventVersion: 1 } },
+    { $set: updateDoc, $inc: { eventVersion: 1 } },
     { new: true }
   );
   if (!updated) {

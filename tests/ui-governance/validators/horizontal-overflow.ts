@@ -1,10 +1,10 @@
 import { Page } from '@playwright/test';
 import { RuntimeValidator } from '../runtime/validator';
 import { RuntimeFinding } from '../runtime-finding';
-import { Viewport } from '../config/viewports';
+import type { Viewport } from '../config/viewports';
 import { RuleLoader } from '../runtime/rule-loader';
 import { RuntimeRegistry } from '../runtime/registry';
-import { detectDOMOverflows, DOMOverflowItem } from '../utils/dom';
+import { type DOMOverflowItem } from '../utils/dom';
 
 export class HorizontalOverflowValidator implements RuntimeValidator {
   readonly metadata = {
