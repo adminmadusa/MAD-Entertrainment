@@ -173,6 +173,25 @@ export async function canViewTicketQR(
 }
 
 /**
+ * Asserts that the requester or token is authorized to view a ticket's QR code.
+ * Throws 403 if access is denied.
+ */
+export async function assertCanViewTicketQR(
+  ticket: any,
+  token?: string,
+  userId?: string,
+  sessionId?: string
+): Promise<void> {
+  if (token && verifyTicketQrToken(ticket.ticketId, token)) {
+    return;
+  }
+  const isOwner = await canViewTicketQR(ticket, userId, sessionId);
+  if (!isOwner) {
+    throw AppError.forbidden('You do not have permission to view this QR code');
+  }
+}
+
+/**
  * Evaluates whether a user has permission to download a ticket PDF based on their role.
  * Rules:
  *   - Purchaser PDF: Can download (with claimed masking applied during generation/serialization)
