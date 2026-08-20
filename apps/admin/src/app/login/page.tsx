@@ -130,7 +130,7 @@ export default function AdminLoginPage() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="admin@madentertrainment.com"
+                  placeholder="name@company.com"
                   className={[
                     'w-full pl-10 pr-4 py-3 rounded-xl text-sm font-medium',
                     'bg-background-card border transition-all duration-200 outline-none',
@@ -211,12 +211,6 @@ export default function AdminLoginPage() {
           {/* Footer note */}
           <p className="text-center text-text-muted text-xs mt-6">
             Access restricted to authorised personnel only.
-            <br />
-            Run{' '}
-            <code className="bg-background-card px-1.5 py-0.5 rounded text-accent-purple-light font-mono text-[11px]">
-              npm run seed:admin
-            </code>{' '}
-            to create first admin.
           </p>
         </div>
 
