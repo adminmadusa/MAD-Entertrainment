@@ -4,23 +4,35 @@ import { WebhookEvent } from '../../models/webhook-event.schema';
 
 export const getWebhooks = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const {
-      page = 1,
-      limit = 50,
-      provider,
-      status,
-      startDate,
-      endDate
-    } = req.query as any;
+    const rawPage = req.query.page;
+    const rawLimit = req.query.limit;
+    const rawProvider = req.query.provider;
+    const rawStatus = req.query.status;
+    const rawStartDate = req.query.startDate;
+    const rawEndDate = req.query.endDate;
 
-    const query: any = {};
-    if (provider) query.provider = provider;
-    if (status) query.status = status;
+    const page = Math.max(1, parseInt(String(rawPage || '1'), 10) || 1);
+    const limit = Math.max(1, Math.min(100, parseInt(String(rawLimit || '50'), 10) || 50));
 
-    if (startDate || endDate) {
-      query.receivedAt = {};
-      if (startDate) query.receivedAt.$gte = startDate;
-      if (endDate) query.receivedAt.$lte = endDate;
+    const query: Record<string, any> = {};
+    if (typeof rawProvider === 'string' && rawProvider.trim()) {
+      query.provider = rawProvider.trim().toLowerCase();
+    }
+    if (typeof rawStatus === 'string' && rawStatus.trim()) {
+      query.status = rawStatus.trim().toLowerCase();
+    }
+
+    if (rawStartDate || rawEndDate) {
+      const receivedAtFilter: Record<string, Date> = {};
+      if (typeof rawStartDate === 'string' && !isNaN(Date.parse(rawStartDate))) {
+        receivedAtFilter.$gte = new Date(rawStartDate);
+      }
+      if (typeof rawEndDate === 'string' && !isNaN(Date.parse(rawEndDate))) {
+        receivedAtFilter.$lte = new Date(rawEndDate);
+      }
+      if (Object.keys(receivedAtFilter).length > 0) {
+        query.receivedAt = receivedAtFilter;
+      }
     }
 
     const skip = (page - 1) * limit;
