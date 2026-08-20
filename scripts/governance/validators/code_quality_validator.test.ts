@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { CodeQualityValidator } from './code_quality_validator';
 import * as fs from 'fs';
+import { governanceConfig } from '../core/governance.config';
 
 vi.mock('fs', async () => {
   const actual = await vi.importActual<typeof import('fs')>('fs');
@@ -61,23 +62,31 @@ describe('CodeQualityValidator Unit Tests', () => {
   });
 
   it('passes for a legacy file on an active exception within its frozen ceiling', async () => {
-    // booking.service.test.ts exception has ceiling of 1290 lines
-    const fakeContent = Array(1250).fill('describe("test", () => {});').join('\n');
+    // Dynamic mock exception for unit test
+    governanceConfig.codeQuality.exceptions = [
+      { filePath: 'apps/server/src/services/public/mock.service.ts', ruleId: 'VAL-QUAL-004', maxLinesCeiling: 600, expiresAt: '2026-12-31', owner: 'Test Team', reason: 'Test Exception' }
+    ];
+    const fakeContent = Array(550).fill('export function doWork() {}').join('\n');
     vi.mocked(fs.readFileSync).mockReturnValue(fakeContent);
 
-    const result = await validator.run(['apps/server/src/services/public/booking.service.test.ts'], {} as any);
+    const result = await validator.run(['apps/server/src/services/public/mock.service.ts'], {} as any);
     expect(result.success).toBe(true);
     expect(result.errors).toHaveLength(0);
+    governanceConfig.codeQuality.exceptions = [];
   });
 
   it('fails if a legacy file on exception exceeds its frozen ceiling', async () => {
-    // booking.service.test.ts exception has ceiling of 1290 lines
-    const fakeContent = Array(1300).fill('describe("test", () => {});').join('\n');
+    // Dynamic mock exception for unit test
+    governanceConfig.codeQuality.exceptions = [
+      { filePath: 'apps/server/src/services/public/mock.service.ts', ruleId: 'VAL-QUAL-004', maxLinesCeiling: 600, expiresAt: '2026-12-31', owner: 'Test Team', reason: 'Test Exception' }
+    ];
+    const fakeContent = Array(650).fill('export function doWork() {}').join('\n');
     vi.mocked(fs.readFileSync).mockReturnValue(fakeContent);
 
-    const result = await validator.run(['apps/server/src/services/public/booking.service.test.ts'], {} as any);
+    const result = await validator.run(['apps/server/src/services/public/mock.service.ts'], {} as any);
     expect(result.success).toBe(false);
     expect(result.errors).toHaveLength(1);
     expect(result.errors[0].message).toContain('Code Quality Freeze Violation');
+    governanceConfig.codeQuality.exceptions = [];
   });
 });
