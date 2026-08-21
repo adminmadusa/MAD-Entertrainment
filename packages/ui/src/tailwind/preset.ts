@@ -12,6 +12,7 @@ const preset: Partial<Config> = {
     extend: {
       colors: {
         background: 'var(--color-bg)',
+        'background-secondary': 'var(--color-bg-secondary)',
         'bg-secondary': 'var(--color-bg-secondary)',
         'bg-card': 'var(--color-bg-card)',
         'bg-card-hover': 'var(--color-bg-card-hover)',

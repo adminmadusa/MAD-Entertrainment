@@ -115,10 +115,45 @@ export class PaymentBookingService {
     // 3. Allocate Event Capacity
     const updatedEvent = await PaymentInventoryService.allocateEventCapacity(booking, event, isLateRecovery, session);
 
-    // Check if user already exists matching the guestEmail
-    const user = await UserModel.findOne({
-      email: booking.guestEmail?.trim().toLowerCase()
-    }).session(session || null);
+    // Check if user already exists matching the guestEmail or create new user record
+    let user = null;
+    if (typeof UserModel?.findOne === 'function') {
+      user = await UserModel.findOne({
+        email: booking.guestEmail?.trim().toLowerCase(),
+      }).session(session || null);
+    }
+
+    if (!user && booking.guestEmail && typeof UserModel?.create === 'function') {
+      const normalizedEmail = booking.guestEmail.trim().toLowerCase();
+      const fName = booking.firstName?.trim() || booking.guestName?.trim() || '';
+      const lName = booking.lastName?.trim() || '';
+      const fullName = [fName, lName].filter(Boolean).join(' ') || undefined;
+
+      try {
+        const createdUsers = await UserModel.create(
+          [
+            {
+              email: normalizedEmail,
+              firstName: fName || undefined,
+              lastName: lName || undefined,
+              name: fullName,
+              mobileNumber: booking.guestPhone?.trim() || undefined,
+              isActive: true,
+            },
+          ],
+          { session }
+        );
+        user = createdUsers?.[0] || null;
+        if (user) {
+          logger.info(
+            { userId: user._id, email: normalizedEmail },
+            'Auto-created user account upon booking payment confirmation.'
+          );
+        }
+      } catch (userCreateErr) {
+        logger.warn({ userCreateErr }, 'UserModel auto-creation skipped or concurrent creation handled');
+      }
+    }
 
     const setFields: any = {
       status: BookingStatus.CONFIRMED,
@@ -163,6 +198,9 @@ export class PaymentBookingService {
     confirmedBooking.status = BookingStatus.CONFIRMED;
     confirmedBooking.paymentId = _payment._id as any;
     confirmedBooking.bookingVersion += 1;
+    if (user?._id) {
+      confirmedBooking.userId = user._id;
+    }
     booking = confirmedBooking;
 
     if (updatedEvent && updatedEvent.soldCount >= updatedEvent.totalCapacity && !updatedEvent.isSoldOut) {

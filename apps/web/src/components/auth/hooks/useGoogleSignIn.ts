@@ -85,7 +85,7 @@ export function useGoogleSignIn(options?: {
       googleObj.accounts.id.renderButton(element, {
         theme: buttonOptions?.theme || 'filled_dark',
         size: buttonOptions?.size || 'large',
-        width: buttonOptions?.width || '100%',
+        width: buttonOptions?.width || '320',
         shape: buttonOptions?.shape || 'pill',
         text: buttonOptions?.text || 'signin_with',
       });

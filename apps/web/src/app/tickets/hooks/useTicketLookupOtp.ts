@@ -13,6 +13,7 @@ interface UseTicketLookupOtpProps {
   targetRef: string | null;
   onBookingFound: () => void;
   onOtpViewReady: () => void;
+  onOtpSuccess?: () => void;
   setErrorMsg: (msg: string) => void;
   setInfoMsg: (msg: string) => void;
   setLiveMessage: (msg: string) => void;
@@ -22,6 +23,7 @@ export function useTicketLookupOtp({
   targetRef,
   onBookingFound,
   onOtpViewReady,
+  onOtpSuccess,
   setErrorMsg,
   setInfoMsg,
   setLiveMessage,
@@ -179,6 +181,9 @@ export function useTicketLookupOtp({
       setOnboardingRequired(!!result.onboardingRequired);
       setLiveMessage('Successfully authenticated.');
       setInfoMsg('Successfully authenticated! Loading your tickets...');
+      if (onOtpSuccess) {
+        onOtpSuccess();
+      }
     } catch (err) {
       const apiErr = extractApiError(err);
       setErrorMsg(apiErr.message || 'Invalid verification code. Please try again.');

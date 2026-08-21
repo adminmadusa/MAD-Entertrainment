@@ -8,7 +8,6 @@ import { useEffect } from 'react';
 import { useCheckoutViewportController } from '@/hooks/use-checkout-viewport-controller';
 import { useCountdown } from '@/hooks/use-countdown.hook';
 import { publicGetBookingDetails, getStoredGuestBookingSession } from '@/lib/api/public.service';
-import { useAuth } from '@/providers/AuthProvider';
 import { BookingStatus, QUERY_KEYS } from '@mad/shared';
 import type { Booking, Event } from '@mad/types';
 
@@ -52,7 +51,6 @@ export function CheckoutContent({
   onConfirmed,
 }: CheckoutContentProps) {
   const router = useRouter();
-  const { isAuthenticated } = useAuth();
   const viewport = useCheckoutViewportController();
 
   const {
@@ -107,11 +105,7 @@ export function CheckoutContent({
 
   const handleViewTickets = () => {
     allowNavigation();
-    if (isAuthenticated) {
-      router.push(`/dashboard?tab=tickets&ref=${encodeURIComponent(booking?.bookingId || '')}`);
-    } else {
-      router.push(`/tickets?ref=${encodeURIComponent(booking?.bookingId || '')}`);
-    }
+    router.push(`/dashboard?tab=tickets&ref=${encodeURIComponent(booking?.bookingId || '')}`);
     if (isModal && onClose) onClose();
   };
 

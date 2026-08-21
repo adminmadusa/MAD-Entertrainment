@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useGoogleSignIn } from '@/components/auth/hooks/useGoogleSignIn';
 import { extractApiError } from '@/lib/api/client';
@@ -17,7 +17,7 @@ export function useTicketRecoveryFlow() {
   const router = useRouter();
   const targetRef = searchParams.get('ref');
 
-  const { login, setOnboardingRequired, isAuthenticated, isLoading: isAuthLoading } = useAuth();
+  const { login, setOnboardingRequired } = useAuth();
 
   const [activeModal, setActiveModal] = useState<ModalState>('find');
   const [errorMsg, setErrorMsg] = useState('');
@@ -30,6 +30,7 @@ export function useTicketRecoveryFlow() {
     targetRef,
     onBookingFound: () => setActiveModal('found'),
     onOtpViewReady: () => setActiveModal('otp'),
+    onOtpSuccess: () => setActiveModal(null),
     setErrorMsg,
     setInfoMsg,
     setLiveMessage,
@@ -50,13 +51,7 @@ export function useTicketRecoveryFlow() {
         login(data.token, data.user);
         setOnboardingRequired(!!data.onboardingRequired);
         setLiveMessage('Successfully authenticated with Google.');
-
-        const targetBookingId =
-          lookupOtp.foundBookingId || lookupOtp.bookingRefInput.trim().toUpperCase();
-        const dest = targetBookingId.startsWith('MAD-')
-          ? `/dashboard?tab=tickets&ref=${encodeURIComponent(targetBookingId)}`
-          : `/dashboard?tab=tickets`;
-        router.push(dest);
+        setActiveModal(null);
       } catch (err) {
         const apiErr = extractApiError(err);
         setErrorMsg(apiErr.message || 'Google authentication failed.');
@@ -71,24 +66,6 @@ export function useTicketRecoveryFlow() {
     },
   });
 
-  useEffect(() => {
-    if (activeModal === 'found' && gsiLoaded && googleBtnRef.current) {
-      renderButton(googleBtnRef.current);
-    }
-  }, [activeModal, gsiLoaded, renderButton]);
-
-  useEffect(() => {
-    if (isAuthenticated && !isAuthLoading) {
-      const dest =
-        targetRef || lookupOtp.foundBookingId
-          ? `/dashboard?tab=tickets&ref=${encodeURIComponent(
-              (targetRef || lookupOtp.foundBookingId).trim().toUpperCase()
-            )}`
-          : '/dashboard?tab=tickets';
-      router.replace(dest);
-    }
-  }, [isAuthenticated, isAuthLoading, targetRef, lookupOtp.foundBookingId, router]);
-
   const handleClose = useCallback(() => {
     setActiveModal(null);
     if (typeof window !== 'undefined' && window.history.length > 1) {
@@ -102,6 +79,8 @@ export function useTicketRecoveryFlow() {
     activeModal,
     setActiveModal,
     googleBtnRef,
+    gsiLoaded,
+    renderGoogleButton: renderButton,
     errorMsg,
     setErrorMsg,
     infoMsg,

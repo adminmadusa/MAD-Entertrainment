@@ -3,10 +3,10 @@ import { Types } from 'mongoose';
 import { BookingStatus } from '@mad/shared';
 
 import { AppError } from '../../../middleware/error.middleware';
-import { Booking } from '../../../models/booking.schema';
+import { Booking, type IBooking } from '../../../models/booking.schema';
 import { Ticket } from '../../../models/ticket.schema';
 import { UserModel } from '../../../models/user.schema';
-import type { BookingQueryResult, MyBookingsResult } from './booking.types';
+import type { BookingQueryResult, MyBookingsResult, BookingAccessContext } from './booking.types';
 
 export class BookingQueryService {
   static async getBookingByReference(bookingId: string): Promise<BookingQueryResult> {
@@ -26,20 +26,38 @@ export class BookingQueryService {
     return { booking, tickets, ticketsReady };
   }
 
-  static async getMyBookings(userId: string): Promise<MyBookingsResult> {
-    const user = await UserModel.findById(userId);
-    if (!user) {
-      throw AppError.notFound('User not found');
-    }
+  static async getMyBookings(
+    auth: BookingAccessContext | string
+  ): Promise<MyBookingsResult> {
+    const userId = typeof auth === 'string' ? auth : auth.userId;
+    const sessionId = typeof auth === 'string' ? undefined : auth.sessionId;
 
-    const bookings = await Booking.find({
-      $or: [
-        { userId: user._id },
-        { guestEmail: user.email.trim().toLowerCase(), status: BookingStatus.CONFIRMED }
-      ]
-    })
-      .populate('eventId')
-      .sort({ createdAt: -1 });
+    let bookings: IBooking[] = [];
+
+    if (userId) {
+      const user = await UserModel.findById(userId);
+      if (!user) {
+        throw AppError.notFound('User not found');
+      }
+
+      bookings = await Booking.find({
+        $or: [
+          { userId: user._id },
+          { guestEmail: user.email.trim().toLowerCase(), status: BookingStatus.CONFIRMED },
+        ],
+      })
+        .populate('eventId')
+        .sort({ createdAt: -1 });
+    } else if (sessionId) {
+      bookings = await Booking.find({
+        sessionId,
+        status: BookingStatus.CONFIRMED,
+      })
+        .populate('eventId')
+        .sort({ createdAt: -1 });
+    } else {
+      throw AppError.unauthorized('Authentication or guest session required');
+    }
 
     const bookingIds = bookings.map((b) => b._id);
     const tickets = await Ticket.find({ bookingId: { $in: bookingIds }, status: 'active' });

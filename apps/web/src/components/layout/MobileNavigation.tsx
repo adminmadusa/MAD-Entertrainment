@@ -39,6 +39,48 @@ export const MobileNavigation = memo(function MobileNavigation({
     }
   }, [isOpen]);
 
+  let authActionSection = (
+    <button
+      type="button"
+      onClick={() => {
+        onClose();
+        openAuthModal();
+      }}
+      className="w-full py-3 px-4 text-text-secondary hover:text-text-primary hover:bg-white/5 rounded-xl transition-colors font-medium text-left block focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple"
+    >
+      Login
+    </button>
+  );
+
+  if (isAuthenticated) {
+    authActionSection = (
+      <>
+        <div className="px-4 py-1.5 text-[10px] font-semibold text-text-muted uppercase tracking-wider">
+          Hi, {firstName}
+        </div>
+        <Link
+          href="/dashboard?tab=account"
+          onClick={() => {
+            navigatingRef.current = true;
+            onClose();
+          }}
+          className="block py-3 px-4 text-text-secondary hover:text-text-primary hover:bg-white/5 rounded-xl transition-colors font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple"
+        >
+          Account
+        </Link>
+        <button
+          type="button"
+          onClick={() => {
+            navigatingRef.current = true;
+            handleLogout();
+          }}
+          className="w-full py-3 px-4 text-red-400 hover:text-red-355 hover:bg-white/5 rounded-xl transition-colors font-medium text-left block focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
+        >
+          Logout
+        </button>
+      </>
+    );
+  }
   return (
     <Drawer
       isOpen={isOpen}
@@ -71,54 +113,7 @@ export const MobileNavigation = memo(function MobileNavigation({
           </motion.div>
         ))}
         <div className="mt-3 pt-3 border-t border-border-subtle flex flex-col gap-2">
-          {isAuthenticated ? (
-            <>
-              <div className="px-4 py-1.5 text-[10px] font-semibold text-text-muted uppercase tracking-wider">
-                Hi, {firstName}
-              </div>
-              <Link
-                href="/dashboard?tab=tickets"
-                onClick={() => {
-                  navigatingRef.current = true;
-                  onClose();
-                }}
-                className="block py-3 px-4 text-text-secondary hover:text-text-primary hover:bg-white/5 rounded-xl transition-colors font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple"
-              >
-                My Tickets
-              </Link>
-              <Link
-                href="/dashboard?tab=account"
-                onClick={() => {
-                  navigatingRef.current = true;
-                  onClose();
-                }}
-                className="block py-3 px-4 text-text-secondary hover:text-text-primary hover:bg-white/5 rounded-xl transition-colors font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple"
-              >
-                Account
-              </Link>
-              <button
-                type="button"
-                onClick={() => {
-                  navigatingRef.current = true;
-                  handleLogout();
-                }}
-                className="w-full py-3 px-4 text-red-400 hover:text-red-355 hover:bg-white/5 rounded-xl transition-colors font-medium text-left block focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
-              >
-                Logout
-              </button>
-            </>
-          ) : (
-            <button
-              type="button"
-              onClick={() => {
-                onClose();
-                openAuthModal();
-              }}
-              className="w-full py-3 px-4 text-text-secondary hover:text-text-primary hover:bg-white/5 rounded-xl transition-colors font-medium text-left block focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple"
-            >
-              Login
-            </button>
-          )}
+          {authActionSection}
           <Link
             href="/events"
             onClick={() => {

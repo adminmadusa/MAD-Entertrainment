@@ -1,4 +1,4 @@
-import { STORAGE_VERSION } from '@mad/shared';
+import { STORAGE_KEYS, STORAGE_VERSION } from '@mad/shared';
 import type { Booking, DJOperator, Event, PaginatedDataResponse, PopupCampaign, Ticket } from '@mad/types';
 import { CheckoutDetailsInput, ReserveTicketsInput } from '@mad/validations';
 
@@ -16,12 +16,19 @@ export interface VerifyPaymentPayload {
 export interface GuestBookingSession {
   sessionId: string;
   token: string;
+  name?: string;
+  email?: string;
 }
 
 const guestSessionIdKey = `mad_checkout_session_${STORAGE_VERSION}`;
 const guestSessionTokenKey = `mad_checkout_session_token_${STORAGE_VERSION}`;
-
 function getGuestSessionHeaders(sessionToken?: string): Record<string, string> {
+  if (typeof window !== 'undefined') {
+    const userToken = localStorage.getItem(STORAGE_KEYS.USER_TOKEN);
+    if (userToken) {
+      return {};
+    }
+  }
   if (!sessionToken) return {};
   return {
     Authorization: `Bearer ${sessionToken}`,
@@ -31,11 +38,28 @@ function getGuestSessionHeaders(sessionToken?: string): Record<string, string> {
 export function getStoredGuestBookingSession(): GuestBookingSession | null {
   if (typeof window === 'undefined') return null;
 
-  const sessionId = sessionStorage.getItem(guestSessionIdKey);
-  const token = sessionStorage.getItem(guestSessionTokenKey);
+  let sessionId = sessionStorage.getItem(guestSessionIdKey);
+  let token = sessionStorage.getItem(guestSessionTokenKey);
+
+  if (!sessionId || !token) {
+    sessionId = localStorage.getItem(guestSessionIdKey);
+    token = localStorage.getItem(guestSessionTokenKey);
+  }
 
   if (!sessionId || !token) return null;
-  return { sessionId, token };
+  return {
+    sessionId,
+    token,
+  };
+}
+
+export function clearGuestBookingSession(): void {
+  if (typeof window === 'undefined') return;
+
+  sessionStorage.removeItem(guestSessionIdKey);
+  sessionStorage.removeItem(guestSessionTokenKey);
+  localStorage.removeItem(guestSessionIdKey);
+  localStorage.removeItem(guestSessionTokenKey);
 }
 
 export async function publicGetBookingSession(): Promise<GuestBookingSession> {
@@ -51,6 +75,8 @@ export async function ensureGuestBookingSession(): Promise<GuestBookingSession> 
   if (typeof window !== 'undefined') {
     sessionStorage.setItem(guestSessionIdKey, session.sessionId);
     sessionStorage.setItem(guestSessionTokenKey, session.token);
+    localStorage.setItem(guestSessionIdKey, session.sessionId);
+    localStorage.setItem(guestSessionTokenKey, session.token);
   }
 
   return session;
@@ -210,8 +236,13 @@ export async function publicGetBookingDetails(
   return data.data;
 }
 
-export async function publicGetMyBookings(): Promise<{ bookings: Booking[]; tickets: Ticket[]; ticketsReadyMap: Record<string, boolean> }> {
-  const { data } = await apiClient.get<{ data: { bookings: Booking[]; tickets: Ticket[]; ticketsReadyMap: Record<string, boolean> } }>('/bookings/me');
+export async function publicGetMyBookings(
+  sessionToken?: string
+): Promise<{ bookings: Booking[]; tickets: Ticket[]; ticketsReadyMap: Record<string, boolean> }> {
+  const activeSessionToken = sessionToken || getStoredGuestBookingSession()?.token;
+  const { data } = await apiClient.get<{ data: { bookings: Booking[]; tickets: Ticket[]; ticketsReadyMap: Record<string, boolean> } }>('/bookings/me', {
+    headers: getGuestSessionHeaders(activeSessionToken),
+  });
   return data.data;
 }
 
@@ -239,18 +270,28 @@ export async function publicCreatePaymentIntent(bookingId: string, gateway: 'str
   return data.data;
 }
 
+export interface VerifyPaymentResponse {
+  booking: Booking;
+  token?: string;
+  user?: AuthUser;
+}
+
 export async function publicVerifyPayment(
   bookingId: string,
   gatewayPayload: VerifyPaymentPayload,
   sessionToken: string = getStoredGuestBookingSession()?.token || ''
-): Promise<Booking> {
-  const { data } = await apiClient.post<{ data: Booking }>('/payments/verify', {
+): Promise<VerifyPaymentResponse> {
+  const { data } = await apiClient.post<{ data: VerifyPaymentResponse | Booking }>('/payments/verify', {
     bookingId,
     ...gatewayPayload,
   }, {
     headers: getGuestSessionHeaders(sessionToken),
   });
-  return data.data;
+  const resData = data.data;
+  if ('booking' in resData && resData.booking) {
+    return resData as VerifyPaymentResponse;
+  }
+  return { booking: resData as Booking };
 }
 
 // ─── Popup Campaigns ─────────────────────────────────────────

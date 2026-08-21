@@ -33,17 +33,18 @@ export function CheckoutTopbar({
           ←
         </button>
 
-        <div className="text-center min-w-0 flex-1 px-2">
-          <h1 id="checkout-modal-title" className="text-xs md:text-sm font-bold text-white tracking-wide truncate">
+        <div className="flex items-center justify-center gap-2 min-w-0 flex-1 px-2">
+          <h1 id="checkout-modal-title" className="text-sm font-bold text-white tracking-wide">
             Checkout
           </h1>
-          <div
-            className={`text-[10px] font-semibold ${
-              isExpired ? 'text-red-400' : 'text-accent-cyan animate-pulse'
+          <span className="text-white/30 text-xs font-normal" aria-hidden="true">•</span>
+          <span
+            className={`text-xs font-semibold ${
+              isExpired ? 'text-red-400' : 'text-accent-cyan'
             }`}
           >
             {timeLeft}
-          </div>
+          </span>
         </div>
 
         <button
