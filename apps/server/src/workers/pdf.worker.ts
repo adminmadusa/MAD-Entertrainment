@@ -11,6 +11,7 @@ import { Booking } from '../models/booking.schema';
 import { DeadLetterJob } from '../models/dead-letter-job.schema';
 import { Event } from '../models/event.schema';
 import { Notification } from '../models/notification.schema';
+import { Payment } from '../models/payment.schema';
 import { createNotificationSafe } from '../services/notification.service';
 import { QueueService } from '../services/queue.service';
 import { logger } from '../utils/logger';
@@ -50,6 +51,11 @@ export async function processPDFGenerate(
   // 1. Generate PDF buffer in memory
   const pdfBuffer = await generateTicketPDF(booking, event);
 
+  const payment = await Payment.findOne({ bookingId: booking._id })
+    .sort({ createdAt: -1 })
+    .lean()
+    .catch(() => null);
+
   const publicWebUrl = getPublicWebUrl();
   const ticketUrl = `${publicWebUrl}/tickets?ref=${booking.bookingId}`;
   const manageTicketsUrl = `${publicWebUrl}/tickets`;
@@ -63,22 +69,45 @@ export async function processPDFGenerate(
       })
     : '';
 
+  const formattedPaidAt = payment?.paidAt
+    ? new Date(payment.paidAt).toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      })
+    : undefined;
+
   const ticketsSummary = booking.tickets && Array.isArray(booking.tickets)
     ? booking.tickets.map((t: any) => ({
         tierName: t.tierName || t.tier || 'General',
         quantity: t.quantity || 1,
-        price: t.price || 0,
+        price: t.pricePerTicket || t.price || 0,
       }))
     : undefined;
 
   const emailBody = await bookingConfirmationHtml({
     customerName: booking.guestName,
+    customerEmail: recipientEmail,
     eventTitle: event.title || 'MAD Event',
     bookingReference: booking.bookingId,
     eventDate: formattedDate,
+    eventTime: event.showTime || (event.startDate ? new Date(event.startDate).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : undefined),
+    venueName: event.venue,
     tickets: ticketsSummary,
+    subtotal: booking.subtotal,
+    convenienceFee: booking.convenienceFee,
+    taxLabel: booking.taxLabel || event.taxLabel,
+    taxPercentage: booking.taxPercentage ?? event.taxPercentage,
+    taxAmount: booking.gst,
+    discount: booking.discount,
+    couponCode: booking.couponCode,
     totalAmount: booking.totalAmount,
-    currency: event.currency || 'INR',
+    currency: booking.currency || event.currency || 'USD',
+    paymentGateway: payment?.gateway,
+    paymentTransactionId: payment?.gatewayPaymentId || payment?.gatewayOrderId,
+    paidAt: formattedPaidAt,
     ticketUrl,
     manageTicketsUrl,
     hasPdfAttachment: true,
