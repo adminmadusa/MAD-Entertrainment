@@ -30,6 +30,7 @@ function formatAuthUser(user: any) {
     firstName: user.firstName ?? '',
     lastName: user.lastName ?? '',
     mobileNumber: user.mobileNumber ?? '',
+    isEmailVerified: !!user.isEmailVerified,
   };
 }
 

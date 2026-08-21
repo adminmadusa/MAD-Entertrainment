@@ -88,11 +88,11 @@ export function ProfileCompletionForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
-      <div className="text-center">
-        <h2 className="text-xl font-bold text-white">
+      <div className="text-center space-y-1">
+        <h2 className="text-xl font-bold text-white tracking-tight leading-snug">
           {mode === 'edit' ? 'Update Profile' : 'Complete Your Account Details'}
         </h2>
-        <p className="text-xs text-text-muted mt-1">
+        <p className="text-xs text-text-secondary leading-normal font-normal">
           {mode === 'edit'
             ? 'Update your personal and contact details below.'
             : 'Please provide your name to complete your account registration.'}

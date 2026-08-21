@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 import { BookingCard } from '@/components/booking/shared/BookingCard';
 import type { Booking, Ticket } from '@mad/types';
@@ -64,6 +64,28 @@ export function DashboardTicketsTab({
   refundedBookings,
 }: DashboardTicketsTabProps) {
   const [activeTicketSubTab, setActiveTicketSubTab] = useState<'upcoming' | 'live' | 'past' | 'cancelled' | 'refunded'>('upcoming');
+  const syncedRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (expandedBookingId && syncedRef.current !== expandedBookingId) {
+      if (liveBookings.some((b) => b.bookingId === expandedBookingId)) {
+        setActiveTicketSubTab('live');
+        syncedRef.current = expandedBookingId;
+      } else if (pastBookings.some((b) => b.bookingId === expandedBookingId)) {
+        setActiveTicketSubTab('past');
+        syncedRef.current = expandedBookingId;
+      } else if (cancelledBookings.some((b) => b.bookingId === expandedBookingId)) {
+        setActiveTicketSubTab('cancelled');
+        syncedRef.current = expandedBookingId;
+      } else if (refundedBookings.some((b) => b.bookingId === expandedBookingId)) {
+        setActiveTicketSubTab('refunded');
+        syncedRef.current = expandedBookingId;
+      } else if (upcomingBookings.some((b) => b.bookingId === expandedBookingId)) {
+        setActiveTicketSubTab('upcoming');
+        syncedRef.current = expandedBookingId;
+      }
+    }
+  }, [expandedBookingId, upcomingBookings, liveBookings, pastBookings, cancelledBookings, refundedBookings]);
 
   if (isBookingsLoading) {
     return (

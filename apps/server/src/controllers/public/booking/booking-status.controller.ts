@@ -15,13 +15,17 @@ export async function getMyBookings(
   next: NextFunction
 ): Promise<void> {
   try {
-    if (!req.user?.sub) {
-      throw AppError.unauthorized('Authentication required');
+    const userId = req.user?.sub;
+    const sessionId = req.session?.sessionId || req.header('x-session-id') || undefined;
+
+    if (!userId && !sessionId) {
+      throw AppError.unauthorized('Authentication or guest session required');
     }
 
-    const bookingsResult = await PublicBookingService.getMyBookings(
-      req.user.sub
-    );
+    const bookingsResult = await PublicBookingService.getMyBookings({
+      userId,
+      sessionId,
+    });
 
     // Mask ticket QR codes if assignmentStatus is 'pending' or 'claimed'
     const maskedTickets = bookingsResult.tickets.map((t: any) => {

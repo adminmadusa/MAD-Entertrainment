@@ -40,6 +40,7 @@ export class UserProfileController {
         mobileNumber: user.mobileNumber ?? '',
         phone: user.mobileNumber ?? '', // Alias response-only
         picture: user.picture,
+        isEmailVerified: !!user.isEmailVerified,
         isGuest: false,
         onboardingRequired,
       },

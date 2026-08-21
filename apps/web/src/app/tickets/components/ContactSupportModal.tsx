@@ -43,6 +43,7 @@ export function ContactSupportModal({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
+      showCloseButton={true}
       closeOnBackdropClick={true}
       enableSwipeToClose={true}
       presentation="bottom-sheet"

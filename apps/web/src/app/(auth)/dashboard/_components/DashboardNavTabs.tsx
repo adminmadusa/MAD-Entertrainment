@@ -1,6 +1,10 @@
-import React from 'react';
+'use client';
 
-export type TabType = 'tickets' | 'account' | 'support';
+import React from 'react';
+import { useAuth } from '@/providers/AuthProvider';
+import { useAuthModal } from '@/providers/AuthModalProvider';
+
+export type TabType = 'tickets' | 'account';
 
 interface DashboardNavTabsProps {
   activeTab: TabType;
@@ -13,6 +17,23 @@ export function DashboardNavTabs({
   bookingsCount,
   onTabChange,
 }: DashboardNavTabsProps) {
+  const { user } = useAuth();
+  const { openAuthModal } = useAuthModal();
+  const isVerified = !!user?.isEmailVerified;
+
+  const handleAccountClick = () => {
+    if (!isVerified) {
+      openAuthModal({
+        returnTo: '/dashboard?tab=account',
+        initialEmail: user?.email,
+        readonlyEmail: true,
+        autoRequestOtp: true,
+      });
+    } else {
+      onTabChange('account');
+    }
+  };
+
   return (
     <div
       role="tablist"
@@ -49,43 +70,36 @@ export function DashboardNavTabs({
         )}
       </button>
 
-      <button
-        type="button"
-        role="tab"
-        id="subtab-account"
-        aria-controls="subtab-panel-account"
-        aria-selected={activeTab === 'account'}
-        onClick={() => onTabChange('account')}
-        className={`pb-3 text-sm font-bold transition-all duration-200 relative whitespace-nowrap min-h-[44px] flex items-center gap-2 ${
-          activeTab === 'account'
-            ? 'text-white'
-            : 'text-text-secondary hover:text-white'
-        }`}
-      >
-        <span>Account Details</span>
-        {activeTab === 'account' && (
-          <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-accent-purple to-pink-500 rounded-full" />
-        )}
-      </button>
-
-      <button
-        type="button"
-        role="tab"
-        id="subtab-support"
-        aria-controls="subtab-panel-support"
-        aria-selected={activeTab === 'support'}
-        onClick={() => onTabChange('support')}
-        className={`pb-3 text-sm font-bold transition-all duration-200 relative whitespace-nowrap min-h-[44px] flex items-center gap-2 ${
-          activeTab === 'support'
-            ? 'text-white'
-            : 'text-text-secondary hover:text-white'
-        }`}
-      >
-        <span>Help &amp; Support</span>
-        {activeTab === 'support' && (
-          <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-accent-purple to-pink-500 rounded-full" />
-        )}
-      </button>
+      {isVerified ? (
+        <button
+          type="button"
+          role="tab"
+          id="subtab-account"
+          aria-controls="subtab-panel-account"
+          aria-selected={activeTab === 'account'}
+          onClick={() => onTabChange('account')}
+          className={`pb-3 text-sm font-bold transition-all duration-200 relative whitespace-nowrap min-h-[44px] flex items-center gap-2 ${
+            activeTab === 'account'
+              ? 'text-white'
+              : 'text-text-secondary hover:text-white'
+          }`}
+        >
+          <span>Account Details</span>
+          {activeTab === 'account' && (
+            <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-accent-purple to-pink-500 rounded-full" />
+          )}
+        </button>
+      ) : (
+        <button
+          type="button"
+          id="subtab-verify"
+          onClick={handleAccountClick}
+          className="pb-3 text-sm font-bold transition-all duration-200 relative whitespace-nowrap min-h-[44px] flex items-center gap-1.5 text-amber-300 hover:text-amber-200 cursor-pointer"
+        >
+          <span>⚠️</span>
+          <span>Verify Account</span>
+        </button>
+      )}
     </div>
   );
 }

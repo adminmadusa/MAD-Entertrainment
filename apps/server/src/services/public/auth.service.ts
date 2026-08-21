@@ -249,6 +249,7 @@ export class AuthService {
       }
     }
 
+    user.isEmailVerified = true;
     user.lastLogin = new Date();
     await user.save();
 
@@ -400,6 +401,7 @@ export class AuthService {
       await user.save();
     }
 
+    user.isEmailVerified = true;
     user.lastLogin = new Date();
     await user.save();
 

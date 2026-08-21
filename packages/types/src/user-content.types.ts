@@ -144,7 +144,8 @@ export interface AuthUser {
   email?: string;
   phone?: string;
   name?: string;
-  isGuest: boolean;
+  isGuest?: boolean;
+  isEmailVerified?: boolean;
   picture?: string;
   firstName?: string;
   lastName?: string;

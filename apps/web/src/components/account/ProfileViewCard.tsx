@@ -4,6 +4,7 @@ import React, { useRef, useState } from 'react';
 
 import { extractApiError } from '@/lib/api/client';
 import { publicUploadProfilePhoto, publicDeleteProfilePhoto } from '@/lib/api/public.service';
+import { useAuthModal } from '@/providers/AuthModalProvider';
 import { useAuth } from '@/providers/AuthProvider';
 import type { AuthUser } from '@/types/auth';
 import { Button } from '@mad/ui';
@@ -22,6 +23,7 @@ export function ProfileViewCard({ user, onEditClick }: ProfileViewCardProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const { updateUser } = useAuth();
+  const { openAuthModal } = useAuthModal();
 
   const handlePhotoClick = () => {
     fileInputRef.current?.click();
@@ -147,8 +149,27 @@ export function ProfileViewCard({ user, onEditClick }: ProfileViewCardProps) {
           <span className="text-[10px] text-text-muted uppercase tracking-wider block font-semibold">Last Name</span>
           <span className="text-white font-bold block text-sm">{user?.lastName || '—'}</span>
         </div>
-        <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/5 space-y-1">
-          <span className="text-[10px] text-text-muted uppercase tracking-wider block font-semibold">Email Address</span>
+        <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/5 space-y-2">
+          <div className="flex items-center justify-between gap-2 flex-wrap">
+            <span className="text-[10px] text-text-muted uppercase tracking-wider block font-semibold">Email Address</span>
+            {!user?.isEmailVerified && (
+              <button
+                type="button"
+                onClick={() =>
+                  openAuthModal({
+                    returnTo: '/dashboard?tab=account',
+                    initialEmail: user?.email,
+                    readonlyEmail: true,
+                    autoRequestOtp: true,
+                  })
+                }
+                className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold text-amber-300 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 rounded-full transition-all cursor-pointer shadow-sm active:scale-95 min-h-[28px]"
+              >
+                <span>⚠️</span>
+                <span>Verify with OTP</span>
+              </button>
+            )}
+          </div>
           <span className="text-white font-bold block text-sm break-all">{userEmail}</span>
         </div>
         <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/5 space-y-1">

@@ -72,9 +72,34 @@ function BottomNavigationContent() {
     ? pathname === '/dashboard' && (tab === 'tickets' || !tab || !!refParam)
     : pathname === '/tickets';
 
-  const isProfileActive = isAuthenticated
-    ? pathname === '/dashboard' && tab === 'account'
-    : false;
+  const isProfileActive = isAuthenticated && pathname === '/dashboard' && tab === 'account';
+
+  let profileNavItem = (
+    <button
+      type="button"
+      onClick={() => openAuthModal()}
+      className="flex flex-col items-center justify-center flex-1 h-full text-text-secondary hover:text-white transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-inset"
+      aria-label="Open Login Modal"
+    >
+      <User size={20} className="mb-1" />
+      <span className="text-[10px] font-medium tracking-tight">Login</span>
+    </button>
+  );
+
+  if (isAuthenticated) {
+    profileNavItem = (
+      <Link
+        href="/dashboard?tab=account"
+        className={`flex flex-col items-center justify-center flex-1 h-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-inset ${
+          isProfileActive ? 'text-accent-purple' : 'text-text-secondary hover:text-white'
+        }`}
+        aria-label="Navigate to Profile"
+      >
+        <User size={20} className="mb-1" />
+        <span className="text-[10px] font-medium tracking-tight">Profile</span>
+      </Link>
+    );
+  }
 
   return (
     <nav
@@ -136,28 +161,7 @@ function BottomNavigationContent() {
         )}
 
         {/* Login / Profile */}
-        {isAuthenticated ? (
-          <Link
-            href="/dashboard?tab=account"
-            className={`flex flex-col items-center justify-center flex-1 h-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-inset ${
-              isProfileActive ? 'text-accent-purple' : 'text-text-secondary hover:text-white'
-            }`}
-            aria-label="Navigate to Profile"
-          >
-            <User size={20} className="mb-1" />
-            <span className="text-[10px] font-medium tracking-tight">Profile</span>
-          </Link>
-        ) : (
-          <button
-            type="button"
-            onClick={() => openAuthModal()}
-            className="flex flex-col items-center justify-center flex-1 h-full text-text-secondary hover:text-white transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-inset"
-            aria-label="Open Login Modal"
-          >
-            <User size={20} className="mb-1" />
-            <span className="text-[10px] font-medium tracking-tight">Login</span>
-          </button>
-        )}
+        {profileNavItem}
       </div>
     </nav>
   );

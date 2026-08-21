@@ -12,6 +12,7 @@ import {
   type PaymentIntentResponse,
 } from '@/lib/api/public.service';
 import { loadScriptOnce } from '@/lib/utils/load-script-once';
+import { useAuth } from '@/providers/AuthProvider';
 import { QUERY_KEYS } from '@mad/shared';
 import type { Booking, Ticket } from '@mad/types';
 import type { CheckoutDetailsInput } from '@mad/validations';
@@ -32,6 +33,7 @@ interface UseCheckoutPaymentFlowProps {
 
 export function useCheckoutPaymentFlow({ bookingId, booking }: UseCheckoutPaymentFlowProps) {
   const queryClient = useQueryClient();
+  const { login } = useAuth();
 
   const [selectedGateway, setSelectedGateway] = useState<'stripe' | 'razorpay'>('razorpay');
   const [error, setError] = useState('');
@@ -170,7 +172,11 @@ export function useCheckoutPaymentFlow({ bookingId, booking }: UseCheckoutPaymen
 
   const verifyPaymentMutation = useMutation({
     mutationFn: (payload: Record<string, unknown>) => publicVerifyPayment(bookingId, payload),
-    onSuccess: async (confirmedBooking) => {
+    onSuccess: async (verifyRes) => {
+      const confirmedBooking = verifyRes.booking || (verifyRes as unknown as Booking);
+      if (verifyRes.token && verifyRes.user) {
+        login(verifyRes.token, verifyRes.user);
+      }
       try {
         const sessionToken = getStoredGuestBookingSession()?.token;
         const freshDetails = await publicGetBookingDetails(bookingId, sessionToken);
