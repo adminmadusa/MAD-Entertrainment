@@ -79,6 +79,17 @@ export const governanceConfig = {
     deadCodeExclusions: [
       'apps/web/src/utils/image-loader.ts',
       'apps/server/src/utils/zeptomail.ts',
+      'brand/logo.png',
+      'brand/logo.webp',
+      'brand/logo-128.png',
+      'brand/logo-64.png',
+      'brand/email-logo.png',
+      'brand/pdf-logo.png',
+      'icon-192.png',
+      'icon-512.png',
+      'apple-touch-icon.png',
+      'favicon-16x16.png',
+      'favicon-32x32.png',
     ] as string[],
     performanceExclusions: [
       '/email/templates/',

@@ -7,6 +7,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 
 import { useAuthModal } from '@/providers/AuthModalProvider';
 import { useAuth } from '@/providers/AuthProvider';
+import { BrandLogo } from '@mad/ui';
 
 import { NavLink } from './NavLink';
 import { UserDropdown } from './UserDropdown';
@@ -111,17 +112,11 @@ export function Navbar() {
         {/* Logo */}
         <Link
           href="/"
-          className="flex items-center gap-2 group rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+          className="flex items-center group rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           aria-label="MAD Entertrainment Home"
         >
-          <div className="flex items-center gap-2 transition-transform duration-200 group-hover:scale-105">
-            <div className="w-8 h-8 rounded-lg bg-gradient-brand flex items-center justify-center shadow-glow-sm">
-              <span className="text-white font-black text-sm">M</span>
-            </div>
-            <span className="text-white font-bold text-lg tracking-tight">
-              MAD{' '}
-              <span className="text-gradient">Entertrainment</span>
-            </span>
+          <div className="transition-transform duration-200 group-hover:scale-105">
+            <BrandLogo size="sm" imageSrc="/brand/logo-64.png" />
           </div>
         </Link>
 

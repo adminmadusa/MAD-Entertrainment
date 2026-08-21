@@ -1,6 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 
@@ -84,8 +85,15 @@ export default function AdminLoginPage() {
 
           {/* Logo */}
           <div className="flex flex-col items-center mb-8">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-brand flex items-center justify-center shadow-glow mb-4">
-              <span className="text-white font-black text-xl">M</span>
+            <div className="w-16 h-16 rounded-2xl overflow-hidden shadow-glow bg-black border border-white/10 flex items-center justify-center mb-4 relative">
+              <Image
+                src="/brand/logo-128.png"
+                alt="MAD Entertrainment Logo"
+                width={64}
+                height={64}
+                className="w-full h-full object-contain"
+                priority
+              />
             </div>
             <h1 className="text-2xl font-black text-white tracking-tight">
               Admin Portal
