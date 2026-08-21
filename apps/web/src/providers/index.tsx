@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react';
 
 import { AuthModalProvider } from './AuthModalProvider';
 import { AuthProvider } from './AuthProvider';
+import { CookieConsentProvider } from './CookieConsentProvider';
 
 const ReactQueryDevtools =
   process.env.NODE_ENV === 'development'
@@ -18,6 +19,11 @@ const ReactQueryDevtools =
 const PopupManager = dynamic(() => import('@/components/common/PopupManager').then(mod => mod.PopupManager), {
   ssr: false,
 });
+
+const CookieConsentBanner = dynamic(
+  () => import('@/components/common/CookieConsentBanner').then((mod) => mod.CookieConsentBanner),
+  { ssr: false }
+);
 
 interface ProvidersProps {
   children: React.ReactNode;
@@ -91,8 +97,11 @@ export function Providers({ children }: ProvidersProps) {
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
           <AuthModalProvider>
-            {children}
-            <PopupManager />
+            <CookieConsentProvider>
+              {children}
+              <PopupManager />
+              <CookieConsentBanner />
+            </CookieConsentProvider>
           </AuthModalProvider>
         </AuthProvider>
         {process.env.NODE_ENV === 'development' && (
