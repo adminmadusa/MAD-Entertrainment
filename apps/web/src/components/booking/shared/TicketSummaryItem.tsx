@@ -20,23 +20,21 @@ export function TicketSummaryItem({
 }: TicketSummaryItemProps) {
   if (quantity <= 0) return null;
   return (
-    <div className={`flex justify-between items-center text-xs py-1.5 ${className}`}>
-      <div className="flex items-center gap-1.5 min-w-0">
+    <div className={`flex justify-between items-center text-xs sm:text-sm py-1.5 ${className}`}>
+      <div className="flex items-center gap-2 min-w-0">
         <span className="font-bold text-white shrink-0">{quantity}×</span>
         <span
-          className="text-text-secondary truncate"
+          className="text-text-secondary truncate text-xs sm:text-sm"
           title={formatDisplayName(tierName)}
         >
           {formatDisplayName(tierName)}
         </span>
       </div>
       {price !== undefined && (
-        <span className="font-semibold text-accent-purple-light font-mono">
+        <span className="font-semibold text-accent-purple-light font-mono text-xs sm:text-sm">
           {formatMoney(price, currency)}
         </span>
       )}
     </div>
   );
 }
-
-
