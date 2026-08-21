@@ -131,12 +131,20 @@ export const updateProfileSchema = z.object({
     .or(z.literal('')),
 }).strict();
 
+export const deleteAccountSchema = z.object({
+  confirmation: z
+    .string()
+    .trim()
+    .min(1, 'Confirmation is required'),
+}).strict();
+
 export type CheckoutInput = z.infer<typeof checkoutSchema>;
 export type ReserveTicketsInput = z.infer<typeof reserveTicketsSchema>;
 export type CheckoutDetailsInput = z.infer<typeof checkoutDetailsSchema>;
 export type PaymentVerificationInput = z.infer<typeof paymentVerificationSchema>;
 export type StripePaymentIntentInput = z.infer<typeof stripePaymentIntentSchema>;
 export type AdminDlqRetryInput = z.infer<typeof adminDlqRetrySchema>;
+export type DeleteAccountInput = z.infer<typeof deleteAccountSchema>;
 export * from './upload.validator';
 export * from './normalizers';
 export * from './event-gallery.validator';
