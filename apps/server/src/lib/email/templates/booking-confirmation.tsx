@@ -9,9 +9,12 @@ export interface BookingConfirmationData {
   eventTitle: string;
   bookingReference: string;
   eventDate: string;
-  tickets: { tierName: string; quantity: number; price: number }[];
-  totalAmount: number;
+  tickets?: { tierName: string; quantity: number; price: number }[];
+  totalAmount?: number;
   currency?: string;
+  ticketUrl?: string;
+  manageTicketsUrl?: string;
+  hasPdfAttachment?: boolean;
 }
 
 const previewData: BookingConfirmationData = {
@@ -25,6 +28,9 @@ const previewData: BookingConfirmationData = {
   ],
   totalAmount: 3997,
   currency: "INR",
+  ticketUrl: "https://www.madentertainments.net/tickets?ref=MAD-2026-12345",
+  manageTicketsUrl: "https://www.madentertainments.net/tickets",
+  hasPdfAttachment: true,
 };
 
 interface BookingConfirmationEmailProps {
@@ -39,9 +45,12 @@ export default function BookingConfirmationEmail({
     eventTitle,
     bookingReference,
     eventDate,
-    tickets,
+    tickets = [],
     totalAmount,
     currency = "INR",
+    ticketUrl,
+    manageTicketsUrl,
+    hasPdfAttachment,
   } = data;
 
   const currencySymbol = currency === "INR" ? "₹" : currency;
@@ -61,7 +70,13 @@ export default function BookingConfirmationEmail({
         <>
           Hi <strong style={emailSharedStyles.whiteText}>{customerName}</strong>,
           <br />
-          your booking is confirmed. Here is your summary.
+          your booking is confirmed.
+          {hasPdfAttachment && (
+            <>
+              <br />
+              Please find your ticket attached as a PDF document. You can present the QR code at the gate for entry.
+            </>
+          )}
         </>
       }
     >
@@ -72,36 +87,72 @@ export default function BookingConfirmationEmail({
       </Section>
 
       {/* Ticket Breakdown Header */}
-      <Section style={tableHeaderStyle}>
-        <Row>
-          <Column style={colLeftHeaderStyle}>Ticket</Column>
-          <Column style={colCenterHeaderStyle}>Qty</Column>
-          <Column style={colRightHeaderStyle}>Amount</Column>
-        </Row>
-      </Section>
+      {tickets.length > 0 && (
+        <>
+          <Section style={tableHeaderStyle}>
+            <Row>
+              <Column style={colLeftHeaderStyle}>Ticket</Column>
+              <Column style={colCenterHeaderStyle}>Qty</Column>
+              <Column style={colRightHeaderStyle}>Amount</Column>
+            </Row>
+          </Section>
 
-      {/* Ticket Breakdown Rows */}
-      {tickets.map((t, idx) => (
-        <Section key={idx} style={tableRowStyle}>
+          {/* Ticket Breakdown Rows */}
+          {tickets.map((t, idx) => (
+            <Section key={idx} style={tableRowStyle}>
+              <Row>
+                <Column style={colLeftStyle}>{t.tierName}</Column>
+                <Column style={colCenterStyle}>{t.quantity}</Column>
+                <Column style={colRightStyle}>
+                  {`${currencySymbol}${(t.price * t.quantity).toLocaleString("en-IN")}`}
+                </Column>
+              </Row>
+            </Section>
+          ))}
+        </>
+      )}
+
+      {/* Total */}
+      {totalAmount !== undefined && (
+        <Section style={totalContainerStyle}>
           <Row>
-            <Column style={colLeftStyle}>{t.tierName}</Column>
-            <Column style={colCenterStyle}>{t.quantity}</Column>
-            <Column style={colRightStyle}>
-              {`${currencySymbol}${(t.price * t.quantity).toLocaleString("en-IN")}`}
+            <Column style={totalLabelStyle}>Total Paid</Column>
+            <Column style={totalValueStyle}>
+              {`${currencySymbol}${totalAmount.toLocaleString("en-IN")}`}
             </Column>
           </Row>
         </Section>
-      ))}
+      )}
 
-      {/* Total */}
-      <Section style={totalContainerStyle}>
-        <Row>
-          <Column style={totalLabelStyle}>Total Paid</Column>
-          <Column style={totalValueStyle}>
-            {`${currencySymbol}${totalAmount.toLocaleString("en-IN")}`}
-          </Column>
-        </Row>
-      </Section>
+      {/* Action Buttons */}
+      {(ticketUrl || manageTicketsUrl) && (
+        <Section style={ctaSectionStyle}>
+          {ticketUrl && (
+            <a href={ticketUrl} style={primaryCtaButtonStyle}>
+              View Ticket Online
+            </a>
+          )}
+          {manageTicketsUrl && (
+            <div>
+              <a href={manageTicketsUrl} style={secondaryCtaLinkStyle}>
+                Manage My Tickets
+              </a>
+            </div>
+          )}
+        </Section>
+      )}
+
+      {/* Fallback Copy-Paste Link */}
+      {ticketUrl && (
+        <Section style={fallbackLinkContainerStyle}>
+          <Text style={fallbackLabelStyle}>
+            If the buttons don&apos;t work, copy and paste this link:
+          </Text>
+          <a href={ticketUrl} style={fallbackLinkStyle}>
+            {ticketUrl}
+          </a>
+        </Section>
+      )}
     </EmailBase>
   );
 }
@@ -193,4 +244,53 @@ const totalValueStyle: React.CSSProperties = {
   color: "#a78bfa",
   fontWeight: 900,
   textAlign: "right" as const,
+};
+
+const ctaSectionStyle: React.CSSProperties = {
+  margin: "28px 0 16px",
+  textAlign: "center" as const,
+};
+
+const primaryCtaButtonStyle: React.CSSProperties = {
+  backgroundColor: "#8B5CF6",
+  color: "#ffffff",
+  padding: "13px 28px",
+  textDecoration: "none",
+  borderRadius: "8px",
+  fontWeight: 700,
+  fontSize: "14px",
+  display: "inline-block",
+  boxShadow: "0 4px 14px rgba(139, 92, 246, 0.35)",
+  letterSpacing: "0.3px",
+};
+
+const secondaryCtaLinkStyle: React.CSSProperties = {
+  color: "#a78bfa",
+  textDecoration: "none",
+  fontSize: "13px",
+  fontWeight: 600,
+  display: "inline-block",
+  marginTop: "12px",
+};
+
+const fallbackLinkContainerStyle: React.CSSProperties = {
+  margin: "20px 0",
+  padding: "14px 16px",
+  backgroundColor: "#111111",
+  border: "1px solid #2a2a2a",
+  borderRadius: "8px",
+  textAlign: "center" as const,
+};
+
+const fallbackLabelStyle: React.CSSProperties = {
+  margin: "0 0 6px",
+  fontSize: "11px",
+  color: "#777777",
+};
+
+const fallbackLinkStyle: React.CSSProperties = {
+  color: "#a78bfa",
+  fontSize: "11px",
+  wordBreak: "break-all" as const,
+  fontFamily: "monospace",
 };

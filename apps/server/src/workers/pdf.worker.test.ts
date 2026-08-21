@@ -13,6 +13,7 @@ vi.mock('../config/env', () => ({
     FRONTEND_URL: 'https://example.com',
     ALLOWED_ORIGINS: 'https://example.com',
   })),
+  getPublicWebUrl: vi.fn(() => 'https://example.com'),
 }));
 
 vi.mock('../config/queue.config', () => ({

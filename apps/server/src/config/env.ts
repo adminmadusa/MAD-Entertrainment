@@ -51,6 +51,8 @@ const envSchema = z.object({
 
   FRONTEND_URL: z.string().url().optional(),
 
+  PUBLIC_WEB_URL: z.string().url().optional(),
+
   // ─────────────────────────────────────────
   // Cloudinary
   // ─────────────────────────────────────────
@@ -275,4 +277,41 @@ export function validateEnv(): Readonly<Env> {
 
 export function getEnv(): Readonly<Env> {
   return env ?? validateEnv();
+}
+
+export function _resetEnvForTesting(): void {
+  env = undefined;
+}
+
+// ─────────────────────────────────────────────
+// Get Canonical Public Web URL (Non-Admin)
+// ─────────────────────────────────────────────
+
+export function getPublicWebUrl(): string {
+  const currentEnv = getEnv();
+
+  if (currentEnv.PUBLIC_WEB_URL) {
+    return currentEnv.PUBLIC_WEB_URL.replace(/\/+$/, '');
+  }
+
+  if (
+    currentEnv.FRONTEND_URL &&
+    !currentEnv.FRONTEND_URL.includes('admin') &&
+    !currentEnv.FRONTEND_URL.includes('madmin')
+  ) {
+    return currentEnv.FRONTEND_URL.replace(/\/+$/, '');
+  }
+
+  const origins = currentEnv.ALLOWED_ORIGINS.split(',').map((o) => o.trim().replace(/\/+$/, ''));
+  const publicOrigin = origins.find(
+    (origin) => !origin.includes('admin') && !origin.includes('madmin') && origin.length > 0
+  );
+
+  if (publicOrigin) {
+    return publicOrigin;
+  }
+
+  return currentEnv.NODE_ENV === 'production'
+    ? 'https://www.madentertainments.net'
+    : 'http://localhost:3000';
 }

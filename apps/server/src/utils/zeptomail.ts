@@ -20,7 +20,7 @@ export async function sendViaZeptoMail(input: SendEmailInput): Promise<void> {
   }
 
   // Parse sender name and email from MAIL_FROM (supports "Name <email>" format or plain email)
-  let fromAddress = env.MAIL_FROM || 'noreply@mad.esparex.in';
+  let fromAddress = env.MAIL_FROM || 'noreply@madentertainments.net';
   let fromName = 'MAD Entertrainment';
 
   const mailFromRegex = /(.*)<(.*)>/;

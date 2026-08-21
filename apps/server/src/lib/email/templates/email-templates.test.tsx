@@ -18,6 +18,9 @@ describe("Email Templates Render Tests", () => {
         tickets: [{ tierName: "VIP", quantity: 2, price: 1500 }],
         totalAmount: 3000,
         currency: "INR",
+        ticketUrl: "https://www.madentertainments.net/tickets?ref=MAD-CONF-111",
+        manageTicketsUrl: "https://www.madentertainments.net/tickets",
+        hasPdfAttachment: true,
       };
 
       const html = await bookingConfirmationHtml(data);
@@ -28,6 +31,10 @@ describe("Email Templates Render Tests", () => {
       expect(html).toContain("VIP");
       expect(html).toContain("Total Paid");
       expect(html).toContain("₹3,000");
+      expect(html).toContain("View Ticket Online");
+      expect(html).toContain("https://www.madentertainments.net/tickets?ref=MAD-CONF-111");
+      expect(html).toContain("Manage My Tickets");
+      expect(html).toContain("attached as a PDF document");
     });
   });
 
