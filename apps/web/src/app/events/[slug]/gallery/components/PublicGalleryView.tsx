@@ -30,7 +30,7 @@ export function PublicGalleryView({ event, gallery }: Props) {
   const eventDate = event.startDate ? new Date(event.startDate) : null;
   const isCompleted = event.status === 'completed' || event.lifecycle === 'COMPLETED';
 
-  const eventSlug = event.slug || (event as any)._id || '';
+  const eventSlug = event.slug || event._id || '';
   const backHref = eventSlug ? `/events/${eventSlug}` : '/events';
 
   return (
