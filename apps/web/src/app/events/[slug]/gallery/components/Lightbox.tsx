@@ -2,7 +2,7 @@
 
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
-import { ImageWrapper } from '@/components/common/ImageWrapper';
+import Image from 'next/image';
 import React, { useEffect, useCallback } from 'react';
 
 import type { EventGalleryItem } from '@mad/types';
@@ -88,7 +88,7 @@ export function Lightbox({ items, currentIndex, onClose, onChange }: LightboxPro
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur-sm"
+        className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-2xl"
         role="dialog"
         aria-modal="true"
         aria-label="Image gallery lightbox"
@@ -96,24 +96,26 @@ export function Lightbox({ items, currentIndex, onClose, onChange }: LightboxPro
       >
         {/* Close button */}
         <button
-          onClick={(e) => { e.stopPropagation(); onClose(); }}
-          className="absolute top-4 right-4 z-50 p-2 text-white/70 hover:text-white bg-black/20 hover:bg-black/40 rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+          onClick={(e) => {
+            e.stopPropagation();
+            onClose();
+          }}
+          className="absolute top-4 right-4 z-50 p-2 text-white/80 hover:text-white bg-black/40 hover:bg-black/70 backdrop-blur-md rounded-full transition-colors border border-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white cursor-pointer"
           aria-label="Close lightbox"
         >
-          <X className="w-8 h-8" />
+          <X className="w-6 h-6 sm:w-7 sm:h-7" />
         </button>
 
         {/* Counter */}
-        <div className="absolute top-6 left-6 z-50 text-white/80 font-medium tracking-wide">
+        <div className="absolute top-5 left-6 z-50 px-3 py-1 bg-black/40 backdrop-blur-md border border-white/10 rounded-full text-white/90 text-xs sm:text-sm font-semibold tracking-wide select-none">
           {currentIndex + 1} / {items.length}
         </div>
 
-        {/* Main Image Area */}
+        {/* Main Image Area Container — backdrop clicks pass through to outer overlay to close */}
         <div
-          className="relative w-full h-full flex items-center justify-center p-4 md:p-12"
+          className="relative w-full h-full flex items-center justify-center p-4 md:p-12 pointer-events-none"
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
-          onClick={(e) => e.stopPropagation()}
         >
           {/* Previous Button */}
           {currentIndex > 0 && (
@@ -122,29 +124,29 @@ export function Lightbox({ items, currentIndex, onClose, onChange }: LightboxPro
                 e.stopPropagation();
                 handlePrev();
               }}
-              className="absolute left-4 md:left-8 z-50 p-3 text-white/70 hover:text-white bg-black/20 hover:bg-black/60 rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white hidden md:block"
+              className="absolute left-4 md:left-8 z-50 p-3 text-white/80 hover:text-white bg-black/40 hover:bg-black/70 backdrop-blur-md border border-white/10 rounded-full transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white hidden md:flex items-center justify-center pointer-events-auto shadow-lg cursor-pointer"
               aria-label="Previous image"
             >
-              <ChevronLeft className="w-8 h-8" />
+              <ChevronLeft className="w-6 h-6" />
             </button>
           )}
 
-          {/* Current Image */}
+          {/* Current Image Content */}
           <motion.div
             key={currentIndex}
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className="relative w-full h-full max-w-6xl max-h-full flex items-center justify-center"
-            onClick={(e) => e.stopPropagation()} // Prevent clicks on image from closing (if we added close on backdrop click)
+            className="relative w-full h-full max-w-6xl max-h-[85vh] flex items-center justify-center pointer-events-auto cursor-default"
+            onClick={(e) => e.stopPropagation()}
           >
             <div className="relative w-full h-full">
-              <ImageWrapper
+              <Image
                 src={currentItem.url}
                 alt={currentItem.caption || `Image ${currentIndex + 1}`}
                 fill
-                className="object-contain"
+                className="object-contain select-none"
                 priority
                 sizes="100vw"
               />
@@ -152,8 +154,8 @@ export function Lightbox({ items, currentIndex, onClose, onChange }: LightboxPro
 
             {/* Caption */}
             {currentItem.caption && (
-              <div className="absolute bottom-4 left-0 right-0 text-center px-4">
-                <span className="inline-block px-4 py-2 bg-black/60 backdrop-blur-md text-white rounded-lg text-sm md:text-base max-w-2xl shadow-lg">
+              <div className="absolute bottom-4 left-0 right-0 text-center px-4 pointer-events-auto">
+                <span className="inline-block px-4 py-2 bg-black/60 backdrop-blur-md border border-white/10 text-white rounded-xl text-xs sm:text-sm max-w-2xl shadow-lg select-none">
                   {currentItem.caption}
                 </span>
               </div>
@@ -167,17 +169,17 @@ export function Lightbox({ items, currentIndex, onClose, onChange }: LightboxPro
                 e.stopPropagation();
                 handleNext();
               }}
-              className="absolute right-4 md:right-8 z-50 p-3 text-white/70 hover:text-white bg-black/20 hover:bg-black/60 rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white hidden md:block"
+              className="absolute right-4 md:right-8 z-50 p-3 text-white/80 hover:text-white bg-black/40 hover:bg-black/70 backdrop-blur-md border border-white/10 rounded-full transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white hidden md:flex items-center justify-center pointer-events-auto shadow-lg cursor-pointer"
               aria-label="Next image"
             >
-              <ChevronRight className="w-8 h-8" />
+              <ChevronRight className="w-6 h-6" />
             </button>
           )}
 
           {/* Preload Next/Prev Images invisibly */}
           <div className="hidden">
             {currentIndex > 0 && (
-              <ImageWrapper
+              <Image
                 src={items[currentIndex - 1].url}
                 alt="preload previous"
                 width={10}
@@ -186,7 +188,7 @@ export function Lightbox({ items, currentIndex, onClose, onChange }: LightboxPro
               />
             )}
             {currentIndex < items.length - 1 && (
-              <ImageWrapper
+              <Image
                 src={items[currentIndex + 1].url}
                 alt="preload next"
                 width={10}
