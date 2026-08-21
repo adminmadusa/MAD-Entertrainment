@@ -4,6 +4,7 @@ import dynamic from 'next/dynamic';
 import { Suspense } from 'react';
 
 import { FindTicketsModal } from './components/FindTicketsModal';
+import { TicketsEmptyState } from './components/TicketsEmptyState';
 import { useTicketRecoveryFlow } from './hooks/useTicketRecoveryFlow';
 
 const BookingFoundModal = dynamic(
@@ -21,10 +22,12 @@ const ContactSupportModal = dynamic(
 
 import { BookingCard } from '@/components/booking/shared/BookingCard';
 import { useBookings } from '@/hooks/use-bookings.hook';
+import { useAuthModal } from '@/providers/AuthModalProvider';
 import { Button } from '@mad/ui';
 import { AlertCircle } from '@mad/ui/icons';
 
 function TicketRetrievalContent() {
+  const { openAuthModal } = useAuthModal();
   const {
     activeModal,
     setActiveModal,
@@ -174,21 +177,13 @@ function TicketRetrievalContent() {
         )}
 
         {!isBookingsLoading && !hasSessionBookings && (
-          <div className="text-center py-12 px-4 rounded-2xl glass border border-white/5 space-y-4">
-            <p className="text-text-muted text-sm max-w-md mx-auto">
-              No active bookings found for your current session. If you booked from another device or window, look up your tickets using your reference ID.
-            </p>
-            <Button
-              type="button"
-              variant="primary"
-              onClick={() => {
-                setErrorMsg('');
-                setActiveModal('find');
-              }}
-            >
-              Lookup Booking Reference
-            </Button>
-          </div>
+          <TicketsEmptyState
+            onSignIn={() => openAuthModal({ returnTo: '/dashboard?tab=tickets' })}
+            onLookup={() => {
+              setErrorMsg('');
+              setActiveModal('find');
+            }}
+          />
         )}
       </div>
 
