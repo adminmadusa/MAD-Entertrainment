@@ -9,6 +9,7 @@ import type { Event, EventGalleryItem, EventGallerySettings } from '@mad/types';
 
 import { RecommendedUpcomingSection } from '../../components/RecommendedUpcomingSection';
 import { Lightbox } from './Lightbox';
+import { MobileGalleryCarousel } from './MobileGalleryCarousel';
 
 interface Props {
   event: Event;
@@ -157,8 +158,11 @@ export function PublicGalleryView({ event, gallery }: Props) {
             </div>
           )}
 
-          {/* Unified Compact Responsive Photo Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-3">
+          {/* Mobile View: Compact Left-Right Swipe Carousel with Card Peek */}
+          <MobileGalleryCarousel items={items} onSelectPhoto={setLightboxIndex} />
+
+          {/* Desktop & Tablet: Compact Dense Multi-Column Grid */}
+          <div className="hidden sm:grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2.5 sm:gap-3">
             {items.map((item, index) => (
               <button
                 key={item.id || index}
@@ -172,12 +176,12 @@ export function PublicGalleryView({ event, gallery }: Props) {
                   alt={item.caption || `Gallery photo ${index + 1}`}
                   fill
                   className="object-cover transition-transform duration-500 group-hover:scale-105"
-                  sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, (max-width: 1280px) 20vw, 16vw"
+                  sizes="(max-width: 768px) 33vw, (max-width: 1024px) 25vw, (max-width: 1280px) 20vw, 16vw"
                   loading={index < 8 ? 'eager' : 'lazy'}
                   placeholder="blur"
                   blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mN8/wQAAgMBBNN+f6YAAAAASUVORK5CYII="
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-2 sm:p-2.5">
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-2.5">
                   {item.caption && (
                     <span className="text-[10px] text-white line-clamp-1 text-left font-medium">
                       {item.caption}
