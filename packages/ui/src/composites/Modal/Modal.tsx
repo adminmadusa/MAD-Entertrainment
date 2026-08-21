@@ -145,14 +145,16 @@ export function Modal({
           <div className={modalDragHandleClasses} aria-hidden="true" />
         )}
         {showCloseButton && (
-          <button
-            type="button"
-            aria-label="Close dialog"
-            onClick={onClose}
-            className={modalCloseButtonClasses}
-          >
-            <X className={modalCloseIconClasses} />
-          </button>
+          <div className="flex items-center justify-end w-full -mt-1 mb-2">
+            <button
+              type="button"
+              aria-label="Close dialog"
+              onClick={onClose}
+              className={modalCloseButtonClasses}
+            >
+              <X className={modalCloseIconClasses} />
+            </button>
+          </div>
         )}
         {children}
       </div>

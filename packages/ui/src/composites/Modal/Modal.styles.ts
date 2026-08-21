@@ -35,7 +35,7 @@ export const modalContentActiveStates = {
   'bottom-sheet': 'translate-y-0 opacity-100 scale-100',
 };
 
-export const modalCloseButtonClasses = 'absolute right-4 top-4 text-white bg-white/10 hover:bg-white/20 border border-white/15 w-9 h-9 min-w-[36px] min-h-[36px] flex items-center justify-center rounded-full transition-all duration-fast z-20 shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple cursor-pointer';
+export const modalCloseButtonClasses = 'text-white bg-white/10 hover:bg-white/20 border border-white/15 w-8 h-8 min-w-[32px] min-h-[32px] flex items-center justify-center rounded-full transition-all duration-fast shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple cursor-pointer ml-auto';
 export const modalCloseIconClasses = 'h-4 w-4 text-white';
 export const modalDragHandleClasses = 'w-12 h-1.5 bg-white/20 hover:bg-white/30 rounded-full mx-auto mb-4 sm:hidden cursor-grab active:cursor-grabbing transition-colors';
 
