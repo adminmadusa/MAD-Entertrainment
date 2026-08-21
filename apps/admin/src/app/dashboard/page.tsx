@@ -144,7 +144,7 @@ function DashboardContent() {
         <h1 className="text-2xl font-black text-white">
           Good {getTimeOfDay()}, {admin?.name?.split(' ')[0] ?? 'Admin'} 👋
         </h1>
-        <p className="text-text-secondary text-sm mt-1">Here&apos;s what&apos;s happening with MAD Entertrainment.</p>
+        <p className="text-text-secondary text-sm mt-1">Here&apos;s what&apos;s happening with MAD Entertainments.</p>
       </motion.div>
 
       {/* Stats Cards */}

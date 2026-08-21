@@ -68,7 +68,7 @@ describe('ZeptoMail Utility', () => {
       expect.objectContaining({
         from: {
           address: 'noreply@mad.esparex.in',
-          name: 'MAD Entertrainment',
+          name: 'MAD Entertainments',
         },
         to: [
           {

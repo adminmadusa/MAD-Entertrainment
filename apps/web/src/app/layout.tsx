@@ -27,13 +27,13 @@ export const metadata: Metadata = {
   metadataBase: new URL('https://www.madentertainments.net'),
 
   title: {
-    default: 'MAD Entertrainment — Book Shows, Events & DJ Nights',
-    template: '%s | MAD Entertrainment',
+    default: 'MAD Entertainments — Book Shows, Events & DJ Nights',
+    template: '%s | MAD Entertainments',
   },
   description:
     'Book tickets for the hottest shows, events, DJ nights, concerts, comedy shows, and live performances. Premium entertainment booking platform.',
   keywords: [
-    'MAD Entertrainment',
+    'MAD Entertainments',
     'ticket booking',
     'DJ nights',
     'concerts',
@@ -44,9 +44,9 @@ export const metadata: Metadata = {
     'entertainment',
     'VIP events',
   ],
-  authors: [{ name: 'MAD Entertrainment' }],
-  creator: 'MAD Entertrainment',
-  publisher: 'MAD Entertrainment',
+  authors: [{ name: 'MAD Entertainments' }],
+  creator: 'MAD Entertainments',
+  publisher: 'MAD Entertainments',
   alternates: {
     canonical: 'https://www.madentertainments.net',
   },
@@ -63,8 +63,8 @@ export const metadata: Metadata = {
   },
   openGraph: {
     type: 'website',
-    siteName: 'MAD Entertrainment',
-    title: 'MAD Entertrainment — Book Shows, Events & DJ Nights',
+    siteName: 'MAD Entertainments',
+    title: 'MAD Entertainments — Book Shows, Events & DJ Nights',
     description:
       'Book tickets for the hottest shows, events, DJ nights, concerts, comedy shows, and live performances.',
     url: 'https://www.madentertainments.net',
@@ -74,13 +74,13 @@ export const metadata: Metadata = {
         url: '/og-image.png',
         width: 1200,
         height: 630,
-        alt: 'MAD Entertrainment — Premium Ticket Booking',
+        alt: 'MAD Entertainments — Premium Ticket Booking',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'MAD Entertrainment — Book Shows, Events & DJ Nights',
+    title: 'MAD Entertainments — Book Shows, Events & DJ Nights',
     description:
       'Book tickets for the hottest shows, events, DJ nights, concerts, comedy shows, and live performances.',
     images: ['/og-image.png'],
@@ -116,14 +116,14 @@ export default function RootLayout({ children }: RootLayoutProps) {
   const websiteJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
-    name: 'MAD Entertrainment',
+    name: 'MAD Entertainments',
     url: 'https://www.madentertainments.net',
   };
 
   const organizationJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Organization',
-    name: 'MAD Entertrainment',
+    name: 'MAD Entertainments',
     url: 'https://www.madentertainments.net',
     logo: 'https://www.madentertainments.net/og-image.png',
   };

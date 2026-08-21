@@ -14,7 +14,7 @@ export function EmailFooter() {
         .
       </Text>
       <Text style={copyrightStyle}>
-        &copy; {currentYear} MAD Entertrainment. All rights reserved.
+        &copy; {currentYear} MAD Entertainments. All rights reserved.
       </Text>
     </Section>
   );
