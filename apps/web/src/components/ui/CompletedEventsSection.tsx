@@ -61,17 +61,11 @@ export const CompletedEventsSection = memo(function CompletedEventsSection({
     <section className="py-8 sm:py-12 overflow-hidden bg-background/20" aria-label="Past events gallery" role="region">
       <div className="container-mad">
         <Reveal>
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6 sm:mb-8">
+          <div className="flex items-center justify-between gap-4 mb-4 sm:mb-6">
             <div>
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-accent-pink/10 border border-accent-pink/20 text-accent-pink-light text-xs font-bold uppercase tracking-wider mb-2">
-                ✨ Relive the Magic
-              </span>
-              <h2 className="text-2xl sm:text-display-sm font-black text-white tracking-tight">
+              <h2 className="text-lg sm:text-xl font-bold text-white tracking-tight">
                 Past Events &amp; <span className="text-gradient">Moments</span>
               </h2>
-              <p className="text-text-secondary text-xs sm:text-sm mt-1 max-w-xl">
-                Explore photo galleries, recaps, and unforgettable memories from previous MAD Entertrainment experiences.
-              </p>
             </div>
 
             {/* Left / Right Carousel Controls */}

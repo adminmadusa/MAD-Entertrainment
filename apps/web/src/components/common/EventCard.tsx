@@ -107,13 +107,6 @@ export const EventCard = memo(function EventCard({
 
   const isCatalog = variant === 'catalog';
 
-  let cardDetailsPadding = 'p-3.5 sm:p-4';
-  if (isCatalog) {
-    cardDetailsPadding = 'p-2.5 sm:p-4 justify-between';
-  } else if (isCompact) {
-    cardDetailsPadding = 'p-2.5 sm:p-3';
-  }
-
   let titleSizeClass = 'text-sm sm:text-base';
   if (isCatalog) {
     titleSizeClass = 'text-xs xs:text-sm sm:text-base';
@@ -128,17 +121,9 @@ export const EventCard = memo(function EventCard({
     descriptionClass = 'text-[10px] line-clamp-1 mb-1';
   }
 
-  let footerContainerClass = 'border-t border-border-subtle/30 bg-black/35 px-3.5 py-2.5 sm:px-4 sm:py-3';
+  let buttonSizingClass = 'min-h-[36px] sm:min-h-[38px] px-3.5 sm:px-4 py-1.5 text-xs';
   if (isCatalog) {
-    footerContainerClass =
-      'pt-1 sm:pt-0 sm:border-t sm:border-border-subtle/30 sm:bg-black/35 sm:px-4 sm:py-3 sm:-mx-4 sm:-mb-4';
-  } else if (isCompact) {
-    footerContainerClass = 'border-t border-border-subtle/30 bg-black/35 px-2.5 py-1.5 sm:px-3 sm:py-2';
-  }
-
-  let buttonSizingClass = 'min-h-[36px] sm:min-h-[40px] px-3 sm:px-3.5 py-1.5 text-xs';
-  if (isCatalog) {
-    buttonSizingClass = 'min-h-[30px] sm:min-h-[38px] px-2.5 sm:px-3.5 py-1 sm:py-1.5 text-[11px] sm:text-xs';
+    buttonSizingClass = 'min-h-[30px] sm:min-h-[36px] px-3 sm:px-4 py-1 sm:py-1.5 text-[11px] sm:text-xs';
   } else if (isCompact) {
     buttonSizingClass = 'min-h-[28px] sm:min-h-[30px] px-2.5 py-1 text-[10px] sm:text-[11px] rounded-lg';
   }
@@ -148,18 +133,16 @@ export const EventCard = memo(function EventCard({
     : 'w-full aspect-[16/9]';
 
   const rootContainerClass = isCatalog ? 'flex flex-row sm:flex-col' : 'flex flex-col';
-  const linkContainerClass = isCatalog ? 'flex-row sm:flex-col flex-1 min-w-0' : 'flex-col';
 
   return (
     <div
       className={`group relative glass rounded-2xl border overflow-hidden transition-all duration-300 ${rootContainerClass} h-full ${borderClass} ${className}`}
     >
+      {/* ─── Banner Image Link ─── */}
       <Link
         href={destinationUrl}
         id={`event-card-${event.slug}`}
-        className={`flex ${linkContainerClass} h-full focus:outline-none focus-visible:ring-2 ${
-          isCompleted ? 'focus-visible:ring-accent-pink' : 'focus-visible:ring-accent-purple'
-        }`}
+        className="block relative focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple"
         aria-label={
           isCompleted && hasPublishedGallery
             ? `View Happy Moments gallery for ${event.title}`
@@ -167,7 +150,6 @@ export const EventCard = memo(function EventCard({
         }
         tabIndex={tabIndex ?? (isActive ? 0 : -1)}
       >
-        {/* ─── Banner Image (Square on mobile catalog, 16:9 on desktop & carousel) ─── */}
         <div className={`${imageContainerClass} overflow-hidden relative bg-white/5 shrink-0`}>
           {event.bannerImage?.url ? (
             <ImageWrapper
@@ -196,7 +178,7 @@ export const EventCard = memo(function EventCard({
           {/* Inactive carousel slide overlay */}
           {!isActive && <div className="absolute inset-0 bg-black/40 transition-opacity" />}
 
-          {/* Top Badges Header (Hidden or compact on mobile thumbnail) */}
+          {/* Top Badges Header */}
           <div className="absolute top-1.5 inset-x-1.5 sm:top-2.5 sm:inset-x-2.5 flex items-center justify-between gap-1.5 pointer-events-none z-10">
             <span
               className={`px-1.5 sm:px-2 py-0.5 text-[8px] sm:text-[10px] font-bold uppercase tracking-wider bg-black/75 backdrop-blur-md rounded-full border truncate max-w-[90px] sm:max-w-[150px] ${categoryColorClass}`}
@@ -221,73 +203,79 @@ export const EventCard = memo(function EventCard({
             </span>
           )}
         </div>
+      </Link>
 
-        {/* ─── Card Content Details & Inline Mobile Footer ────────────────────────── */}
-        <div className={`flex flex-col flex-1 min-w-0 bg-black/20 ${cardDetailsPadding}`}>
-          <div>
-            <div
-              className={`text-text-secondary ${
-                isCompact ? 'text-[9px] sm:text-[10px] mb-0.5' : 'text-[10px] sm:text-[11px] mb-1'
-              } font-semibold uppercase tracking-wider flex items-center gap-1.5`}
-            >
-              <CalendarIcon className={`w-3 h-3 ${dateColorClass}`} />
-              <span className="truncate">{formatEventDate(event.startDate)}</span>
-            </div>
+      {/* ─── Card Content Details & Footer ─── */}
+      <div className="flex flex-col flex-1 min-w-0 bg-black/20 justify-between">
+        {/* Details Link */}
+        <Link
+          href={destinationUrl}
+          className={`block p-3 sm:p-4 flex-1 focus:outline-none focus-visible:ring-2 rounded-lg ${
+            isCompleted ? 'focus-visible:ring-accent-pink' : 'focus-visible:ring-accent-purple'
+          }`}
+          tabIndex={tabIndex ?? (isActive ? 0 : -1)}
+        >
+          <div
+            className={`text-text-secondary ${
+              isCompact ? 'text-[9px] sm:text-[10px] mb-0.5' : 'text-[10px] sm:text-[11px] mb-1'
+            } font-semibold uppercase tracking-wider flex items-center gap-1.5`}
+          >
+            <CalendarIcon className={`w-3 h-3 ${dateColorClass}`} />
+            <span className="truncate">{formatEventDate(event.startDate)}</span>
+          </div>
 
-            <h3
-              className={`text-white font-bold line-clamp-1 sm:line-clamp-1 mb-0.5 transition-colors ${titleSizeClass} ${
-                isCompleted ? 'group-hover:text-accent-pink-light' : 'group-hover:text-accent-purple-light'
+          <h3
+            className={`text-white font-bold line-clamp-1 mb-1 transition-colors ${titleSizeClass} ${
+              isCompleted ? 'group-hover:text-accent-pink-light' : 'group-hover:text-accent-purple-light'
+            }`}
+          >
+            {event.title}
+          </h3>
+
+          <p className={`text-text-secondary ${descriptionClass}`}>{event.description}</p>
+        </Link>
+
+        {/* ─── Card Footer Action Block ─── */}
+        <div className="border-t border-border-subtle/30 bg-black/35 px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between gap-2 mt-auto">
+          {isCompleted ? (
+            <span
+              className={`font-semibold text-accent-pink-light ${
+                isCompact ? 'text-[10px] sm:text-[11px]' : 'text-[10px] sm:text-xs'
               }`}
             >
-              {event.title}
-            </h3>
-
-            <p className={`text-text-secondary ${descriptionClass} flex-grow`}>{event.description}</p>
-          </div>
-
-          {/* ─── Card Footer Action Block ────────────────────── */}
-          <div className={`flex items-center justify-between mt-auto w-full ${footerContainerClass}`}>
-            {isCompleted ? (
-              <span
-                className={`font-semibold text-accent-pink-light ${
-                  isCompact ? 'text-[10px] sm:text-[11px]' : 'text-[10px] sm:text-xs'
-                }`}
-              >
-                {hasPublishedGallery ? 'Photo Gallery' : 'Event Ended'}
-              </span>
-            ) : (
-              <div>
-                <div className="text-[9px] text-text-muted font-medium leading-none mb-0.5">Tickets from</div>
-                <div className="text-white font-black text-xs sm:text-sm font-mono leading-none">
-                  {formatMoney(minPrice, event.currency)}
-                </div>
+              {hasPublishedGallery ? 'Photo Gallery' : 'Event Ended'}
+            </span>
+          ) : (
+            <div className="min-w-0">
+              <div className="text-[9px] text-text-muted font-medium leading-none mb-1">Tickets from</div>
+              <div className="text-white font-black text-xs sm:text-sm font-mono leading-none truncate">
+                {formatMoney(minPrice, event.currency)}
               </div>
-            )}
+            </div>
+          )}
 
-            <button
-              type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                if (isCompleted) {
-                  router.push(destinationUrl);
-                  return;
-                }
-                if (cta.action === 'NONE' || cta.disabled) return;
-                if (cta.action === 'BOOK') {
-                  router.push(`/events/${event.slug}?modal=booking`);
-                } else {
-                  router.push(`/events/${event.slug}`);
-                }
-              }}
-              disabled={!isCompleted && (cta.disabled || cta.action === 'NONE')}
-              className={`font-bold rounded-xl transition-all flex items-center justify-center text-center cursor-pointer ${buttonSizingClass} ${buttonStyleClass}`}
-            >
-              {buttonText}
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              if (isCompleted) {
+                router.push(destinationUrl);
+                return;
+              }
+              if (cta.action === 'NONE' || cta.disabled) return;
+              if (cta.action === 'BOOK') {
+                router.push(`/events/${event.slug}?modal=booking`);
+              } else {
+                router.push(`/events/${event.slug}`);
+              }
+            }}
+            disabled={!isCompleted && (cta.disabled || cta.action === 'NONE')}
+            className={`font-bold rounded-xl transition-all flex items-center justify-center text-center shrink-0 cursor-pointer ${buttonSizingClass} ${buttonStyleClass}`}
+          >
+            {buttonText}
+          </button>
         </div>
-      </Link>
+      </div>
     </div>
   );
 });

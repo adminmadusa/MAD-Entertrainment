@@ -1,7 +1,7 @@
 'use client';
 
 import { ImageWrapper } from '@/components/common/ImageWrapper';
-import { forwardRef, useEffect, useImperativeHandle, useRef, useState, type ReactNode } from 'react';
+import { forwardRef, useImperativeHandle, useRef, useState, type ReactNode } from 'react';
 
 import { CheckoutContent } from '@/components/booking/CheckoutContent';
 import { PromoCodeForm } from '@/components/booking/PromoCodeForm';
@@ -64,17 +64,6 @@ export const EventBookingFlow = forwardRef<EventBookingFlowHandle, EventBookingF
     useImperativeHandle(ref, () => ({
       openBooking: () => setIsBookingModalOpen(true),
     }));
-
-    useEffect(() => {
-      if (isBookingModalOpen || isCheckoutModalOpen) {
-        document.body.style.overflow = 'hidden';
-      } else {
-        document.body.style.overflow = '';
-      }
-      return () => {
-        document.body.style.overflow = '';
-      };
-    }, [isBookingModalOpen, isCheckoutModalOpen]);
 
     let modalFooterBadge: ReactNode = null;
     if (selectedCount > 0) {

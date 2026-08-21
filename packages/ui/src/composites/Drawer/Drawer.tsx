@@ -9,6 +9,7 @@ import { cn } from '../../lib/cn';
 import { MotionTokens } from '../../lib/motionTokens';
 import { IconButton } from '../../primitives/IconButton';
 import {
+  drawerBackdropClasses,
   drawerContentBaseClasses,
   drawerSides,
   drawerHeaderClasses,
@@ -16,10 +17,26 @@ import {
   drawerBodyClasses,
   drawerCloseClasses,
 } from './Drawer.styles';
-import type { DrawerProps } from './Drawer.types'
+import type { DrawerProps } from './Drawer.types';
 
 export const Drawer = forwardRef<HTMLDivElement, DrawerProps>(
-  ({ isOpen, onClose, side = 'right', title, children, className, showHeader = true, id, lockScroll = true }, _ref) => {
+  (
+    {
+      isOpen,
+      onClose,
+      side = 'right',
+      title,
+      children,
+      className,
+      showHeader = true,
+      id,
+      lockScroll = true,
+      showBackdrop = true,
+      closeOnBackdropClick = true,
+      backdropClassName,
+    },
+    _ref,
+  ) => {
     const { isRendered, isVisible } = useDelayedUnmount(
       isOpen,
       0,
@@ -59,7 +76,7 @@ export const Drawer = forwardRef<HTMLDivElement, DrawerProps>(
       document.body.style.overflow = 'hidden';
 
       return () => {
-        document.body.style.overflow = originalStyle;
+        document.body.style.overflow = originalStyle === 'hidden' ? '' : originalStyle;
       };
     }, [isOpen, lockScroll]);
 
@@ -69,7 +86,22 @@ export const Drawer = forwardRef<HTMLDivElement, DrawerProps>(
 
     return (
       <>
-        {/* Backdrop removed per user request */}
+        {showBackdrop && (
+          <div
+            className={cn(
+              drawerBackdropClasses,
+              isVisible ? 'opacity-100' : 'opacity-0 pointer-events-none',
+              closeOnBackdropClick && 'cursor-pointer',
+              backdropClassName,
+            )}
+            onClick={(e) => {
+              if (closeOnBackdropClick && e.target === e.currentTarget) {
+                onClose();
+              }
+            }}
+            aria-hidden="true"
+          />
+        )}
         <div
           ref={drawerRef}
           tabIndex={-1}

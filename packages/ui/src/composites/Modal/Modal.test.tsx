@@ -70,4 +70,37 @@ describe('Modal Component', () => {
     // We expect it to not throw, and just not handle touch events since it's disabled.
     fireEvent.touchStart(dialogContent, { touches: [{ clientY: 100 }] });
   });
+
+  it('locks body scroll on mount and cleanly restores on close and repeated toggles', () => {
+    const handleClose = vi.fn();
+    const { rerender } = render(
+      <Modal isOpen={true} onClose={handleClose} lockScroll={true}>
+        <div>Modal Content</div>
+      </Modal>
+    );
+    expect(document.body.style.overflow).toBe('hidden');
+
+    rerender(
+      <Modal isOpen={false} onClose={handleClose} lockScroll={true}>
+        <div>Modal Content</div>
+      </Modal>
+    );
+    expect(document.body.style.overflow).toBe('');
+
+    // Reopen
+    rerender(
+      <Modal isOpen={true} onClose={handleClose} lockScroll={true}>
+        <div>Modal Content</div>
+      </Modal>
+    );
+    expect(document.body.style.overflow).toBe('hidden');
+
+    // Reclose
+    rerender(
+      <Modal isOpen={false} onClose={handleClose} lockScroll={true}>
+        <div>Modal Content</div>
+      </Modal>
+    );
+    expect(document.body.style.overflow).toBe('');
+  });
 });
