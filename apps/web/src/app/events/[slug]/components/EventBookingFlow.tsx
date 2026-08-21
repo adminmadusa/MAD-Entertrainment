@@ -245,7 +245,7 @@ export const EventBookingFlow = forwardRef<EventBookingFlowHandle, EventBookingF
           ariaLabelledBy="checkout-modal-title"
           className={
             isConfirmed
-              ? "max-w-md bg-background md:rounded-2xl border border-white/10 shadow-2xl relative z-10 p-4 sm:p-6 focus:outline-none animate-in fade-in zoom-in-95 duration-300"
+              ? "min-h-[85vh] sm:min-h-0 max-w-md bg-background md:rounded-2xl border border-white/10 shadow-2xl relative z-10 p-5 sm:p-6 focus:outline-none flex flex-col justify-between animate-in fade-in zoom-in-95 duration-300"
               : "h-[90vh] md:h-[680px] max-w-4xl bg-background md:rounded-2xl border border-white/10 overflow-hidden shadow-2xl relative z-10 p-0 focus:outline-none flex flex-col"
           }
         >
