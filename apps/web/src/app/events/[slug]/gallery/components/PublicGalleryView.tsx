@@ -83,8 +83,8 @@ export function PublicGalleryView({ event, gallery }: Props) {
       <div className="container-mad max-w-7xl px-4 md:px-8 relative z-10">
         {/* Title row + Back Action + Metadata Strip */}
         <div className="py-5 md:py-8 space-y-4 border-b border-white/5">
-          {/* Top Row: Back Action on Left, Photos Count on Right */}
-          <div className="flex items-center justify-between gap-3">
+          {/* Top Row: Back Action on top-right in mobile view, top-left on desktop */}
+          <div className="flex items-center justify-between gap-3 flex-row-reverse sm:flex-row">
             <Link
               href={backHref}
               prefetch={true}
