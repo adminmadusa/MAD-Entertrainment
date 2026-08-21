@@ -53,4 +53,9 @@ export interface ModalProps {
    * Custom classes for the modal content container.
    */
   className?: string;
+  /**
+   * Toggles locking the document body scroll when modal is open.
+   * @default true
+   */
+  lockScroll?: boolean;
 }

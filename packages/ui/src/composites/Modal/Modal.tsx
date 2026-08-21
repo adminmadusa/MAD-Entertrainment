@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 
 import { useDelayedUnmount } from '../../hooks/useDelayedUnmount';
 import { useFocusTrap } from '../../hooks/useFocusTrap';
@@ -34,6 +34,7 @@ export function Modal({
   ariaLabelledBy,
   ariaDescribedBy,
   className,
+  lockScroll = true,
 }: ModalProps) {
   const { isRendered, isVisible } = useDelayedUnmount(
     isOpen,
@@ -45,6 +46,17 @@ export function Modal({
     isActive: isOpen,
     onClose,
   });
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !isOpen || !lockScroll) return;
+
+    const originalStyle = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.body.style.overflow = originalStyle === 'hidden' ? '' : originalStyle;
+    };
+  }, [isOpen, lockScroll]);
 
   const touchStartY = useRef(0);
   const touchStartTime = useRef(0);
