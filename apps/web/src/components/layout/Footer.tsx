@@ -6,19 +6,32 @@ import { usePathname } from 'next/navigation';
 import { useAuth } from '@/providers/AuthProvider';
 import { BrandLogo } from '@mad/ui';
 
-const footerLinks = {
-  Platform: [
-    { label: 'Browse Events', href: '/events' },
-  ],
-  Support: [
-    { label: 'Help Center', href: '/support' },
-    { label: 'Contact Us', href: '/contact' },
-    { label: 'My Tickets', href: '/tickets' },
-  ],
+const footerSections = {
   Legal: [
     { label: 'Privacy Policy', href: '/legal/privacy' },
     { label: 'Terms of Service', href: '/legal/terms' },
-    { label: 'Refund Policy', href: '/legal/refunds' },
+    { label: 'Refund & Cancellation', href: '/legal/refunds' },
+    { label: 'Ticketing Policy', href: '/legal/ticketing' },
+    { label: 'Payment Policy', href: '/legal/payment' },
+    { label: 'Cookie Policy', href: '/legal/cookies' },
+    { label: 'Data & Account Deletion', href: '/legal/data-deletion' },
+  ],
+  Compliance: [
+    { label: 'Accessibility Statement', href: '/legal/accessibility' },
+    { label: 'Security Disclosure', href: '/legal/security' },
+    { label: 'DMCA & Copyright', href: '/legal/dmca' },
+    { label: 'California Privacy Notice', href: '/legal/california-privacy' },
+    { label: 'US State Privacy Rights', href: '/legal/state-privacy' },
+  ],
+  Communications: [
+    { label: 'SMS & Messaging Terms', href: '/legal/sms-terms' },
+    { label: 'Communication Preferences', href: '/legal/communication-preferences' },
+  ],
+  Support: [
+    { label: 'Contact Us', href: '/contact' },
+    { label: 'Help Center', href: '/support' },
+    { label: 'My Tickets', href: '/tickets' },
+    { label: 'Browse Events', href: '/events' },
   ],
 };
 
@@ -38,23 +51,26 @@ export function Footer() {
 
   if (isCheckoutOrBook) return null;
 
-
   return (
     <footer className="bg-background-secondary border-t border-border-subtle mt-12 md:mt-20">
-      {/* Main Footer */}
-      <div className="container-mad py-10 md:py-16">
+      {/* Main Footer Content */}
+      <div className="container-mad py-12 md:py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 md:gap-10">
-          {/* Brand */}
-          <div className="lg:col-span-2">
+          {/* Brand & Geographic Notice */}
+          <div className="lg:col-span-1">
             <Link
               href="/"
               className="flex items-center mb-4 rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background w-fit"
             >
               <BrandLogo size="md" imageSrc="/brand/logo-64.png" />
             </Link>
-            <p className="text-text-secondary text-sm leading-relaxed max-w-xs mb-6">
-              Premium entertainment booking platform for live events, concerts, DJ nights, comedy shows, and unforgettable experiences.
+            <p className="text-text-secondary text-xs sm:text-sm leading-relaxed mb-4">
+              Premium live entertainment booking platform for concerts, festivals, and unforgettable events across the United States.
             </p>
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/5 border border-white/10 rounded-lg text-xs font-semibold text-text-secondary mb-6">
+              <span>🇺🇸</span>
+              <span>United States Only</span>
+            </div>
             {/* Social Links */}
             <div className="flex items-center gap-3">
               {socialLinks.map((social) => (
@@ -72,17 +88,17 @@ export function Footer() {
             </div>
           </div>
 
-          {/* Platform Links (Desktop/Tablet only) */}
-          <div className="hidden md:block">
-            <h3 className="text-text-primary font-semibold text-sm uppercase tracking-wider mb-4">
-              Platform
+          {/* Legal Column */}
+          <div>
+            <h3 className="text-text-primary font-semibold text-xs uppercase tracking-wider mb-3.5">
+              Legal
             </h3>
-            <ul className="space-y-3">
-              {footerLinks.Platform.map((link) => (
+            <ul className="space-y-2">
+              {footerSections.Legal.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-text-secondary text-sm hover:text-text-primary transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple rounded-md"
+                    className="text-text-secondary text-xs hover:text-white transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-accent-purple rounded block py-0.5"
                   >
                     {link.label}
                   </Link>
@@ -91,66 +107,77 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Support and Legal Links (Side-by-side on mobile, separate on desktop) */}
-          <div className="grid grid-cols-2 gap-8 md:grid-cols-2 lg:col-span-2 lg:contents">
-            {/* Support */}
-            <div>
-              <h3 className="text-text-primary font-semibold text-sm uppercase tracking-wider mb-4">
-                Support
-              </h3>
-              <ul className="space-y-3">
-                {footerLinks.Support.map((link) => {
-                  const href = link.label === 'My Tickets' ? myTicketsHref : link.href;
-                  return (
-                    <li key={link.href}>
-                      <Link
-                        href={href}
-                        className="text-text-secondary text-sm hover:text-text-primary transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple rounded-md"
-                      >
-                        {link.label}
-                      </Link>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
+          {/* Compliance Column */}
+          <div>
+            <h3 className="text-text-primary font-semibold text-xs uppercase tracking-wider mb-3.5">
+              Compliance
+            </h3>
+            <ul className="space-y-2">
+              {footerSections.Compliance.map((link) => (
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
+                    className="text-text-secondary text-xs hover:text-white transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-accent-purple rounded block py-0.5"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
 
-            {/* Legal */}
-            <div>
-              <h3 className="text-text-primary font-semibold text-sm uppercase tracking-wider mb-4">
-                Legal
-              </h3>
-              <ul className="space-y-3">
-                {footerLinks.Legal.map((link) => (
+          {/* Communications Column */}
+          <div>
+            <h3 className="text-text-primary font-semibold text-xs uppercase tracking-wider mb-3.5">
+              Communications
+            </h3>
+            <ul className="space-y-2">
+              {footerSections.Communications.map((link) => (
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
+                    className="text-text-secondary text-xs hover:text-white transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-accent-purple rounded block py-0.5"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Support Column */}
+          <div>
+            <h3 className="text-text-primary font-semibold text-xs uppercase tracking-wider mb-3.5">
+              Support
+            </h3>
+            <ul className="space-y-2">
+              {footerSections.Support.map((link) => {
+                const href = link.label === 'My Tickets' ? myTicketsHref : link.href;
+                return (
                   <li key={link.href}>
                     <Link
-                      href={link.href}
-                      className="text-text-secondary text-sm hover:text-text-primary transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple rounded-md"
+                      href={href}
+                      className="text-text-secondary text-xs hover:text-white transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-accent-purple rounded block py-0.5"
                     >
                       {link.label}
                     </Link>
                   </li>
-                ))}
-              </ul>
-            </div>
+                );
+              })}
+            </ul>
           </div>
         </div>
       </div>
 
-      {/* Bottom Bar */}
-      <div className="border-t border-border-subtle">
+      {/* Bottom Legal & Security Bar */}
+      <div className="border-t border-border-subtle bg-black/20">
         <div className="container-mad py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-          {/* suppressHydrationWarning: year is evaluated on both server and client.
-              If the server renders Dec 31 and the client hydrates Jan 1, React
-              would log a hydration mismatch. Scoped to this single node only. */}
-          <p className="text-text-muted text-sm" suppressHydrationWarning>
-            © {currentYear} MAD Entertrainment. All rights reserved.
+          <p className="text-text-muted text-xs leading-relaxed" suppressHydrationWarning>
+            © {currentYear} MAD Entertainment LLC. All rights reserved. • United States Only
           </p>
           <div className="flex items-center gap-4">
             <span className="text-text-muted text-xs">
-              Secured by{' '}
-              <span className="text-accent-purple">Razorpay</span> &{' '}
-              <span className="text-accent-purple">Stripe</span>
+              Secured by <span className="text-accent-purple font-semibold">Stripe</span>
             </span>
           </div>
         </div>
