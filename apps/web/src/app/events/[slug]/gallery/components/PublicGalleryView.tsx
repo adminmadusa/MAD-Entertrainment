@@ -30,6 +30,9 @@ export function PublicGalleryView({ event, gallery }: Props) {
   const eventDate = event.startDate ? new Date(event.startDate) : null;
   const isCompleted = event.status === 'completed' || event.lifecycle === 'COMPLETED';
 
+  const eventSlug = event.slug || (event as any)._id || '';
+  const backHref = eventSlug ? `/events/${eventSlug}` : '/events';
+
   return (
     <div className="min-h-screen bg-background text-white relative">
       {/* ── FULL-BLEED CINEMATIC HERO (Matched with Event Detail Page) ── */}
@@ -78,46 +81,49 @@ export function PublicGalleryView({ event, gallery }: Props) {
       {/* ── CONTENT BELOW HERO (Matched Container Structure) ── */}
       <div className="container-mad max-w-7xl px-4 md:px-8 relative z-10">
         {/* Title row + Back Action + Metadata Strip */}
-        <div className="py-6 space-y-4 border-b border-white/5">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="space-y-2">
-              <Link
-                href={`/events/${event.slug}`}
-                className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-text-secondary hover:text-white transition-colors group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple"
-              >
-                <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" />
-                <span>Back to Event</span>
-              </Link>
-              <h1 className="text-display-sm sm:text-display-md font-black text-white leading-tight">
-                {event.title}
-              </h1>
-            </div>
+        <div className="py-5 md:py-8 space-y-4 border-b border-white/5">
+          {/* Top Row: Back Action on Left, Photos Count on Right */}
+          <div className="flex items-center justify-between gap-3">
+            <Link
+              href={backHref}
+              prefetch={true}
+              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/5 hover:bg-white/10 active:scale-95 border border-white/10 text-xs font-semibold text-text-secondary hover:text-white transition-all group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple"
+              aria-label={`Back to ${event.title}`}
+            >
+              <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform text-accent-purple-light" />
+              <span>Back to Event</span>
+            </Link>
 
             {/* Total Photos Badge */}
-            <div className="flex items-center gap-2 self-start sm:self-center">
-              <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold bg-accent-purple/10 border border-accent-purple/30 text-accent-purple-light shadow-glow-sm">
-                <Camera className="w-3.5 h-3.5" />
-                {items.length} Photos Captured
-              </span>
-            </div>
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-accent-purple/10 border border-accent-purple/25 text-accent-purple-light shadow-glow-sm">
+              <Camera className="w-3.5 h-3.5" />
+              <span>{items.length} Photos Captured</span>
+            </span>
           </div>
 
-          {/* Metadata Row */}
-          <div className="flex flex-wrap items-center gap-4 text-xs font-medium text-text-secondary pt-1">
-            {eventDate && (
-              <div className="flex items-center gap-1.5">
-                <Calendar className="w-4 h-4 text-accent-purple-light" />
-                <span>
-                  {new Intl.DateTimeFormat('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC' }).format(eventDate)}
-                </span>
-              </div>
-            )}
-            {event.venue && (
-              <div className="flex items-center gap-1.5">
-                <MapPin className="w-4 h-4 text-accent-purple-light" />
-                <span>{event.venue}</span>
-              </div>
-            )}
+          {/* Title & Metadata Block */}
+          <div className="space-y-2">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-white leading-tight tracking-tight">
+              {event.title}
+            </h1>
+
+            {/* Metadata Row */}
+            <div className="flex flex-wrap items-center gap-3.5 sm:gap-5 text-xs font-medium text-text-secondary pt-0.5">
+              {eventDate && (
+                <div className="flex items-center gap-1.5">
+                  <Calendar className="w-3.5 h-3.5 text-accent-purple-light shrink-0" />
+                  <span>
+                    {new Intl.DateTimeFormat('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC' }).format(eventDate)}
+                  </span>
+                </div>
+              )}
+              {event.venue && (
+                <div className="flex items-center gap-1.5">
+                  <MapPin className="w-3.5 h-3.5 text-accent-purple-light shrink-0" />
+                  <span>{event.venue}</span>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
