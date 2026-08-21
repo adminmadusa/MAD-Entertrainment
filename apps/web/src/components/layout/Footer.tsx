@@ -9,7 +9,6 @@ import { BrandLogo } from '@mad/ui';
 const footerLinks = {
   Platform: [
     { label: 'Browse Events', href: '/events' },
-    { label: 'DJ Operators', href: '/dj-operators' },
   ],
   Support: [
     { label: 'Help Center', href: '/support' },
@@ -17,7 +16,9 @@ const footerLinks = {
     { label: 'My Tickets', href: '/tickets' },
   ],
   Legal: [
-    { label: 'Legal Center', href: '/legal/privacy' },
+    { label: 'Privacy Policy', href: '/legal/privacy' },
+    { label: 'Terms of Service', href: '/legal/terms' },
+    { label: 'Refund Policy', href: '/legal/refunds' },
   ],
 };
 
