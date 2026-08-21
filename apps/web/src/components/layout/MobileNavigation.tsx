@@ -39,48 +39,15 @@ export const MobileNavigation = memo(function MobileNavigation({
     }
   }, [isOpen]);
 
-  // Body scroll locking when mobile menu is open (Safari-friendly & layout-shift free)
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const scrollY = window.pageYOffset || document.documentElement.scrollTop;
-    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
-
-    const originalStyle = {
-      position: document.body.style.position,
-      top: document.body.style.top,
-      width: document.body.style.width,
-      overflow: document.body.style.overflow,
-      paddingRight: document.body.style.paddingRight,
-    };
-
-    document.body.style.position = 'fixed';
-    document.body.style.top = `-${scrollY}px`;
-    document.body.style.width = '100%';
-    document.body.style.overflow = 'hidden';
-    if (scrollbarWidth > 0) {
-      document.body.style.paddingRight = `${scrollbarWidth}px`;
-    }
-
-    return () => {
-      document.body.style.position = originalStyle.position;
-      document.body.style.top = originalStyle.top;
-      document.body.style.width = originalStyle.width;
-      document.body.style.overflow = originalStyle.overflow;
-      document.body.style.paddingRight = originalStyle.paddingRight;
-
-      if (!navigatingRef.current && typeof window !== 'undefined') {
-        window.scrollTo(0, scrollY);
-      }
-    };
-  }, [isOpen]);
-
   return (
     <Drawer
       isOpen={isOpen}
       onClose={onClose}
       side="top"
       showHeader={false}
+      showBackdrop={true}
+      closeOnBackdropClick={true}
+      backdropClassName="top-[4.5rem] md:hidden z-30"
       className="top-[4.5rem] border-t border-border-subtle max-h-[calc(100svh-4.5rem)] rounded-none w-full md:hidden z-40"
     >
       <div className="container-mad py-4 flex flex-col gap-1">

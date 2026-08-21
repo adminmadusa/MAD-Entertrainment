@@ -42,4 +42,18 @@ export interface DrawerProps {
    * @default true
    */
   lockScroll?: boolean;
+  /**
+   * Toggles rendering the backdrop overlay.
+   * @default true
+   */
+  showBackdrop?: boolean;
+  /**
+   * Toggles dismissing the drawer when clicking the backdrop overlay.
+   * @default true
+   */
+  closeOnBackdropClick?: boolean;
+  /**
+   * Custom classes for the drawer backdrop overlay.
+   */
+  backdropClassName?: string;
 }
