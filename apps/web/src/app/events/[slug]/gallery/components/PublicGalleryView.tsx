@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowLeft, Calendar, Camera, LayoutGrid, MapPin, Music, SlidersHorizontal } from 'lucide-react';
+import { ArrowLeft, Calendar, Camera, MapPin, Music } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import React, { useState } from 'react';
@@ -9,7 +9,6 @@ import type { Event, EventGalleryItem, EventGallerySettings } from '@mad/types';
 
 import { RecommendedUpcomingSection } from '../../components/RecommendedUpcomingSection';
 import { Lightbox } from './Lightbox';
-import { MobileGallerySlider } from './MobileGallerySlider';
 
 interface Props {
   event: Event;
@@ -24,7 +23,6 @@ export function PublicGalleryView({ event, gallery }: Props) {
   const items = rawGallery.items || rawGallery.gallery || [];
   const settings = gallery.settings;
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
-  const [mobileView, setMobileView] = useState<'slider' | 'grid'>('slider');
 
   const coverItem = items.find((item) => item.isCover) || items[0];
   const coverUrl = coverItem?.url || event.bannerImage?.url;
@@ -153,77 +151,14 @@ export function PublicGalleryView({ event, gallery }: Props) {
             </div>
           )}
 
-          {/* Mobile View Toggle */}
-          <div className="flex sm:hidden items-center justify-between pt-1">
-            <span className="text-xs font-bold text-text-muted uppercase tracking-wider">
-              Photo Collection
-            </span>
-            <div className="flex items-center gap-1 bg-white/5 p-0.5 rounded-full border border-white/10">
-              <button
-                type="button"
-                onClick={() => setMobileView('slider')}
-                className={`px-2.5 py-1 rounded-full text-[11px] font-semibold flex items-center gap-1 transition-all ${
-                  mobileView === 'slider'
-                    ? 'bg-accent-purple text-white shadow-glow-sm'
-                    : 'text-text-muted hover:text-white'
-                }`}
-                aria-label="Swipe view"
-              >
-                <SlidersHorizontal className="w-3 h-3" />
-                <span>Swipe</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setMobileView('grid')}
-                className={`px-2.5 py-1 rounded-full text-[11px] font-semibold flex items-center gap-1 transition-all ${
-                  mobileView === 'grid'
-                    ? 'bg-accent-purple text-white shadow-glow-sm'
-                    : 'text-text-muted hover:text-white'
-                }`}
-                aria-label="Grid view"
-              >
-                <LayoutGrid className="w-3 h-3" />
-                <span>Grid</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Mobile View: Swipe Slider */}
-          {mobileView === 'slider' ? (
-            <MobileGallerySlider items={items} onSelectPhoto={setLightboxIndex} />
-          ) : (
-            <div className="grid grid-cols-2 gap-2.5 sm:hidden">
-              {items.map((item, index) => (
-                <button
-                  key={item.id || index}
-                  type="button"
-                  onClick={() => setLightboxIndex(index)}
-                  className="group relative aspect-square bg-white/[0.02] rounded-xl overflow-hidden border border-white/5 focus-visible:ring-2 focus-visible:ring-accent-purple"
-                  aria-label={`View photo ${index + 1} of ${items.length}`}
-                >
-                  <Image
-                    src={item.thumbnail || item.url}
-                    alt={item.caption || `Gallery photo ${index + 1}`}
-                    fill
-                    className="object-cover transition-transform duration-500 group-hover:scale-105"
-                    sizes="50vw"
-                    loading={index < 4 ? 'eager' : 'lazy'}
-                    placeholder="blur"
-                    blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mN8/wQAAgMBBNN+f6YAAAAASUVORK5CYII="
-                  />
-                </button>
-              ))}
-            </div>
-          )}
-
-          {/* Desktop & Tablet: Compact Dense Multi-Column Grid */}
-          <div className="hidden sm:grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2.5 md:gap-3">
+          {/* Unified Compact Responsive Photo Grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-3">
             {items.map((item, index) => (
               <button
                 key={item.id || index}
                 type="button"
                 onClick={() => setLightboxIndex(index)}
-                className="group relative aspect-square bg-white/[0.02] rounded-xl overflow-hidden border border-white/5 hover:border-accent-purple/40 hover:shadow-glow-sm hover:scale-[1.03] transition-all duration-300 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple"
+                className="group relative aspect-square bg-white/[0.02] rounded-xl overflow-hidden border border-white/5 hover:border-accent-purple/40 hover:shadow-glow-sm hover:scale-[1.03] active:scale-[0.98] transition-all duration-300 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple"
                 aria-label={`View photo ${index + 1} of ${items.length}`}
               >
                 <Image
@@ -231,12 +166,12 @@ export function PublicGalleryView({ event, gallery }: Props) {
                   alt={item.caption || `Gallery photo ${index + 1}`}
                   fill
                   className="object-cover transition-transform duration-500 group-hover:scale-105"
-                  sizes="(max-width: 768px) 33vw, (max-width: 1024px) 25vw, (max-width: 1280px) 20vw, 16vw"
-                  loading={index < 12 ? 'eager' : 'lazy'}
+                  sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, (max-width: 1280px) 20vw, 16vw"
+                  loading={index < 8 ? 'eager' : 'lazy'}
                   placeholder="blur"
                   blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mN8/wQAAgMBBNN+f6YAAAAASUVORK5CYII="
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-2.5">
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-2 sm:p-2.5">
                   {item.caption && (
                     <span className="text-[10px] text-white line-clamp-1 text-left font-medium">
                       {item.caption}
