@@ -10,6 +10,7 @@ import { useCountdown } from '@/hooks/use-countdown.hook';
 import { publicGetBookingDetails, getStoredGuestBookingSession } from '@/lib/api/public.service';
 import { BookingStatus, QUERY_KEYS } from '@mad/shared';
 import type { Booking, Event } from '@mad/types';
+import { Alert } from '@mad/ui';
 
 import { CheckoutForm } from './checkout/CheckoutForm';
 import { CheckoutPricing } from './checkout/CheckoutPricing';
@@ -182,13 +183,9 @@ export function CheckoutContent({
         }
       >
         {error && (
-          <div
-            className="py-2 px-3 bg-error/10 border border-error/20 rounded-xl text-xs text-red-400 text-center"
-            role="alert"
-            aria-live="assertive"
-          >
+          <Alert variant="danger" className="text-xs">
             {error}
-          </div>
+          </Alert>
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6 items-start">
