@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 import { useAuth } from '@/providers/AuthProvider';
+import { BrandLogo } from '@mad/ui';
 
 const footerLinks = {
   Platform: [
@@ -46,14 +47,9 @@ export function Footer() {
           <div className="lg:col-span-2">
             <Link
               href="/"
-              className="flex items-center gap-2 mb-4 rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background w-fit"
+              className="flex items-center mb-4 rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background w-fit"
             >
-              <div className="w-8 h-8 rounded-lg bg-gradient-brand flex items-center justify-center">
-                <span className="text-white font-black text-sm">M</span>
-              </div>
-              <span className="text-white font-bold text-lg">
-                MAD <span className="text-gradient">Entertrainment</span>
-              </span>
+              <BrandLogo size="md" imageSrc="/brand/logo-64.png" />
             </Link>
             <p className="text-text-secondary text-sm leading-relaxed max-w-xs mb-6">
               Premium entertainment booking platform for live events, concerts, DJ nights, comedy shows, and unforgettable experiences.

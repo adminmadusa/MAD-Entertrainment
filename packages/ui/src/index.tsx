@@ -22,6 +22,7 @@ export * from './icons';
 // ─── Phase 2B components ─────────────────────────────────────────────────────
 
 // Primitives
+export * from './primitives/BrandLogo';
 export * from './primitives/Button';
 export * from './primitives/IconButton';
 export * from './primitives/Input';
