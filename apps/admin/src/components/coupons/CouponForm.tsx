@@ -98,13 +98,13 @@ export function CouponForm({
               aria-invalid={!!displayedError ? 'true' : undefined}
             >
               <option value="percentage" className="bg-background-card">Percentage (%)</option>
-              <option value="fixed" className="bg-background-card">Fixed Amount (₹)</option>
+              <option value="fixed" className="bg-background-card">Fixed Amount ($)</option>
             </select>
           </FormField>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
-          <FormField label={formState.discountType === 'percentage' ? 'Discount Percentage (%) *' : 'Discount Amount (₹) *'} htmlFor="discount-value">
+          <FormField label={formState.discountType === 'percentage' ? 'Discount Percentage (%) *' : 'Discount Amount ($) *'} htmlFor="discount-value">
             <Input
               id="discount-value"
               type="number" min="0" required
@@ -113,7 +113,7 @@ export function CouponForm({
               onChange={e => setFormState(p => ({ ...p, discountValue: Number(e.target.value) }))}
             />
           </FormField>
-          <FormField label="Max Discount (₹, blank for unlimited)" htmlFor="max-discount">
+          <FormField label="Max Discount ($, blank for unlimited)" htmlFor="max-discount">
             <Input
               id="max-discount"
               type="number" min="0"
@@ -129,7 +129,7 @@ export function CouponForm({
           <Textarea
             id="coupon-description" value={formState.description} rows={3}
             onChange={e => setFormState(p => ({ ...p, description: e.target.value }))}
-            placeholder="e.g. 15% discount up to ₹500 on all festival tickets"
+            placeholder="e.g. 15% discount up to $50 on all festival tickets"
             className="resize-none"
           />
         </FormField>
@@ -139,7 +139,7 @@ export function CouponForm({
       <div className="glass rounded-2xl border border-border-subtle p-6 space-y-5">
         <h2 className="text-white font-semibold">Rules & Validity</h2>
         <div className="grid grid-cols-2 gap-4">
-          <FormField label="Min Order Amount (₹)" htmlFor="min-order-amount">
+          <FormField label="Min Order Amount ($)" htmlFor="min-order-amount">
             <Input
               id="min-order-amount"
               type="number" min="0" value={formState.minOrderAmount}

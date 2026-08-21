@@ -68,7 +68,7 @@ export const metadata: Metadata = {
     description:
       'Book tickets for the hottest shows, events, DJ nights, concerts, comedy shows, and live performances.',
     url: 'https://www.madentertainments.net',
-    locale: 'en_IN',
+    locale: 'en_US',
     images: [
       {
         url: '/og-image.png',

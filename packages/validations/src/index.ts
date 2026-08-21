@@ -126,7 +126,7 @@ export const updateProfileSchema = z.object({
   mobileNumber: z
     .string()
     .trim()
-    .regex(/^\+[1-9]\d{1,14}$/, 'Mobile number must be in valid E.164 international format (e.g. +14155552671 or +919876543210)')
+    .regex(/^\+[1-9]\d{1,14}$/, 'Mobile number must be in valid E.164 format (e.g. +14155552671)')
     .optional()
     .or(z.literal('')),
 }).strict();
