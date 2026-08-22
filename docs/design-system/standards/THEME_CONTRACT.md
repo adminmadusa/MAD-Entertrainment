@@ -159,3 +159,10 @@ The following checks will become CI gates in Phase 4:
 ## Planned Themes
 
 See [future-themes.md](../future-themes.md) for the roadmap.
+
+---
+
+## References
+
+- [ADR-014: Theme Contract](../../decisions/ADR-014-theme-contract.md)
+- [UI_UX_GOVERNANCE.md](../../../UI_UX_GOVERNANCE.md)

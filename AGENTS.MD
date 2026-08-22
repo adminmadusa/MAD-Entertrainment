@@ -332,6 +332,13 @@ The repository must remain clean after every implementation. The following are s
 * Disallowed folder names (`temp`, `tmp`, `misc`, `old`, `backup`, `new-folder`, `final`)
 * Temporary logging (`console.log`, `console.debug`, `console.trace`) in production code
 
+## Documentation Governance (First-Class Surface)
+Markdown (`.md`) documentation is a first-class repository hygiene surface:
+* **RULE-DOC-001 — Search Before Create**: No new `.md` file may be created until the repository has been searched for an existing canonical document covering the same subject. Always extend existing documents where possible.
+* **RULE-DOC-002 — One Topic → One Canonical SSOT**: Every active topic must have exactly one canonical document. Historical versions, completed plans, and point-in-time audit reports belong under `docs/archive/`, not beside active documents.
+* **Rule Catalog Protection**: Standardized rule files in `docs/governance/rules/` are recognized as rule catalogs and excluded from generic duplicate text detectors.
+* **Zero Broken Links**: Relative paths, anchor targets, and case-sensitive filenames must resolve cleanly without dead references (`VAL-DOC-001` through `VAL-DOC-004`).
+
 ## Secrets & Security
 **NEVER** hardcode or commit API keys, passwords, JWT secrets, database connection strings, Cloudinary credentials, Stripe/Razorpay keys, or access tokens. All secrets must come from validated environment variables.
 

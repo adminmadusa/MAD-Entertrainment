@@ -86,10 +86,11 @@ A dependency matrix helps contributors understand which documents should be revi
 1. **Single Source of Truth (SSOT)**: Every rule, boundary, or API must have exactly one owner. Frontend code must never duplicate backend decisions (e.g. calculating price totals or coupon validity).
 2. **Evidence-Based Documentation**: Documentation must not rely on assumptions. It is backed by verified route definitions and automation (e.g. `audit_data.json`).
 3. **Decision Traceability**: Any architectural deviation or significant decision must be documented in an ADR under `docs/decisions/`.
-4. **Documentation-First**: Documentation must be updated in tandem with code changes. PRs with undocumented API or architectural changes are blocked.
-5. **Code Ownership**: Specific domain experts review changes affecting their modules.
-6. **Verification-First Workflow**: Changes are validated locally (lint, tests, builds) before staging or merging.
-7. **Continuous Improvement**: Governance policies and checks are updated as repository capabilities expand.
+4. **Documentation-First & Search Before Create**: Documentation must be updated in tandem with code changes. No new `.md` file may be created until the repository has been searched for an existing canonical document covering the same subject (`RULE-DOC-001`).
+5. **One Topic → One Canonical SSOT**: Every active subject must have exactly one authoritative `.md` document (`RULE-DOC-002`). Historical records and completed plans belong in `docs/archive/`.
+6. **Code Ownership**: Specific domain experts review changes affecting their modules.
+7. **Verification-First Workflow**: Changes are validated locally (lint, tests, builds) before staging or merging.
+8. **Continuous Improvement**: Governance policies and checks are updated as repository capabilities expand.
 
 ---
 
