@@ -11,6 +11,7 @@ import { sendSuccess } from '../../utils/response';
 
 export * from './dlq.controller';
 export * from './queue-control.controller';
+export * from './email-preview.controller';
 
 export async function getConsistencyDiagnostics(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {

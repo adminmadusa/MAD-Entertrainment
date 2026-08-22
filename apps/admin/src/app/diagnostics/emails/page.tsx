@@ -5,11 +5,12 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 
+import { EmailTemplatePreviewModal } from '@/components/diagnostics/EmailTemplatePreviewModal';
 import { adminGetEmailLogs } from '@/lib/api/admin/diagnostics.service';
 import { useAdminAuth } from '@/providers/AdminAuthProvider';
 import { QUERY_KEYS, AdminRole } from '@mad/shared';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, ErrorState, EmptyState } from '@mad/ui';
-import { Mail, Search } from '@mad/ui/icons';
+import { Eye, Mail, Search } from '@mad/ui/icons';
 import { formatDateTime } from '@mad/utils';
 
 export default function EmailDiagnosticsPage() {
@@ -17,6 +18,7 @@ export default function EmailDiagnosticsPage() {
   const pathname = usePathname();
   const [statusFilter, setStatusFilter] = useState('');
   const [page, setPage] = useState(1);
+  const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
   const limit = 50;
 
   const isSuperAdmin = admin?.role === AdminRole.SUPER_ADMIN;
@@ -173,8 +175,16 @@ export default function EmailDiagnosticsPage() {
           </p>
         </div>
 
-        {/* Filters */}
+        {/* Actions & Filters */}
         <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => setIsPreviewModalOpen(true)}
+            className="px-3.5 py-2.5 rounded-xl bg-purple-500/15 hover:bg-purple-500/25 text-purple-300 hover:text-white border border-purple-500/35 text-xs font-semibold flex items-center gap-2 transition-all shadow-sm"
+          >
+            <Eye className="w-4 h-4" />
+            <span>Preview Templates</span>
+          </button>
           <select
             value={statusFilter}
             onChange={handleStatusChange}
@@ -274,6 +284,12 @@ export default function EmailDiagnosticsPage() {
           </div>
         )}
       </div>
+
+      {/* Template Preview Modal */}
+      <EmailTemplatePreviewModal
+        isOpen={isPreviewModalOpen}
+        onClose={() => setIsPreviewModalOpen(false)}
+      />
     </div>
   );
 }
