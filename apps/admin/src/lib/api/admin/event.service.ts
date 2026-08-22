@@ -8,7 +8,6 @@ export interface EventTier {
   price: number;
   capacity: number;
   totalCapacity?: number;
-  quantity?: number;
   groupSize?: number;
   minPerBooking?: number;
   discount?: number;
@@ -18,7 +17,6 @@ export interface EventTier {
     endDate: string;
   };
   description?: string;
-  perks?: string[];
   isAvailable: boolean;
   isActive?: boolean;
 }

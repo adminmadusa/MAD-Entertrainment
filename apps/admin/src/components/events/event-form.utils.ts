@@ -79,7 +79,7 @@ export function normalizeInitialEventForm(initialValues: Partial<AdminEvent>) {
       ? initialValues.ticketTiers.map((t) => ({
           name: t.name,
           price: t.price,
-          capacity: t.totalCapacity || t.quantity || 100,
+          capacity: t.totalCapacity || 100,
         }))
       : [defaultTier()];
 

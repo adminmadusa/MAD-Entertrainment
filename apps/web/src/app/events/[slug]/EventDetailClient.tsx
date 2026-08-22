@@ -112,7 +112,7 @@ export default function EventDetailClient({ slug, initialEvent }: EventDetailCli
 
   const totalCapacity =
     event.totalCapacity ||
-    event.ticketTiers?.reduce((acc, t) => acc + (t.quantity || 0), 0) ||
+    event.ticketTiers?.reduce((acc, t) => acc + (t.totalCapacity || 0), 0) ||
     0;
   const soldCount =
     event.soldCount ||
