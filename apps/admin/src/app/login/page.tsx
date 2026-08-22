@@ -88,7 +88,7 @@ export default function AdminLoginPage() {
             <div className="w-16 h-16 rounded-2xl overflow-hidden shadow-glow bg-black border border-white/10 flex items-center justify-center mb-4 relative">
               <Image
                 src="/brand/logo-128.png"
-                alt="MAD Entertrainment Logo"
+                alt="MAD Entertainments Logo"
                 width={64}
                 height={64}
                 className="w-full h-full object-contain"
@@ -99,7 +99,7 @@ export default function AdminLoginPage() {
               Admin Portal
             </h1>
             <p className="text-text-muted text-sm mt-1">
-              MAD Entertrainment
+              MAD Entertainments
             </p>
           </div>
 

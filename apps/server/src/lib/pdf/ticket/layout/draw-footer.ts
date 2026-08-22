@@ -32,7 +32,7 @@ export function drawFooter(doc: typeof PDFDocument): void {
     .fontSize(7)
     .fillColor(COLORS.TEXT_MUTED)
     .text(
-      `MAD Entertainment   |   support@madentertrainment.com   |   www.madentertrainment.com   |   © ${currentYear} MAD Entertainment`,
+      `MAD Entertainments   |   support@madentertainments.net   |   www.madentertainments.net   |   © ${currentYear} MAD Entertainments`,
       28,
       startY + 24,
       {

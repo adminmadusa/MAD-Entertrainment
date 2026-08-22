@@ -16,7 +16,7 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: { default: 'Admin — MAD Entertrainment', template: '%s | Admin' },
+  title: { default: 'Admin — MAD Entertainments', template: '%s | Admin' },
   description: 'Event Management & Administration System',
   icons: {
     icon: [

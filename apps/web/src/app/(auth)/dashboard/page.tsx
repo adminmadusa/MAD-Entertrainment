@@ -106,7 +106,7 @@ function DashboardContent() {
       setExpandedBookingId(bookingId);
       if (typeof navigator !== 'undefined' && navigator.share) {
         await navigator.share({
-          title: 'MAD Entertrainment — My Ticket',
+          title: 'MAD Entertainments — My Ticket',
           url: shareUrl,
         });
       } else {

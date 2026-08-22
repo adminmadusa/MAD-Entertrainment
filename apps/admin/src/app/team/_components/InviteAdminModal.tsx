@@ -93,7 +93,7 @@ export default function InviteAdminModal({
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="e.g. john@madentertrainment.com"
+              placeholder="e.g. john@madentertainments.net"
               required
               className={inputCls}
               aria-invalid={!!error ? 'true' : undefined}

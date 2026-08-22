@@ -7,15 +7,15 @@ import { BrandLogo } from './BrandLogo';
 describe('BrandLogo Component', () => {
   it('renders default text and logo image correctly', () => {
     render(<BrandLogo />);
-    expect(screen.getByAltText('MAD Entertrainment Logo')).toBeInTheDocument();
+    expect(screen.getByAltText('MAD Entertainments Logo')).toBeInTheDocument();
     expect(screen.getByText(/MAD/i)).toBeInTheDocument();
-    expect(screen.getByText(/Entertrainment/i)).toBeInTheDocument();
+    expect(screen.getByText(/Entertainments/i)).toBeInTheDocument();
   });
 
   it('renders emblem-only variant without text', () => {
     render(<BrandLogo variant="emblem" />);
-    expect(screen.getByAltText('MAD Entertrainment Logo')).toBeInTheDocument();
-    expect(screen.queryByText(/Entertrainment/i)).not.toBeInTheDocument();
+    expect(screen.getByAltText('MAD Entertainments Logo')).toBeInTheDocument();
+    expect(screen.queryByText(/Entertainments/i)).not.toBeInTheDocument();
   });
 
   it('renders custom text and subtext', () => {

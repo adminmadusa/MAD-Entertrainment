@@ -11,9 +11,9 @@ export const BrandLogo = forwardRef<HTMLDivElement, BrandLogoProps>(
       variant = 'with-text',
       size = 'sm',
       text = 'MAD',
-      subtext = 'Entertrainment',
+      subtext = 'Entertainments',
       imageSrc = '/brand/logo-64.png',
-      altText = 'MAD Entertrainment Logo',
+      altText = 'MAD Entertainments Logo',
       ...props
     },
     ref

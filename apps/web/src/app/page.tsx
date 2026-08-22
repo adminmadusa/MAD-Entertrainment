@@ -10,7 +10,7 @@ import { serverGetUpcomingEvents, serverGetCompletedEvents } from '@/lib/api/ser
 import { ArrowRight } from '@mad/ui';
 
 export const metadata: Metadata = {
-  title: 'MAD Entertrainment — Book Shows, Events & DJ Nights',
+  title: 'MAD Entertainments — Book Shows, Events & DJ Nights',
   description:
     'Discover and book tickets for the hottest shows, events, DJ nights, concerts, festivals, comedy, and VIP events near you.',
   alternates: {
@@ -23,7 +23,7 @@ export const metadata: Metadata = {
         url: '/og-image.png',
         width: 1200,
         height: 630,
-        alt: 'MAD Entertrainment — Premium Ticket Booking',
+        alt: 'MAD Entertainments — Premium Ticket Booking',
       },
     ],
   },
@@ -50,7 +50,7 @@ export default function HomePage() {
   const homepageJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'WebPage',
-    name: 'MAD Entertrainment — Book Shows, Events & DJ Nights',
+    name: 'MAD Entertainments — Book Shows, Events & DJ Nights',
     description:
       'Book tickets for the hottest shows, events, DJ nights, concerts, comedy shows, and live performances.',
     url: 'https://www.madentertainments.net',
@@ -250,7 +250,7 @@ function CTASection() {
                 Night?
               </h2>
               <p className="text-text-secondary text-sm sm:text-base mb-6 sm:mb-8 max-w-lg mx-auto">
-                Join thousands of event-goers booking their next great experience on MAD Entertrainment.
+                Join thousands of event-goers booking their next great experience on MAD Entertainments.
               </p>
               <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
                 <Link

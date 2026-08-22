@@ -109,7 +109,7 @@ export function Navbar() {
         <Link
           href="/"
           className="flex items-center group rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-          aria-label="MAD Entertrainment Home"
+          aria-label="MAD Entertainments Home"
         >
           <div className="transition-transform duration-200 group-hover:scale-105">
             <BrandLogo size="sm" imageSrc="/brand/logo-64.png" />

@@ -43,7 +43,7 @@ const nextConfig: NextConfig = {
 
   // ─── Environment Variables ─────────────────────────────────
   env: {
-    NEXT_PUBLIC_APP_NAME: 'MAD Entertrainment',
+    NEXT_PUBLIC_APP_NAME: 'MAD Entertainments',
     NEXT_PUBLIC_APP_VERSION: '1.0.0',
   },
 

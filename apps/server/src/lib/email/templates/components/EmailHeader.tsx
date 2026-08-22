@@ -30,7 +30,7 @@ export function EmailHeader() {
               <td align="left" style={{ verticalAlign: "middle" }}>
                 <Text style={textStyle}>
                   <span style={boldStyle}>MAD</span>
-                  <span style={lightStyle}> Entertrainment</span>
+                  <span style={lightStyle}> Entertainments</span>
                 </Text>
               </td>
             </tr>
