@@ -17,7 +17,7 @@ export type TicketTierConfig = {
   description?: string;
   price: number;
   discount?: number;
-  totalCapacity: number;
+  totalCapacity?: number;
   soldCount?: number;
   groupSize?: number;
   minPerBooking?: number;
