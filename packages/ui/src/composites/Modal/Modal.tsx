@@ -7,7 +7,6 @@ import { useFocusTrap } from '../../hooks/useFocusTrap';
 import { X } from '../../icons';
 import { cn } from '../../lib/cn';
 import { MotionTokens } from '../../lib/motionTokens';
-import { IconButton } from '../../primitives/IconButton';
 import {
   modalSizes,
   modalBackdropBaseClasses,
@@ -146,15 +145,16 @@ export function Modal({
           <div className={modalDragHandleClasses} aria-hidden="true" />
         )}
         {showCloseButton && (
-          <IconButton
-            variant="ghost"
-            size="sm"
-            aria-label="Close dialog"
-            onClick={onClose}
-            className={modalCloseButtonClasses}
-          >
-            <X className={modalCloseIconClasses} />
-          </IconButton>
+          <div className="flex items-center justify-end w-full -mt-1 mb-2">
+            <button
+              type="button"
+              aria-label="Close dialog"
+              onClick={onClose}
+              className={modalCloseButtonClasses}
+            >
+              <X className={modalCloseIconClasses} />
+            </button>
+          </div>
         )}
         {children}
       </div>

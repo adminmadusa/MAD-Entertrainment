@@ -6,6 +6,7 @@ import { useState, useEffect, useRef } from 'react';
 
 import { useAuthModal } from '@/providers/AuthModalProvider';
 import { useAuth } from '@/providers/AuthProvider';
+import { AlertTriangle, LogOut, Settings, Ticket } from '@mad/ui/icons';
 
 export function UserDropdown() {
   const { isAuthenticated, user, logout } = useAuth();
@@ -114,7 +115,7 @@ export function UserDropdown() {
             role="menuitem"
             className="flex items-center gap-2.5 px-4 py-2.5 text-xs font-semibold text-text-secondary hover:text-white hover:bg-white/5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple"
           >
-            <span>🎟️</span>
+            <Ticket size={16} className="text-accent-purple shrink-0" />
             <span>My Tickets</span>
           </Link>
 
@@ -125,7 +126,7 @@ export function UserDropdown() {
               role="menuitem"
               className="flex items-center gap-2.5 px-4 py-2.5 text-xs font-semibold text-text-secondary hover:text-white hover:bg-white/5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple"
             >
-              <span>⚙️</span>
+              <Settings size={16} className="text-text-muted shrink-0" />
               <span>Account Settings</span>
             </Link>
           ) : (
@@ -143,7 +144,7 @@ export function UserDropdown() {
               role="menuitem"
               className="w-full text-left flex items-center gap-2.5 px-4 py-2.5 text-xs font-semibold text-amber-300 hover:text-amber-200 hover:bg-amber-500/10 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 cursor-pointer"
             >
-              <span>⚠️</span>
+              <AlertTriangle size={16} className="text-amber-400 shrink-0" />
               <span>Verify Account</span>
             </button>
           )}
@@ -156,7 +157,7 @@ export function UserDropdown() {
             role="menuitem"
             className="w-full text-left flex items-center gap-2.5 px-4 py-2.5 text-xs font-semibold text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400 cursor-pointer"
           >
-            <span>🚪</span>
+            <LogOut size={16} className="text-red-400 shrink-0" />
             <span>Logout</span>
           </button>
         </div>

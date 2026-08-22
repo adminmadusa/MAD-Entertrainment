@@ -120,11 +120,11 @@ export function FindTicketsModal({
           </button>
         </form>
 
-        <div className="text-center pt-2 border-t border-white/5">
+        <div className="text-center pt-3 border-t border-white/10">
           <button
             type="button"
             onClick={onOpenSupport}
-            className="text-xs font-semibold text-text-muted hover:text-white transition-colors py-1.5 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent-purple rounded"
+            className="text-xs font-bold text-red-400 hover:text-red-300 underline underline-offset-4 transition-colors py-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400 rounded-lg cursor-pointer"
           >
             Having issues? Contact Support
           </button>

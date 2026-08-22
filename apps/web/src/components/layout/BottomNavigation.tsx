@@ -26,7 +26,6 @@ export function shouldShowBottomNav(pathname: string | null): boolean {
   const primaryRoutes = [
     '/',
     '/events',
-    '/dj-operators',
     '/support',
     '/tickets',
   ];
