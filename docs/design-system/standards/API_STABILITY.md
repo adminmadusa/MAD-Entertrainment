@@ -95,6 +95,8 @@ Phase 4 will introduce CI gates that:
 
 ## References
 
-- [Component Manifest Schema](../../../.governance/baselines/)
+- [ADR-013: UI Package Public API Boundary](../../decisions/ADR-013-ui-package-boundary.md)
+- [ADR-015: Public API Freeze](../../decisions/ADR-015-public-api-freeze.md)
+- [ADR-016: Component Lifecycle Model](../../decisions/ADR-016-component-lifecycle.md)
 - [CHANGELOG.md](../../../CHANGELOG.md)
 - [THEME_CONTRACT.md](./THEME_CONTRACT.md)

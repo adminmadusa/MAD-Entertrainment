@@ -1,5 +1,8 @@
 ---
 owner: Platform
+status: Historical
+last_updated: 2026-07-06
+archived_date: 2026-08-22
 ---
 
 # Phase 4 — Governance Automation Backlog
