@@ -195,8 +195,6 @@ const eventBodySchema = z.object({
         minPerBooking: z.number().int().min(1).optional(),
         maxPerBooking: z.number().int().min(1).optional(),
         description: z.string().optional(),
-        perks: z.array(z.string()).optional(),
-        tags: z.array(z.string()).optional(),
         discount: z.number().min(0).optional(),
         taxPercent: z.number().min(0).max(100).optional(),
         availabilityWindow: z

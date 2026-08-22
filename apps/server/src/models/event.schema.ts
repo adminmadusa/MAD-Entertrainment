@@ -37,8 +37,6 @@ const ticketTierConfigSchema = new Schema(
     groupSize: { type: Number, default: 1, min: 1 },
     minPerBooking: { type: Number, default: 1, min: 1 },
     description: String,
-    perks: [String],
-    tags: [String],
     discount: { type: Number, min: 0 },
     taxPercent: { type: Number, min: 0, max: 100 },
     availabilityWindow: {
@@ -88,8 +86,6 @@ export interface IEvent extends Document {
     groupSize?: number;
     minPerBooking?: number;
     description?: string;
-    perks?: string[];
-    tags?: string[];
     discount?: number;
     taxPercent?: number;
     availabilityWindow?: {
