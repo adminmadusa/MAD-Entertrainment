@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 import { useAuth } from '@/providers/AuthProvider';
+import { useCookieConsent } from '@/providers/CookieConsentProvider';
 import { BrandLogo } from '@mad/ui';
 
 const footerSections = {
@@ -46,6 +47,7 @@ export function Footer() {
   const pathname = usePathname();
   const isCheckoutOrBook = pathname?.startsWith('/checkout/');
   const { isAuthenticated } = useAuth();
+  const { openPreferences } = useCookieConsent();
 
   const myTicketsHref = isAuthenticated ? '/dashboard?tab=tickets' : '/tickets';
 
@@ -123,6 +125,15 @@ export function Footer() {
                   </Link>
                 </li>
               ))}
+              <li>
+                <button
+                  type="button"
+                  onClick={openPreferences}
+                  className="text-text-secondary text-xs hover:text-white transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-accent-purple rounded block py-0.5 text-left cursor-pointer"
+                >
+                  Cookie Preferences
+                </button>
+              </li>
             </ul>
           </div>
 
