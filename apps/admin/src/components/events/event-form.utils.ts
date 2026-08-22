@@ -1,4 +1,4 @@
-import { BookingMode, TicketTier, EventStatus } from '@mad/shared';
+import { BookingMode, TicketTier, EventStatus, getCountryConfig } from '@mad/shared';
 import type { AdminEvent, CloudinaryImage } from '@/lib/api/admin/event.service';
 import { defaultTier, type TicketTierInput } from './EventTicketingCard';
 
@@ -99,6 +99,8 @@ export function normalizeInitialEventForm(initialValues: Partial<AdminEvent>) {
     countryCode: initialValues.countryCode || 'US',
     convenienceFee:
       initialValues.convenienceFee !== undefined ? initialValues.convenienceFee : (' ' as any),
+    taxPercentage:
+      initialValues.taxPercentage !== undefined ? initialValues.taxPercentage : (' ' as any),
     tags: initialValues.tags?.join(', ') || '',
     requireTerms: initialValues.requireTerms ?? true,
     requireAgeConfirmation: !!initialValues.requireAgeConfirmation,
@@ -135,6 +137,7 @@ export interface BuildEventPayloadParams {
   organizerName: string;
   countryCode: string;
   convenienceFee: number | '';
+  taxPercentage?: number | '';
   ticketingType: 'custom' | 'profile';
   selectedProfileId: string;
   overrides: Record<string, { price?: number; totalCapacity?: number; isActive?: boolean }>;
@@ -148,6 +151,11 @@ export function buildEventFormPayload(params: BuildEventPayloadParams): Partial<
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^[-]+|[-]+$/g, '');
   const isProfileType = params.ticketingType === 'profile';
+  const country = getCountryConfig(params.countryCode);
+  const resolvedTaxPercentage =
+    params.taxPercentage !== undefined && params.taxPercentage !== ''
+      ? Number(params.taxPercentage)
+      : country.defaultTax;
 
   const payload: Partial<AdminEvent> = {
     title: params.title.trim(),
@@ -188,11 +196,11 @@ export function buildEventFormPayload(params: BuildEventPayloadParams): Partial<
       : undefined,
     refundPolicy: params.refundPolicy.trim() || undefined,
     organizerName: params.organizerName.trim() || undefined,
-    countryCode: params.countryCode,
-    currency: params.countryCode === 'IN' ? 'INR' : 'USD',
-    taxLabel: params.countryCode === 'IN' ? 'GST' : 'Sales Tax',
-    taxPercentage: params.countryCode === 'IN' ? 18 : 0,
-    locale: params.countryCode === 'IN' ? 'en-IN' : 'en-US',
+    countryCode: country.countryCode,
+    currency: country.currency,
+    taxLabel: country.taxLabel,
+    taxPercentage: resolvedTaxPercentage,
+    locale: country.locale,
     convenienceFee: params.convenienceFee === '' ? undefined : params.convenienceFee,
   };
 
