@@ -69,9 +69,10 @@ export async function sendViaZeptoMail(input: SendEmailInput): Promise<void> {
     ];
   }
 
-  if (input.messageId) {
+  if (input.messageId || input.headers) {
     requestBody.mime_headers = {
-      'Message-ID': input.messageId,
+      ...(input.headers || {}),
+      ...(input.messageId ? { 'Message-ID': input.messageId } : {}),
     };
   }
 

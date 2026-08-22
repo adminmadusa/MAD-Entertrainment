@@ -13,6 +13,8 @@ import {
   pauseQueueHandler,
   resumeQueueHandler,
   drainQueueHandler,
+  listEmailTemplates,
+  previewEmailTemplate,
 } from '../../controllers/admin/diagnostics.controller';
 import { requireAdmin, requireSuperAdmin } from '../../middleware/auth.middleware';
 import { adminLimiter } from '../../middleware/rate.middleware';
@@ -46,5 +48,9 @@ router.get('/queues', requireSuperAdmin, getQueuesStatus);
 router.post('/queues/:name/pause', requireSuperAdmin, validateParams(queueNameParamSchema), pauseQueueHandler);
 router.post('/queues/:name/resume', requireSuperAdmin, validateParams(queueNameParamSchema), resumeQueueHandler);
 router.post('/queues/:name/drain', requireSuperAdmin, validateParams(queueNameParamSchema), drainQueueHandler);
+
+// Email Templates Gallery & Live Preview (SUPER_ADMIN only)
+router.get('/email-templates', requireSuperAdmin, listEmailTemplates);
+router.get('/email-templates/:templateId/preview', requireSuperAdmin, previewEmailTemplate);
 
 export default router;
