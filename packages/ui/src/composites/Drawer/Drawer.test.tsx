@@ -36,4 +36,52 @@ describe('Drawer Component', () => {
     fireEvent.click(closeBtn);
     expect(handleClose).toHaveBeenCalledTimes(1);
   });
+
+  it('triggers onClose when backdrop is clicked', () => {
+    const handleClose = vi.fn();
+    const { container } = render(
+      <Drawer isOpen={true} onClose={handleClose} showBackdrop={true} closeOnBackdropClick={true}>
+        <div>Drawer Content</div>
+      </Drawer>
+    );
+    const backdrop = container.querySelector('[aria-hidden="true"]');
+    expect(backdrop).toBeInTheDocument();
+    if (backdrop) {
+      fireEvent.click(backdrop);
+      expect(handleClose).toHaveBeenCalledTimes(1);
+    }
+  });
+
+  it('locks body scroll on mount and cleanly restores on unmount and repeated toggling', () => {
+    const handleClose = vi.fn();
+    const { rerender } = render(
+      <Drawer isOpen={true} onClose={handleClose} lockScroll={true}>
+        <div>Drawer Content</div>
+      </Drawer>
+    );
+    expect(document.body.style.overflow).toBe('hidden');
+
+    rerender(
+      <Drawer isOpen={false} onClose={handleClose} lockScroll={true}>
+        <div>Drawer Content</div>
+      </Drawer>
+    );
+    expect(document.body.style.overflow).toBe('');
+
+    // Reopen
+    rerender(
+      <Drawer isOpen={true} onClose={handleClose} lockScroll={true}>
+        <div>Drawer Content</div>
+      </Drawer>
+    );
+    expect(document.body.style.overflow).toBe('hidden');
+
+    // Reclose
+    rerender(
+      <Drawer isOpen={false} onClose={handleClose} lockScroll={true}>
+        <div>Drawer Content</div>
+      </Drawer>
+    );
+    expect(document.body.style.overflow).toBe('');
+  });
 });

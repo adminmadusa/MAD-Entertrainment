@@ -7,6 +7,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 
 import { useAuthModal } from '@/providers/AuthModalProvider';
 import { useAuth } from '@/providers/AuthProvider';
+import { BrandLogo } from '@mad/ui';
 
 import { NavLink } from './NavLink';
 import { UserDropdown } from './UserDropdown';
@@ -91,15 +92,15 @@ export function Navbar() {
   if (isCheckoutOrBook) return null;
 
   const unscrolledNavClass = isEventDetail
-    ? 'bg-background/60 backdrop-blur-md border-white/5 py-2.5 sm:py-5'
-    : 'bg-transparent border-transparent py-2.5 sm:py-5';
+    ? 'bg-background/90 backdrop-blur-xl border-white/10 py-3.5 shadow-sm'
+    : 'bg-background/80 backdrop-blur-md border-white/5 py-4';
 
   return (
     <header
       className={[
         'fixed top-0 left-0 right-0 z-50 transition-all duration-300 border-b',
         scrolled
-          ? 'bg-background/75 backdrop-blur-md border-white/5 py-1.5 sm:py-3 shadow-lg shadow-black/20'
+          ? 'bg-background/95 backdrop-blur-xl border-white/10 py-3 shadow-xl shadow-black/30'
           : unscrolledNavClass,
       ].join(' ')}
     >
@@ -107,41 +108,30 @@ export function Navbar() {
         {/* Logo */}
         <Link
           href="/"
-          className="flex items-center gap-2 group rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-          aria-label="MAD Entertrainment Home"
+          className="flex items-center group rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+          aria-label="MAD Entertainments Home"
         >
-          <div className="flex items-center gap-2 transition-transform duration-200 group-hover:scale-105">
-            <div className="w-8 h-8 rounded-lg bg-gradient-brand flex items-center justify-center shadow-glow-sm">
-              <span className="text-white font-black text-sm">M</span>
-            </div>
-            <span className="text-white font-bold text-lg tracking-tight">
-              MAD{' '}
-              <span className="text-gradient">Entertrainment</span>
-            </span>
+          <div className="transition-transform duration-200 group-hover:scale-105">
+            <BrandLogo size="sm" imageSrc="/brand/logo-64.png" />
           </div>
         </Link>
 
-        {/* Right-Aligned Desktop Navigation & Actions */}
-        <div className="hidden md:flex items-center gap-5">
-          <div className="flex items-center gap-1">
+        {/* Desktop Nav & CTAs (Right-aligned) */}
+        <div className="hidden md:flex items-center gap-2 lg:gap-3">
+          <div className="flex items-center gap-1 mr-1">
             {dynamicLinks.map((link) => (
               <NavLink key={link.href} href={link.href}>
                 {link.label}
               </NavLink>
             ))}
           </div>
-
-          <div className="h-5 w-px bg-white/10" aria-hidden="true" />
-
-          <div className="flex items-center gap-3">
-            <UserDropdown />
-            <Link
-              href="/events"
-              className="px-5 py-2.5 text-sm font-semibold btn-gradient text-white rounded-xl shadow-glow-sm hover:scale-[1.03] active:scale-95 transition-transform focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-            >
-              Book Now
-            </Link>
-          </div>
+          <UserDropdown />
+          <Link
+            href="/events"
+            className="px-5 py-2.5 text-sm font-semibold btn-gradient text-white rounded-xl shadow-glow-sm hover:scale-[1.03] active:scale-95 transition-transform focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+          >
+            Book Now
+          </Link>
         </div>
 
         {/* Mobile Hamburger */}

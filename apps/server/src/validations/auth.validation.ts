@@ -5,7 +5,8 @@ import {
   otpSchema,
   checkEmailSchema,
   verifyAuthSchema,
-  updateProfileSchema
+  updateProfileSchema,
+  deleteAccountSchema,
 } from '@mad/validations';
 
 export {
@@ -13,7 +14,8 @@ export {
   otpSchema,
   checkEmailSchema,
   verifyAuthSchema,
-  updateProfileSchema
+  updateProfileSchema,
+  deleteAccountSchema,
 };
 
 const emptyBodyToObject = (value: unknown) => value ?? {};

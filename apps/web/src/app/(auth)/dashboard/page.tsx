@@ -12,13 +12,12 @@ import {
   DashboardTicketsTab,
   BookingCardSkeleton,
   DashboardAccountTab,
-  DashboardSupportTab,
   DashboardHeader,
   DashboardNavTabs,
   DashboardStickyToolbar,
 } from './_components';
 
-type TabType = 'tickets' | 'account' | 'support';
+type TabType = 'tickets' | 'account';
 
 function DashboardContent() {
   const { user, isAuthenticated, isLoading: isAuthLoading, onboardingRequired, logout } = useAuth();
@@ -65,12 +64,14 @@ function DashboardContent() {
     const tabParam = searchParams.get('tab') as TabType;
     const refParam = searchParams.get('ref');
 
-    if (tabParam && ['tickets', 'account', 'support'].includes(tabParam)) {
+    if (tabParam && ['tickets', 'account'].includes(tabParam)) {
       setActiveTab(tabParam);
+    } else if (refParam) {
+      setActiveTab('tickets');
     }
+
     if (refParam) {
       setExpandedBookingId(refParam);
-      setActiveTab('tickets');
     }
   }, [searchParams]);
 
@@ -90,9 +91,10 @@ function DashboardContent() {
   // Update tab in URL
   const handleTabChange = (tab: TabType) => {
     setActiveTab(tab);
-    const params = new URLSearchParams(window.location.search);
-    params.set('tab', tab);
-    router.push(`${window.location.pathname}?${params.toString()}`);
+    if (tab !== 'tickets') {
+      setExpandedBookingId(null);
+    }
+    router.push(`/dashboard?tab=${tab}`);
   };
 
   // Share handler: navigator.share primary, clipboard fallback, AbortError silenced
@@ -104,7 +106,7 @@ function DashboardContent() {
       setExpandedBookingId(bookingId);
       if (typeof navigator !== 'undefined' && navigator.share) {
         await navigator.share({
-          title: 'MAD Entertrainment — My Ticket',
+          title: 'MAD Entertainments — My Ticket',
           url: shareUrl,
         });
       } else {
@@ -226,11 +228,6 @@ function DashboardContent() {
               {activeTab === 'account' && (
                 <div role="tabpanel" id="subtab-panel-account" aria-labelledby="subtab-account">
                   <DashboardAccountTab />
-                </div>
-              )}
-              {activeTab === 'support' && (
-                <div role="tabpanel" id="subtab-panel-support" aria-labelledby="subtab-support">
-                  <DashboardSupportTab />
                 </div>
               )}
             </div>

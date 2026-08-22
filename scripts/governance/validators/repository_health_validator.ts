@@ -1,6 +1,6 @@
 // scripts/governance/validators/repository_health_validator.ts
 
-import { existsSync, readFileSync, statSync } from 'fs';
+import { readFileSync, statSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { GovernanceValidator } from '../core/validator';
 import { ValidationResult, ValidationError, GovernanceMetadata } from '../core/types';
@@ -61,8 +61,12 @@ export class RepositoryHealthValidator implements GovernanceValidator {
       if (normRel === normMatrix) return true;
 
       const fullMatrixPath = resolve(workspaceRoot, normMatrix);
-      if (existsSync(fullMatrixPath) && statSync(fullMatrixPath).isDirectory()) {
-        return normRel.startsWith(normMatrix + '/');
+      try {
+        if (statSync(fullMatrixPath).isDirectory()) {
+          return normRel.startsWith(normMatrix + '/');
+        }
+      } catch {
+        // Path does not exist or cannot be accessed
       }
       return false;
     };
@@ -96,10 +100,6 @@ export class RepositoryHealthValidator implements GovernanceValidator {
     // 1. Scan files to extract links and build references map
     for (const relPath of files) {
       const fullPath = resolve(workspaceRoot, relPath);
-      if (!existsSync(fullPath) || !statSync(fullPath).isFile()) {
-        continue;
-      }
-
       try {
         const content = readFileSync(fullPath, 'utf8');
         const links = extractLinks(content, dirname(fullPath));
@@ -109,19 +109,20 @@ export class RepositoryHealthValidator implements GovernanceValidator {
             referencedFiles.add(cleanPath);
           }
         }
-      } catch (err) {
-        // Safe skip on read errors
+      } catch {
+        // Safe skip on read errors (directories, non-existent files)
       }
     }
 
     // 2. Perform Ownership, Freshness, and Orphan audits
     for (const relPath of files) {
       const fullPath = resolve(workspaceRoot, relPath);
-      if (!existsSync(fullPath) || !statSync(fullPath).isFile()) {
+      let content = '';
+      try {
+        content = readFileSync(fullPath, 'utf8');
+      } catch {
         continue;
       }
-
-      const content = readFileSync(fullPath, 'utf8');
       const fileMetadata = parseMarkdownMetadata(content);
 
       const isMandatory = MANDATORY_SSOT_DOCUMENTS.includes(relPath);

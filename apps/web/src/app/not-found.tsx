@@ -16,7 +16,7 @@ import Link from 'next/link';
 import { NotFoundDJWidget } from './_components/NotFoundDJWidget';
 
 export const metadata: Metadata = {
-  title: '404 — Page Not Found | MAD Entertrainment',
+  title: '404 — Page Not Found | MAD Entertainments',
   description: "Looks like this page dropped off the playlist. Head back to the main stage and discover live events, DJ nights, and concerts.",
   robots: {
     index: false,

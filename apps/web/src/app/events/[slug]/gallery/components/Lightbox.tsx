@@ -1,9 +1,10 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ChevronLeft, ChevronRight } from 'lucide-react';
-import { ImageWrapper } from '@/components/common/ImageWrapper';
-import React, { useEffect, useCallback } from 'react';
+import { ChevronLeft, ChevronRight, X } from 'lucide-react';
+import Image from 'next/image';
+import React, { useCallback, useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 
 import type { EventGalleryItem } from '@mad/types';
 
@@ -15,7 +16,12 @@ interface LightboxProps {
 }
 
 export function Lightbox({ items, currentIndex, onClose, onChange }: LightboxProps) {
+  const [mounted, setMounted] = useState(false);
   const currentItem = items[currentIndex];
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Navigation handlers
   const handlePrev = useCallback(() => {
@@ -39,8 +45,6 @@ export function Lightbox({ items, currentIndex, onClose, onChange }: LightboxPro
     };
 
     window.addEventListener('keydown', handleKeyDown);
-
-    // Lock body scroll
     document.body.style.overflow = 'hidden';
 
     return () => {
@@ -49,9 +53,9 @@ export function Lightbox({ items, currentIndex, onClose, onChange }: LightboxPro
     };
   }, [onClose, handlePrev, handleNext]);
 
-  // Swipe support using simple touch events
-  const [touchStart, setTouchStart] = React.useState<number | null>(null);
-  const [touchStartY, setTouchStartY] = React.useState<number | null>(null);
+  // Swipe support for mobile
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchStartY, setTouchStartY] = useState<number | null>(null);
 
   const handleTouchStart = (e: React.TouchEvent) => {
     setTouchStart(e.targetTouches[0].clientX);
@@ -60,143 +64,133 @@ export function Lightbox({ items, currentIndex, onClose, onChange }: LightboxPro
 
   const handleTouchEnd = (e: React.TouchEvent) => {
     if (touchStart === null || touchStartY === null) return;
-    const touchEnd = e.changedTouches[0].clientX;
-    const touchEndY = e.changedTouches[0].clientY;
-    const diffX = touchStart - touchEnd;
-    const diffY = touchStartY - touchEndY;
+    const diffX = touchStart - e.changedTouches[0].clientX;
+    const diffY = touchStartY - e.changedTouches[0].clientY;
 
-    // Swipe down to dismiss (vertical takes priority)
-    if (diffY < -80) {
+    if (diffY < -70) {
       onClose();
       setTouchStart(null);
       setTouchStartY(null);
       return;
     }
 
-    // Swipe left (next)
-    if (diffX > 50) handleNext();
-    // Swipe right (prev)
-    if (diffX < -50) handlePrev();
+    if (diffX > 40) handleNext();
+    if (diffX < -40) handlePrev();
 
     setTouchStart(null);
     setTouchStartY(null);
   };
 
-  return (
+  if (!mounted || !currentItem) return null;
+
+  const content = (
     <AnimatePresence>
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur-sm"
+        className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/90 backdrop-blur-2xl select-none"
         role="dialog"
         aria-modal="true"
         aria-label="Image gallery lightbox"
         onClick={onClose}
       >
-        {/* Close button */}
-        <button
-          onClick={(e) => { e.stopPropagation(); onClose(); }}
-          className="absolute top-4 right-4 z-50 p-2 text-white/70 hover:text-white bg-black/20 hover:bg-black/40 rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
-          aria-label="Close lightbox"
-        >
-          <X className="w-8 h-8" />
-        </button>
+        {/* Top Controls: Counter & Close Button */}
+        <div className="fixed top-4 left-4 right-4 z-[100000] flex items-center justify-between pointer-events-none">
+          <div className="px-3.5 py-1.5 bg-black/70 backdrop-blur-md border border-white/20 rounded-full text-white/90 text-xs sm:text-sm font-semibold tracking-wide shadow-xl pointer-events-auto">
+            {currentIndex + 1} / {items.length}
+          </div>
 
-        {/* Counter */}
-        <div className="absolute top-6 left-6 z-50 text-white/80 font-medium tracking-wide">
-          {currentIndex + 1} / {items.length}
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onClose();
+            }}
+            className="w-11 h-11 flex items-center justify-center text-white bg-black/75 hover:bg-white/20 active:scale-95 backdrop-blur-md rounded-full transition-all border border-white/20 shadow-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white cursor-pointer pointer-events-auto"
+            aria-label="Close lightbox"
+          >
+            <X className="w-6 h-6" />
+          </button>
         </div>
 
-        {/* Main Image Area */}
+        {/* Previous Button */}
+        {currentIndex > 0 && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              handlePrev();
+            }}
+            className="fixed left-3 md:left-6 top-1/2 -translate-y-1/2 z-[100000] w-11 h-11 flex items-center justify-center text-white/90 hover:text-white bg-black/70 hover:bg-white/20 active:scale-95 backdrop-blur-md border border-white/20 rounded-full transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white shadow-xl cursor-pointer"
+            aria-label="Previous image"
+          >
+            <ChevronLeft className="w-6 h-6" />
+          </button>
+        )}
+
+        {/* Next Button */}
+        {currentIndex < items.length - 1 && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleNext();
+            }}
+            className="fixed right-3 md:right-6 top-1/2 -translate-y-1/2 z-[100000] w-11 h-11 flex items-center justify-center text-white/90 hover:text-white bg-black/70 hover:bg-white/20 active:scale-95 backdrop-blur-md border border-white/20 rounded-full transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white shadow-xl cursor-pointer"
+            aria-label="Next image"
+          >
+            <ChevronRight className="w-6 h-6" />
+          </button>
+        )}
+
+        {/* Center Image Container — clicking anywhere around photo dismisses */}
         <div
-          className="relative w-full h-full flex items-center justify-center p-4 md:p-12"
+          className="relative w-full h-full flex items-center justify-center p-4 sm:p-8 md:p-12"
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
-          onClick={(e) => e.stopPropagation()}
         >
-          {/* Previous Button */}
-          {currentIndex > 0 && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handlePrev();
-              }}
-              className="absolute left-4 md:left-8 z-50 p-3 text-white/70 hover:text-white bg-black/20 hover:bg-black/60 rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white hidden md:block"
-              aria-label="Previous image"
-            >
-              <ChevronLeft className="w-8 h-8" />
-            </button>
-          )}
-
-          {/* Current Image */}
           <motion.div
             key={currentIndex}
-            initial={{ opacity: 0, scale: 0.95 }}
+            initial={{ opacity: 0, scale: 0.96 }}
             animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className="relative w-full h-full max-w-6xl max-h-full flex items-center justify-center"
-            onClick={(e) => e.stopPropagation()} // Prevent clicks on image from closing (if we added close on backdrop click)
+            exit={{ opacity: 0, scale: 0.96 }}
+            transition={{ duration: 0.2 }}
+            className="relative w-full max-w-5xl h-[70vh] sm:h-[80vh] flex items-center justify-center cursor-default"
+            onClick={(e) => e.stopPropagation()}
           >
-            <div className="relative w-full h-full">
-              <ImageWrapper
-                src={currentItem.url}
-                alt={currentItem.caption || `Image ${currentIndex + 1}`}
-                fill
-                className="object-contain"
-                priority
-                sizes="100vw"
-              />
-            </div>
+            <Image
+              src={currentItem.url}
+              alt={currentItem.caption || `Image ${currentIndex + 1}`}
+              fill
+              className="object-contain select-none pointer-events-none drop-shadow-2xl"
+              priority
+              sizes="100vw"
+            />
 
             {/* Caption */}
             {currentItem.caption && (
-              <div className="absolute bottom-4 left-0 right-0 text-center px-4">
-                <span className="inline-block px-4 py-2 bg-black/60 backdrop-blur-md text-white rounded-lg text-sm md:text-base max-w-2xl shadow-lg">
+              <div className="absolute -bottom-2 sm:bottom-2 left-0 right-0 text-center px-4">
+                <span className="inline-block px-4 py-2 bg-black/80 backdrop-blur-md border border-white/15 text-white rounded-xl text-xs sm:text-sm max-w-xl shadow-2xl select-none">
                   {currentItem.caption}
                 </span>
               </div>
             )}
           </motion.div>
+        </div>
 
-          {/* Next Button */}
-          {currentIndex < items.length - 1 && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleNext();
-              }}
-              className="absolute right-4 md:right-8 z-50 p-3 text-white/70 hover:text-white bg-black/20 hover:bg-black/60 rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white hidden md:block"
-              aria-label="Next image"
-            >
-              <ChevronRight className="w-8 h-8" />
-            </button>
+        {/* Preload adjacent images */}
+        <div className="hidden">
+          {currentIndex > 0 && (
+            <Image src={items[currentIndex - 1].url} alt="preload prev" width={1} height={1} priority />
           )}
-
-          {/* Preload Next/Prev Images invisibly */}
-          <div className="hidden">
-            {currentIndex > 0 && (
-              <ImageWrapper
-                src={items[currentIndex - 1].url}
-                alt="preload previous"
-                width={10}
-                height={10}
-                priority
-              />
-            )}
-            {currentIndex < items.length - 1 && (
-              <ImageWrapper
-                src={items[currentIndex + 1].url}
-                alt="preload next"
-                width={10}
-                height={10}
-                priority
-              />
-            )}
-          </div>
+          {currentIndex < items.length - 1 && (
+            <Image src={items[currentIndex + 1].url} alt="preload next" width={1} height={1} priority />
+          )}
         </div>
       </motion.div>
     </AnimatePresence>
   );
+
+  return createPortal(content, document.body);
 }

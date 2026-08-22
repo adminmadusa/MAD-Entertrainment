@@ -2,9 +2,10 @@ import { ClientSession } from 'mongoose';
 
 import { BookingStatus, PaymentStatus } from '@mad/shared';
 
-import { getEnv } from '../../config/env';
+import { getEnv, getPublicWebUrl } from '../../config/env';
 import { getQueueName } from '../../config/queue.config';
 import { emitToAdmin, emitToBooking, emitToEvent } from '../../config/socket';
+import { bookingConfirmationHtml } from '../../lib/email';
 import { Booking, IBooking } from '../../models/booking.schema';
 import { Event } from '../../models/event.schema';
 import { Notification } from '../../models/notification.schema';
@@ -352,15 +353,58 @@ export class PaymentService {
     // 8. Post-Commit Sync Email Dispatch (sync path only)
     if (syncNotification && booking.guestEmail) {
       try {
-        const emailBody = `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto;">
-            <h2>Hi ${booking.guestName},</h2>
-            <p>Your booking <strong>${booking.bookingId}</strong> for the event <strong>"${event?.title || 'MAD Event'}"</strong> has been successfully confirmed!</p>
-            <p>Please find your ticket attached as a PDF document. You can present the QR code at the gate for entry.</p>
-            <br/>
-            <p>MAD Entertainment Team</p>
-          </div>
-        `;
+        const publicWebUrl = getPublicWebUrl();
+        const ticketUrl = `${publicWebUrl}/tickets?ref=${booking.bookingId}`;
+        const manageTicketsUrl = `${publicWebUrl}/tickets`;
+
+        const formattedDate = event?.startDate
+          ? new Date(event.startDate).toLocaleDateString('en-US', {
+              weekday: 'long',
+              month: 'long',
+              day: 'numeric',
+              year: 'numeric',
+            })
+          : '';
+
+        const ticketsSummary = booking.tickets && Array.isArray(booking.tickets)
+          ? booking.tickets.map((t: any) => ({
+              tierName: t.tierName || t.tier || 'General',
+              quantity: t.quantity || 1,
+              price: t.pricePerTicket || t.price || 0,
+            }))
+          : undefined;
+
+        const emailBody = await bookingConfirmationHtml({
+          customerName: booking.guestName,
+          customerEmail: booking.guestEmail,
+          eventTitle: event?.title || 'MAD Event',
+          bookingReference: booking.bookingId,
+          eventDate: formattedDate,
+          eventTime: event?.showTime || (event?.startDate ? new Date(event.startDate).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : undefined),
+          venueName: event?.venue,
+          tickets: ticketsSummary,
+          subtotal: booking.subtotal,
+          convenienceFee: booking.convenienceFee,
+          taxLabel: booking.taxLabel || event?.taxLabel,
+          taxPercentage: booking.taxPercentage ?? event?.taxPercentage,
+          taxAmount: booking.gst,
+          discount: booking.discount,
+          couponCode: booking.couponCode,
+          totalAmount: booking.totalAmount,
+          currency: booking.currency || event?.currency || 'USD',
+          paymentGateway: _payment?.gateway,
+          paymentTransactionId: _payment?.gatewayPaymentId || _payment?.gatewayOrderId,
+          paidAt: new Date().toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+          }),
+          ticketUrl,
+          manageTicketsUrl,
+          hasPdfAttachment: true,
+        });
 
         const pdfBuffer = await generateTicketPDF(booking, event);
 

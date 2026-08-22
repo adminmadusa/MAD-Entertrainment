@@ -392,6 +392,37 @@ describe('PublicBookingService.getMyBookings — ownership and reconciliation ma
     expect(result.bookings).toHaveLength(1);
     expect(result.bookings[0]._id).toEqual(booking._id);
   });
+
+  it('returns confirmed bookings matching guest sessionId when auth is a sessionId context', async () => {
+    const guestSessionId = 'guest-session-uuid-12345';
+    const guestBooking = {
+      _id: new Types.ObjectId(),
+      bookingId: 'MAD-2026-GUESTSESSION',
+      sessionId: guestSessionId,
+      guestEmail: 'guest@example.com',
+      status: 'confirmed',
+      totalTickets: 2,
+    };
+
+    vi.mocked(Booking.find).mockReturnValue({
+      populate: vi.fn().mockReturnValue({
+        sort: vi.fn().mockResolvedValue([guestBooking]),
+      }),
+    } as any);
+
+    const result = await PublicBookingService.getMyBookings({ sessionId: guestSessionId });
+    expect(Booking.find).toHaveBeenCalledWith({
+      sessionId: guestSessionId,
+      status: 'confirmed',
+    });
+    expect(result.bookings).toContainEqual(guestBooking);
+  });
+
+  it('throws unauthorized when neither userId nor sessionId is provided', async () => {
+    await expect(PublicBookingService.getMyBookings({})).rejects.toThrow(
+      'Authentication or guest session required'
+    );
+  });
 });
 
 // ─────────────────────────────────────────────────────────────

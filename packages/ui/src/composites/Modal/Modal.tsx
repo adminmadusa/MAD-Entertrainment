@@ -1,13 +1,12 @@
 'use client';
 
-import React, { useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 
 import { useDelayedUnmount } from '../../hooks/useDelayedUnmount';
 import { useFocusTrap } from '../../hooks/useFocusTrap';
 import { X } from '../../icons';
 import { cn } from '../../lib/cn';
 import { MotionTokens } from '../../lib/motionTokens';
-import { IconButton } from '../../primitives/IconButton';
 import {
   modalSizes,
   modalBackdropBaseClasses,
@@ -18,6 +17,7 @@ import {
   modalContentActiveStates,
   modalCloseButtonClasses,
   modalCloseIconClasses,
+  modalDragHandleClasses,
 } from './Modal.styles';
 import type { ModalProps } from './Modal.types';
 
@@ -33,6 +33,7 @@ export function Modal({
   ariaLabelledBy,
   ariaDescribedBy,
   className,
+  lockScroll = true,
 }: ModalProps) {
   const { isRendered, isVisible } = useDelayedUnmount(
     isOpen,
@@ -44,6 +45,17 @@ export function Modal({
     isActive: isOpen,
     onClose,
   });
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !isOpen || !lockScroll) return;
+
+    const originalStyle = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.body.style.overflow = originalStyle === 'hidden' ? '' : originalStyle;
+    };
+  }, [isOpen, lockScroll]);
 
   const touchStartY = useRef(0);
   const touchStartTime = useRef(0);
@@ -129,16 +141,20 @@ export function Modal({
           className
         )}
       >
+        {presentation === 'bottom-sheet' && (
+          <div className={modalDragHandleClasses} aria-hidden="true" />
+        )}
         {showCloseButton && (
-          <IconButton
-            variant="ghost"
-            size="sm"
-            aria-label="Close dialog"
-            onClick={onClose}
-            className={modalCloseButtonClasses}
-          >
-            <X className={modalCloseIconClasses} />
-          </IconButton>
+          <div className="flex items-center justify-end w-full -mt-1 mb-2">
+            <button
+              type="button"
+              aria-label="Close dialog"
+              onClick={onClose}
+              className={modalCloseButtonClasses}
+            >
+              <X className={modalCloseIconClasses} />
+            </button>
+          </div>
         )}
         {children}
       </div>

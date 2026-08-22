@@ -11,10 +11,17 @@ const AuthForm = dynamic(() => import('@/components/auth/AuthForm').then(mod => 
   ssr: false,
 });
 
+export interface OpenAuthModalOptions {
+  returnTo?: string;
+  initialEmail?: string;
+  readonlyEmail?: boolean;
+  autoRequestOtp?: boolean;
+}
+
 export interface AuthModalContextType {
   isOpen: boolean;
   isDirty: boolean;
-  openAuthModal: (options?: { returnTo?: string }) => void;
+  openAuthModal: (options?: OpenAuthModalOptions) => void;
   closeAuthModal: () => void;
   setIsDirty: (dirty: boolean) => void;
 }
@@ -24,7 +31,13 @@ const AuthModalContext = createContext<AuthModalContextType | undefined>(undefin
 export function useAuthModal() {
   const context = useContext(AuthModalContext);
   if (!context) {
-    throw new Error('useAuthModal must be used within an AuthModalProvider');
+    return {
+      isOpen: false,
+      isDirty: false,
+      openAuthModal: () => {},
+      closeAuthModal: () => {},
+      setIsDirty: () => {},
+    };
   }
   return context;
 }
@@ -38,6 +51,7 @@ export function AuthModalProvider({ children }: AuthModalProviderProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
   const [returnTo, setReturnTo] = useState<string | null>(null);
+  const [modalConfig, setModalConfig] = useState<OpenAuthModalOptions | null>(null);
 
   // Synchronize modal state with URL
   const syncWithUrl = useCallback((open: boolean, redirectUrl?: string | null) => {
@@ -62,9 +76,10 @@ export function AuthModalProvider({ children }: AuthModalProviderProps) {
     window.history.pushState(null, '', newUrl);
   }, []);
 
-  const openAuthModal = useCallback((options?: { returnTo?: string }) => {
+  const openAuthModal = useCallback((options?: OpenAuthModalOptions) => {
     const validated = options?.returnTo ? validateReturnTo(options.returnTo) : null;
     setReturnTo(validated);
+    setModalConfig(options || null);
     setIsOpen(true);
     syncWithUrl(true, validated);
   }, [syncWithUrl]);
@@ -73,6 +88,7 @@ export function AuthModalProvider({ children }: AuthModalProviderProps) {
     setIsOpen(false);
     setIsDirty(false);
     setReturnTo(null);
+    setModalConfig(null);
     syncWithUrl(false);
   }, [syncWithUrl]);
 
@@ -145,19 +161,24 @@ export function AuthModalProvider({ children }: AuthModalProviderProps) {
       <Modal
         isOpen={isOpen}
         onClose={handleCloseRequest}
+        size="sm"
         showCloseButton={true}
         presentation="bottom-sheet"
         closeOnBackdropClick={true}
         enableSwipeToClose={true}
         ariaLabelledBy="auth-modal-title"
         ariaDescribedBy="auth-modal-description"
+        className="sm:max-w-[400px]"
       >
-        <div className="pt-2">
+        <div className="pt-2 sm:pt-1">
           <AuthForm
             mode="login"
             onSuccess={handleSuccess}
             onClose={handleCloseRequest}
             onDirtyChange={setIsDirty}
+            initialEmail={modalConfig?.initialEmail}
+            readonlyEmail={modalConfig?.readonlyEmail}
+            autoRequestOtp={modalConfig?.autoRequestOtp}
           />
         </div>
       </Modal>

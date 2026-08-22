@@ -8,7 +8,7 @@ import { extractApiError } from '@/lib/api/client';
 import { ensureGuestBookingSession, publicCreateBooking } from '@/lib/api/public.service';
 import { useAuth } from '@/providers/AuthProvider';
 import type { Event as EventData } from '@mad/types';
-import { Button } from '@mad/ui';
+import { Button, Alert } from '@mad/ui';
 import { ReserveTicketsInput } from '@mad/validations';
 
 import { PromoCodeForm } from './PromoCodeForm';
@@ -222,20 +222,20 @@ export function TicketSelectionContent({
   return (
     <div className={`space-y-3.5 text-white ${isModal ? '' : 'container-mad max-w-2xl px-4 pb-32 pt-6'}`}>
       {error && (
-        <div className="py-2 px-3 bg-error/10 border border-error/20 rounded-xl text-xs text-red-400 text-center" role="alert" aria-live="assertive">
-          {error}
+        <Alert variant="danger" className="text-xs">
+          <div>{error}</div>
           {sessionError && (
             <Button
               type="button"
               variant="outline"
               size="sm"
               onClick={initGuestSession}
-              className="block mx-auto mt-1.5 px-3 py-1 rounded-lg bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-300 font-semibold text-[11px] transition-all"
+              className="mt-2 text-xs"
             >
               Try Again
             </Button>
           )}
-        </div>
+        </Alert>
       )}
 
       {/* Ticket Tiers List */}

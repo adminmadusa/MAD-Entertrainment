@@ -16,7 +16,8 @@ interface CheckoutFormProps {
 }
 
 export function CheckoutForm({ event, isExpired, isDisabled, onSubmit, onErrorSet }: CheckoutFormProps) {
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
+  const isRegisteredUser = Boolean(isAuthenticated && user?.email);
 
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -29,9 +30,9 @@ export function CheckoutForm({ event, isExpired, isDisabled, onSubmit, onErrorSe
   const [hasPrefilled, setHasPrefilled] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
-  // Auto-fill billing fields from authenticated session user (Eventbrite-style)
+  // Auto-fill billing fields only for truly authenticated registered users (Eventbrite-style)
   useEffect(() => {
-    if (user && !hasPrefilled) {
+    if (isRegisteredUser && user && !hasPrefilled) {
       let fName = '';
       let lName = '';
       if (user.name) {
@@ -44,7 +45,7 @@ export function CheckoutForm({ event, isExpired, isDisabled, onSubmit, onErrorSe
       setGuestEmail(user.email || '');
       setGuestPhone(user.phone || '');
       setHasPrefilled(true);
-    } else if (!user && hasPrefilled) {
+    } else if (!isRegisteredUser && hasPrefilled) {
       setFirstName('');
       setLastName('');
       setGuestEmail('');
@@ -52,7 +53,7 @@ export function CheckoutForm({ event, isExpired, isDisabled, onSubmit, onErrorSe
       setGuestPhone('');
       setHasPrefilled(false);
     }
-  }, [user, hasPrefilled]);
+  }, [isRegisteredUser, user, hasPrefilled]);
 
   const handlePlaceOrderSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -82,7 +83,7 @@ export function CheckoutForm({ event, isExpired, isDisabled, onSubmit, onErrorSe
     }
 
     // 3. Keep guestEmail and guestEmailConfirm local matching checks (UX validation)
-    if (!user) {
+    if (!isRegisteredUser) {
       const normalizedConfirm = guestEmailConfirm.trim().toLowerCase();
       if (!guestEmailConfirm.trim()) {
         errors.guestEmailConfirm = 'Please confirm your email';
@@ -154,30 +155,30 @@ export function CheckoutForm({ event, isExpired, isDisabled, onSubmit, onErrorSe
           </FormField>
         </div>
 
-        <div className={`grid grid-cols-1 ${!user ? 'md:grid-cols-2' : ''} gap-3`}>
+        <div className={`grid grid-cols-1 ${!isRegisteredUser ? 'md:grid-cols-2' : ''} gap-3`}>
           <FormField
             label="Email address"
             htmlFor="checkout-email"
             required
             error={fieldErrors.guestEmail}
-            hint={user ? 'Verified via your connected account.' : undefined}
+            hint={isRegisteredUser ? 'Verified via your connected account.' : undefined}
           >
             <Input
               id="checkout-email"
               type="email"
               value={guestEmail}
-              disabled={isDisabled || !!user}
-              readOnly={!!user}
+              disabled={isDisabled || isRegisteredUser}
+              readOnly={isRegisteredUser}
               onChange={(e) => {
                 setGuestEmail(e.target.value);
                 setFieldErrors((prev) => ({ ...prev, guestEmail: '', guestEmailConfirm: '' }));
               }}
               placeholder="email@example.com"
-              className={user ? 'h-10 text-sm text-text-muted/60 bg-white/5 cursor-not-allowed border-white/5' : 'h-10 text-sm'}
+              className={isRegisteredUser ? 'h-10 text-sm text-text-muted/60 bg-white/5 cursor-not-allowed border-white/5' : 'h-10 text-sm'}
             />
           </FormField>
 
-          {!user && (() => {
+          {!isRegisteredUser && (() => {
             const normalizedEmail = guestEmail.trim().toLowerCase();
             const normalizedConfirm = guestEmailConfirm.trim().toLowerCase();
             const emailsMatch =
@@ -215,7 +216,7 @@ export function CheckoutForm({ event, isExpired, isDisabled, onSubmit, onErrorSe
               value={guestPhone}
               disabled={isDisabled}
               onChange={(e) => setGuestPhone(e.target.value)}
-              placeholder="+91 98765 43210"
+              placeholder="+1 (555) 000-0000"
               className="h-10 text-sm"
             />
           </FormField>

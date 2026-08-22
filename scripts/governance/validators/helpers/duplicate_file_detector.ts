@@ -1,5 +1,4 @@
-// scripts/governance/validators/helpers/duplicate_file_detector.ts
-import { readFileSync, existsSync, statSync } from 'fs';
+import { readFileSync } from 'fs';
 import { resolve } from 'path';
 import { KnowledgeGraph } from '../../core/knowledge_graph';
 import { ValidationError } from '../../core/types';
@@ -48,19 +47,18 @@ export class DuplicateFileDetector {
 
     for (const file of sourceFiles) {
       const fullPath = resolve(this.workspaceRoot, file);
-      if (!existsSync(fullPath)) continue;
 
       try {
-        const stats = statSync(fullPath);
-        if (stats.size < 100) continue;
-
         const content = readFileSync(fullPath, 'utf8');
+        const byteSize = Buffer.byteLength(content, 'utf8');
+        if (byteSize < 100) continue;
+
         const tokens = this.extractTokens(content);
         const detailed = graph.getDetailedData(file);
 
         signatures.push({
           file,
-          size: stats.size,
+          size: byteSize,
           tokens,
           imports: new Set(detailed?.dependencies || []),
           exports: new Set(detailed?.exports || []),

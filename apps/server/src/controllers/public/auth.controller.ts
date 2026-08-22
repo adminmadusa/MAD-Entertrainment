@@ -30,6 +30,7 @@ function formatAuthUser(user: any) {
     firstName: user.firstName ?? '',
     lastName: user.lastName ?? '',
     mobileNumber: user.mobileNumber ?? '',
+    isEmailVerified: !!user.isEmailVerified,
   };
 }
 
@@ -129,4 +130,5 @@ export class AuthController {
   static updateProfile = UserProfileController.updateProfile;
   static uploadProfilePhoto = UserProfileController.uploadProfilePhoto;
   static deleteProfilePhoto = UserProfileController.deleteProfilePhoto;
+  static deleteAccount = UserProfileController.deleteAccount;
 }

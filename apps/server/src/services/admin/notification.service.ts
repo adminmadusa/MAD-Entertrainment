@@ -9,14 +9,16 @@ export const getNotifications = async (
   channel?: string,
   sent?: string
 ): Promise<{ notifications: INotification[]; total: number; totalPages: number }> => {
-  const skip = (page - 1) * limit;
+  const safePage = Math.max(1, page);
+  const safeLimit = Math.max(1, Math.min(100, limit));
+  const skip = (safePage - 1) * safeLimit;
   const filter: Record<string, any> = {};
 
-  if (channel) {
-    filter.channel = channel;
+  if (typeof channel === 'string' && channel.trim()) {
+    filter.channel = channel.trim().toLowerCase();
   }
   if (sent !== undefined && sent !== '') {
-    if (sent === 'true') {
+    if (String(sent) === 'true') {
       filter.$or = [
         { status: 'sent' },
         { status: { $exists: false }, isSent: true }
@@ -33,17 +35,21 @@ export const getNotifications = async (
   const notifications = await Notification.find(filter)
     .sort({ createdAt: -1 })
     .skip(skip)
-    .limit(limit);
+    .limit(safeLimit);
 
   return {
     notifications,
     total,
-    totalPages: Math.ceil(total / limit),
+    totalPages: Math.ceil(total / safeLimit),
   };
 };
 
 export const retryNotification = async (id: string): Promise<INotification | null> => {
-  const notification = await Notification.findById(id);
+  const cleanId = String(id || '').trim();
+  if (!cleanId) {
+    return null;
+  }
+  const notification = await Notification.findById(cleanId);
   if (!notification) {
     return null;
   }

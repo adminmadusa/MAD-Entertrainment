@@ -11,29 +11,46 @@ export const createDJOperator = async (data: Partial<IDJOperator>): Promise<IDJO
 };
 
 export const getDJOperators = async (page: number = 1, limit: number = 10): Promise<{ djs: IDJOperator[]; total: number; pages: number }> => {
-  const skip = (page - 1) * limit;
+  const safePage = Math.max(1, page);
+  const safeLimit = Math.max(1, Math.min(100, limit));
+  const skip = (safePage - 1) * safeLimit;
   const total = await DJOperator.countDocuments({ isDeleted: { $ne: true } });
-  const djs = await DJOperator.find({ isDeleted: { $ne: true } }).sort({ createdAt: -1 }).skip(skip).limit(limit);
+  const djs = await DJOperator.find({ isDeleted: { $ne: true } }).sort({ createdAt: -1 }).skip(skip).limit(safeLimit);
   return {
     djs,
     total,
-    pages: Math.ceil(total / limit),
+    pages: Math.ceil(total / safeLimit),
   };
 };
 
 export const getDJOperatorById = async (id: string): Promise<IDJOperator | null> => {
-  return await DJOperator.findById(id);
+  const cleanId = String(id || '').trim();
+  if (!cleanId) return null;
+  return await DJOperator.findById(cleanId);
 };
 
 export const updateDJOperator = async (id: string, data: Partial<IDJOperator>): Promise<IDJOperator | null> => {
-  const existing = await DJOperator.findById(id);
+  const cleanId = String(id || '').trim();
+  if (!cleanId) return null;
+  const existing = await DJOperator.findById(cleanId);
   if (!existing) return null;
 
   const oldProfileId = existing.profileImage?.publicId;
   const newProfileId = data.profileImage?.publicId;
   const profileReplaced = newProfileId && oldProfileId && oldProfileId !== newProfileId;
 
-  const updated = await DJOperator.findByIdAndUpdate(id, data, { new: true });
+  const updateFields: Partial<IDJOperator> = {};
+  if (data.name !== undefined) updateFields.name = String(data.name).trim();
+  if (data.slug !== undefined) updateFields.slug = String(data.slug).trim().toLowerCase();
+  if (data.bio !== undefined) updateFields.bio = String(data.bio);
+  if (data.specialties !== undefined) updateFields.specialties = data.specialties;
+  if (data.profileImage !== undefined) updateFields.profileImage = data.profileImage;
+  if (data.galleryImages !== undefined) updateFields.galleryImages = data.galleryImages;
+  if (data.experienceYears !== undefined) updateFields.experienceYears = Number(data.experienceYears);
+  if (data.socialLinks !== undefined) updateFields.socialLinks = data.socialLinks;
+  if (data.isActive !== undefined) updateFields.isActive = Boolean(data.isActive);
+
+  const updated = await DJOperator.findByIdAndUpdate(cleanId, { $set: updateFields }, { new: true });
   if (updated) {
     if (profileReplaced && oldProfileId) {
       safeDeleteImages([oldProfileId], 'DJOperator', 'update');
@@ -45,10 +62,12 @@ export const updateDJOperator = async (id: string, data: Partial<IDJOperator>): 
 };
 
 export const deleteDJOperator = async (id: string): Promise<IDJOperator | null> => {
-  const existing = await DJOperator.findById(id);
+  const cleanId = String(id || '').trim();
+  if (!cleanId) return null;
+  const existing = await DJOperator.findById(cleanId);
   if (!existing) return null;
 
-  const deleted = await DJOperator.findByIdAndUpdate(id, { isDeleted: true, deletedAt: new Date() }, { new: true });
+  const deleted = await DJOperator.findByIdAndUpdate(cleanId, { isDeleted: true, deletedAt: new Date() }, { new: true });
   if (deleted) {
     if (existing.profileImage?.publicId) {
       safeDeleteImages([existing.profileImage.publicId], 'DJOperator', 'delete');

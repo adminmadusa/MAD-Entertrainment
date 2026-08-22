@@ -27,7 +27,7 @@ export function useBookings() {
     refetch,
   } = useQuery({
     queryKey: QUERY_KEYS.public.bookings.mine(),
-    queryFn: publicGetMyBookings,
+    queryFn: () => publicGetMyBookings(),
     enabled: isAuthenticated,
     retry: false,
     refetchInterval: refetchIntervalTime,

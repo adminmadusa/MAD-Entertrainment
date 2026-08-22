@@ -3,13 +3,15 @@ import { Worker, WorkerOptions, Job } from 'bullmq';
 
 import { NotificationType } from '@mad/shared';
 
-import { getEnv } from '../config/env';
+import { getEnv, getPublicWebUrl } from '../config/env';
 import { getQueueConnection, getQueueName, getQueuePrefix } from '../config/queue.config';
 import { isRedisConnected } from '../config/redis';
+import { bookingConfirmationHtml } from '../lib/email';
 import { Booking } from '../models/booking.schema';
 import { DeadLetterJob } from '../models/dead-letter-job.schema';
 import { Event } from '../models/event.schema';
 import { Notification } from '../models/notification.schema';
+import { Payment } from '../models/payment.schema';
 import { createNotificationSafe } from '../services/notification.service';
 import { QueueService } from '../services/queue.service';
 import { logger } from '../utils/logger';
@@ -49,36 +51,67 @@ export async function processPDFGenerate(
   // 1. Generate PDF buffer in memory
   const pdfBuffer = await generateTicketPDF(booking, event);
 
-  const env = getEnv();
-  // Strip trailing slashes to ensure clean URL construction
-  const rawUrl = env.FRONTEND_URL || env.ALLOWED_ORIGINS.split(',')[0].trim();
-  const frontendUrl = rawUrl.replace(/\/+$/, '');
+  const payment = await Payment.findOne({ bookingId: booking._id })
+    .sort({ createdAt: -1 })
+    .lean()
+    .catch(() => null);
 
-  const ticketUrl = `${frontendUrl}/tickets?ref=${booking.bookingId}`;
-  const manageTicketsUrl = `${frontendUrl}/tickets`;
+  const publicWebUrl = getPublicWebUrl();
+  const ticketUrl = `${publicWebUrl}/tickets?ref=${booking.bookingId}`;
+  const manageTicketsUrl = `${publicWebUrl}/tickets`;
 
-  const emailBody = `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; color: #333;">
-      <h2>Hi ${booking.guestName},</h2>
-      <p>Your booking <strong>${booking.bookingId}</strong> for the event <strong>"${event.title || 'MAD Event'}"</strong> has been successfully confirmed!</p>
-      <p>Please find your ticket attached as a PDF document. You can present the QR code at the gate for entry.</p>
+  const formattedDate = event.startDate
+    ? new Date(event.startDate).toLocaleDateString('en-US', {
+        weekday: 'long',
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric',
+      })
+    : '';
 
-      <div style="margin: 30px 0; text-align: center;">
-        <a href="${ticketUrl}" style="background-color: #8B5CF6; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block; margin-bottom: 10px;">View Ticket Online</a>
-        <br/>
-        <a href="${manageTicketsUrl}" style="color: #8B5CF6; text-decoration: none; font-size: 14px; font-weight: bold; display: inline-block; margin-top: 10px;">Manage My Tickets</a>
-      </div>
+  const formattedPaidAt = payment?.paidAt
+    ? new Date(payment.paidAt).toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      })
+    : undefined;
 
-      <div style="margin: 20px 0; padding: 15px; background-color: #f3f4f6; border-radius: 8px; font-size: 12px; color: #6b7280; text-align: center;">
-        <p style="margin: 0 0 5px 0;">If the buttons don't work, copy and paste this link:</p>
-        <a href="${ticketUrl}" style="color: #6b7280; word-break: break-all;">${ticketUrl}</a>
-      </div>
+  const ticketsSummary = booking.tickets && Array.isArray(booking.tickets)
+    ? booking.tickets.map((t: any) => ({
+        tierName: t.tierName || t.tier || 'General',
+        quantity: t.quantity || 1,
+        price: t.pricePerTicket || t.price || 0,
+      }))
+    : undefined;
 
-      <p>Enjoy the show!</p>
-      <br/>
-      <p>MAD Entertainment Team</p>
-    </div>
-  `;
+  const emailBody = await bookingConfirmationHtml({
+    customerName: booking.guestName,
+    customerEmail: recipientEmail,
+    eventTitle: event.title || 'MAD Event',
+    bookingReference: booking.bookingId,
+    eventDate: formattedDate,
+    eventTime: event.showTime || (event.startDate ? new Date(event.startDate).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : undefined),
+    venueName: event.venue,
+    tickets: ticketsSummary,
+    subtotal: booking.subtotal,
+    convenienceFee: booking.convenienceFee,
+    taxLabel: booking.taxLabel || event.taxLabel,
+    taxPercentage: booking.taxPercentage ?? event.taxPercentage,
+    taxAmount: booking.gst,
+    discount: booking.discount,
+    couponCode: booking.couponCode,
+    totalAmount: booking.totalAmount,
+    currency: booking.currency || event.currency || 'USD',
+    paymentGateway: payment?.gateway,
+    paymentTransactionId: payment?.gatewayPaymentId || payment?.gatewayOrderId,
+    paidAt: formattedPaidAt,
+    ticketUrl,
+    manageTicketsUrl,
+    hasPdfAttachment: true,
+  });
 
   // Unify notification creation under createNotificationSafe
   const notification = await createNotificationSafe({

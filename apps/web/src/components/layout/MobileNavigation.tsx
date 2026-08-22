@@ -39,48 +39,57 @@ export const MobileNavigation = memo(function MobileNavigation({
     }
   }, [isOpen]);
 
-  // Body scroll locking when mobile menu is open (Safari-friendly & layout-shift free)
-  useEffect(() => {
-    if (!isOpen) return;
+  let authActionSection = (
+    <button
+      type="button"
+      onClick={() => {
+        onClose();
+        openAuthModal();
+      }}
+      className="w-full py-3 px-4 text-text-secondary hover:text-text-primary hover:bg-white/5 rounded-xl transition-colors font-medium text-left block focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple"
+    >
+      Login
+    </button>
+  );
 
-    const scrollY = window.pageYOffset || document.documentElement.scrollTop;
-    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
-
-    const originalStyle = {
-      position: document.body.style.position,
-      top: document.body.style.top,
-      width: document.body.style.width,
-      overflow: document.body.style.overflow,
-      paddingRight: document.body.style.paddingRight,
-    };
-
-    document.body.style.position = 'fixed';
-    document.body.style.top = `-${scrollY}px`;
-    document.body.style.width = '100%';
-    document.body.style.overflow = 'hidden';
-    if (scrollbarWidth > 0) {
-      document.body.style.paddingRight = `${scrollbarWidth}px`;
-    }
-
-    return () => {
-      document.body.style.position = originalStyle.position;
-      document.body.style.top = originalStyle.top;
-      document.body.style.width = originalStyle.width;
-      document.body.style.overflow = originalStyle.overflow;
-      document.body.style.paddingRight = originalStyle.paddingRight;
-
-      if (!navigatingRef.current && typeof window !== 'undefined') {
-        window.scrollTo(0, scrollY);
-      }
-    };
-  }, [isOpen]);
-
+  if (isAuthenticated) {
+    authActionSection = (
+      <>
+        <div className="px-4 py-1.5 text-[10px] font-semibold text-text-muted uppercase tracking-wider">
+          Hi, {firstName}
+        </div>
+        <Link
+          href="/dashboard?tab=account"
+          onClick={() => {
+            navigatingRef.current = true;
+            onClose();
+          }}
+          className="block py-3 px-4 text-text-secondary hover:text-text-primary hover:bg-white/5 rounded-xl transition-colors font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple"
+        >
+          Account
+        </Link>
+        <button
+          type="button"
+          onClick={() => {
+            navigatingRef.current = true;
+            handleLogout();
+          }}
+          className="w-full py-3 px-4 text-red-400 hover:text-red-355 hover:bg-white/5 rounded-xl transition-colors font-medium text-left block focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
+        >
+          Logout
+        </button>
+      </>
+    );
+  }
   return (
     <Drawer
       isOpen={isOpen}
       onClose={onClose}
       side="top"
       showHeader={false}
+      showBackdrop={true}
+      closeOnBackdropClick={true}
+      backdropClassName="top-[4.5rem] md:hidden z-30"
       className="top-[4.5rem] border-t border-border-subtle max-h-[calc(100svh-4.5rem)] rounded-none w-full md:hidden z-40"
     >
       <div className="container-mad py-4 flex flex-col gap-1">
@@ -104,54 +113,7 @@ export const MobileNavigation = memo(function MobileNavigation({
           </motion.div>
         ))}
         <div className="mt-3 pt-3 border-t border-border-subtle flex flex-col gap-2">
-          {isAuthenticated ? (
-            <>
-              <div className="px-4 py-1.5 text-[10px] font-semibold text-text-muted uppercase tracking-wider">
-                Hi, {firstName}
-              </div>
-              <Link
-                href="/dashboard?tab=tickets"
-                onClick={() => {
-                  navigatingRef.current = true;
-                  onClose();
-                }}
-                className="block py-3 px-4 text-text-secondary hover:text-text-primary hover:bg-white/5 rounded-xl transition-colors font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple"
-              >
-                My Tickets
-              </Link>
-              <Link
-                href="/dashboard?tab=account"
-                onClick={() => {
-                  navigatingRef.current = true;
-                  onClose();
-                }}
-                className="block py-3 px-4 text-text-secondary hover:text-text-primary hover:bg-white/5 rounded-xl transition-colors font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple"
-              >
-                Account
-              </Link>
-              <button
-                type="button"
-                onClick={() => {
-                  navigatingRef.current = true;
-                  handleLogout();
-                }}
-                className="w-full py-3 px-4 text-red-400 hover:text-red-355 hover:bg-white/5 rounded-xl transition-colors font-medium text-left block focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
-              >
-                Logout
-              </button>
-            </>
-          ) : (
-            <button
-              type="button"
-              onClick={() => {
-                onClose();
-                openAuthModal();
-              }}
-              className="w-full py-3 px-4 text-text-secondary hover:text-text-primary hover:bg-white/5 rounded-xl transition-colors font-medium text-left block focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple"
-            >
-              Login
-            </button>
-          )}
+          {authActionSection}
           <Link
             href="/events"
             onClick={() => {

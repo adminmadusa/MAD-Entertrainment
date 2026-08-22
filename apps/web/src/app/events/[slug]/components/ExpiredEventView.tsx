@@ -1,13 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { ArrowRight, Camera, Sparkles } from 'lucide-react';
+import Link from 'next/link';
+import React from 'react';
 
 import { ImageWrapper } from '@/components/common/ImageWrapper';
-import { MediaType, MediaVisibility, type Event as EventData, type EventGalleryItem, type EventGallerySettings } from '@mad/types';
-import { Camera } from '@mad/ui';
+import type { Event as EventData, EventGalleryItem, EventGallerySettings } from '@mad/types';
 
 import { EventOverview } from './EventOverview';
-import { Lightbox } from '../gallery/components/Lightbox';
 import { RecommendedUpcomingSection } from './RecommendedUpcomingSection';
 
 interface ExpiredEventViewProps {
@@ -19,30 +19,10 @@ interface ExpiredEventViewProps {
 }
 
 export function ExpiredEventView({ event, galleryData }: ExpiredEventViewProps) {
-  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
-
-  const fallbackItems: EventGalleryItem[] = event.galleryImages?.map((img, index) => ({
-    id: img.publicId,
-    eventId: event._id,
-    mediaType: MediaType.IMAGE,
-    url: img.url,
-    publicId: img.publicId,
-    thumbnail: img.url,
-    caption: img.alt || '',
-    sortOrder: index,
-    isCover: index === 0,
-    visibility: MediaVisibility.PUBLIC,
-    assetProvider: 'cloudinary',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  })) || [];
-
-  const displayItems = galleryData?.items && galleryData.items.length > 0
-    ? galleryData.items
-    : fallbackItems;
-
+  const displayItems = galleryData?.items && galleryData.items.length > 0 ? galleryData.items : [];
   const hasPhotos = displayItems.length > 0;
   const galleryHeading = galleryData?.settings?.heading || 'Happy Moments & Photos';
+  const previewItems = displayItems.slice(0, 4);
 
   return (
     <div className="pt-6 pb-20 max-w-5xl mx-auto space-y-12">
@@ -61,18 +41,28 @@ export function ExpiredEventView({ event, galleryData }: ExpiredEventViewProps) 
       <div className="pt-6 border-t border-white/5 space-y-8">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div>
-            <p className="text-accent-pink-light text-xs font-semibold uppercase tracking-wider mb-1">
-              Relive The Moments
+            <p className="text-accent-pink-light text-xs font-semibold uppercase tracking-wider mb-1 flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Relive The Moments</span>
             </p>
             <h2 className="text-2xl sm:text-3xl font-black text-white">
               {galleryHeading}
             </h2>
           </div>
           {hasPhotos && (
-            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-accent-pink/10 border border-accent-pink/30 text-accent-pink self-start sm:self-auto">
-              <Camera className="w-3.5 h-3.5" />
-              {displayItems.length} Photos Captured
-            </span>
+            <div className="flex items-center gap-3">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-accent-pink/10 border border-accent-pink/30 text-accent-pink">
+                <Camera className="w-3.5 h-3.5" />
+                {displayItems.length} Photos Captured
+              </span>
+              <Link
+                href={`/events/${event.slug}/gallery`}
+                className="hidden sm:inline-flex items-center gap-1.5 text-xs font-bold text-accent-pink-light hover:text-white transition-colors"
+              >
+                <span>View Full Gallery</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
           )}
         </div>
 
@@ -99,33 +89,44 @@ export function ExpiredEventView({ event, galleryData }: ExpiredEventViewProps) 
           </div>
         )}
 
-        {/* Photo Grid */}
+        {/* Photo Grid Preview */}
         {hasPhotos ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
-            {displayItems.map((item, index) => (
-              <button
-                key={item.id || index}
-                type="button"
-                onClick={() => setLightboxIndex(index)}
-                className="group relative aspect-square bg-white/5 rounded-2xl overflow-hidden border border-white/5 hover:border-accent-pink/40 transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-pink cursor-pointer"
-                aria-label={`View photo ${index + 1}`}
+          <div className="space-y-6">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+              {previewItems.map((item, index) => (
+                <Link
+                  key={item.id || index}
+                  href={`/events/${event.slug}/gallery`}
+                  className="group relative aspect-square bg-white/5 rounded-2xl overflow-hidden border border-white/5 hover:border-accent-pink/40 transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-pink block"
+                  aria-label={`View photo ${index + 1} in gallery`}
+                >
+                  <ImageWrapper
+                    src={item.thumbnail || item.url}
+                    alt={item.caption || `Event photo ${index + 1}`}
+                    fill
+                    sizes="(max-width: 640px) 50vw, 25vw"
+                    className="object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-3">
+                    {item.caption && (
+                      <span className="text-[11px] text-white line-clamp-1 text-left font-medium">
+                        {item.caption}
+                      </span>
+                    )}
+                  </div>
+                </Link>
+              ))}
+            </div>
+
+            <div className="text-center pt-2">
+              <Link
+                href={`/events/${event.slug}/gallery`}
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-full btn-gradient text-white text-xs font-bold shadow-glow hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
               >
-                <ImageWrapper
-                  src={item.thumbnail || item.url}
-                  alt={item.caption || `Event photo ${index + 1}`}
-                  fill
-                  sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                  className="object-cover group-hover:scale-105 transition-transform duration-500"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-3">
-                  {item.caption && (
-                    <span className="text-[11px] text-white line-clamp-1 text-left font-medium">
-                      {item.caption}
-                    </span>
-                  )}
-                </div>
-              </button>
-            ))}
+                <span>View Full Photo Gallery ({displayItems.length} Photos)</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
           </div>
         ) : (
           <div className="glass rounded-2xl border border-white/5 p-8 sm:p-12 text-center space-y-3">
@@ -140,19 +141,8 @@ export function ExpiredEventView({ event, galleryData }: ExpiredEventViewProps) 
         )}
       </div>
 
-      {/* Lightbox Modal */}
-      {lightboxIndex !== null && displayItems.length > 0 && (
-        <Lightbox
-          items={displayItems}
-          currentIndex={lightboxIndex}
-          onClose={() => setLightboxIndex(null)}
-          onChange={(newIndex) => setLightboxIndex(newIndex)}
-        />
-      )}
-
       {/* Recommended Active Events */}
       <RecommendedUpcomingSection currentEventId={event._id} />
     </div>
   );
 }
-

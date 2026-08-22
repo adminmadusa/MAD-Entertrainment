@@ -273,9 +273,9 @@ export async function revokeTicket(
 
       return { type: 'reset' as const, newTicketId: ticketId };
     } else if (previousStatus === 'claimed') {
-      // Claimed void-and-reissue flow
       const baseMatch = ticket.ticketId.match(/^(TKT-[A-Z0-9]+-\d+)(?:-R\d+)?$/);
-      const baseTicketId = baseMatch ? baseMatch[1] : ticket.ticketId;
+      const rawBase = baseMatch ? baseMatch[1] : ticket.ticketId;
+      const baseTicketId = String(rawBase).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
       const count = await Ticket.countDocuments({
         ticketId: { $regex: new RegExp(`^${baseTicketId}(?:-R\\d+)?$`) },

@@ -14,6 +14,7 @@ import {
   refreshAuthSchema,
   verifyAuthSchema,
   updateProfileSchema,
+  deleteAccountSchema,
 } from '../../validations/auth.validation';
 
 const router: Router = Router();
@@ -45,5 +46,8 @@ router.patch('/profile', requireAuth, validateBody(updateProfileSchema), AuthCon
 // Profile photo management routes
 router.post('/profile/photo', requireAuth, uploadMiddleware.single('photo'), AuthController.uploadProfilePhoto);
 router.delete('/profile/photo', requireAuth, AuthController.deleteProfilePhoto);
+
+// Permanently delete user account
+router.delete('/account', requireAuth, validateBody(deleteAccountSchema), AuthController.deleteAccount);
 
 export default router;

@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
+import { BrandLogo } from '@mad/ui';
 import { canAccessRoute } from '@/lib/rbac/navigation-permissions';
 import { useAdminAuth } from '@/providers/AdminAuthProvider';
 
@@ -82,22 +83,13 @@ export function AdminSidebar({ collapsed, onToggle, mobileOpen = false, onMobile
       {/* Logo */}
       <div className="h-16 flex items-center justify-between px-4 border-b border-border-subtle flex-shrink-0">
         <Link href="/dashboard" className="flex items-center gap-3 min-w-0">
-          <div className="w-8 h-8 rounded-lg bg-gradient-brand flex-shrink-0 flex items-center justify-center shadow-glow-sm">
-            <span className="text-white font-black text-sm">M</span>
-          </div>
-          <AnimatePresence>
-            {!collapsed && (
-              <motion.span
-                initial={{ opacity: 0, x: -8 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -8 }}
-                transition={{ duration: 0.2 }}
-                className="font-bold text-white text-sm whitespace-nowrap overflow-hidden"
-              >
-                MAD <span className="text-gradient">Admin</span>
-              </motion.span>
-            )}
-          </AnimatePresence>
+          <BrandLogo
+            variant={collapsed ? 'emblem' : 'with-text'}
+            text="MAD"
+            subtext="Admin"
+            size="sm"
+            imageSrc="/brand/logo-64.png"
+          />
         </Link>
 
         {/* Close Toggle for Mobile (Touch target at least 44x44px) */}

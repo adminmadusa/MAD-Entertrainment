@@ -1,3 +1,5 @@
+import fs from 'fs';
+import path from 'path';
 import PDFDocument from 'pdfkit';
 import qrcode from 'qrcode';
 
@@ -106,22 +108,36 @@ export async function generateTicketPDF(
         .stroke();
 
       // --- HEADER BRANDING ---
-      // Solid Purple Box Logo
-      doc.fillColor('#a855f7')
-        .roundedRect(48, 52, 28, 28, 6)
-        .fill();
+      const logoAssetPath = path.resolve(__dirname, '../assets/brand/pdf-logo.png');
+      const hasLogoImage = fs.existsSync(logoAssetPath);
 
-      // White Centered 'M' inside the Box
-      doc.fillColor('#ffffff')
-        .font('Helvetica-Bold')
-        .fontSize(14)
-        .text('M', 48, 60, { width: 28, align: 'center' });
+      if (hasLogoImage) {
+        try {
+          doc.image(logoAssetPath, 48, 52, { fit: [28, 28] });
+        } catch {
+          doc.fillColor('#a855f7')
+            .roundedRect(48, 52, 28, 28, 6)
+            .fill();
+          doc.fillColor('#ffffff')
+            .font('Helvetica-Bold')
+            .fontSize(14)
+            .text('M', 48, 60, { width: 28, align: 'center' });
+        }
+      } else {
+        doc.fillColor('#a855f7')
+          .roundedRect(48, 52, 28, 28, 6)
+          .fill();
+        doc.fillColor('#ffffff')
+          .font('Helvetica-Bold')
+          .fontSize(14)
+          .text('M', 48, 60, { width: 28, align: 'center' });
+      }
 
       // Brand Title Text
       doc.fillColor('#0f172a')
         .font('Helvetica-Bold')
         .fontSize(13)
-        .text('MAD ENTERTAINMENT', 86, 60);
+        .text('MAD ENTERTAINMENTS', 86, 60);
 
       // Right-aligned Booking Reference Metadata
       doc.fillColor('#64748b')

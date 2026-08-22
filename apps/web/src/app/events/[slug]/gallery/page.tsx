@@ -19,17 +19,17 @@ export async function generateMetadata(
 
   try {
     const event = await getCachedEvent(slug);
-    if (!event) return { title: 'Gallery Not Found | MAD Entertrainment' };
+    if (!event) return { title: 'Gallery Not Found | MAD Entertainments' };
 
     return {
-      title: `${event.title} - Gallery | MAD Entertrainment`,
+      title: `${event.title} - Gallery | MAD Entertainments`,
       description: `View the memories and highlights from ${event.title}.`,
       alternates: {
         canonical: `${SITE_URL}/events/${slug}/gallery`,
       },
     };
   } catch {
-    return { title: 'Gallery | MAD Entertrainment' };
+    return { title: 'Gallery | MAD Entertainments' };
   }
 }
 

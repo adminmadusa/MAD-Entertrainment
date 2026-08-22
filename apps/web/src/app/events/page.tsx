@@ -7,22 +7,22 @@ import { serverGetCompletedEvents } from '@/lib/api/server.service';
 import { EventsList } from './EventsList';
 
 export const metadata: Metadata = {
-  title: 'Discover Events | MAD Entertrainment',
+  title: 'Discover Events | MAD Entertainments',
   description:
-    'Book tickets for DJ nights, concerts, music festivals, comedy shows, VIP events, and live theatre performances in India.',
+    'Book tickets for DJ nights, concerts, music festivals, comedy shows, VIP events, and live theatre performances across the United States.',
   openGraph: {
-    title: 'Discover Events | MAD Entertrainment',
+    title: 'Discover Events | MAD Entertainments',
     description:
-      'Browse and book tickets for the finest shows, music festivals, DJ operators, and theater plays across India.',
+      'Browse and book tickets for the finest shows, music festivals, and entertainment experiences across the United States.',
     url: 'https://www.madentertainments.net/events',
-    siteName: 'MAD Entertrainment',
-    locale: 'en_IN',
+    siteName: 'MAD Entertainments',
+    locale: 'en_US',
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Discover Events | MAD Entertrainment',
-    description: 'Book tickets for DJ nights, concerts, festivals and live events in India.',
+    title: 'Discover Events | MAD Entertainments',
+    description: 'Book tickets for DJ nights, concerts, festivals and live events across the United States.',
   },
   alternates: {
     canonical: 'https://www.madentertainments.net/events',

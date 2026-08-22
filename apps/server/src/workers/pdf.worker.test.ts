@@ -13,6 +13,7 @@ vi.mock('../config/env', () => ({
     FRONTEND_URL: 'https://example.com',
     ALLOWED_ORIGINS: 'https://example.com',
   })),
+  getPublicWebUrl: vi.fn(() => 'https://example.com'),
 }));
 
 vi.mock('../config/queue.config', () => ({
@@ -38,6 +39,20 @@ vi.mock('../models/notification.schema', () => ({
     findOne: vi.fn(),
     findOneAndUpdate: vi.fn(),
     updateOne: vi.fn(),
+  },
+}));
+
+vi.mock('../models/payment.schema', () => ({
+  Payment: {
+    findOne: vi.fn(() => ({
+      sort: vi.fn(() => ({
+        lean: vi.fn().mockResolvedValue({
+          gateway: 'stripe',
+          gatewayPaymentId: 'pi_test_123',
+          paidAt: new Date('2026-08-12T12:00:00Z'),
+        }),
+      })),
+    })),
   },
 }));
 

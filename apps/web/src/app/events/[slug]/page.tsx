@@ -30,23 +30,23 @@ export async function generateMetadata(
     const event = await getCachedEvent(slug);
 
     if (!event) {
-      return { title: 'Event Not Found | MAD Entertrainment' };
+      return { title: 'Event Not Found | MAD Entertainments' };
     }
 
     const previousImages = (await parent).openGraph?.images ?? [];
     const bannerUrl = event.bannerImage?.url;
-    const description = event.description?.substring(0, 160) ?? 'Join this amazing event by MAD Entertrainment.';
+    const description = event.description?.substring(0, 160) ?? 'Join this amazing event by MAD Entertainments.';
 
     return {
-      title: `${event.title} | MAD Entertrainment`,
+      title: `${event.title} | MAD Entertainments`,
       description,
       openGraph: {
         title: event.title,
         description,
         url: `${SITE_URL}/events/${slug}`,
-        siteName: 'MAD Entertrainment',
+        siteName: 'MAD Entertainments',
         images: bannerUrl ? [{ url: bannerUrl, width: 1200, height: 630 }] : previousImages,
-        locale: 'en_IN',
+        locale: 'en_US',
         type: 'website',
       },
       twitter: {
@@ -60,7 +60,7 @@ export async function generateMetadata(
       },
     };
   } catch {
-    return { title: 'MAD Entertrainment' };
+    return { title: 'MAD Entertainments' };
   }
 }
 
@@ -95,8 +95,8 @@ function buildEventJsonLd(
       name: event.venue ?? 'TBA',
       address: {
         '@type': 'PostalAddress',
-        addressLocality: event.venue ?? 'India',
-        addressCountry: 'IN',
+        addressLocality: event.venue ?? 'United States',
+        addressCountry: 'US',
       },
     },
     ...(event.bannerImage?.url
@@ -109,7 +109,7 @@ function buildEventJsonLd(
           offers: {
             '@type': 'Offer',
             price: minPrice,
-            priceCurrency: 'INR',
+            priceCurrency: 'USD',
             availability: event.isSoldOut
               ? 'https://schema.org/SoldOut'
               : 'https://schema.org/InStock',
@@ -120,7 +120,7 @@ function buildEventJsonLd(
       : {}),
     organizer: {
       '@type': 'Organization',
-      name: event.organizerName ?? 'MAD Entertrainment',
+      name: event.organizerName ?? 'MAD Entertainments',
       url: SITE_URL,
     },
   };

@@ -8,6 +8,7 @@ export interface IUser extends Document {
   mobileNumber?: string;
   googleId?: string;
   picture?: string;
+  isEmailVerified: boolean;
   isActive: boolean;
   lastLogin?: Date;
   createdAt: Date;
@@ -48,6 +49,11 @@ const userSchema = new Schema<IUser>(
     },
     picture: {
       type: String,
+    },
+    isEmailVerified: {
+      type: Boolean,
+      default: false,
+      index: true,
     },
     isActive: {
       type: Boolean,

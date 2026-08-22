@@ -1,5 +1,6 @@
 import type { MetadataRoute } from 'next';
 
+import { legalDocuments } from '@/content/legalDocuments';
 import { safeServerFetch } from '@/lib/api/server.service';
 
 const SITE_URL = 'https://www.madentertainments.net';
@@ -17,12 +18,6 @@ const STATIC_ROUTES: MetadataRoute.Sitemap = [
     lastModified: new Date(),
     changeFrequency: 'hourly',
     priority: 0.9,
-  },
-  {
-    url: `${SITE_URL}/dj-operators`,
-    lastModified: new Date(),
-    changeFrequency: 'daily',
-    priority: 0.8,
   },
   {
     url: `${SITE_URL}/tickets`,
@@ -89,5 +84,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.7,
   }));
 
-  return [...STATIC_ROUTES, ...eventRoutes, ...djRoutes];
+  const legalRoutes: MetadataRoute.Sitemap = legalDocuments.map((doc) => ({
+    url: `${SITE_URL}/legal/${doc.slug}`,
+    lastModified: new Date(doc.lastUpdated),
+    changeFrequency: 'monthly' as const,
+    priority: 0.5,
+  }));
+
+  return [...STATIC_ROUTES, ...eventRoutes, ...djRoutes, ...legalRoutes];
 }

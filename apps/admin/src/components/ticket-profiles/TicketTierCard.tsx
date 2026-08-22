@@ -43,7 +43,7 @@ export const TicketTierCard = React.memo(function TicketTierCard({
             {ticket.name || <span className="text-text-muted/40 italic">Unnamed Tier</span>}
           </span>
           <span className="text-accent-purple-light text-xs font-semibold">
-            ({ticket.isFree ? 'Free' : ticket.price !== '' ? `₹${ticket.price}` : '₹0'})
+            ({ticket.isFree ? 'Free' : ticket.price !== '' ? `$${ticket.price}` : '$0'})
           </span>
         </div>
 
@@ -142,7 +142,7 @@ export const TicketTierCard = React.memo(function TicketTierCard({
       {/* Row 2: Pricing, Capacity, Free Ticket option */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
         <div className="space-y-1.5">
-          <label htmlFor={`ticket-price-${gIdx}-${tIdx}`} className="text-text-secondary text-xs font-medium">Price (₹)</label>
+          <label htmlFor={`ticket-price-${gIdx}-${tIdx}`} className="text-text-secondary text-xs font-medium">Price ($)</label>
           <input
             id={`ticket-price-${gIdx}-${tIdx}`}
             type="number"

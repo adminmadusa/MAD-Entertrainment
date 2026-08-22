@@ -8,9 +8,9 @@ import { useEffect } from 'react';
 import { useCheckoutViewportController } from '@/hooks/use-checkout-viewport-controller';
 import { useCountdown } from '@/hooks/use-countdown.hook';
 import { publicGetBookingDetails, getStoredGuestBookingSession } from '@/lib/api/public.service';
-import { useAuth } from '@/providers/AuthProvider';
 import { BookingStatus, QUERY_KEYS } from '@mad/shared';
 import type { Booking, Event } from '@mad/types';
+import { Alert } from '@mad/ui';
 
 import { CheckoutForm } from './checkout/CheckoutForm';
 import { CheckoutPricing } from './checkout/CheckoutPricing';
@@ -52,7 +52,6 @@ export function CheckoutContent({
   onConfirmed,
 }: CheckoutContentProps) {
   const router = useRouter();
-  const { isAuthenticated } = useAuth();
   const viewport = useCheckoutViewportController();
 
   const {
@@ -107,11 +106,7 @@ export function CheckoutContent({
 
   const handleViewTickets = () => {
     allowNavigation();
-    if (isAuthenticated) {
-      router.push(`/dashboard?tab=tickets&ref=${encodeURIComponent(booking?.bookingId || '')}`);
-    } else {
-      router.push(`/tickets?ref=${encodeURIComponent(booking?.bookingId || '')}`);
-    }
+    router.push(`/dashboard?tab=tickets&ref=${encodeURIComponent(booking?.bookingId || '')}`);
     if (isModal && onClose) onClose();
   };
 
@@ -188,13 +183,9 @@ export function CheckoutContent({
         }
       >
         {error && (
-          <div
-            className="py-2 px-3 bg-error/10 border border-error/20 rounded-xl text-xs text-red-400 text-center"
-            role="alert"
-            aria-live="assertive"
-          >
+          <Alert variant="danger" className="text-xs">
             {error}
-          </div>
+          </Alert>
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6 items-start">

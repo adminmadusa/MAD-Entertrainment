@@ -40,8 +40,8 @@ export class PublicBookingService {
     return BookingQueryService.getBookingByReference(bookingId);
   }
 
-  static async getMyBookings(userId: string): Promise<MyBookingsResult> {
-    return BookingQueryService.getMyBookings(userId);
+  static async getMyBookings(auth: BookingAccessContext | string): Promise<MyBookingsResult> {
+    return BookingQueryService.getMyBookings(auth);
   }
 
   static async saveCheckoutDetails(

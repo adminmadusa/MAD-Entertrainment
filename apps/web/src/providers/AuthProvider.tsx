@@ -4,17 +4,21 @@ import { useQueryClient } from '@tanstack/react-query';
 import { createContext, useContext, useEffect, useState, useCallback, useMemo } from 'react';
 
 import { isAxiosError } from '@/lib/api/client';
-import { publicGetMe, publicLogout } from '@/lib/api/public.service';
+import {
+  publicGetMe,
+  publicLogout,
+  clearGuestBookingSession,
+} from '@/lib/api/public.service';
 import { STORAGE_KEYS } from '@mad/shared';
 import { isTokenExpired } from '@mad/utils';
 
 import type { AuthUser } from '../types/auth';
 
-
 interface AuthContextValue {
   user: AuthUser | null;
   token: string | null;
   isAuthenticated: boolean;
+  isGuest: boolean;
   isLoading: boolean;
   onboardingRequired: boolean;
   setOnboardingRequired: (v: boolean) => void;
@@ -27,6 +31,7 @@ const AuthContext = createContext<AuthContextValue>({
   user: null,
   token: null,
   isAuthenticated: false,
+  isGuest: false,
   isLoading: true,
   onboardingRequired: false,
   setOnboardingRequired: () => {},
@@ -34,9 +39,6 @@ const AuthContext = createContext<AuthContextValue>({
   logout: () => {},
   updateUser: () => {},
 });
-
-
-// Consolidated isTokenExpired imported from @mad/utils
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient();
@@ -56,9 +58,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             const { onboardingRequired: obReq, ...userProfile } = await publicGetMe();
             const newToken = localStorage.getItem(STORAGE_KEYS.USER_TOKEN);
             setToken(newToken);
-            setUser(userProfile);
+            setUser({ ...userProfile, isGuest: false });
             setOnboardingRequired(!!obReq);
-            localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(userProfile));
+            localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify({ ...userProfile, isGuest: false }));
           } else {
             setToken(storedToken);
             const storedUser = localStorage.getItem(STORAGE_KEYS.USER_DATA);
@@ -66,22 +68,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
             // Re-validate profile in background
             const { onboardingRequired: obReq, ...userProfile } = await publicGetMe();
-            setUser(userProfile);
+            setUser({ ...userProfile, isGuest: false });
             setOnboardingRequired(!!obReq);
-            localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(userProfile));
+            localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify({ ...userProfile, isGuest: false }));
           }
         } else {
-          // No short-lived access token, check if we had a session before calling auth/me.
-          // This avoids sending a wasteful GET /auth/me -> 401 for anonymous guests.
+          // No registered access token, check if we had a registered session before calling auth/me
           const hasSession = localStorage.getItem(STORAGE_KEYS.USER_DATA);
           if (hasSession) {
             const { onboardingRequired: obReq, ...userProfile } = await publicGetMe();
             const newToken = localStorage.getItem(STORAGE_KEYS.USER_TOKEN);
             if (newToken) {
               setToken(newToken);
-              setUser(userProfile);
+              setUser({ ...userProfile, isGuest: false });
               setOnboardingRequired(!!obReq);
-              localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(userProfile));
+              localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify({ ...userProfile, isGuest: false }));
             }
           }
         }
@@ -94,7 +95,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }
         }
         if (shouldEvict) {
-          // Clear stale local sessions if unauthenticated
           setToken(null);
           setUser(null);
           setOnboardingRequired(false);
@@ -120,8 +120,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       localStorage.removeItem(STORAGE_KEYS.USER_DATA);
     };
 
-    // Listen for successful silent refreshes on the same tab (fired by Axios interceptor)
-    // to keep React context in sync with the new access token.
     const handleAuthRefreshed = () => {
       const newToken = localStorage.getItem(STORAGE_KEYS.USER_TOKEN);
       const storedUser = localStorage.getItem(STORAGE_KEYS.USER_DATA);
@@ -146,10 +144,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [queryClient]);
 
   const login = useCallback((newToken: string, newUser: AuthUser) => {
+    clearGuestBookingSession();
+    const registeredUser = { ...newUser, isGuest: false };
     setToken(newToken);
-    setUser(newUser);
+    setUser(registeredUser);
     localStorage.setItem(STORAGE_KEYS.USER_TOKEN, newToken);
-    localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(newUser));
+    localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(registeredUser));
   }, []);
 
   const logout = useCallback(async () => {
@@ -158,6 +158,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch {
       // Ignore API failures during logout
     } finally {
+      clearGuestBookingSession();
       queryClient.clear();
       setToken(null);
       setUser(null);
@@ -176,23 +177,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
-  const contextValue = useMemo(() => ({
-    user,
-    token,
-    isAuthenticated: !!token && !!user,
-    isLoading,
-    onboardingRequired,
-    setOnboardingRequired,
-    login,
-    logout,
-    updateUser,
-  }), [user, token, isLoading, onboardingRequired, setOnboardingRequired, login, logout, updateUser]);
-
-  return (
-    <AuthContext.Provider value={contextValue}>
-      {children}
-    </AuthContext.Provider>
+  const contextValue = useMemo(
+    () => ({
+      user,
+      token,
+      isAuthenticated: !!token && !!user && !user.isGuest,
+      isGuest: false,
+      isLoading,
+      onboardingRequired,
+      setOnboardingRequired,
+      login,
+      logout,
+      updateUser,
+    }),
+    [
+      user,
+      token,
+      isLoading,
+      onboardingRequired,
+      setOnboardingRequired,
+      login,
+      logout,
+      updateUser,
+    ]
   );
+
+  return <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth(): AuthContextValue {

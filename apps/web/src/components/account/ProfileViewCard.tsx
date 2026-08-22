@@ -4,9 +4,12 @@ import React, { useRef, useState } from 'react';
 
 import { extractApiError } from '@/lib/api/client';
 import { publicUploadProfilePhoto, publicDeleteProfilePhoto } from '@/lib/api/public.service';
+import { useAuthModal } from '@/providers/AuthModalProvider';
 import { useAuth } from '@/providers/AuthProvider';
 import type { AuthUser } from '@/types/auth';
 import { Button } from '@mad/ui';
+
+import { DeleteAccountModal } from './DeleteAccountModal';
 
 interface ProfileViewCardProps {
   user: AuthUser | null;
@@ -20,8 +23,10 @@ export function ProfileViewCard({ user, onEditClick }: ProfileViewCardProps) {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const { updateUser } = useAuth();
+  const { openAuthModal } = useAuthModal();
 
   const handlePhotoClick = () => {
     fileInputRef.current?.click();
@@ -147,8 +152,27 @@ export function ProfileViewCard({ user, onEditClick }: ProfileViewCardProps) {
           <span className="text-[10px] text-text-muted uppercase tracking-wider block font-semibold">Last Name</span>
           <span className="text-white font-bold block text-sm">{user?.lastName || '—'}</span>
         </div>
-        <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/5 space-y-1">
-          <span className="text-[10px] text-text-muted uppercase tracking-wider block font-semibold">Email Address</span>
+        <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/5 space-y-2">
+          <div className="flex items-center justify-between gap-2 flex-wrap">
+            <span className="text-[10px] text-text-muted uppercase tracking-wider block font-semibold">Email Address</span>
+            {!user?.isEmailVerified && (
+              <button
+                type="button"
+                onClick={() =>
+                  openAuthModal({
+                    returnTo: '/dashboard?tab=account',
+                    initialEmail: user?.email,
+                    readonlyEmail: true,
+                    autoRequestOtp: true,
+                  })
+                }
+                className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold text-amber-300 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 rounded-full transition-all cursor-pointer shadow-sm active:scale-95 min-h-[28px]"
+              >
+                <span>⚠️</span>
+                <span>Verify with OTP</span>
+              </button>
+            )}
+          </div>
           <span className="text-white font-bold block text-sm break-all">{userEmail}</span>
         </div>
         <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/5 space-y-1">
@@ -156,6 +180,37 @@ export function ProfileViewCard({ user, onEditClick }: ProfileViewCardProps) {
           <span className="text-white font-bold block text-sm">{userPhone}</span>
         </div>
       </div>
+
+      {/* Danger Zone */}
+      <div className="border-t border-red-500/20 pt-6 mt-8">
+        <div className="p-5 rounded-2xl bg-red-950/10 border border-red-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <h3 className="text-sm font-bold text-red-400 flex items-center gap-2">
+              <span>⚠️</span>
+              <span>Danger Zone</span>
+            </h3>
+            <p className="text-text-secondary text-xs leading-relaxed max-w-md">
+              Permanently delete your account, authentication credentials, and personal profile data. This action cannot be undone.
+            </p>
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setIsDeleteModalOpen(true)}
+            className="w-full sm:w-auto px-4 py-2 text-xs font-bold rounded-xl border border-red-500/30 text-red-400 hover:bg-red-500/10 hover:border-red-500/50 active:scale-95 transition-all duration-200 min-h-[40px] shrink-0"
+          >
+            Delete Account...
+          </Button>
+        </div>
+      </div>
+
+      {user?.email && (
+        <DeleteAccountModal
+          isOpen={isDeleteModalOpen}
+          onClose={() => setIsDeleteModalOpen(false)}
+          userEmail={user.email}
+        />
+      )}
     </div>
   );
 }

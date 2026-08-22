@@ -148,6 +148,7 @@ vi.mock('../../models/seat-layout.schema', () => ({
 vi.mock('../../models/user.schema', () => ({
   UserModel: {
     findOne: vi.fn(),
+    create: vi.fn().mockResolvedValue([{ _id: 'user_created_123', email: 'test@example.com' }]),
   },
 }));
 

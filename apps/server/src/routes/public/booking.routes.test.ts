@@ -1,6 +1,6 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 
-import { createBooking, recoverBooking } from '../../controllers/public/booking.controller';
+import { createBooking, recoverBooking, getMyBookings } from '../../controllers/public/booking.controller';
 import { bookingLimiter, recoveryLimiter } from '../../middleware/rate.middleware';
 import router from './booking.routes';
 
@@ -250,5 +250,48 @@ describe('Booking Routes - Recovery Route Stack', () => {
     expect(recoveryLimiter).toHaveBeenCalled();
     expect(res.status).toHaveBeenCalledWith(429);
     expect(recoverBooking).not.toHaveBeenCalled();
+  });
+});
+
+describe('Booking Routes - GET /me Stack', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  function getMeHandlers() {
+    const layer = router.stack.find(
+      (item: any) => item.route?.path === '/me' && item.route?.methods?.get
+    );
+    if (!layer) {
+      throw new Error('GET /me route not found');
+    }
+    return layer.route.stack.map((s: any) => s.handle);
+  }
+
+  async function runMiddlewareChain(handlers: any[], req: any, res: any) {
+    let index = 0;
+    const next = async (err?: any) => {
+      if (err) throw err;
+      if (index < handlers.length) {
+        const currentHandler = handlers[index++];
+        await currentHandler(req, res, next);
+      }
+    };
+    await next();
+  }
+
+  it('should have optionalAuth applied on GET /me and execute getMyBookings', async () => {
+    const handlers = getMeHandlers();
+    const req: any = {
+      headers: { authorization: 'Bearer session-token-123' },
+    };
+    const res: any = {
+      status: vi.fn().mockReturnThis(),
+      json: vi.fn().mockReturnThis(),
+    };
+
+    await runMiddlewareChain(handlers, req, res);
+
+    expect(getMyBookings).toHaveBeenCalled();
   });
 });

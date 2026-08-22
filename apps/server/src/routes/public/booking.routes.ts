@@ -13,7 +13,6 @@ import {
     generateDownloadToken,
 } from '../../controllers/public/booking.controller';
 import {
-    requireAuth,
     optionalAuth,
 } from '../../middleware/auth.middleware';
 import { resendLimiter, generalLimiter, bookingLimiter, recoveryLimiter } from '../../middleware/rate.middleware';
@@ -53,13 +52,15 @@ router.put(
 );
 
 // ─────────────────────────────────────────────
-// Logged-in User Bookings
-// USER JWT ONLY
+// User & Guest Session Bookings
+// Supports:
+// - User JWT
+// - Guest session JWT
 // ─────────────────────────────────────────────
 
 router.get(
     '/me',
-    requireAuth,
+    optionalAuth,
     getMyBookings
 );
 

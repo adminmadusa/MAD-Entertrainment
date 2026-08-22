@@ -1,6 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 
@@ -84,14 +85,21 @@ export default function AdminLoginPage() {
 
           {/* Logo */}
           <div className="flex flex-col items-center mb-8">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-brand flex items-center justify-center shadow-glow mb-4">
-              <span className="text-white font-black text-xl">M</span>
+            <div className="w-16 h-16 rounded-2xl overflow-hidden shadow-glow bg-black border border-white/10 flex items-center justify-center mb-4 relative">
+              <Image
+                src="/brand/logo-128.png"
+                alt="MAD Entertainments Logo"
+                width={64}
+                height={64}
+                className="w-full h-full object-contain"
+                priority
+              />
             </div>
             <h1 className="text-2xl font-black text-white tracking-tight">
               Admin Portal
             </h1>
             <p className="text-text-muted text-sm mt-1">
-              MAD Entertrainment
+              MAD Entertainments
             </p>
           </div>
 
@@ -130,7 +138,7 @@ export default function AdminLoginPage() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="admin@madentertrainment.com"
+                  placeholder="name@company.com"
                   className={[
                     'w-full pl-10 pr-4 py-3 rounded-xl text-sm font-medium',
                     'bg-background-card border transition-all duration-200 outline-none',
@@ -211,12 +219,6 @@ export default function AdminLoginPage() {
           {/* Footer note */}
           <p className="text-center text-text-muted text-xs mt-6">
             Access restricted to authorised personnel only.
-            <br />
-            Run{' '}
-            <code className="bg-background-card px-1.5 py-0.5 rounded text-accent-purple-light font-mono text-[11px]">
-              npm run seed:admin
-            </code>{' '}
-            to create first admin.
           </p>
         </div>
 

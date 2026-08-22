@@ -20,6 +20,7 @@ export interface LoginFormProps {
   error: string;
   googleLoginIsPending: boolean;
   onGoogleLoginSuccess: (credential: string) => void;
+  readonlyEmail?: boolean;
 }
 
 export function LoginForm({
@@ -34,6 +35,7 @@ export function LoginForm({
   error,
   googleLoginIsPending,
   onGoogleLoginSuccess,
+  readonlyEmail,
 }: LoginFormProps) {
   const googleBtnRef = useRef<HTMLDivElement>(null);
   const { gsiLoaded, renderButton } = useGoogleSignIn({
@@ -51,12 +53,12 @@ export function LoginForm({
 
   return (
     <div className="space-y-4 sm:space-y-6">
-      <div className="text-center">
-        <h2 className="text-xl font-bold text-white">
-          Sign In
+      <div className="text-center space-y-3">
+        <h2 className="text-lg font-bold text-white tracking-tight leading-7">
+          {readonlyEmail ? 'Verify Account' : 'Sign In'}
         </h2>
-        <p className="text-xs text-text-muted mt-1">
-          Enter your email to continue
+        <p className="text-xs text-text-secondary leading-5 font-normal">
+          {readonlyEmail ? 'A 6-digit verification code will be sent to your email.' : 'Enter your email to continue'}
         </p>
       </div>
 
@@ -82,7 +84,10 @@ export function LoginForm({
               required
               autoComplete="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => !readonlyEmail && setEmail(e.target.value)}
+              readOnly={readonlyEmail}
+              disabled={isPending || readonlyEmail}
+              className={readonlyEmail ? 'opacity-85 cursor-not-allowed bg-white/5' : ''}
               placeholder="you@example.com"
             />
             {verifyCooldownRemaining <= 0 && error && (
@@ -92,16 +97,24 @@ export function LoginForm({
             )}
           </FormField>
 
-          <Button
-            type="submit"
-            variant="primary"
-            fullWidth
-            className="py-3.5 rounded-xl font-bold tracking-wide shadow-lg shadow-accent-purple/20 hover:shadow-accent-purple/40 active:scale-95 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-            disabled={requestCooldownRemaining > 0}
-            isLoading={isPending}
-          >
-            {requestCooldownRemaining > 0 ? `Request Code (${formatTime(requestCooldownRemaining)})` : 'Continue with Email'}
-          </Button>
+          {(() => {
+            let label = readonlyEmail ? 'Send Verification Code' : 'Continue with Email';
+            if (requestCooldownRemaining > 0) {
+              label = `Request Code (${formatTime(requestCooldownRemaining)})`;
+            }
+            return (
+              <Button
+                type="submit"
+                variant="primary"
+                fullWidth
+                className="py-3.5 rounded-xl font-bold tracking-wide shadow-lg shadow-accent-purple/20 hover:shadow-accent-purple/40 active:scale-95 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background min-h-[44px]"
+                disabled={requestCooldownRemaining > 0}
+                isLoading={isPending}
+              >
+                {label}
+              </Button>
+            );
+          })()}
         </div>
       </form>
 
@@ -117,26 +130,30 @@ export function LoginForm({
         .
       </p>
 
-      {/* Stacked Divider */}
-      <div className="flex items-center my-4 sm:my-6">
-        <div className="flex-grow border-t border-border-subtle/40" />
-        <span className="mx-4 text-xs font-bold text-text-muted/50 uppercase tracking-widest">or</span>
-        <div className="flex-grow border-t border-border-subtle/40" />
-      </div>
+      {!readonlyEmail && (
+        <>
+          {/* Stacked Divider */}
+          <div className="flex items-center my-4 sm:my-6">
+            <div className="flex-grow border-t border-border-subtle" />
+            <span className="mx-4 text-xs font-bold text-text-muted uppercase tracking-widest">or</span>
+            <div className="flex-grow border-t border-border-subtle" />
+          </div>
 
-      {/* Google SSO button */}
-      <div className="space-y-3">
-        <div
-          ref={googleBtnRef}
-          id="google-signin-btn-shared"
-          className="w-full min-h-[44px] flex justify-center items-center overflow-hidden hover:opacity-90 active:scale-98 transition-all duration-200"
-        />
-        {googleLoginIsPending && (
-          <p className="text-center text-xs text-purple-300/80 animate-pulse mt-2">
-            Signing in with Google...
-          </p>
-        )}
-      </div>
+          {/* Google SSO button */}
+          <div className="space-y-3">
+            <div
+              ref={googleBtnRef}
+              id="google-signin-btn-shared"
+              className="w-full min-h-[44px] flex justify-center items-center overflow-hidden hover:opacity-90 active:scale-98 transition-all duration-200"
+            />
+            {googleLoginIsPending && (
+              <p className="text-center text-xs text-purple-300/80 animate-pulse mt-2">
+                Signing in with Google...
+              </p>
+            )}
+          </div>
+        </>
+      )}
     </div>
   );
 }
