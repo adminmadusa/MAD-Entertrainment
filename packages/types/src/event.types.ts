@@ -12,14 +12,16 @@ export type TicketOfferRules = {
 
 export type TicketTierConfig = {
   tier: TicketTier;
-  tierName?: string;
-  name?: string;
+  name: string;
+  slug?: string;
   description?: string;
   price: number;
   discount?: number;
-  quantity?: number;
+  totalCapacity: number;
   soldCount?: number;
   groupSize?: number;
+  minPerBooking?: number;
+  maxPerBooking?: number;
   availabilityWindow?: {
     startDate?: string | Date;
     endDate?: string | Date;
