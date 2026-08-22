@@ -37,7 +37,7 @@ export const OfferRulesSection = React.memo(function OfferRulesSection({
           <>
             <div className="space-y-1.5">
               <label className="text-text-muted text-xs">
-                {ticket.discountType === 'percentage' ? 'Discount Percentage (%)' : 'Discount Value (₹)'}
+                {ticket.discountType === 'percentage' ? 'Discount Percentage (%)' : 'Discount Value ($)'}
               </label>
               <input
                 type="number"

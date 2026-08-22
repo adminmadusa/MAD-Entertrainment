@@ -46,7 +46,7 @@ export async function generateMetadata(
         url: `${SITE_URL}/events/${slug}`,
         siteName: 'MAD Entertrainment',
         images: bannerUrl ? [{ url: bannerUrl, width: 1200, height: 630 }] : previousImages,
-        locale: 'en_IN',
+        locale: 'en_US',
         type: 'website',
       },
       twitter: {
@@ -95,8 +95,8 @@ function buildEventJsonLd(
       name: event.venue ?? 'TBA',
       address: {
         '@type': 'PostalAddress',
-        addressLocality: event.venue ?? 'India',
-        addressCountry: 'IN',
+        addressLocality: event.venue ?? 'United States',
+        addressCountry: 'US',
       },
     },
     ...(event.bannerImage?.url
@@ -109,7 +109,7 @@ function buildEventJsonLd(
           offers: {
             '@type': 'Offer',
             price: minPrice,
-            priceCurrency: 'INR',
+            priceCurrency: 'USD',
             availability: event.isSoldOut
               ? 'https://schema.org/SoldOut'
               : 'https://schema.org/InStock',

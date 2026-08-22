@@ -216,7 +216,7 @@ export function CheckoutForm({ event, isExpired, isDisabled, onSubmit, onErrorSe
               value={guestPhone}
               disabled={isDisabled}
               onChange={(e) => setGuestPhone(e.target.value)}
-              placeholder="+91 98765 43210"
+              placeholder="+1 (555) 000-0000"
               className="h-10 text-sm"
             />
           </FormField>

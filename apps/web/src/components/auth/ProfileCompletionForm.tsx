@@ -134,7 +134,7 @@ export function ProfileCompletionForm({
           />
         </FormField>
 
-        <FormField label="Mobile Number" htmlFor="mobileNumber" hint="Include country code (e.g. +91)">
+        <FormField label="Mobile Number" htmlFor="mobileNumber" hint="Include US country code (e.g. +1)">
           <Input
             id="mobileNumber"
             type="tel"
@@ -143,7 +143,7 @@ export function ProfileCompletionForm({
             enterKeyHint="done"
             value={mobileNumber}
             onChange={(e) => setMobileNumber(e.target.value)}
-            placeholder="+919876543210"
+            placeholder="+15551234567"
           />
         </FormField>
       </div>

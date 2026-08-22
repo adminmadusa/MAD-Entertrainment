@@ -36,7 +36,7 @@ export async function generateMetadata(
         url: `${SITE_URL}/dj-operators/${slug}`,
         siteName: 'MAD Entertainment',
         images: bannerUrl ? [{ url: bannerUrl, width: 800, height: 800 }] : previousImages,
-        locale: 'en_IN',
+        locale: 'en_US',
         type: 'profile',
       },
     };
