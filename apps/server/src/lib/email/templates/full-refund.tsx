@@ -1,3 +1,4 @@
+import { formatMoney } from "@mad/shared";
 import { Section, Text } from "@react-email/components";
 
 import { renderTemplate } from "../render-template";
@@ -40,8 +41,6 @@ export default function FullRefundEmail({
     currency = "INR",
   } = data;
 
-  const currencySymbol = currency === "INR" ? "₹" : currency;
-
   return (
     <EmailBase
       previewText={`Refund Completed — ${bookingReference}`}
@@ -69,7 +68,7 @@ export default function FullRefundEmail({
 
         <Text style={emailSharedStyles.detailLabel}>Refunded Amount</Text>
         <Text style={emailSharedStyles.fullRefundAmount}>
-          {`${currencySymbol}${refundAmount.toLocaleString("en-IN")}`}
+          {formatMoney(refundAmount, currency)}
         </Text>
 
         <Text style={emailSharedStyles.detailLabel}>Refund Date</Text>

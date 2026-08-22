@@ -196,6 +196,7 @@ export async function sendEmail(input: SendEmailInput): Promise<void> {
       html: input.html,
       attachments: input.attachments,
       messageId: input.messageId,
+      headers: input.headers,
     });
     logger.info({ messageId: info.messageId }, "Email sent");
     logger.info({ messageId: info.messageId, to: input.to }, "Transactional email delivered successfully");
