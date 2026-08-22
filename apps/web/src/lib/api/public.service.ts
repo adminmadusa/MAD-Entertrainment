@@ -388,3 +388,10 @@ export async function publicDeleteProfilePhoto(): Promise<{ success: boolean; me
   const { data } = await apiClient.delete<{ success: boolean; message: string }>('/auth/profile/photo');
   return data;
 }
+
+export async function publicDeleteAccount(confirmation: string): Promise<{ success: boolean; message: string }> {
+  const { data } = await apiClient.delete<{ success: boolean; message: string }>('/auth/account', {
+    data: { confirmation },
+  });
+  return data;
+}

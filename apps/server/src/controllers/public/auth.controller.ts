@@ -130,4 +130,5 @@ export class AuthController {
   static updateProfile = UserProfileController.updateProfile;
   static uploadProfilePhoto = UserProfileController.uploadProfilePhoto;
   static deleteProfilePhoto = UserProfileController.deleteProfilePhoto;
+  static deleteAccount = UserProfileController.deleteAccount;
 }

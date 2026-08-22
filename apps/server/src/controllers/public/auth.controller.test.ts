@@ -52,6 +52,7 @@ const mockResponse = () => {
   res.status = vi.fn().mockReturnValue(res);
   res.json = vi.fn().mockReturnValue(res);
   res.cookie = vi.fn().mockReturnValue(res);
+  res.clearCookie = vi.fn().mockReturnValue(res);
   return res;
 };
 
@@ -523,6 +524,52 @@ describe('Public Auth Controller - Profile Management Tests', () => {
       expect(mockUser.picture).toBeUndefined();
       expect(mockUser.save).toHaveBeenCalled();
       expect(res.status).toHaveBeenCalledWith(200);
+    });
+
+    it('deleteAccount rejects when confirmation text does not match DELETE or user email', async () => {
+      const mockUserToDelete = {
+        _id: 'user-123',
+        email: 'user@example.com',
+        isActive: true,
+        save: vi.fn(),
+      };
+      vi.mocked(UserModel.findById).mockResolvedValue(mockUserToDelete as any);
+      const req = mockRequest({ body: { confirmation: 'wrong-input' } });
+      const res = mockResponse();
+
+      await expect(AuthController.deleteAccount(req, res)).rejects.toThrow(
+        'Please type "DELETE" or your email address to confirm account deletion'
+      );
+    });
+
+    it('deleteAccount succeeds when confirmation is "DELETE"', async () => {
+      const { UploadService } = await import('../../services/admin/upload.service');
+      const mockUserToDelete = {
+        _id: 'user-123',
+        email: 'user@example.com',
+        picture: 'https://res.cloudinary.com/mad/image/upload/v123/profile-photos/old-photo.jpg',
+        isActive: true,
+        save: vi.fn(),
+      };
+      vi.mocked(UserModel.findById).mockResolvedValue(mockUserToDelete as any);
+      vi.mocked(UploadService.deleteImage).mockResolvedValue(undefined);
+
+      const req = mockRequest({ body: { confirmation: 'DELETE' } });
+      const res = mockResponse();
+
+      await AuthController.deleteAccount(req, res);
+
+      expect(mockUserToDelete.isActive).toBe(false);
+      expect(mockUserToDelete.isEmailVerified).toBe(false);
+      expect(mockUserToDelete.name).toBe('Deleted User');
+      expect(mockUserToDelete.firstName).toBe('Deleted');
+      expect(mockUserToDelete.lastName).toBe('User');
+      expect(mockUserToDelete.save).toHaveBeenCalled();
+      expect(res.clearCookie).toHaveBeenCalledWith('refreshToken');
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({ success: true, message: 'Your account has been permanently deleted.' })
+      );
     });
   });
 });
