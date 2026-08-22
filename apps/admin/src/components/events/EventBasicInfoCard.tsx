@@ -39,6 +39,8 @@ export interface EventBasicInfoCardProps {
   setCountryCode: (val: string) => void;
   convenienceFee: number | '';
   setConvenienceFee: (val: number | '') => void;
+  taxPercentage?: number | '';
+  setTaxPercentage?: (val: number | '') => void;
 }
 
 export const EventBasicInfoCard = React.memo(function EventBasicInfoCard({
@@ -60,7 +62,19 @@ export const EventBasicInfoCard = React.memo(function EventBasicInfoCard({
   setCountryCode,
   convenienceFee,
   setConvenienceFee,
+  taxPercentage = '',
+  setTaxPercentage,
 }: EventBasicInfoCardProps) {
+  const country = getCountryConfig(countryCode);
+  const effectiveFeeText =
+    convenienceFee !== ''
+      ? `${country.symbol}${convenienceFee}`
+      : `${country.symbol}${country.defaultConvenienceFee} (Default)`;
+  const effectiveTaxText =
+    taxPercentage !== ''
+      ? `${taxPercentage}% (Custom)`
+      : `${country.defaultTax}% (${country.taxLabel})`;
+
   return (
     <div className="glass rounded-2xl border border-border-subtle p-6 space-y-5">
       <div className="flex items-center justify-between">
@@ -120,7 +134,7 @@ export const EventBasicInfoCard = React.memo(function EventBasicInfoCard({
         <EventVenueInput venue={venue} setVenue={setVenue} required />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border-t border-white/5 pt-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 border-t border-white/5 pt-4">
         <FormField label="Country Location" htmlFor="event-country">
           <select
             id="event-country"
@@ -135,7 +149,10 @@ export const EventBasicInfoCard = React.memo(function EventBasicInfoCard({
             ))}
           </select>
         </FormField>
-        <FormField label={`Convenience Fee (${getCountryConfig(countryCode).currency})`} htmlFor="event-convenience-fee">
+        <FormField
+          label={`Convenience Fee (${country.currency})`}
+          htmlFor="event-convenience-fee"
+        >
           <Input
             id="event-convenience-fee"
             type="number"
@@ -143,15 +160,42 @@ export const EventBasicInfoCard = React.memo(function EventBasicInfoCard({
             step="0.01"
             value={convenienceFee}
             onChange={(e) => setConvenienceFee(e.target.value === '' ? '' : Number(e.target.value))}
-            placeholder={`e.g. ${getCountryConfig(countryCode).defaultConvenienceFee}`}
+            placeholder={`Default: ${country.symbol}${country.defaultConvenienceFee}`}
+          />
+        </FormField>
+        <FormField
+          label={`Tax Rate (% ${country.taxLabel})`}
+          htmlFor="event-tax-percentage"
+        >
+          <Input
+            id="event-tax-percentage"
+            type="number"
+            min="0"
+            max="100"
+            step="0.01"
+            value={taxPercentage}
+            disabled={!setTaxPercentage}
+            onChange={(e) =>
+              setTaxPercentage &&
+              setTaxPercentage(e.target.value === '' ? '' : Number(e.target.value))
+            }
+            placeholder={`Default: ${country.defaultTax}%`}
           />
         </FormField>
         <div className="space-y-1">
-          <span className="text-text-secondary text-xs font-semibold block mb-1">Localization Parameters (Auto-Resolved)</span>
-          <div className="p-3 bg-white/3 border border-white/5 rounded-xl text-xs space-y-1 text-text-muted">
-            <p>Currency: <span className="text-white font-bold">{getCountryConfig(countryCode).currency} ({getCountryConfig(countryCode).symbol})</span></p>
-            <p>Tax Name: <span className="text-white font-bold">{getCountryConfig(countryCode).taxLabel}</span></p>
-            <p>Default Tax: <span className="text-white font-bold">{getCountryConfig(countryCode).defaultTax}%</span></p>
+          <span className="text-text-secondary text-xs font-semibold block mb-1">
+            Pricing Summary
+          </span>
+          <div className="p-2.5 bg-white/3 border border-white/5 rounded-xl text-xs space-y-0.5 text-text-muted">
+            <p>
+              Currency: <span className="text-white font-bold">{country.currency} ({country.symbol})</span>
+            </p>
+            <p>
+              Fee: <span className="text-white font-bold">{effectiveFeeText}</span>
+            </p>
+            <p>
+              Tax: <span className="text-white font-bold">{effectiveTaxText}</span>
+            </p>
           </div>
         </div>
       </div>
