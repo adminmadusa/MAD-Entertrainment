@@ -51,4 +51,4 @@ Does Not Replace:
 - documentation
 
 ## Related Rules
-- Refer to [AGENTS.MD](../../../AGENTS.MD) for quality checklists, PR gates, and static warning ratchets.
+- Refer to [AGENTS.md](../../../AGENTS.md) for quality checklists, PR gates, and static warning ratchets.

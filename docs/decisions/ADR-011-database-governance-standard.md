@@ -7,7 +7,7 @@
 - **Authors**: Antigravity AI Pair
 - **Reviewers**: Repository Governance Owner, Principal Architect
 - **Decision Category**: Architecture / Database Governance
-- **Related Documents**: [REPOSITORY_GOVERNANCE.md](../../REPOSITORY_GOVERNANCE.md), [AGENTS.MD](../../AGENTS.MD), [ARCHITECTURE.md](../../ARCHITECTURE.md), [API_CONTRACTS.md](../../API_CONTRACTS.md)
+- **Related Documents**: [REPOSITORY_GOVERNANCE.md](../../REPOSITORY_GOVERNANCE.md), [AGENTS.md](../../AGENTS.md), [ARCHITECTURE.md](../../ARCHITECTURE.md), [API_CONTRACTS.md](../../API_CONTRACTS.md)
 - **Related GitHub Issues**: #525
 - **Related Pull Requests**: None
 

@@ -7,7 +7,7 @@
 - **Authors**: Antigravity AI
 - **Reviewers**: Repository Governance Owner
 - **Decision Category**: Architecture / UI / Security / API / Governance
-- **Related Documents**: [ARCHITECTURE.md](../../ARCHITECTURE.md), [AGENTS.MD](../../AGENTS.MD)
+- **Related Documents**: [ARCHITECTURE.md](../../ARCHITECTURE.md), [AGENTS.md](../../AGENTS.md)
 - **Related GitHub Issues**: #502
 - **Related Pull Requests**: None
 

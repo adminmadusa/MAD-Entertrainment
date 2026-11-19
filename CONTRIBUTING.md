@@ -8,7 +8,7 @@
 - **Related Documents:**
   - [README.md](README.md)
   - [REPOSITORY_GOVERNANCE.md](REPOSITORY_GOVERNANCE.md)
-  - [AGENTS.MD](AGENTS.MD)
+  - [AGENTS.md](AGENTS.md)
 
 ---
 
