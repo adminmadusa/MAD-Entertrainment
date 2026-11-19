@@ -66,6 +66,7 @@ vi.mock('../../models/booking.schema', () => ({
     updateMany: vi.fn().mockResolvedValue({ modifiedCount: 0 }),
     exists: vi.fn(),
     countDocuments: vi.fn(),
+    distinct: vi.fn().mockResolvedValue([]),
   },
 }));
 
@@ -76,6 +77,7 @@ vi.mock('../../models/notification.schema', () => ({
     updateOne: vi.fn(),
     exists: vi.fn(),
     countDocuments: vi.fn(),
+    distinct: vi.fn().mockResolvedValue([]),
   },
 }));
 
@@ -114,6 +116,7 @@ vi.mock('../../utils/logger', () => ({
 vi.mock('../../models/ticket.schema', () => ({
   Ticket: {
     countDocuments: vi.fn(),
+    aggregate: vi.fn().mockResolvedValue([]),
   },
 }));
 
@@ -402,9 +405,7 @@ describe('ConsistencyService - Pipeline Watchdog (PR-T4A)', () => {
     vi.mocked(Booking.find).mockReturnValue(mockCreateMockQuery([mockBooking]) as any);
     vi.mocked(Ticket.countDocuments).mockResolvedValue(2);
 
-    vi.mocked(Notification.exists)
-      .mockResolvedValueOnce(false as any) // first call in loop
-      .mockResolvedValueOnce(false as any); // final verification check
+    vi.mocked(Notification.exists).mockResolvedValue(false as any);
 
     const count = await NotificationConsistencyService.repairOrphanedConfirmedDeliveries();
 
@@ -435,9 +436,7 @@ describe('ConsistencyService - Pipeline Watchdog (PR-T4A)', () => {
     vi.mocked(Booking.find).mockReturnValue(mockCreateMockQuery([mockBooking]) as any);
     vi.mocked(Ticket.countDocuments).mockResolvedValue(2);
 
-    vi.mocked(Notification.exists)
-      .mockResolvedValueOnce(false as any) // first check
-      .mockResolvedValueOnce(true as any); // final check
+    vi.mocked(Notification.exists).mockResolvedValue(true as any);
 
     const count = await NotificationConsistencyService.repairOrphanedConfirmedDeliveries();
 

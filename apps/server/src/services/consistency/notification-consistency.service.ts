@@ -10,7 +10,7 @@ import { Ticket } from '../../models/ticket.schema';
 import { logger } from '../../utils/logger';
 import { createNotificationSafe } from '../notification.service';
 import { QueueService } from '../queue.service';
-import { UNTICKETED_BOOKING_WINDOW_MS } from './booking-consistency.service';
+import { BookingConsistencyService, UNTICKETED_BOOKING_WINDOW_MS } from './booking-consistency.service';
 
 const STUCK_NOTIFICATION_THRESHOLD_MS = 15 * 60 * 1000;
 const ORPHANED_DELIVERY_THRESHOLD_MS = 10 * 60 * 1000;
@@ -291,6 +291,45 @@ export class NotificationConsistencyService {
     });
   }
 
+  static async getSentNotificationBookingIds(
+    bookingIds: any[],
+    batchSize = 100
+  ): Promise<Set<string>> {
+    const sentSet = new Set<string>();
+    if (!bookingIds || bookingIds.length === 0) {
+      return sentSet;
+    }
+
+    for (let i = 0; i < bookingIds.length; i += batchSize) {
+      const batch = bookingIds.slice(i, i + batchSize);
+      if (typeof Notification.distinct === 'function') {
+        const results = await Notification.distinct('bookingId', {
+          bookingId: { $in: batch },
+          status: 'sent',
+        });
+        for (const id of results) {
+          if (id) {
+            sentSet.add(id.toString());
+          }
+        }
+      } else {
+        const found = await Notification.find({
+          bookingId: { $in: batch },
+          status: 'sent',
+        })
+          .select('bookingId')
+          .lean();
+        for (const doc of found) {
+          if (doc.bookingId) {
+            sentSet.add(doc.bookingId.toString());
+          }
+        }
+      }
+    }
+
+    return sentSet;
+  }
+
   static async repairOrphanedConfirmedDeliveries(): Promise<number> {
     const windowStart = new Date(Date.now() - UNTICKETED_BOOKING_WINDOW_MS);
     const orphanedThreshold = new Date(Date.now() - ORPHANED_DELIVERY_THRESHOLD_MS);
@@ -303,20 +342,34 @@ export class NotificationConsistencyService {
       .select('_id eventId guestEmail guestName totalTickets')
       .lean();
 
+    if (candidates.length === 0) {
+      return 0;
+    }
+
+    const candidateIds = candidates.map((c) => c._id);
+    let ticketCounts: Map<string, number>;
+    let sentNotifications: Set<string>;
+
+    try {
+      [ticketCounts, sentNotifications] = await Promise.all([
+        BookingConsistencyService.getTicketCountsByBookingIds(candidateIds),
+        this.getSentNotificationBookingIds(candidateIds),
+      ]);
+    } catch (error) {
+      logger.warn({ error }, 'watchdog: failed to batch query tickets or notifications for orphaned deliveries');
+      return 0;
+    }
+
     let successCount = 0;
     for (const candidate of candidates) {
       try {
-        const ticketCount = await Ticket.countDocuments({ bookingId: candidate._id });
+        const ticketCount = ticketCounts.get(candidate._id.toString()) ?? 0;
         if (ticketCount !== candidate.totalTickets) {
           // Skip delivery since tickets are not fully generated yet
           continue;
         }
 
-        const hasSentNotification = await Notification.exists({
-          bookingId: candidate._id,
-          status: 'sent',
-        });
-        if (hasSentNotification) {
+        if (sentNotifications.has(candidate._id.toString())) {
           continue;
         }
 
@@ -363,24 +416,33 @@ export class NotificationConsistencyService {
       .select('_id totalTickets')
       .lean();
 
+    if (candidates.length === 0) {
+      return 0;
+    }
+
+    const candidateIds = candidates.map((c) => c._id);
+    let ticketCounts: Map<string, number>;
+    let sentNotifications: Set<string>;
+
+    try {
+      [ticketCounts, sentNotifications] = await Promise.all([
+        BookingConsistencyService.getTicketCountsByBookingIds(candidateIds),
+        this.getSentNotificationBookingIds(candidateIds),
+      ]);
+    } catch (error) {
+      logger.warn({ error }, 'watchdog: failed to batch count tickets or notifications for orphaned deliveries');
+      return 0;
+    }
+
     let count = 0;
     for (const candidate of candidates) {
-      try {
-        const ticketCount = await Ticket.countDocuments({ bookingId: candidate._id });
-        if (ticketCount !== candidate.totalTickets) {
-          continue;
-        }
+      const ticketCount = ticketCounts.get(candidate._id.toString()) ?? 0;
+      if (ticketCount !== candidate.totalTickets) {
+        continue;
+      }
 
-        const hasSentNotification = await Notification.exists({
-          bookingId: candidate._id,
-          status: 'sent',
-        });
-
-        if (!hasSentNotification) {
-          count++;
-        }
-      } catch (error) {
-        logger.warn({ bookingId: candidate._id, error }, 'watchdog: failed to count orphaned delivery candidate');
+      if (!sentNotifications.has(candidate._id.toString())) {
+        count++;
       }
     }
     return count;
