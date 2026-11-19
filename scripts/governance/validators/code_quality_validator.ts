@@ -1,23 +1,76 @@
 // scripts/governance/validators/code_quality_validator.ts
-import { existsSync, readFileSync } from 'fs';
-import { resolve, normalize } from 'path';
-import { GovernanceValidator } from '../core/validator';
-import { ValidationResult, ValidationError, GovernanceMetadata } from '../core/types';
-import { governanceConfig } from '../core/governance.config';
+import { execSync } from "child_process";
+import { existsSync, readFileSync, writeFileSync } from "fs";
+import { normalize, resolve } from "path";
 
-const workspaceRoot = resolve(__dirname, '../../..');
+import { governanceConfig } from "../core/governance.config";
+import {
+  GovernanceMetadata,
+  ValidationError,
+  ValidationResult,
+} from "../core/types";
+import { GovernanceValidator } from "../core/validator";
+import { classifyCodeFile } from "./helpers/code_quality_classifier";
 
-interface FileClassification {
+const workspaceRoot = resolve(__dirname, "../../..");
+const baselineFile = resolve(__dirname, "../core/code_quality_baseline.json");
+
+interface BaselineEntry {
   ruleId: string;
-  category: string;
-  limit: number;
-  label: string;
+  lineCount: number;
 }
 
 export class CodeQualityValidator implements GovernanceValidator {
-  readonly name = 'CodeQualityValidator';
+  readonly name = "CodeQualityValidator";
 
-  public async run(files: string[], _metadata: GovernanceMetadata): Promise<ValidationResult> {
+  private getChangedFiles(_metadata?: GovernanceMetadata): Set<string> {
+    if ((_metadata as any)?.changedFiles) {
+      return new Set(
+        ((_metadata as any).changedFiles as string[]).map((f) =>
+          normalize(f).replace(/\\/g, "/"),
+        ),
+      );
+    }
+    const set = new Set<string>();
+    try {
+      const diff = execSync("git diff --name-only HEAD", {
+        cwd: workspaceRoot,
+        encoding: "utf8",
+      });
+      diff
+        .split("\n")
+        .map((f) => f.trim())
+        .filter(Boolean)
+        .forEach((f) => set.add(normalize(f).replace(/\\/g, "/")));
+    } catch {}
+    try {
+      const untracked = execSync("git ls-files --others --exclude-standard", {
+        cwd: workspaceRoot,
+        encoding: "utf8",
+      });
+      untracked
+        .split("\n")
+        .map((f) => f.trim())
+        .filter(Boolean)
+        .forEach((f) => set.add(normalize(f).replace(/\\/g, "/")));
+    } catch {}
+    return set;
+  }
+
+  private loadBaseline(): { entries: Record<string, BaselineEntry>; raw: any } {
+    if (!existsSync(baselineFile)) return { entries: {}, raw: { entries: {} } };
+    try {
+      const raw = JSON.parse(readFileSync(baselineFile, "utf-8"));
+      return { entries: raw.entries || {}, raw };
+    } catch {
+      return { entries: {}, raw: { entries: {} } };
+    }
+  }
+
+  public async run(
+    files: string[],
+    _metadata: GovernanceMetadata,
+  ): Promise<ValidationResult> {
     const errors: ValidationError[] = [];
     const warnings: ValidationError[] = [];
     const startTime = Date.now();
@@ -36,115 +89,145 @@ export class CodeQualityValidator implements GovernanceValidator {
 
     const { thresholds, exceptions = [], enforcement } = config;
     const now = new Date();
-
-    // Map exceptions by normalized relative path
-    const exceptionMap = new Map<string, typeof exceptions[0]>();
+    const exceptionMap = new Map<string, (typeof exceptions)[0]>();
     for (const exc of exceptions) {
-      exceptionMap.set(normalize(exc.filePath).replace(/\\/g, '/'), exc);
+      exceptionMap.set(normalize(exc.filePath).replace(/\\/g, "/"), exc);
     }
 
-    // Filter files in scope
-    const excluded = new Set((governanceConfig.scanScope.excludedPaths || []).map(p => normalize(p).replace(/\\/g, '/')));
+    const { entries: baseline, raw } = this.loadBaseline();
+    const changedFiles = this.getChangedFiles(_metadata);
+    let baselinePruned = false;
+
+    const excluded = new Set(
+      (governanceConfig.scanScope.excludedPaths || []).map((p) =>
+        normalize(p).replace(/\\/g, "/"),
+      ),
+    );
 
     for (const relPath of files) {
-      const normPath = normalize(relPath).replace(/\\/g, '/');
-
-      // Skip excluded paths
-      if (Array.from(excluded).some(ex => normPath.startsWith(ex) || normPath.includes(`/${ex}/`))) {
+      const normPath = normalize(relPath).replace(/\\/g, "/");
+      if (
+        Array.from(excluded).some(
+          (ex) => normPath.startsWith(ex) || normPath.includes(`/${ex}/`),
+        )
+      )
         continue;
-      }
-
-      // Skip non-code files
-      if (!/\.(ts|tsx)$/.test(normPath)) {
-        continue;
-      }
+      if (!/\.(ts|tsx)$/.test(normPath)) continue;
 
       const fullPath = resolve(workspaceRoot, relPath);
-      if (!existsSync(fullPath)) {
-        continue;
-      }
+      if (!existsSync(fullPath)) continue;
 
       let content: string;
       try {
-        content = readFileSync(fullPath, 'utf-8');
+        content = readFileSync(fullPath, "utf-8");
       } catch {
         continue;
       }
 
-      const lines = content.split('\n');
+      const lines = content.split("\n");
       const lineCount = lines.length;
-
-      const classification = this.classifyFile(normPath, thresholds);
-      if (!classification) {
-        continue;
-      }
+      const classification = classifyCodeFile(normPath, thresholds);
+      if (!classification) continue;
 
       const { ruleId, limit, label } = classification;
       const exception = exceptionMap.get(normPath);
+      const baselineEntry = baseline[normPath];
+      const isChanged = changedFiles.has(normPath);
 
+      // 1. Explicit in-memory exception handling (for backward compatibility)
       if (exception && exception.ruleId === ruleId) {
-        // 1. Check if exception has expired
         const expiresAt = new Date(exception.expiresAt);
         if (now > expiresAt) {
           errors.push({
             file: relPath,
             rule: ruleId,
-            severity: 'ERROR',
-            message: `Code Quality Exception Expired! File "${relPath}" (${lineCount} lines) was granted an exception until ${exception.expiresAt}, which has now elapsed. Owner: ${exception.owner}. Remediation is required.`,
+            severity: "ERROR",
+            message: `Code Quality Exception Expired! File "${relPath}" (${lineCount} lines) was granted an exception until ${exception.expiresAt}. Owner: ${exception.owner}.`,
             line: 1,
             snippet: `Exception expired: ${exception.expiresAt} (Ceiling: ${exception.maxLinesCeiling} lines)`,
           });
           continue;
         }
 
-        // 2. Check if file exceeded its frozen ceiling
         if (lineCount > exception.maxLinesCeiling) {
           errors.push({
             file: relPath,
             rule: ruleId,
-            severity: 'ERROR',
-            message: `Code Quality Freeze Violation! File "${relPath}" has grown to ${lineCount} lines, exceeding its frozen exception ceiling of ${exception.maxLinesCeiling} lines. Legacy files on exception are frozen and cannot grow further.`,
+            severity: "ERROR",
+            message: `Code Quality Freeze Violation! File "${relPath}" has grown to ${lineCount} lines, exceeding frozen exception ceiling of ${exception.maxLinesCeiling} lines.`,
             line: 1,
             snippet: `Current lines: ${lineCount} > Exception ceiling: ${exception.maxLinesCeiling}`,
           });
           continue;
         }
-
-        // Exception is active and within frozen ceiling
         continue;
       }
 
-      // No exception active: validate against hard limits
-      if (lineCount > limit) {
-        const severity = enforcement[ruleId as keyof typeof enforcement] === 'WARN' ? 'WARNING' : 'ERROR';
-        const errorObj: ValidationError = {
-          file: relPath,
-          rule: ruleId,
-          severity: severity === 'ERROR' ? 'ERROR' : 'WARNING',
-          message: `${label} file size limit exceeded: "${relPath}" has ${lineCount} lines (Maximum allowed: ${limit} lines). Decompose this file into modular sub-components, custom hooks, or utility helpers.`,
-          line: 1,
-          snippet: `File length: ${lineCount} lines (Limit: ${limit} lines)`,
-        };
-
-        if (severity === 'ERROR') {
-          errors.push(errorObj);
+      // 2. Tracked baseline handling
+      if (baselineEntry && lineCount <= limit) {
+        delete baseline[normPath];
+        baselinePruned = true;
+      } else if (lineCount > limit) {
+        if (baselineEntry) {
+          if (isChanged) {
+            errors.push({
+              file: relPath,
+              rule: ruleId,
+              severity: "ERROR",
+              message: `Modified maintained file "${relPath}" must comply with the 249-line limit (${lineCount} lines > ${limit} lines). Refactor before merge.`,
+              line: 1,
+              snippet: `File length: ${lineCount} lines (Limit: ${limit} lines)`,
+            });
+          } else if (lineCount > baselineEntry.lineCount) {
+            errors.push({
+              file: relPath,
+              rule: ruleId,
+              severity: "ERROR",
+              message: `Code Quality Freeze Violation! File "${relPath}" has grown to ${lineCount} lines, exceeding frozen exception ceiling of ${baselineEntry.lineCount} lines.`,
+              line: 1,
+              snippet: `Current lines: ${lineCount} > Baseline ceiling: ${baselineEntry.lineCount}`,
+            });
+          } else {
+            warnings.push({
+              file: relPath,
+              rule: ruleId,
+              severity: "WARNING",
+              message: `[BASELINE] Legacy code quality debt: "${relPath}" has ${lineCount} lines (Ceiling: ${baselineEntry.lineCount}, Target: ${limit} lines). Tracked in code_quality_baseline.json.`,
+              line: 1,
+              snippet: `Baseline violation: ${lineCount} lines (Ceiling: ${baselineEntry.lineCount})`,
+            });
+          }
         } else {
-          warnings.push(errorObj);
+          // Un-baselined oversized file
+          const severity =
+            enforcement[ruleId as keyof typeof enforcement] === "WARN"
+              ? "WARNING"
+              : "ERROR";
+          const errorObj: ValidationError = {
+            file: relPath,
+            rule: ruleId,
+            severity: severity === "ERROR" ? "ERROR" : "WARNING",
+            message: `${label} file size limit exceeded: "${relPath}" has ${lineCount} lines (Maximum allowed: ${limit} lines). Decompose this file into modular units.`,
+            line: 1,
+            snippet: `File length: ${lineCount} lines (Limit: ${limit} lines)`,
+          };
+          if (severity === "ERROR") errors.push(errorObj);
+          else warnings.push(errorObj);
         }
       }
 
       // Check VAL-QUAL-008: State & Hook Overload in UI Components
-      if (classification.ruleId === 'VAL-QUAL-001') {
+      if (classification.ruleId === "VAL-QUAL-001") {
         const stateCount = (content.match(/\buseState\s*\(/g) || []).length;
         const effectCount = (content.match(/\buseEffect\s*\(/g) || []).length;
         const totalHooks = stateCount + effectCount;
 
-        if (totalHooks > thresholds.maxStateHooks && !exception) {
+        if (totalHooks > thresholds.maxStateHooks && !exception && !baselineEntry) {
           warnings.push({
             file: relPath,
-            rule: 'VAL-QUAL-008',
-            severity: 'WARNING',
-            message: `Single Responsibility Warning: Component "${relPath}" declares ${totalHooks} state/effect hooks (${stateCount} useState, ${effectCount} useEffect). Consider consolidating state management into a dedicated custom hook.`,
+            rule: "VAL-QUAL-008",
+            severity: "WARNING",
+            message: `Single Responsibility Warning: Component "${relPath}" declares ${totalHooks} state/effect hooks (${stateCount} useState, ${effectCount} useEffect).`,
             line: 1,
             snippet: `Total state/effect hooks: ${totalHooks} (Recommended max: ${thresholds.maxStateHooks})`,
           });
@@ -152,85 +235,21 @@ export class CodeQualityValidator implements GovernanceValidator {
       }
     }
 
+    if (baselinePruned) {
+      try {
+        raw.entries = baseline;
+        raw.updatedAt = new Date().toISOString();
+        writeFileSync(baselineFile, JSON.stringify(raw, null, 2), "utf-8");
+      } catch {}
+    }
+
     return {
       name: this.name,
       success: errors.length === 0,
       errors,
       warnings,
-      statistics: {
-        totalFilesEvaluated: files.length,
-      },
+      statistics: { totalFilesEvaluated: files.length },
       executionTimeMs: Date.now() - startTime,
     };
-  }
-
-  private classifyFile(
-    normPath: string,
-    thresholds: typeof governanceConfig['codeQuality']['thresholds']
-  ): FileClassification | null {
-    // 1. Test Files
-    if (/\.(test|spec)\.(ts|tsx)$/.test(normPath)) {
-      return {
-        ruleId: 'VAL-QUAL-006',
-        category: 'testing',
-        limit: thresholds.testMaxLines,
-        label: 'Test Suite',
-      };
-    }
-
-    // 2. Custom Hooks
-    if (/(^|\/)use[A-Z0-9].*\.(ts|tsx)$/.test(normPath) || normPath.includes('/hooks/')) {
-      return {
-        ruleId: 'VAL-QUAL-002',
-        category: 'hooks',
-        limit: thresholds.hookMaxLines,
-        label: 'Custom Hook',
-      };
-    }
-
-    // 3. Controllers
-    if (normPath.includes('/controllers/') || normPath.endsWith('.controller.ts')) {
-      return {
-        ruleId: 'VAL-QUAL-003',
-        category: 'controllers',
-        limit: thresholds.controllerMaxLines,
-        label: 'Controller',
-      };
-    }
-
-    // 4. Services
-    if (normPath.includes('/services/') || normPath.endsWith('.service.ts')) {
-      return {
-        ruleId: 'VAL-QUAL-004',
-        category: 'services',
-        limit: thresholds.serviceMaxLines,
-        label: 'Backend Service',
-      };
-    }
-
-    // 5. Schemas & Type definitions
-    if (normPath.includes('/models/') || normPath.endsWith('.schema.ts') || normPath === 'packages/types/src/index.ts') {
-      return {
-        ruleId: 'VAL-QUAL-005',
-        category: 'schemas',
-        limit: thresholds.schemaMaxLines,
-        label: 'Schema / Type Definitions',
-      };
-    }
-
-    // 6. UI Components & Pages
-    if (
-      normPath.endsWith('.tsx') &&
-      (normPath.includes('/components/') || normPath.includes('/app/') || normPath.startsWith('packages/ui/'))
-    ) {
-      return {
-        ruleId: 'VAL-QUAL-001',
-        category: 'components',
-        limit: thresholds.componentMaxLines,
-        label: 'UI Component / Page',
-      };
-    }
-
-    return null;
   }
 }
