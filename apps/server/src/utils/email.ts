@@ -1,6 +1,5 @@
 import * as Sentry from '@sentry/node';
-import nodemailer from 'nodemailer';
-import type { Transporter } from 'nodemailer';
+import nodemailer, { type Transporter } from 'nodemailer';
 
 import { getEnv } from '../config/env';
 import { auditLog } from './audit';
