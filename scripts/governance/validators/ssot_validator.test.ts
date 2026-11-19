@@ -16,7 +16,7 @@ const OWNER_MAP: Record<string, string[]> = {
   'API_CONTRACTS.md': ['API Owner', 'Repository Architecture & API Governance'],
   'docs/decisions/README.md': ['Architecture Review Board', 'Repository Architecture'],
   'RUNBOOK.md': ['Platform/Deployment Owner', 'DevOps & Platform Engineering'],
-  'AGENTS.MD': ['Repository Governance Owner', 'Repository Governance Owner & Maintainers'],
+  'AGENTS.md': ['Repository Governance Owner', 'Repository Governance Owner & Maintainers'],
   'CHANGELOG.md': ['Repository Governance Owner & Maintainers', 'Repository Governance Owner', 'Documentation Owner'],
   'TESTING.md': ['QA Owner', 'Repository Governance Owner', 'Platform/Deployment Owner']
 };
@@ -56,7 +56,7 @@ const REQUIRED_SECTIONS: Record<string, string[][]> = {
     ['Testing Strategy', 'Purpose', 'Core Verification Commands'],
     ['Verification Requirements']
   ],
-  'AGENTS.MD': [
+  'AGENTS.md': [
     ['Responsibilities', 'Applies To', 'PURPOSE', 'Relationship to Repository Governance Policy'],
     ['Workflow', 'IMPLEMENTATION WORKFLOW']
   ]

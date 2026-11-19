@@ -143,6 +143,9 @@ importers:
       '@mad/shared':
         specifier: workspace:*
         version: link:../../packages/shared
+      '@mad/types':
+        specifier: workspace:*
+        version: link:../../packages/types
       '@mad/validations':
         specifier: workspace:*
         version: link:../../packages/validations

@@ -8,12 +8,12 @@
 - **Last Reviewed**: 2026-07-05
 
 Supersedes:
-- [governance.md](docs/architecture/governance.md) (Deleted)
+- `docs/architecture/governance.md` (Deleted)
 
 Related Documents:
 - [README.md](README.md)
 - [REPOSITORY_GOVERNANCE.md](REPOSITORY_GOVERNANCE.md)
-- [AGENTS.MD](AGENTS.MD)
+- [AGENTS.md](AGENTS.md)
 - [RUNBOOK.md](RUNBOOK.md)
 - [DEPLOYMENT_MAP.md](DEPLOYMENT_MAP.md)
 - [API_CONTRACTS.md](API_CONTRACTS.md)

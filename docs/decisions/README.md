@@ -120,4 +120,4 @@ Architectural review and approvals are divided into operational areas:
 | **Infrastructure & Hosting**| Platform Team | [DEPLOYMENT_MAP.md](../../DEPLOYMENT_MAP.md) |
 | **Payments & Payouts** | Financial Domain Tech Lead | [API_CONTRACTS.md](../../API_CONTRACTS.md) |
 | **Authentication & AuthZ** | Security Architect | [API_CONTRACTS.md](../../API_CONTRACTS.md) |
-| **Governance & Quality** | Repository Governance Owner | [REPOSITORY_GOVERNANCE.md](../../REPOSITORY_GOVERNANCE.md) / [AGENTS.MD](../../AGENTS.MD) |
+| **Governance & Quality** | Repository Governance Owner | [REPOSITORY_GOVERNANCE.md](../../REPOSITORY_GOVERNANCE.md) / [AGENTS.md](../../AGENTS.md) |

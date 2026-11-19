@@ -12,7 +12,7 @@
   - [DEPLOYMENT_MAP.md](DEPLOYMENT_MAP.md)
   - [API_CONTRACTS.md](API_CONTRACTS.md)
   - [RUNBOOK.md](RUNBOOK.md)
-  - [AGENTS.MD](AGENTS.MD)
+  - [AGENTS.md](AGENTS.md)
   - [TESTING.md](TESTING.md)
   - [Architecture Decisions Index](docs/decisions/README.md)
   - [CHANGELOG.md](CHANGELOG.md)
@@ -63,7 +63,7 @@ graph TD
 | [API_CONTRACTS.md](API_CONTRACTS.md) | Endpoint definitions & validation | Authority on request/response schemas, errors, and authentication. |
 | [docs/decisions/](docs/decisions/README.md) | Decision records (ADRs) | Rationale behind historical technical decisions (the "Why"). |
 | [RUNBOOK.md](RUNBOOK.md) | Operational guidelines & scripts | Incident response, backup, and manual testing procedures. |
-| [AGENTS.MD](AGENTS.MD) | Operational developer instructions | Instructions for human and AI agents implementing the governance policies. |
+| [AGENTS.md](AGENTS.md) | Operational developer instructions | Instructions for human and AI agents implementing the governance policies. |
 
 ### Document Dependency Matrix
 
@@ -147,7 +147,7 @@ Use this matrix to determine the SSOT location, whether an ADR is required, and 
 | **Architecture** | [ARCHITECTURE.md](ARCHITECTURE.md) | Yes | Workspace build + structural review |
 | **Deployment** | [DEPLOYMENT_MAP.md](DEPLOYMENT_MAP.md) | Sometimes | Configuration validation + smoke test |
 | **API Contracts** | [API_CONTRACTS.md](API_CONTRACTS.md) | Breaking changes only | Integration tests + validation checks |
-| **Security** | [AGENTS.MD](AGENTS.MD) / ADR | Yes | Security review + secret scanning |
+| **Security** | [AGENTS.md](AGENTS.md) / ADR | Yes | Security review + secret scanning |
 | **Governance** | [REPOSITORY_GOVERNANCE.md](REPOSITORY_GOVERNANCE.md) | Yes | Document review + link audits |
 
 ---

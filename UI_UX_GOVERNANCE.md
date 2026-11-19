@@ -16,7 +16,7 @@ owner: MAD Engineering Governance
 | **Supersedes** | 1.2.0 |
 | **Review Frequency** | Quarterly |
 | **Related Standards** | None (SSOT) |
-| **Related Documents** | [AGENTS.MD](AGENTS.MD), [REPOSITORY_GOVERNANCE.md](REPOSITORY_GOVERNANCE.md), [ARCHITECTURE.md](ARCHITECTURE.md), [.agents/skills/ui-ux/SKILL.md](.agents/skills/ui-ux/SKILL.md) |
+| **Related Documents** | [AGENTS.md](AGENTS.md), [REPOSITORY_GOVERNANCE.md](REPOSITORY_GOVERNANCE.md), [ARCHITECTURE.md](ARCHITECTURE.md), [.agents/skills/ui-ux/SKILL.md](.agents/skills/ui-ux/SKILL.md) |
 
 ---
 
