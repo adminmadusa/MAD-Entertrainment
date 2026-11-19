@@ -127,7 +127,7 @@ These tokens define the background layering system.
    ```json
    "./themes/<product>": "./src/themes/<product>/index.css"
    ```
-5. Document the new theme in `docs/design-system/future-themes.md`
+5. Document the new theme in the theme registry and release notes
 6. Import in the product application's root layout:
    ```css
    @import "@mad/ui/themes/<product>";

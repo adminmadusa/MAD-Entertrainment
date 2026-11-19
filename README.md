@@ -109,6 +109,9 @@ For detailed information about each subsystem, refer to the respective Single So
 - [docs/governance/ENGINE.md](docs/governance/ENGINE.md) — Governance engine architecture.
 - [packages/ui/README.md](packages/ui/README.md) — Shared UI component library and design primitives catalog.
 - [openspec/SPECS.md](openspec/SPECS.md) — Active capability specifications and change management proposals.
+- [UI_UX_GOVERNANCE.md](UI_UX_GOVERNANCE.md) — UI-001 design system, accessibility, and user experience standards.
+- [SECURITY.md](SECURITY.md) — Vulnerability disclosure policy and security reporting procedures.
+- [Pull Request Template](.github/PULL_REQUEST_TEMPLATE.md) — Standard PR checklist and quality gating template.
 
 ---
 
