@@ -3,6 +3,9 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 
+import { normalizeTicketReference } from '@mad/shared';
+import { extractApiError } from '@mad/utils';
+
 import {
   adminScanTicket,
   adminGetScannerStats,
@@ -11,11 +14,10 @@ import {
   ScanResponse,
   ScannerModeState,
 } from '../lib/api/admin/scanner.service';
-import { extractApiError, normalizeTicketReference } from '@mad/utils';
 import { playSuccess, playFailure } from '../lib/audio/gate-audio';
+import { computeScannerStats } from './scanner-stats.utils';
 import { useOfflineSync } from './useOfflineSync';
 import { useScannerHistoryQuery } from './useScannerHistoryQuery';
-import { computeScannerStats } from './scanner-stats.utils';
 
 export type { ScannerModeState };
 
