@@ -1,30 +1,30 @@
 import { Request, Response, NextFunction } from 'express';
-import { AnyZodObject, z, ZodError } from 'zod';
+import { z, ZodError } from 'zod';
 
 import { AppError } from './error.middleware';
 
-export const validate = (schema: AnyZodObject) => async (req: Request, _res: Response, next: NextFunction) => {
+export const validate = (schema: z.ZodTypeAny) => async (req: Request, _res: Response, next: NextFunction) => {
   try {
-    const parsed = await schema.parseAsync({
+    const parsed = (await schema.parseAsync({
       body: req.body,
       query: req.query,
       params: req.params,
-    });
+    })) as { body?: unknown; query?: unknown; params?: unknown };
 
     if (Object.prototype.hasOwnProperty.call(parsed, 'body')) {
       req.body = parsed.body;
     }
     if (Object.prototype.hasOwnProperty.call(parsed, 'query')) {
-      req.query = parsed.query;
+      req.query = parsed.query as Request['query'];
     }
     if (Object.prototype.hasOwnProperty.call(parsed, 'params')) {
-      req.params = parsed.params;
+      req.params = parsed.params as Request['params'];
     }
 
     return next();
   } catch (error) {
     if (error instanceof ZodError) {
-      const messages = error.errors.map((e) => `${e.path.join('.')}: ${e.message}`);
+      const messages = error.issues.map((e) => `${e.path.join('.')}: ${e.message}`);
       return next(AppError.badRequest(messages.join(', ')));
     }
     return next(error);
@@ -54,7 +54,7 @@ export function validateQuery<T extends z.ZodTypeAny>(schema: T) {
     if (!result.success) {
       return next(AppError.badRequest('Validation failed', formatZodErrors(result.error)));
     }
-    req.query = result.data;
+    req.query = result.data as Request['query'];
     next();
   };
 }
@@ -68,7 +68,7 @@ export function validateParams<T extends z.ZodTypeAny>(schema: T) {
     if (!result.success) {
       return next(AppError.badRequest('Validation failed', formatZodErrors(result.error)));
     }
-    req.params = result.data;
+    req.params = result.data as Request['params'];
     next();
   };
 }

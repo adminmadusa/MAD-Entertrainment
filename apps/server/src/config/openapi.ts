@@ -1,8 +1,8 @@
-import { OpenAPIRegistry, OpenApiGeneratorV3, extendZodWithOpenApi } from '@asteasolutions/zod-to-openapi';
-import { z } from 'zod';
+// Must be imported before any schema module: see zod-openapi-extension.ts.
+import './zod-openapi-extension';
 
-// Extend Zod with OpenAPI properties (like description, example, etc.)
-extendZodWithOpenApi(z);
+import { OpenAPIRegistry, OpenApiGeneratorV3 } from '@asteasolutions/zod-to-openapi';
+import { z } from 'zod';
 
 import {
   checkoutSchema,
