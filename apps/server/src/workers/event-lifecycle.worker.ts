@@ -1,36 +1,59 @@
-import { EventLifecycleService } from '../services/event-lifecycle.service';
-import { logger } from '../utils/logger';
+import { EventLifecycleService } from "../services/event-lifecycle.service";
+import { logger } from "../utils/logger";
 
-const EVENT_LIFECYCLE_INTERVAL_MS = 60_000;
+export const EVENT_COMPLETE_INTERVAL_MS = 300_000; // 5 minutes
+export const EVENT_ARCHIVE_INTERVAL_MS = 3_600_000; // 1 hour
 
-let interval: NodeJS.Timeout | null = null;
-let running = false;
+let completeInterval: NodeJS.Timeout | null = null;
+let archiveInterval: NodeJS.Timeout | null = null;
+
+let runningComplete = false;
+let runningArchive = false;
 
 export function startEventLifecycleWorker(): void {
-  if (interval) return;
+  if (completeInterval || archiveInterval) return;
 
-  interval = setInterval(async () => {
-    if (running) return;
-    running = true;
+  completeInterval = setInterval(async () => {
+    if (runningComplete) return;
+    runningComplete = true;
     try {
       await EventLifecycleService.completeEndedEvents();
+    } catch (err) {
+      logger.error({ err }, "Event lifecycle completeEndedEvents cycle failed");
+    } finally {
+      runningComplete = false;
+    }
+  }, EVENT_COMPLETE_INTERVAL_MS);
+  completeInterval.unref?.();
+
+  archiveInterval = setInterval(async () => {
+    if (runningArchive) return;
+    runningArchive = true;
+    try {
       await EventLifecycleService.archiveOldEvents();
     } catch (err) {
-      logger.error({ err }, 'Event lifecycle worker cycle failed');
+      logger.error({ err }, "Event lifecycle archiveOldEvents cycle failed");
     } finally {
-      running = false;
+      runningArchive = false;
     }
-  }, EVENT_LIFECYCLE_INTERVAL_MS);
+  }, EVENT_ARCHIVE_INTERVAL_MS);
+  archiveInterval.unref?.();
 
-  interval.unref?.();
-  logger.info('Event lifecycle worker started');
+  logger.info(
+    "Event lifecycle worker started with decoupled completeEndedEvents (5m) and archiveOldEvents (1h) intervals",
+  );
 }
 
 export function stopEventLifecycleWorker(): void {
-  if (interval) {
-    clearInterval(interval);
-    interval = null;
-    running = false;
-    logger.info('Event lifecycle worker stopped');
+  if (completeInterval) {
+    clearInterval(completeInterval);
+    completeInterval = null;
   }
+  if (archiveInterval) {
+    clearInterval(archiveInterval);
+    archiveInterval = null;
+  }
+  runningComplete = false;
+  runningArchive = false;
+  logger.info("Event lifecycle worker stopped");
 }
