@@ -2,14 +2,13 @@
 
 - **Owner**: Documentation Owner
 - **Status**: Active
-- **Version**: 1.0
+- **Version**: 1.1
 - **Review Cycle**: Ongoing
-- **Last Updated**: 2026-06-25
+- **Last Updated**: 2026-11-19
 - **Related Documents:**
   - [REPOSITORY_GOVERNANCE.md](REPOSITORY_GOVERNANCE.md)
   - [AGENTS.md](AGENTS.md)
-  - [CONTRIBUTING.md](CONTRIBUTING.md)
-  - [Governance Registry](docs/governance/REGISTRY.md)
+  - [Governance Rules](docs/governance/RULES.md)
 
 ---
 
@@ -19,61 +18,72 @@ This repository contains the MAD Entertrainment platform, including public web e
 
 ---
 
-## Developer Workflow
+## Getting Started & Contributing
 
+### 1. Prerequisites & Setup
+Ensure your local workstation has the correct tooling:
+- **Node.js**: `v20.x.x` (LTS)
+- **Package Manager**: `pnpm@9.15.0`
+
+```bash
+# Clone the repository
+git clone https://github.com/adminmadusa/MAD-Entertrainment.git
+cd MAD-Entertrainment
+
+# Install workspace dependencies
+pnpm install --frozen-lockfile
+```
+
+### 2. Developer Workflow (The One Task Rule)
 Before starting any implementation work:
-
 1. Identify the current active implementation task.
-2. Verify no other implementation task is still awaiting:
-
-   * Verification
-   * PR Review
-   * Merge
-   * Branch Cleanup
-   * Develop Sync
-3. Follow the "one active implementation task" rule.
+2. Verify no other implementation task is still awaiting verification, PR review, merge, branch cleanup, or develop sync.
+3. Follow the "one active implementation task" rule — only one active task branch at a time.
 4. Review `AGENTS.md` before using any AI coding agent.
-5. Review `TODO-AUDIT-FIXES.md` for existing backlog items before creating new workstreams.
+
+### 3. Branching Strategy
+Protected branches:
+- `develop`
+- `live`
+
+Implementation work must occur on task branches created from `develop`:
+```txt
+feat/<task-name>
+fix/<task-name>
+refactor/<task-name>
+test/<task-name>
+docs/<task-name>
+chore/<task-name>
+audit/<task-name>
+seo/<task-name>
+```
+Do not commit directly to protected branches.
 
 ---
 
 ## AI Agent Instructions
 
-All AI coding agents must follow:
-
-* `AGENTS.md`
-
-Agents must not:
-
-* Edit high-risk systems without approval.
-* Create commits without approval.
-* Push branches without approval.
-* Merge branches without approval.
-* Delete branches without approval.
+All AI coding agents must follow [AGENTS.md](AGENTS.md). Agents must not edit high-risk systems, create commits, push branches, or merge without explicit approval.
 
 High-risk areas include:
-
-* Payment logic
-* Authentication logic
-* Security logic
-* Upload handling
-* Database schemas and migrations
-* Deployment configuration
-* Environment variables
-* CI/CD configuration
-* Production APIs
-* Socket handlers
+- Payment logic
+- Authentication logic
+- Security logic
+- Upload handling
+- Database schemas and migrations
+- Deployment configuration
+- Environment variables
+- CI/CD configuration
+- Production APIs
+- Socket handlers
 
 ---
 
-## Testing
+## Testing & Verification
 
-Testing guidance is documented in:
-
-* `TESTING.md`
+Testing guidance is documented in [TESTING.md](TESTING.md).
 
 Before opening a PR, run applicable verification commands:
-
 ```bash
 pnpm lint
 pnpm test
@@ -95,50 +105,13 @@ For detailed information about each subsystem, refer to the respective Single So
 - [TESTING.md](TESTING.md) — Testing guidelines and verification requirements.
 - [AGENTS.md](AGENTS.md) — Operational instructions for human developers and AI agents.
 - [CHANGELOG.md](CHANGELOG.md) — Chronological release history and repository milestones.
-- [docs/ROADMAP.md](docs/ROADMAP.md) — Post-launch engineering roadmap and free infrastructure policy.
+- [docs/governance/RULES.md](docs/governance/RULES.md) — Governance rules and static analysis policy.
+- [docs/governance/ENGINE.md](docs/governance/ENGINE.md) — Governance engine architecture.
+- [packages/ui/README.md](packages/ui/README.md) — Shared UI component library and design primitives catalog.
+- [openspec/SPECS.md](openspec/SPECS.md) — Active capability specifications and change management proposals.
 
 ---
 
 ## Governance
 
-Before adding tooling, automation, repository-wide rules, or cleanup processes, review existing governance tooling:
-
-```txt
-scripts/ci-governance-check.ts
-```
-
-Avoid introducing overlapping governance checks when existing tooling already covers the requirement.
-
----
-
-## Backlog & Audit Tracking
-
-Repository audit findings, technical debt, and governance findings are tracked under active GitHub issues.
-
----
-
-## Branching Strategy
-
-Protected branches:
-
-* `develop`
-* `live`
-
-Implementation work must occur on task branches created from `develop`.
-
-Example branch types:
-
-```txt
-feat/<task-name>
-fix/<task-name>
-refactor/<task-name>
-test/<task-name>
-docs/<task-name>
-chore/<task-name>
-audit/<task-name>
-seo/<task-name>
-```
-
-Do not commit directly to protected branches.
-
-For contribution guidelines, see [CONTRIBUTING.md](CONTRIBUTING.md).
+Before adding tooling, automation, repository-wide rules, or cleanup processes, review existing governance tooling under `scripts/governance/`.

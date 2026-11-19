@@ -38,7 +38,7 @@ graph TD
     subgraph UX ["UX Experience Layer"]
         F["Pattern Specifications<br>(docs/design-system/patterns/)"]
         G["Journey Flows<br>(docs/design-system/journeys/)"]
-        H["UX Compliance Audits<br>(docs/design-system/UX_COMPLIANCE_REPORT.md)"]
+        H["UX Compliance Audits"]
     end
 
     subgraph Automation ["Phase 4 Automation Engine"]

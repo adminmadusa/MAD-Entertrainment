@@ -158,7 +158,7 @@ The following checks will become CI gates in Phase 4:
 
 ## Planned Themes
 
-See [future-themes.md](../future-themes.md) for the roadmap.
+Planned themes are tracked in the design system specifications.
 
 ---
 

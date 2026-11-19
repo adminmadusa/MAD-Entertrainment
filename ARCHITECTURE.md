@@ -8,7 +8,7 @@
 - **Last Reviewed**: 2026-07-05
 
 Supersedes:
-- [governance.md](docs/architecture/governance.md) (Deleted)
+- `docs/architecture/governance.md` (Deleted)
 
 Related Documents:
 - [README.md](README.md)
