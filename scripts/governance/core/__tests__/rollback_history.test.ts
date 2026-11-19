@@ -8,7 +8,7 @@ import { writeJsonIfChanged } from '../json_utils';
 import { RollbackHistory } from '../rollback_history';
 import type { RollbackBackup } from '../rollback_manager';
 
-const workspaceRoot = resolve(__dirname, '../../../../..');
+const workspaceRoot = resolve(__dirname, '../../../..');
 const sandboxBackupsDir = resolve(workspaceRoot, '.governance/autofix/backups');
 
 describe('RollbackHistory', () => {

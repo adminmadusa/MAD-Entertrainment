@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, afterAll } from 'vitest';
 import { fixerRegistry } from '../base/registry';
 import { FixRunner } from '../base/runner';
 import { rollbackManager } from '../engines/rollback-manager';
@@ -13,7 +13,8 @@ import { DatabaseFixer } from '../fixers/database/fixer';
 import { SecurityFixer } from '../fixers/security/fixer';
 import { AccessibilityFixer } from '../fixers/accessibility/fixer';
 import { DocumentationFixer } from '../fixers/documentation/fixer';
-import { writeFileSync, readFileSync, mkdirSync } from 'fs';
+import { writeFileSync, readFileSync, rmSync, mkdtempSync } from 'fs';
+import { tmpdir } from 'os';
 import { join } from 'path';
 
 // Ensure fixers are registered
@@ -65,10 +66,14 @@ describe('AI OS Executable Auto-Fix Engine Suites', () => {
     expect(sorted.indexOf("import A")).toBeLessThan(sorted.indexOf("import B"));
   });
 
+  const testTempDir = mkdtempSync(join(tmpdir(), 'mad-autofix-test-'));
+
+  afterAll(() => {
+    rmSync(testTempDir, { recursive: true, force: true });
+  });
+
   it('should successfully backup and rollback files updates', async () => {
-    const scratchDir = join(process.cwd(), 'scratch');
-    mkdirSync(scratchDir, { recursive: true });
-    const testFile = join(scratchDir, 'rollback_test.txt');
+    const testFile = join(testTempDir, 'rollback_test.txt');
     writeFileSync(testFile, 'initial', 'utf8');
 
     rollbackManager.backup('pat_roll', testFile, 'initial');
@@ -81,9 +86,7 @@ describe('AI OS Executable Auto-Fix Engine Suites', () => {
   });
 
   it('should execute dry-runs without changing file content', async () => {
-    const scratchDir = join(process.cwd(), 'scratch');
-    mkdirSync(scratchDir, { recursive: true });
-    const testFile = join(scratchDir, 'dryrun_test.txt');
+    const testFile = join(testTempDir, 'dryrun_test.txt');
     writeFileSync(testFile, 'const val: any = 1;', 'utf8');
 
     const runner = new FixRunner();
