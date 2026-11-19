@@ -87,6 +87,10 @@ export default [
       name: 'governance',
       environment: 'node',
       globals: true,
+      // These suites build the dependency knowledge graph at runtime. A cold
+      // build takes ~5s on CI runners, which exceeds the 5s default timeout.
+      testTimeout: 30000,
+      hookTimeout: 30000,
       include: [
         'scripts/governance/**/*.test.ts'
       ],
