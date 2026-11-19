@@ -463,12 +463,21 @@ describe('ConsistencyService - Confirmed Booking Ticket Watchdog', () => {
     vi.mocked(Payment.countDocuments).mockResolvedValue(1);
     vi.mocked(Event.find).mockReturnValue(mockCreateMockQuery([]));
 
-    const report = await ConsistencyService.runRepairCycle();
+    // When includeReport is true, generates full report
+    const reportWithDiagnostic = await ConsistencyService.runRepairCycle({ includeReport: true });
 
     expect(repairSpy).toHaveBeenCalled();
     expect(countSpy).toHaveBeenCalled();
-    expect(report.repairs?.reEnqueuedUnticketedBookings).toBe(3);
-    expect(report.drift.unticketedConfirmedBookings).toBe(2);
+    expect(reportWithDiagnostic.repairs?.reEnqueuedUnticketedBookings).toBe(3);
+    expect(reportWithDiagnostic.drift?.unticketedConfirmedBookings).toBe(2);
+
+    countSpy.mockClear();
+
+    // When includeReport is false (default for automated background worker), skips generateReport()
+    const reportBackground = await ConsistencyService.runRepairCycle();
+    expect(countSpy).not.toHaveBeenCalled();
+    expect(reportBackground.repairs?.reEnqueuedUnticketedBookings).toBe(3);
+    expect(reportBackground.drift).toBeUndefined();
 
     repairSpy.mockRestore();
     countSpy.mockRestore();

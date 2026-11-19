@@ -599,8 +599,6 @@ describe('ConsistencyService - Stuck Processing, Notifications, Optimistic Locki
 
     vi.mocked(Event.find)
       .mockReturnValueOnce(mockCreateMockQuery([staleEvent]) as any)
-      .mockReturnValueOnce(mockCreateMockQuery([staleEvent]) as any)
-      .mockReturnValueOnce(mockCreateMockQuery([repairedEvent]) as any)
       .mockReturnValueOnce(mockCreateMockQuery([repairedEvent]) as any);
     (Booking as any).aggregate = vi.fn().mockResolvedValue([{ total: 10 }]);
     (Reservation as any).aggregate = vi.fn().mockResolvedValue([{ total: 0 }]);

@@ -41,7 +41,7 @@ export async function repairConsistency(req: Request, res: Response, next: NextF
       return next(AppError.forbidden('Super admin access required'));
     }
 
-    const report = await ConsistencyService.runRepairCycle();
+    const report = await ConsistencyService.runRepairCycle({ includeReport: true });
 
     auditLog({
       action: 'DIAGNOSTICS_REPAIR_TRIGGERED',

@@ -18,14 +18,14 @@ import { ReservationService } from './reservation.service';
 
 export interface ConsistencyReport {
   generatedAt: string;
-  counts: {
+  counts?: {
     activeReservations: number;
     expiredReservations: number;
     redisLocks: number;
     awaitingPaymentBookings: number;
     orphanPayments: number;
   };
-  drift: {
+  drift?: {
     staleSeatReservations: number;
     phantomRedisLocks: number;
     eventInventoryMismatches: number;
@@ -47,9 +47,13 @@ export interface ConsistencyReport {
   };
 }
 
+export interface ConsistencyRepairOptions {
+  includeReport?: boolean;
+}
+
 
 export class ConsistencyService {
-  static async runRepairCycle(): Promise<ConsistencyReport> {
+  static async runRepairCycle(options: ConsistencyRepairOptions = {}): Promise<ConsistencyReport> {
     const correlationId = `repair-cycle-${crypto.randomUUID().slice(0, 8)}`;
     return runWithContext({ correlationId }, async () => {
       const startTime = Date.now();
@@ -81,8 +85,7 @@ export class ConsistencyService {
         RefundConsistencyService.repairOrphanedCancellationNotifications(),
       ]);
 
-      const report = await this.generateReport();
-      report.repairs = {
+      const repairs = {
         expiredReservations: expiredReservations.length,
         phantomRedisLocks,
         staleSeatReservations,
@@ -95,9 +98,20 @@ export class ConsistencyService {
         repairedStuckProcessingRefunds,
         repairedOrphanedRefundNotifications,
         repairedOrphanedCancellationNotifications,
-      } as any;
+      };
 
       const durationMs = Date.now() - startTime;
+
+      let report: ConsistencyReport;
+      if (options.includeReport) {
+        report = await this.generateReport();
+        report.repairs = repairs;
+      } else {
+        report = {
+          generatedAt: new Date().toISOString(),
+          repairs,
+        };
+      }
 
       const hasRepairs = expiredReservations.length > 0 ||
         phantomRedisLocks > 0 ||
