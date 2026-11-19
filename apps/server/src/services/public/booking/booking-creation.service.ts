@@ -8,7 +8,7 @@ import {
   deriveBookingEligibility,
 } from '@mad/shared';
 
-import { getRedis } from '../../../config/redis';
+import { getRedis, releaseLockAtomic } from '../../../config/redis';
 import { emitToAdmin, emitToEvent } from '../../../config/socket';
 import { AppError } from '../../../middleware/error.middleware';
 import { Booking, IBooking } from '../../../models/booking.schema';
@@ -312,11 +312,15 @@ export class BookingCreationService {
           postCommitCallbacks,
         };
       });
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const errObj = typeof err === 'object' && err !== null ? (err as Record<string, unknown>) : undefined;
+      const errCode = errObj?.code;
+      const errMsg = typeof errObj?.message === 'string' ? errObj.message : '';
+
       if (
-        err.code === 11000 &&
-        (err.message.includes('idx_session_event_awaiting_payment') ||
-          err.message.includes('idx_user_event_awaiting_payment'))
+        (errCode === 11000 || errCode === '11000') &&
+        (errMsg.includes('idx_session_event_awaiting_payment') ||
+          errMsg.includes('idx_user_event_awaiting_payment'))
       ) {
         logger.info(
           { sessionId, userId, eventId: event._id },
@@ -336,6 +340,15 @@ export class BookingCreationService {
         conflictErr.code = 'CONCURRENT_BOOKING_ATTEMPT';
         throw conflictErr;
       }
+
+      if (ReservationService.isSeatReservationCollision?.(err)) {
+        const conflictErr = AppError.conflict(
+          'One or more of the selected seats have already been reserved. Please choose different seats.'
+        );
+        conflictErr.code = 'SEAT_ALREADY_RESERVED';
+        throw conflictErr;
+      }
+
       throw err;
     }
 
@@ -346,10 +359,7 @@ export class BookingCreationService {
       for (const seatId of allSeatIds) {
         const lockKey = `mad:lock:event:${event._id}:seat:${seatId}`;
         try {
-          const lockOwner = await redis.get(lockKey);
-          if (lockOwner === sessionId) {
-            await redis.del(lockKey);
-          }
+          await releaseLockAtomic(redis, lockKey, sessionId);
         } catch (err) {
           logger.warn(
             { err, seatId, bookingId: booking._id },

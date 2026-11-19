@@ -2,7 +2,7 @@ import { Types, ClientSession } from 'mongoose';
 
 import { BookingMode, InventoryState, ReservationStatus, SeatStatus, TicketTier, HTTP_STATUS } from '@mad/shared';
 
-import { getRedis } from '../config/redis';
+import { getRedis, releaseLockAtomic } from '../config/redis';
 import { emitToAdmin, emitToEvent } from '../config/socket';
 import { AppError } from '../middleware/error.middleware';
 import { Event } from '../models/event.schema';
@@ -42,7 +42,60 @@ function safeEmit(label: string, emit: () => void, details: Record<string, unkno
   }
 }
 
+interface MongoDuplicateKeyError {
+  code?: number | string;
+  keyPattern?: Record<string, unknown>;
+  keyValue?: Record<string, unknown>;
+  message?: string;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null;
+}
+
+/**
+ * Strictly verifies whether a MongoDB error represents a verified seat collision
+ * on the partial unique index { eventId: 1, seatId: 1 } (default name: eventId_1_seatId_1)
+ * of the Reservation collection.
+ */
+export function isSeatReservationCollision(err: unknown): boolean {
+  if (!isRecord(err)) {
+    return false;
+  }
+
+  const errObj = err as MongoDuplicateKeyError;
+  const code = errObj.code;
+  if (code !== 11000 && code !== '11000') {
+    return false;
+  }
+
+  // Strict check 1: Driver keyPattern contains BOTH eventId and seatId
+  if (isRecord(errObj.keyPattern)) {
+    const hasEventId = Object.prototype.hasOwnProperty.call(errObj.keyPattern, 'eventId');
+    const hasSeatId = Object.prototype.hasOwnProperty.call(errObj.keyPattern, 'seatId');
+    if (hasEventId && hasSeatId) {
+      return true;
+    }
+  }
+
+  // Strict check 2: Error message explicitly contains the specific partial index name
+  const message = typeof errObj.message === 'string' ? errObj.message : '';
+  if (message.includes('eventId_1_seatId_1')) {
+    if (isRecord(errObj.keyValue)) {
+      const hasEvent = Object.prototype.hasOwnProperty.call(errObj.keyValue, 'eventId');
+      const hasSeat = Object.prototype.hasOwnProperty.call(errObj.keyValue, 'seatId');
+      if (hasEvent && hasSeat) {
+        return true;
+      }
+    }
+    return true;
+  }
+
+  return false;
+}
+
 export class ReservationService {
+  static isSeatReservationCollision = isSeatReservationCollision;
   static async reserveForBooking(
     request: ReservationRequest,
     session?: ClientSession
@@ -175,12 +228,9 @@ export class ReservationService {
         },
       };
     } finally {
-      // Safely release the lock
+      // Safely release the lock atomically
       try {
-        const currentVal = await redis.get(lockKey);
-        if (currentVal === lockVal) {
-          await redis.del(lockKey);
-        }
+        await releaseLockAtomic(redis, lockKey, lockVal);
       } catch (err) {
         logger.warn({ err, eventId: request.eventId, correlationId: request.correlationId }, 'Redis connection error during lock release');
       }
@@ -215,7 +265,18 @@ export class ReservationService {
         correlationId: request.correlationId,
         transitionLog: [{ from: InventoryState.AVAILABLE, to: InventoryState.RESERVED, reason: 'booking-created', correlationId: request.correlationId }],
       });
-      await reservation.save({ session });
+      try {
+        await reservation.save({ session });
+      } catch (err: unknown) {
+        if (isSeatReservationCollision(err)) {
+          const conflictErr = AppError.conflict(
+            `Seat ${seat.seatId} is already reserved by another user. Please choose different seats.`
+          );
+          conflictErr.code = 'SEAT_ALREADY_RESERVED';
+          throw conflictErr;
+        }
+        throw err;
+      }
       reservations.push(reservation);
     }
 

@@ -5,7 +5,7 @@ import { Socket } from 'socket.io';
 
 import { SeatStatus } from '@mad/shared';
 
-import { getRedis, isRedisConnected } from '../config/redis';
+import { getRedis, isRedisConnected, releaseLockAtomic } from '../config/redis';
 import { Booking } from '../models/booking.schema';
 import { Event } from '../models/event.schema';
 import { SeatLayout } from '../models/seat-layout.schema';
@@ -82,10 +82,13 @@ async function releaseLockKeys(keys: string[], sessionId: string): Promise<strin
   const released: string[] = [];
 
   for (const key of keys) {
-    const currentLock = await redis.get(key);
-    if (currentLock === sessionId) {
-      await redis.del(key);
-      released.push(key);
+    try {
+      const ok = await releaseLockAtomic(redis, key, sessionId);
+      if (ok) {
+        released.push(key);
+      }
+    } catch (err) {
+      logger.warn({ err, key, sessionId }, 'Failed to release lock atomically');
     }
   }
 
