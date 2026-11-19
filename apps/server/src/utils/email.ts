@@ -1,5 +1,6 @@
 import * as Sentry from '@sentry/node';
 import nodemailer from 'nodemailer';
+import type { Transporter } from 'nodemailer';
 
 import { getEnv } from '../config/env';
 import { auditLog } from './audit';
@@ -9,7 +10,7 @@ import { logger } from './logger';
 export type { EmailAttachment, SendEmailInput } from './email.types';
 
 
-let transporter: nodemailer.Transporter | null = null;
+let transporter: Transporter | null = null;
 
 export function resetTransporter(): void {
   transporter = null;
@@ -54,7 +55,7 @@ export function validateSmtpConfig(): void {
   }
 }
 
-export function getTransporter(): nodemailer.Transporter | null {
+export function getTransporter(): Transporter | null {
   if (transporter) return transporter;
 
   const env = getEnv();

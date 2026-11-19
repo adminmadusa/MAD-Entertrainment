@@ -13,7 +13,7 @@ function expectRejected(schema: z.ZodTypeAny, payload: unknown, expectedMessage?
   const result = schema.safeParse(payload);
   expect(result.success).toBe(false);
   if (!result.success && expectedMessage) {
-    const messages = result.error.errors.map((e) => e.message);
+    const messages = result.error.issues.map((e) => e.message);
     expect(messages).toContain(expectedMessage);
   }
   return result;
