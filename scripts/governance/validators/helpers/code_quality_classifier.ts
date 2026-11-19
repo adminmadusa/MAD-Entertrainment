@@ -80,6 +80,36 @@ const RULES: ClassificationRule[] = [
     key: "componentMaxLines",
     label: "UI Component / Page",
   },
+  // 7. Utilities & Helpers
+  {
+    match: (p) =>
+      p.includes("/utils/") ||
+      p.endsWith(".util.ts") ||
+      p.endsWith(".helper.ts"),
+    ruleId: "VAL-QUAL-004",
+    category: "services",
+    key: "serviceMaxLines",
+    label: "Utility / Helper Module",
+  },
+  // 8. Scripts & Tooling
+  {
+    match: (p) =>
+      (p.includes("/scripts/") || p.startsWith("scripts/")) &&
+      p.endsWith(".ts"),
+    ruleId: "VAL-QUAL-004",
+    category: "services",
+    key: "serviceMaxLines",
+    label: "Script / Tooling Module",
+  },
+  // 9. Other Maintained TypeScript Modules
+  {
+    match: (p) =>
+      (p.endsWith(".ts") || p.endsWith(".tsx")) && !p.endsWith(".d.ts"),
+    ruleId: "VAL-QUAL-004",
+    category: "services",
+    key: "serviceMaxLines",
+    label: "Maintained Code Module",
+  },
 ];
 
 export function classifyCodeFile(

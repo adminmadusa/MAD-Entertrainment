@@ -6,6 +6,9 @@ import { Refund } from "../../models/refund.schema";
 import { logger } from "../../utils/logger";
 import { PaymentRefundService } from "../public/payment-refund.service";
 import { PaymentService } from "../public/payment.service";
+import { PaymentFailureTracker } from "./payment-failure-tracker";
+import { PaymentMismatchQuery } from "./payment-mismatch-query";
+import { PaymentUnknownRecovery } from "./payment-unknown-recovery";
 
 export class PaymentRecoveryExecutor {
   static async resolveCandidate(paymentDoc: any): Promise<boolean> {
@@ -18,12 +21,20 @@ export class PaymentRecoveryExecutor {
     let booking: any = null;
     try {
       booking = await Booking.findById(payment.bookingId);
-    } catch (dbError) {
+    } catch (dbError: any) {
+      PaymentFailureTracker.recordFailure(
+        payment._id.toString(),
+        dbError?.message || "Transient DB error looking up booking",
+      );
       logger.warn(
         { paymentId: payment._id, error: dbError },
         "Transient DB error looking up booking; skipping without failing payment",
       );
       return false;
+    }
+
+    if (PaymentMismatchQuery.evaluateEffectiveTimestamp(payment) === null) {
+      return await PaymentUnknownRecovery.resolve(payment, booking);
     }
 
     // Case C: Booking already FAILED, CANCELLED, or missing
@@ -73,6 +84,7 @@ export class PaymentRecoveryExecutor {
           ]);
         }
       }
+      PaymentFailureTracker.recordSuccess(payment._id.toString());
       return true;
     }
 
@@ -101,6 +113,7 @@ export class PaymentRecoveryExecutor {
             "DUPLICATE_PAYMENT_ON_CONFIRMED_BOOKING",
           );
         }
+        PaymentFailureTracker.recordSuccess(payment._id.toString());
         return true;
       }
       return false;
@@ -132,6 +145,7 @@ export class PaymentRecoveryExecutor {
             { paymentId: payment._id, bookingId: booking._id },
             "Watchdog: Successfully recovered booking to CONFIRMED status.",
           );
+          PaymentFailureTracker.recordSuccess(payment._id.toString());
           return true;
         } else {
           logger.warn(
@@ -150,6 +164,7 @@ export class PaymentRecoveryExecutor {
               payment.failureReason,
             );
           }
+          PaymentFailureTracker.recordSuccess(payment._id.toString());
           return true;
         }
       } catch (confirmError: any) {
@@ -159,6 +174,11 @@ export class PaymentRecoveryExecutor {
           confirmError.message?.includes("buffering timed out") ||
           confirmError.message?.includes("connection");
         if (isTransient) {
+          PaymentFailureTracker.recordFailure(
+            payment._id.toString(),
+            confirmError?.message ||
+              "Transient infrastructure error during confirmBooking",
+          );
           logger.error(
             {
               paymentId: payment._id,
@@ -189,10 +209,17 @@ export class PaymentRecoveryExecutor {
             payment.failureReason,
           );
         }
+        PaymentFailureTracker.recordSuccess(payment._id.toString());
         return true;
       }
     }
 
     return false;
+  }
+
+  static async resolveUnknownTimestampCandidate(
+    paymentDoc: any,
+  ): Promise<boolean> {
+    return await PaymentUnknownRecovery.resolve(paymentDoc);
   }
 }

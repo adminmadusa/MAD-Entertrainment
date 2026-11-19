@@ -15,6 +15,8 @@ export interface ConsistencyReport {
     stuckNotifications: number;
     orphanedConfirmedDeliveries: number;
     paidPaymentMismatches?: number;
+    unknownTimestampPayments?: number;
+    exhaustedPaymentRetries?: number;
     stuckProcessingRefunds?: number;
     orphanedRefundNotifications?: number;
     orphanedCancellationNotifications?: number;
@@ -29,6 +31,7 @@ export interface ConsistencyReport {
     resetStuckNotifications?: number;
     reEnqueuedOrphanedDeliveries?: number;
     repairedPaidPaymentMismatches?: number;
+    repairedUnknownTimestampPayments?: number;
     repairedStuckProcessingRefunds?: number;
     repairedOrphanedRefundNotifications?: number;
     repairedOrphanedCancellationNotifications?: number;

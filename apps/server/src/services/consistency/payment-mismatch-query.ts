@@ -4,20 +4,106 @@ import { Booking } from "../../models/booking.schema";
 import { Payment } from "../../models/payment.schema";
 import { logger } from "../../utils/logger";
 
+export interface CandidateQueryOptions {
+  excludeIds?: string[];
+}
+
 export class PaymentMismatchQuery {
+  static evaluateEffectiveTimestamp(doc: {
+    paidAt?: Date | null;
+    updatedAt?: Date | null;
+    createdAt?: Date | null;
+  }): Date | null {
+    return doc.paidAt ?? doc.updatedAt ?? doc.createdAt ?? null;
+  }
+
+  static getEffectiveTimestampMatch(
+    level: 1 | 2,
+    windowStart: Date,
+    upperThreshold: Date,
+  ): any {
+    if (level === 1) {
+      return {
+        $or: [
+          // 1. paidAt exists and is in recent window
+          { paidAt: { $gte: windowStart, $lte: upperThreshold } },
+          // 2. paidAt is null/missing, updatedAt is in recent window
+          {
+            paidAt: null,
+            updatedAt: { $gte: windowStart, $lte: upperThreshold },
+          },
+          // 3. paidAt and updatedAt are null/missing, createdAt is in recent window
+          {
+            paidAt: null,
+            updatedAt: null,
+            createdAt: { $gte: windowStart, $lte: upperThreshold },
+          },
+        ],
+      };
+    }
+    return {
+      $or: [
+        // 1. paidAt is historical (< 48h)
+        { paidAt: { $lt: windowStart } },
+        // 2. paidAt is null/missing, updatedAt is historical (< 48h)
+        { paidAt: null, updatedAt: { $lt: windowStart } },
+        // 3. paidAt and updatedAt are null/missing, createdAt is historical (< 48h)
+        { paidAt: null, updatedAt: null, createdAt: { $lt: windowStart } },
+      ],
+    };
+  }
+
+  static getUnknownTimestampMatch(): any {
+    return {
+      paidAt: null,
+      updatedAt: null,
+      createdAt: null,
+    };
+  }
+
+  static async countUnknownTimestampPayments(): Promise<number> {
+    try {
+      if (typeof Payment.countDocuments === "function") {
+        return await Payment.countDocuments({
+          status: PaymentStatus.PAID,
+          ...this.getUnknownTimestampMatch(),
+        });
+      }
+      const candidates = await Payment.find({
+        status: PaymentStatus.PAID,
+        ...this.getUnknownTimestampMatch(),
+      })
+        .select("_id")
+        .lean();
+      return candidates.length;
+    } catch (err) {
+      logger.warn({ err }, "Failed to count unknown timestamp payments");
+      return 0;
+    }
+  }
+
+  static async findUnknownTimestampCandidates(limit = 50): Promise<any[]> {
+    return await Payment.find({
+      status: PaymentStatus.PAID,
+      ...this.getUnknownTimestampMatch(),
+    })
+      .sort({ _id: 1 })
+      .limit(limit);
+  }
+
   static async countPaidPaymentMismatches(): Promise<number> {
     const recoveryThreshold = new Date(Date.now() - 5 * 60 * 1000);
     const windowStart = new Date(Date.now() - 48 * 60 * 60 * 1000);
+    const timeMatch = this.getEffectiveTimestampMatch(
+      1,
+      windowStart,
+      recoveryThreshold,
+    );
 
     if (typeof Payment.aggregate === "function") {
       try {
         const results = await Payment.aggregate([
-          {
-            $match: {
-              status: PaymentStatus.PAID,
-              updatedAt: { $gte: windowStart, $lte: recoveryThreshold },
-            },
-          },
+          { $match: { status: PaymentStatus.PAID, ...timeMatch } },
           {
             $lookup: {
               from: "bookings",
@@ -47,7 +133,7 @@ export class PaymentMismatchQuery {
 
     const candidatePayments = await Payment.find({
       status: PaymentStatus.PAID,
-      updatedAt: { $lte: recoveryThreshold },
+      ...timeMatch,
     })
       .select("bookingId")
       .lean();
@@ -69,17 +155,31 @@ export class PaymentMismatchQuery {
     return count;
   }
 
-  static async findCandidates(level: 1 | 2, limit: number): Promise<any[]> {
+  static async findCandidates(
+    level: 1 | 2,
+    limit: number,
+    options: CandidateQueryOptions = {},
+  ): Promise<any[]> {
     const now = Date.now();
     const upperThreshold = new Date(now - 5 * 60 * 1000);
     const windowStart = new Date(now - 48 * 60 * 60 * 1000);
+    const timeMatch = this.getEffectiveTimestampMatch(
+      level,
+      windowStart,
+      upperThreshold,
+    );
+
+    const matchFilter: any = {
+      status: PaymentStatus.PAID,
+      ...timeMatch,
+    };
+
+    if (options.excludeIds && options.excludeIds.length > 0) {
+      matchFilter._id = { $nin: options.excludeIds };
+    }
 
     let candidatePayments: any[] = [];
     if (typeof Payment.aggregate === "function") {
-      const matchFilter: any = { status: PaymentStatus.PAID };
-      if (level === 2) matchFilter.updatedAt = { $lt: windowStart };
-      else matchFilter.updatedAt = { $gte: windowStart, $lte: upperThreshold };
-
       try {
         candidatePayments = await Payment.aggregate([
           { $match: matchFilter },
@@ -99,7 +199,7 @@ export class PaymentMismatchQuery {
               ],
             },
           },
-          { $sort: { updatedAt: 1, _id: 1 } },
+          { $sort: { paidAt: 1, updatedAt: 1, createdAt: 1, _id: 1 } },
           { $limit: limit },
         ]);
       } catch (aggErr) {
@@ -111,11 +211,8 @@ export class PaymentMismatchQuery {
     }
 
     if (!candidatePayments || candidatePayments.length === 0) {
-      const findQuery: any = { status: PaymentStatus.PAID };
-      if (level === 2) findQuery.updatedAt = { $lt: windowStart };
-      else findQuery.updatedAt = { $lte: upperThreshold };
-      candidatePayments = await Payment.find(findQuery)
-        .sort({ updatedAt: 1, _id: 1 })
+      candidatePayments = await Payment.find(matchFilter)
+        .sort({ paidAt: 1, updatedAt: 1, createdAt: 1, _id: 1 })
         .limit(limit);
     }
 
