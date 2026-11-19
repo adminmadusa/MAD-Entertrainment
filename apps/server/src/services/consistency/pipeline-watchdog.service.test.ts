@@ -403,6 +403,7 @@ describe('ConsistencyService - Pipeline Watchdog (PR-T4A)', () => {
       totalTickets: 2,
     };
     vi.mocked(Booking.find).mockReturnValue(mockCreateMockQuery([mockBooking]) as any);
+    vi.mocked(Ticket.aggregate).mockResolvedValue([{ _id: 'b-orphaned-1', count: 2 }]);
     vi.mocked(Ticket.countDocuments).mockResolvedValue(2);
 
     vi.mocked(Notification.exists).mockResolvedValue(false as any);
@@ -434,6 +435,7 @@ describe('ConsistencyService - Pipeline Watchdog (PR-T4A)', () => {
       totalTickets: 2,
     };
     vi.mocked(Booking.find).mockReturnValue(mockCreateMockQuery([mockBooking]) as any);
+    vi.mocked(Ticket.aggregate).mockResolvedValue([{ _id: 'b-orphaned-2', count: 2 }]);
     vi.mocked(Ticket.countDocuments).mockResolvedValue(2);
 
     vi.mocked(Notification.exists).mockResolvedValue(true as any);
@@ -449,6 +451,7 @@ describe('ConsistencyService - Pipeline Watchdog (PR-T4A)', () => {
     vi.mocked(Notification.countDocuments).mockResolvedValue(4);
     const mockBooking = { _id: 'b-orph-3', totalTickets: 1 };
     vi.mocked(Booking.find).mockReturnValue(mockCreateMockQuery([mockBooking]) as any);
+    vi.mocked(Ticket.aggregate).mockResolvedValue([{ _id: 'b-orph-3', count: 1 }]);
     vi.mocked(Ticket.countDocuments).mockResolvedValue(1);
     vi.mocked(Notification.exists).mockResolvedValue(false as any);
 

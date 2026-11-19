@@ -203,17 +203,43 @@ describe('PR 2: Event Inventory Candidate Filtering & Query Batching', () => {
         { $match: { bookingId: { $in: [b1, b2] } } },
         { $group: { _id: '$bookingId', count: { $sum: 1 } } },
       ]);
+      expect(Ticket.countDocuments).not.toHaveBeenCalled();
       expect(map.get(b1.toString())).toBe(3);
       expect(map.get(b2.toString())).toBe(2);
     });
 
-    it('should partition large candidate lists into bounded batches of 100', async () => {
+    it('should return empty map and NOT call countDocuments when Ticket.aggregate returns []', async () => {
+      const b1 = new Types.ObjectId();
+      const b2 = new Types.ObjectId();
+      vi.mocked(Ticket.aggregate).mockResolvedValue([]);
+
+      const map = await BookingConsistencyService.getTicketCountsByBookingIds([b1, b2]);
+
+      expect(Ticket.aggregate).toHaveBeenCalledTimes(1);
+      expect(Ticket.countDocuments).not.toHaveBeenCalled();
+      expect(map.size).toBe(0);
+    });
+
+    it('should partition large candidate lists into bounded batches of 100 without calling countDocuments', async () => {
       const manyIds = Array.from({ length: 250 }, () => new Types.ObjectId());
       vi.mocked(Ticket.aggregate).mockResolvedValue([]);
 
       await BookingConsistencyService.getTicketCountsByBookingIds(manyIds, 100);
 
       expect(Ticket.aggregate).toHaveBeenCalledTimes(3);
+      expect(Ticket.countDocuments).not.toHaveBeenCalled();
+    });
+
+    it('should fall back to countDocuments when Ticket.aggregate returns non-array', async () => {
+      const b1 = new Types.ObjectId();
+      vi.mocked(Ticket.aggregate).mockResolvedValue(null as any);
+      vi.mocked(Ticket.countDocuments).mockResolvedValue(2);
+
+      const map = await BookingConsistencyService.getTicketCountsByBookingIds([b1]);
+
+      expect(Ticket.countDocuments).toHaveBeenCalledTimes(1);
+      expect(Ticket.countDocuments).toHaveBeenCalledWith({ bookingId: b1 });
+      expect(map.get(b1.toString())).toBe(2);
     });
 
     it('should detect both missing and duplicate ticket mismatches', async () => {
@@ -239,6 +265,16 @@ describe('PR 2: Event Inventory Candidate Filtering & Query Batching', () => {
       expect(count).toBe(2); // bMissing and bDuplicate are counted
     });
 
+    it('should propagate database error in countUnticketedConfirmedBookings instead of silently returning 0', async () => {
+      const b1 = new Types.ObjectId();
+      vi.mocked(Booking.find).mockReturnValue(mockCreateMockQuery([{ _id: b1, totalTickets: 1 }]) as any);
+      vi.mocked(Ticket.aggregate).mockRejectedValue(new Error('MongoNetworkError: connection timed out'));
+
+      await expect(BookingConsistencyService.countUnticketedConfirmedBookings()).rejects.toThrow(
+        'MongoNetworkError: connection timed out'
+      );
+    });
+
     it('should re-enqueue repair for unticketed bookings using batched counts', async () => {
       const bUnticketed = new Types.ObjectId();
       const candidates = [{ _id: bUnticketed, totalTickets: 2 }];
@@ -260,7 +296,7 @@ describe('PR 2: Event Inventory Candidate Filtering & Query Batching', () => {
       );
     });
 
-    it('should gracefully handle aggregate failure without crashing', async () => {
+    it('should gracefully handle aggregate failure in repair without crashing worker', async () => {
       const b1 = new Types.ObjectId();
       vi.mocked(Booking.find).mockReturnValue(mockCreateMockQuery([{ _id: b1, totalTickets: 1 }]) as any);
       vi.mocked(Ticket.aggregate).mockRejectedValue(new Error('AggregationFailed'));
@@ -368,6 +404,26 @@ describe('PR 2: Event Inventory Candidate Filtering & Query Batching', () => {
 
       expect(repaired).toBe(0);
       expect(QueueService.enqueue).not.toHaveBeenCalled();
+    });
+
+    it('should propagate database error in countOrphanedConfirmedDeliveries instead of silently returning 0', async () => {
+      const b1 = new Types.ObjectId();
+      vi.mocked(Booking.find).mockReturnValue(mockCreateMockQuery([{ _id: b1, totalTickets: 1 }]) as any);
+      vi.mocked(Ticket.aggregate).mockResolvedValue([{ _id: b1, count: 1 }]);
+      vi.mocked(Notification.distinct).mockRejectedValue(new Error('MongoNetworkError: connection timed out'));
+
+      await expect(NotificationConsistencyService.countOrphanedConfirmedDeliveries()).rejects.toThrow(
+        'MongoNetworkError: connection timed out'
+      );
+    });
+
+    it('should preserve background worker resilience by catching database errors in repair', async () => {
+      const b1 = new Types.ObjectId();
+      vi.mocked(Booking.find).mockReturnValue(mockCreateMockQuery([{ _id: b1, totalTickets: 1 }]) as any);
+      vi.mocked(Ticket.aggregate).mockRejectedValue(new Error('BatchQueryFailed'));
+
+      const repaired = await NotificationConsistencyService.repairOrphanedConfirmedDeliveries();
+      expect(repaired).toBe(0);
     });
   });
 });

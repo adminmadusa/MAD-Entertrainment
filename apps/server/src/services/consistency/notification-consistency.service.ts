@@ -430,8 +430,8 @@ export class NotificationConsistencyService {
         this.getSentNotificationBookingIds(candidateIds),
       ]);
     } catch (error) {
-      logger.warn({ error }, 'watchdog: failed to batch count tickets or notifications for orphaned deliveries');
-      return 0;
+      logger.error({ error }, 'watchdog: failed to batch count tickets or notifications, propagating diagnostic error');
+      throw error;
     }
 
     let count = 0;

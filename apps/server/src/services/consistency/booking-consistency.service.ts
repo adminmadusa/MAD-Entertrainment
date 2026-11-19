@@ -27,7 +27,7 @@ export class BookingConsistencyService {
           { $match: { bookingId: { $in: batch } } },
           { $group: { _id: '$bookingId', count: { $sum: 1 } } },
         ]);
-        if (Array.isArray(results) && results.length > 0) {
+        if (Array.isArray(results)) {
           for (const item of results) {
             if (item._id) {
               countMap.set(item._id.toString(), item.count);
@@ -127,8 +127,8 @@ export class BookingConsistencyService {
     try {
       ticketCounts = await this.getTicketCountsByBookingIds(candidateIds);
     } catch (error) {
-      logger.warn({ error }, 'watchdog: failed to batch count tickets, returning 0');
-      return 0;
+      logger.error({ error }, 'watchdog: failed to batch count tickets, propagating diagnostic error');
+      throw error;
     }
 
     let count = 0;
