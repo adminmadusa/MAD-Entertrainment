@@ -4,8 +4,8 @@
  * Rules cast snapshot.data to this type to access Git-specific state.
  * This is an internal git-provider type, not part of the frozen public contracts.
  */
-import type { BranchInfo } from '../../git-audit/models/branch';
-import type { VerificationInfo } from '../../git-audit/models/registry';
+import type { BranchInfo } from '../../../git-audit/models/branch';
+import type { VerificationInfo } from '../../../git-audit/models/registry';
 
 export interface GitSnapshotData {
   readonly branches: BranchInfo[];
