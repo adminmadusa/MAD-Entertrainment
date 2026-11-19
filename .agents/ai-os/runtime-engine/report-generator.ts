@@ -1,6 +1,18 @@
 import { AuditReport, ValidatorResult } from './types';
-import { join } from 'path';
+import { dirname, join, resolve } from 'path';
 import { writeFileSync, existsSync, mkdirSync } from 'fs';
+
+function resolveMonorepoRoot(startDir: string): string {
+  let current = resolve(startDir || process.cwd());
+  while (current !== dirname(current)) {
+    if (existsSync(join(current, 'pnpm-workspace.yaml'))) {
+      return current;
+    }
+    current = dirname(current);
+  }
+  // Fallback to 4 levels above this file (__dirname: .agents/ai-os/runtime-engine -> root)
+  return resolve(__dirname, '../../../..');
+}
 
 export class ReportGenerator {
   generateAuditReport(
@@ -43,7 +55,8 @@ export class ReportGenerator {
   }
 
   async persistReport(repoRoot: string, report: AuditReport, category: string): Promise<string> {
-    const reportsDir = join(repoRoot, 'reports', category);
+    const actualRoot = resolveMonorepoRoot(repoRoot);
+    const reportsDir = join(actualRoot, 'reports', category);
     if (!existsSync(reportsDir)) {
       mkdirSync(reportsDir, { recursive: true });
     }
