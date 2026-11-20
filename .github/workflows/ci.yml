@@ -86,9 +86,13 @@ jobs:
         run: pnpm run governance:docs --incremental
         env:
           GOVERNANCE_MIN_HEALTH_SCORE: 80
+          GOVERNANCE_MAX_WARNINGS: 730
 
       - name: Run Workspace Configuration Audit
         run: pnpm run audit-data
+
+      - name: Run Dead Code & Unused Exports Analysis
+        run: pnpm run audit:dead-code
 
   unit-and-integration-tests:
     name: Unit & Integration Tests

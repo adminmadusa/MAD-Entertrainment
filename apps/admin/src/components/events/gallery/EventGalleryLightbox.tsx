@@ -90,12 +90,16 @@ export const EventGalleryLightbox = React.memo(function EventGalleryLightbox({
         exit={{ opacity: 0 }}
         className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur-md select-none"
         role="dialog"
+        tabIndex={-1}
         aria-modal="true"
         aria-label="Image gallery lightbox"
         onClick={onClose}
       >
         {/* Top bar with count & close button */}
         <div
+          role="toolbar"
+          tabIndex={-1}
+          aria-label="Lightbox header"
           className="absolute top-0 inset-x-0 p-4 sm:p-6 flex items-center justify-between z-50 bg-gradient-to-b from-black/80 to-transparent"
           onClick={(e) => e.stopPropagation()}
         >
@@ -152,6 +156,9 @@ export const EventGalleryLightbox = React.memo(function EventGalleryLightbox({
 
         {/* Main Image Viewport */}
         <div
+          role="region"
+          tabIndex={-1}
+          aria-label="Image viewer"
           className="relative max-w-5xl max-h-[85vh] w-full h-full flex flex-col items-center justify-center p-4"
           onClick={(e) => e.stopPropagation()}
           onTouchStart={handleTouchStart}

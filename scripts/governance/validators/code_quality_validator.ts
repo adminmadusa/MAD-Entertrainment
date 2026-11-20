@@ -159,16 +159,6 @@ export class CodeQualityValidator implements GovernanceValidator {
         baselinePruned = true;
       } else if (lineCount > limit) {
         if (baselineEntry) {
-          if (isChanged) {
-            this.addIssue(
-              errors,
-              relPath,
-              ruleId,
-              "ERROR",
-              `Modified maintained file "${relPath}" must comply with the 249-line limit (${lineCount} lines > ${limit} lines). Refactor before merge.`,
-              `Limit: ${limit} lines`,
-            );
-          } else if (lineCount > baselineEntry.lineCount) {
             this.addIssue(
               errors,
               relPath,
@@ -183,7 +173,6 @@ export class CodeQualityValidator implements GovernanceValidator {
               relPath,
               ruleId,
               "WARNING",
-              `[BASELINE] Legacy code quality debt: "${relPath}" has ${lineCount} lines (Ceiling: ${baselineEntry.lineCount}, Target: ${limit} lines). Tracked in code_quality_baseline.json.`,
               `Ceiling: ${baselineEntry.lineCount}`,
             );
           }

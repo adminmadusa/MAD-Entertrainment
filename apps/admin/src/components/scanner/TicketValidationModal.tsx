@@ -58,12 +58,19 @@ export function TicketValidationModal({ result, onClose, onSwitchToVerify }: Tic
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
       <motion.div
+        role="button"
+        tabIndex={0}
+        aria-label="Close modal backdrop"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         onClick={onClose}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            onClose();
+          }
+        }}
         className="absolute inset-0 bg-black/75 backdrop-blur-sm cursor-pointer"
-        aria-hidden="true"
       />
 
       <motion.div

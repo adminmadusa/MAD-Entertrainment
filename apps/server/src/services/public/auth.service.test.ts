@@ -3,6 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 import { NotificationType } from '@mad/shared';
 
+import { getEnv } from '../../config/env';
 import { isRedisConnected } from '../../config/redis';
 import { magicLinkHtml } from '../../lib/email';
 import { Booking } from '../../models/booking.schema';
@@ -643,6 +644,42 @@ describe('AuthService - verifyMagicLinkOrOTP', () => {
       expect(result.user._id).toBe('507f1f77bcf86cd799439011');
       expect(result.user.googleId).toBe('mock_google_id_otpuser@gmail.com'); // Linked successfully
       expect(UserModel.create).not.toHaveBeenCalled(); // Duplication prevented
+    });
+
+    it('GOOGLE-SEC-001: Rejects mock Google ID token in production environment (NODE_ENV=production)', async () => {
+      vi.mocked(getEnv).mockReturnValueOnce({
+        JWT_SECRET: 'test_jwt_secret_with_32_characters_long_minimum',
+        GOOGLE_CLIENT_ID: 'google_client_id_placeholder',
+        NODE_ENV: 'production',
+      } as any);
+
+      await expect(
+        AuthService.verifyGoogleToken('mock_attacker@gmail.com')
+      ).rejects.toThrow('Mock Google ID tokens are strictly forbidden in this environment');
+    });
+
+    it('GOOGLE-SEC-002: Rejects mock Google ID token in production environment (APP_ENV=production)', async () => {
+      vi.mocked(getEnv).mockReturnValueOnce({
+        JWT_SECRET: 'test_jwt_secret_with_32_characters_long_minimum',
+        GOOGLE_CLIENT_ID: 'google_client_id_placeholder',
+        APP_ENV: 'production',
+      } as any);
+
+      await expect(
+        AuthService.verifyGoogleToken('mock_attacker@gmail.com')
+      ).rejects.toThrow('Mock Google ID tokens are strictly forbidden in this environment');
+    });
+
+    it('GOOGLE-SEC-003: Rejects mock Google ID token when GOOGLE_CLIENT_ID is not placeholder', async () => {
+      vi.mocked(getEnv).mockReturnValueOnce({
+        JWT_SECRET: 'test_jwt_secret_with_32_characters_long_minimum',
+        GOOGLE_CLIENT_ID: 'real-google-client-id.apps.googleusercontent.com',
+        NODE_ENV: 'development',
+      } as any);
+
+      await expect(
+        AuthService.verifyGoogleToken('mock_attacker@gmail.com')
+      ).rejects.toThrow('Mock Google ID tokens are strictly forbidden in this environment');
     });
   });
 });
