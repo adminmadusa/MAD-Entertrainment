@@ -1,114 +1,28 @@
 import { adminApiClient } from '@/lib/api/client';
 import { createLogger } from '@/lib/logger';
-import type { PaginatedItemsResponse } from '@mad/types';
+import type {
+  AdminBooking,
+  NormalizedBookingsResponse,
+  EventSummary,
+  CustomerSummary,
+  TicketSummary,
+  PaymentSummary,
+  NormalizedBookingDetail,
+  AdminBookingsSummary,
+} from '@mad/types';
+
+export type {
+  AdminBooking,
+  NormalizedBookingsResponse,
+  EventSummary,
+  CustomerSummary,
+  TicketSummary,
+  PaymentSummary,
+  NormalizedBookingDetail,
+  AdminBookingsSummary,
+};
 
 const logger = createLogger('Booking Service');
-
-export interface AdminBooking {
-  _id: string;
-  bookingId: string;
-  status: string;
-  totalAmount: number;
-  currency: string;
-  mode: string;
-  eventId?: { _id: string; title: string; startDate: string; venue?: string; coverImage?: { url: string } } | null;
-  userId?: {
-    _id: string;
-    name: string;
-    firstName?: string;
-    lastName?: string;
-    email: string;
-    phone?: string;
-    birthdate?: string;
-    keepUpdated?: boolean;
-    sendBestEvents?: boolean;
-  } | null;
-  guestInfo?: {
-    name: string;
-    firstName?: string;
-    lastName?: string;
-    email: string;
-    phone: string;
-    birthdate?: string;
-    keepUpdated?: boolean;
-    sendBestEvents?: boolean;
-  };
-  tickets: { tierName: string; quantity: number; price: number }[];
-  createdAt: string;
-  cancellationReason?: string;
-  cancelledAt?: string;
-  totalTickets?: number;
-  ticketsScanned?: number;
-  ticketsRemaining?: number;
-  attendanceStatus?: 'NOT_ATTENDED' | 'PARTIALLY_ATTENDED' | 'FULLY_ATTENDED';
-  auditHistory?: {
-    action: string;
-    actor: string;
-    status: string;
-    timestamp: string;
-    metadata: Record<string, unknown>;
-    description: string;
-  }[];
-  individualTickets?: {
-    ticketId: string;
-    status: string;
-    createdAt: string;
-    replacedAt?: string | null;
-    replacedByTicketId?: string | null;
-    replacementReason?: string | null;
-  }[];
-}
-
-export type NormalizedBookingsResponse = PaginatedItemsResponse<AdminBooking>;
-
-export interface EventSummary {
-  _id: string;
-  title: string;
-  startDate: string;
-  coverImage?: { url: string };
-}
-
-export interface CustomerSummary {
-  _id?: string;
-  name: string;
-  firstName?: string;
-  lastName?: string;
-  email: string;
-  phone?: string;
-  birthdate?: string;
-  keepUpdated?: boolean;
-  sendBestEvents?: boolean;
-}
-
-export interface TicketSummary {
-  tierName: string;
-  quantity: number;
-  price: number;
-}
-
-export interface PaymentSummary {
-  amount: number;
-  currency: string;
-  status: string;
-}
-
-export interface NormalizedBookingDetail {
-  booking: {
-    _id: string;
-    bookingId: string;
-    status: string;
-    totalAmount: number;
-    currency: string;
-    mode: string;
-    createdAt: string;
-    cancellationReason?: string;
-    cancelledAt?: string;
-  } | null;
-  customer: CustomerSummary | null;
-  tickets: TicketSummary[];
-  payment: PaymentSummary | null;
-  event: EventSummary | null;
-}
 
 export async function adminGetBookings(params: Record<string, string | number> = {}): Promise<NormalizedBookingsResponse> {
   try {
@@ -231,15 +145,6 @@ export async function adminResendBookingTickets(id: string): Promise<void> {
   await adminApiClient.post(`/admin/bookings/${id}/resend`);
 }
 
-export interface AdminBookingsSummary {
-  totalBookings: number;
-  totalTickets: number;
-  revenue: number;
-  confirmed: number;
-  pending: number;
-  cancelled: number;
-  checkedIn: number;
-}
 
 export async function adminGetBookingsSummary(eventId?: string): Promise<AdminBookingsSummary> {
   const qs = new URLSearchParams(eventId ? { eventId } : {});
