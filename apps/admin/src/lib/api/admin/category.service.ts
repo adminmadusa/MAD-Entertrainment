@@ -1,11 +1,7 @@
 import { adminApiClient } from '@/lib/api/client';
+import type { AdminCategory } from '@mad/types';
 
-export interface AdminCategory {
-  _id: string;
-  name: string;
-  slug: string;
-  createdAt: string;
-}
+export type { AdminCategory };
 
 export async function adminGetCategories(): Promise<AdminCategory[]> {
   const { data } = await adminApiClient.get<{ data: AdminCategory[] }>('/admin/categories');
