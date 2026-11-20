@@ -38,28 +38,28 @@ export const governanceConfig = {
    */
   scanScope: {
     excludedPaths: [
-      'scripts/governance',
-      '.agents',
-      'docs/archive',
+      "scripts/governance",
+      ".agents",
+      "docs/archive",
       // git-mcp: Gitignored, untracked third-party Remix/Cloudflare subproject.
       // Its components, hooks, and assets are not part of any MAD production workspace
       // and must not participate in dead-code detection. 0 tracked files.
-      'git-mcp',
+      "git-mcp",
       // tmp: Scratch directory used for ad-hoc local testing scripts. Not production code.
-      'tmp',
+      "tmp",
       // tests/ui-governance: Runtime browser test harness (Playwright). Its utility
       // files are imported by the test runner process, not by the application bundles.
       // The dead-asset BFS from app entry points correctly classifies them as unreachable.
-      'tests/ui-governance',
+      "tests/ui-governance",
     ] as string[],
     documentationExclusions: [
-      'docs/archive',
+      "docs/archive",
       // openspec/changes/archive: Completed and archived OpenSpec design documents.
       // These may contain file:// IDE deep-links written during the design phase
       // (VAL-DOC-001) that are intentionally historical. Enforcing path hygiene
       // on closed design specs adds noise without operational value.
-      'openspec/changes/archive',
-      'apps/web/src/content/legal',
+      "openspec/changes/archive",
+      "apps/web/src/content/legal",
     ] as string[],
     /**
      * deadCodeExclusions:
@@ -77,102 +77,87 @@ export const governanceConfig = {
      *     the email module through the current graph snapshot.
      */
     deadCodeExclusions: [
-      'apps/web/src/utils/image-loader.ts',
-      'apps/server/src/utils/zeptomail.ts',
-      'brand/logo.png',
-      'brand/logo.webp',
-      'brand/logo-128.png',
-      'brand/logo-64.png',
-      'brand/email-logo.png',
-      'brand/pdf-logo.png',
-      'icon-192.png',
-      'icon-512.png',
-      'apple-touch-icon.png',
-      'favicon-16x16.png',
-      'favicon-32x32.png',
+      "apps/web/src/utils/image-loader.ts",
+      "apps/server/src/utils/zeptomail.ts",
+      "brand/logo.png",
+      "brand/logo.webp",
+      "brand/logo-128.png",
+      "brand/logo-64.png",
+      "brand/email-logo.png",
+      "brand/pdf-logo.png",
+      "icon-192.png",
+      "icon-512.png",
+      "apple-touch-icon.png",
+      "favicon-16x16.png",
+      "favicon-32x32.png",
     ] as string[],
     performanceExclusions: [
-      '/email/templates/',
-      'email/templates/',
-      'apps/server/src/app.ts',
-      'next-env.d.ts',
+      "/email/templates/",
+      "email/templates/",
+      "apps/server/src/app.ts",
+      "next-env.d.ts",
     ] as string[],
   },
 
-  sharedComponentScopes: [
-    'apps/admin',
-    'apps/web',
-  ],
+  sharedComponentScopes: ["apps/admin", "apps/web"],
   sharedComponentEnforcement: {
     ignoreFiles: [
-      '**/AdminShell.tsx',
-      '**/AdminSidebar.tsx',
-      '**/MobileNavigation.tsx',
+      "**/AdminShell.tsx",
+      "**/AdminSidebar.tsx",
+      "**/MobileNavigation.tsx",
     ],
-    fieldExemptions: [
-      'apps/admin/src/app/events/new/_components/Field.tsx',
-    ],
+    fieldExemptions: ["apps/admin/src/app/events/new/_components/Field.tsx"],
   },
   documentationGovernance: {
-    approvedGeneratedDirs: [
-      'reports/',
-      '.governance/'
-    ],
-    disallowedTempPatterns: [
-      'temp',
-      'tmp',
-      'draft',
-      'backup'
-    ],
+    approvedGeneratedDirs: ["reports/", ".governance/"],
+    disallowedTempPatterns: ["temp", "tmp", "draft", "backup"],
     exemptEntrypoints: [
-      'README.md',
-      'REPOSITORY_GOVERNANCE.md',
-      '.agents/AGENTS.md',
-      'docs/decisions/README.md',
-      'docs/decisions/ADR_INDEX.md',
-      'docs/decisions/ADR_TEMPLATE.md',
-      'docs/governance/REGISTRY.md'
+      "README.md",
+      "REPOSITORY_GOVERNANCE.md",
+      ".agents/AGENTS.md",
+      "docs/decisions/README.md",
+      "docs/decisions/ADR_INDEX.md",
+      "docs/decisions/ADR_TEMPLATE.md",
+      "docs/governance/REGISTRY.md",
     ],
     duplicateThreshold: {
       error: 95,
-      warn: 85
+      warn: 85,
     },
-    duplicateExclusions: [
-      'docs/governance/rules'
-    ],
+    duplicateExclusions: ["docs/governance/rules"],
     // Configuration location for rule enforcement levels.
     // Promotion from WARN to FAIL_BUILD will happen after successful validation.
     enforcement: {
-      'VAL-DOC-001': 'FAIL_BUILD', // Local workstation paths
-      'VAL-DOC-002': 'FAIL_BUILD', // Absolute filesystem paths
-      'VAL-DOC-003': 'FAIL_BUILD', // Broken link targets
-      'VAL-DOC-004': 'FAIL_BUILD', // Case-sensitive filename casing
-      'VAL-DOC-005': 'WARN',       // Secret & credential detection (staged rollout)
-      'VAL-DOC-006': 'WARN',       // Duplicate document detection (staged rollout)
-      'VAL-DOC-007': 'WARN',       // Reachability-based orphan detection (staged rollout)
-      'VAL-DOC-008': 'FAIL_BUILD'  // Lifecycle classification
-    }
+      "VAL-DOC-001": "FAIL_BUILD", // Local workstation paths
+      "VAL-DOC-002": "FAIL_BUILD", // Absolute filesystem paths
+      "VAL-DOC-003": "FAIL_BUILD", // Broken link targets
+      "VAL-DOC-004": "FAIL_BUILD", // Case-sensitive filename casing
+      "VAL-DOC-005": "WARN", // Secret & credential detection (staged rollout)
+      "VAL-DOC-006": "WARN", // Duplicate document detection (staged rollout)
+      "VAL-DOC-007": "WARN", // Reachability-based orphan detection (staged rollout)
+      "VAL-DOC-008": "FAIL_BUILD", // Lifecycle classification
+    },
   },
   codeQuality: {
     thresholds: {
-      componentMaxLines: 300,
-      hookMaxLines: 250,
+      componentMaxLines: 249,
+      hookMaxLines: 249,
       controllerMaxLines: 200,
-      serviceMaxLines: 500,
-      schemaMaxLines: 300,
-      testMaxLines: 800,
+      serviceMaxLines: 249,
+      schemaMaxLines: 249,
+      testMaxLines: 249,
       maxComplexity: 15,
       maxStateHooks: 10,
     },
     enforcement: {
-      'VAL-QUAL-001': 'FAIL_BUILD',
-      'VAL-QUAL-002': 'FAIL_BUILD',
-      'VAL-QUAL-003': 'FAIL_BUILD',
-      'VAL-QUAL-004': 'FAIL_BUILD',
-      'VAL-QUAL-005': 'FAIL_BUILD',
-      'VAL-QUAL-006': 'FAIL_BUILD',
-      'VAL-QUAL-007': 'WARN',
-      'VAL-QUAL-008': 'WARN',
+      "VAL-QUAL-001": "FAIL_BUILD",
+      "VAL-QUAL-002": "FAIL_BUILD",
+      "VAL-QUAL-003": "FAIL_BUILD",
+      "VAL-QUAL-004": "FAIL_BUILD",
+      "VAL-QUAL-005": "FAIL_BUILD",
+      "VAL-QUAL-006": "FAIL_BUILD",
+      "VAL-QUAL-007": "WARN",
+      "VAL-QUAL-008": "WARN",
     },
     /**
      * BASELINE CODE QUALITY EXCEPTIONS
@@ -184,18 +169,11 @@ export const governanceConfig = {
      */
     exceptions: [
       // Custom Hooks (all compliant!)
-
       // UI Components
-
-
       // Controllers
-
       // Services (all compliant!)
-
       // Schemas & Types (all compliant!)
-
       // Test Suites
-      
-    ]
-  }
+    ],
+  },
 };
