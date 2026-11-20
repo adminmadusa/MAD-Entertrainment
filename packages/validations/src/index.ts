@@ -1,9 +1,7 @@
 import { z } from 'zod';
+import { objectIdSchema } from './common.validator';
 
-// MongoDB ObjectId regex validator (24 hex characters)
-export const objectIdSchema = z
-  .string()
-  .regex(/^[0-9a-fA-F]{24}$/, 'Invalid Mongoose ObjectId identifier');
+export * from './common.validator';
 
 export const checkoutTicketSchema = z.object({
   tier: z.string().min(1, 'Ticket tier identifier is required').max(100),
@@ -148,3 +146,4 @@ export type DeleteAccountInput = z.infer<typeof deleteAccountSchema>;
 export * from './upload.validator';
 export * from './normalizers';
 export * from './event-gallery.validator';
+export * from './admin';
