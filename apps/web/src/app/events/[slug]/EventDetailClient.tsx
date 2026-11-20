@@ -8,6 +8,7 @@ import { useEffect, useRef } from 'react';
 import { publicGetEventBySlug, publicGetGallery } from '@/lib/api/public.service';
 import { QUERY_KEYS, formatMoney } from '@mad/shared';
 import type { Event as EventData } from '@mad/types';
+import { formatDate } from '@mad/utils';
 
 import type { EventBookingFlowHandle } from './components/EventBookingFlow';
 import { EventOverview } from './components/EventOverview';
@@ -93,7 +94,7 @@ export default function EventDetailClient({ slug, initialEvent }: EventDetailCli
     );
   }
 
-  const showDateTime = new Date(event.startDate).toLocaleDateString('en-US', {
+  const showDateTime = formatDate(event.startDate, {
     weekday: 'long',
     month: 'long',
     day: 'numeric',
