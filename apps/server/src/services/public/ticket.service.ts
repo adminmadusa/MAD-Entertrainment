@@ -2,7 +2,7 @@ import { Types } from 'mongoose';
 
 import { NotificationType, BookingStatus } from '@mad/shared';
 
-import { getEnv, getPublicWebUrl } from '../../config/env';
+import { getPublicWebUrl } from '../../config/env';
 import { getQueueName } from '../../config/queue.config';
 import { AppError } from '../../middleware/error.middleware';
 import { Booking } from '../../models/booking.schema';

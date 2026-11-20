@@ -1,6 +1,6 @@
 import { ClientSession } from 'mongoose';
 import { BookingStatus, NotificationType, PaymentStatus } from '@mad/shared';
-import { getEnv, getPublicWebUrl } from '../../../config/env';
+import { getPublicWebUrl } from '../../../config/env';
 import { getQueueName } from '../../../config/queue.config';
 import { paymentFailureHtml } from '../../../lib/email';
 import { IBooking } from '../../../models/booking.schema';
