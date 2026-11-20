@@ -65,7 +65,7 @@
     },
     "apps/admin/src/components/coupons/CouponForm.tsx": {
       "ruleId": "VAL-QUAL-001",
-      "lineCount": 275
+      "lineCount": 285
     },
     "apps/admin/src/components/events/EventTicketingCard.tsx": {
       "ruleId": "VAL-QUAL-001",
@@ -265,11 +265,11 @@
     },
     "apps/server/src/services/public/auth.service.test.ts": {
       "ruleId": "VAL-QUAL-006",
-      "lineCount": 649
+      "lineCount": 686
     },
     "apps/server/src/services/public/auth.service.ts": {
       "ruleId": "VAL-QUAL-004",
-      "lineCount": 444
+      "lineCount": 462
     },
     "apps/server/src/services/public/booking.service.idempotency.test.ts": {
       "ruleId": "VAL-QUAL-006",

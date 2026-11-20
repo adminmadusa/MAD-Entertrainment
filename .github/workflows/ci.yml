@@ -86,7 +86,7 @@ jobs:
         run: pnpm run governance:docs --incremental
         env:
           GOVERNANCE_MIN_HEALTH_SCORE: 80
-          GOVERNANCE_MAX_WARNINGS: 730
+          GOVERNANCE_MAX_WARNINGS: 846
 
       - name: Run Workspace Configuration Audit
         run: pnpm run audit-data

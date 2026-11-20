@@ -59,3 +59,55 @@ export async function disconnectRedis(): Promise<void> {
 export function isRedisConnected(): boolean {
   return redisClient?.status === 'ready';
 }
+
+export const COMPARE_AND_DELETE_LUA = `
+if redis.call("get", KEYS[1]) == ARGV[1] then
+  return redis.call("del", KEYS[1])
+else
+  return 0
+end
+`;
+
+/**
+ * Atomically releases a Redis distributed lock only if the current value matches the expected owner.
+ * Executes a single atomic Lua script to prevent race conditions where a lock expires and is acquired
+ * by a replacement owner before deletion.
+ *
+ * @param redis The active Redis client instance
+ * @param key The lock key (e.g., `mad:lock:event:...:seat:...`)
+ * @param owner The ownership token (e.g., sessionId)
+ * @returns Promise<boolean> true if lock was deleted; false if owner mismatched, key expired, or key absent
+ */
+export async function releaseLockAtomic(
+  redis: Redis,
+  key: string,
+  owner: string
+): Promise<boolean> {
+  const result = await redis.eval(COMPARE_AND_DELETE_LUA, 1, key, owner);
+  return result === 1;
+}
+
+/**
+ * Atomically releases a batch of Redis distributed locks for a given owner.
+ * Iterates through the keys and atomically releases each key held by the specified owner.
+ *
+ * @param redis The active Redis client instance
+ * @param keys Array of lock keys
+ * @param owner The ownership token
+ * @returns Promise<string[]> Array of keys successfully released
+ */
+export async function releaseLocksAtomic(
+  redis: Redis,
+  keys: string[],
+  owner: string
+): Promise<string[]> {
+  const released: string[] = [];
+  for (const key of keys) {
+    const ok = await releaseLockAtomic(redis, key, owner);
+    if (ok) {
+      released.push(key);
+    }
+  }
+  return released;
+}
+
