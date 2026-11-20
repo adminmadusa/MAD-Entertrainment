@@ -4,7 +4,7 @@ import { Payment, IPayment } from '../../../models/payment.schema';
 import { auditLog } from '../../../utils/audit';
 import { logger } from '../../../utils/logger';
 import { PaymentValidationService } from '../payment-validation.service';
-import type { PaymentWebhookPersistence } from '../payment-webhook.service';
+import type { PaymentWebhookPersistence } from '../payment.types';
 
 export async function confirmFromWebhookStripeHelper(
   intent: any,
