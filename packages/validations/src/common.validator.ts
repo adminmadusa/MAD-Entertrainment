@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { OBJECT_ID_REGEX, VALIDATION_ERROR_MESSAGES } from '@mad/shared';
 
 /**
  * MongoDB ObjectId regex validator (24 hex characters).
@@ -6,4 +7,5 @@ import { z } from 'zod';
  */
 export const objectIdSchema = z
   .string()
-  .regex(/^[0-9a-fA-F]{24}$/, 'Invalid Mongoose ObjectId identifier');
+  .regex(OBJECT_ID_REGEX, VALIDATION_ERROR_MESSAGES.INVALID_OBJECT_ID);
+

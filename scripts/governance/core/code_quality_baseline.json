@@ -491,10 +491,6 @@
       "ruleId": "VAL-QUAL-004",
       "lineCount": 398
     },
-    "packages/shared/src/constants/index.ts": {
-      "ruleId": "VAL-QUAL-004",
-      "lineCount": 421
-    },
     "packages/ui/src/composites/Pagination/Pagination.tsx": {
       "ruleId": "VAL-QUAL-001",
       "lineCount": 252

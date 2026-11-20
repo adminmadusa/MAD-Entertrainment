@@ -1,4 +1,9 @@
 import { z } from 'zod';
+import {
+  OTP_CODE_REGEX,
+  E164_PHONE_REGEX,
+  AUTH_ERROR_MESSAGES,
+} from '@mad/shared';
 import { objectIdSchema } from './common.validator';
 
 export * from './common.validator';
@@ -97,9 +102,9 @@ export const emailSchema = z
 export const otpSchema = z
   .string()
   .trim()
-  .min(6, 'Passcode must be 6 digits')
-  .max(6, 'Passcode must be 6 digits')
-  .regex(/^\d{6}$/, 'Passcode must be 6 digits');
+  .min(6, AUTH_ERROR_MESSAGES.INVALID_PASSCODE)
+  .max(6, AUTH_ERROR_MESSAGES.INVALID_PASSCODE)
+  .regex(OTP_CODE_REGEX, AUTH_ERROR_MESSAGES.INVALID_PASSCODE);
 
 export const checkEmailSchema = z.object({
   email: emailSchema,
@@ -124,7 +129,7 @@ export const updateProfileSchema = z.object({
   mobileNumber: z
     .string()
     .trim()
-    .regex(/^\+[1-9]\d{1,14}$/, 'Mobile number must be in valid E.164 format (e.g. +14155552671)')
+    .regex(E164_PHONE_REGEX, AUTH_ERROR_MESSAGES.INVALID_PHONE)
     .optional()
     .or(z.literal('')),
 }).strict();
