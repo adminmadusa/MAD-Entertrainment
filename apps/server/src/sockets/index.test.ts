@@ -15,9 +15,7 @@ const { mockRedis, mockEventModel } = vi.hoisted(() => ({
     eval: vi.fn(),
     isRedisConnected: vi.fn(() => true),
   },
-  mockEventModel: {
-    exists: vi.fn(),
-  },
+  mockEventModel: { exists: vi.fn() },
 }));
 
 // Mock dependencies for ESM imports
@@ -30,29 +28,18 @@ vi.mock('../config/redis', async (importOriginal) => {
   };
 });
 
-vi.mock('../models/event.schema', () => ({
-  Event: mockEventModel,
-}));
+vi.mock('../models/event.schema', () => ({ Event: mockEventModel }));
 
 vi.mock('../models/seat-layout.schema', () => ({
-  SeatLayout: {
-    findOne: vi.fn(),
-  },
+  SeatLayout: { findOne: vi.fn() },
 }));
 
 vi.mock('../services/public/booking.service', () => ({
-  PublicBookingService: {
-    assertBookingAccess: vi.fn(), // Allow by default; individual tests can override to throw
-  },
+  PublicBookingService: { assertBookingAccess: vi.fn() },
 }));
 
 vi.mock('../utils/logger', () => ({
-  logger: {
-    info: vi.fn(),
-    warn: vi.fn(),
-    error: vi.fn(),
-    debug: vi.fn(),
-  },
+  logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() },
 }));
 
 vi.mock('../utils/audit', () => ({

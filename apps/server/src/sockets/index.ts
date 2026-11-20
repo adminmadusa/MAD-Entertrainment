@@ -84,9 +84,7 @@ async function releaseLockKeys(keys: string[], sessionId: string): Promise<strin
   for (const key of keys) {
     try {
       const ok = await releaseLockAtomic(redis, key, sessionId);
-      if (ok) {
-        released.push(key);
-      }
+      if (ok) released.push(key);
     } catch (err) {
       logger.warn({ err, key, sessionId }, 'Failed to release lock atomically');
     }
@@ -98,9 +96,7 @@ async function releaseLockKeys(keys: string[], sessionId: string): Promise<strin
 // Release locks in Redis, but only when still owned by this session.
 async function releaseLocks(eventId: string, seatIds: string[], sessionId: string): Promise<string[]> {
   const keys = seatIds.map((id) => getSeatLockKey(eventId, id));
-  if (keys.length === 0) return [];
-
-  return releaseLockKeys(keys, sessionId);
+  return keys.length > 0 ? releaseLockKeys(keys, sessionId) : [];
 }
 
 async function filterSeatsStillReservedInDatabase(eventId: string, seatIds: string[]): Promise<string[]> {

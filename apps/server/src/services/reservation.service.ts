@@ -1,6 +1,6 @@
 import { Types, ClientSession } from 'mongoose';
 
-import { BookingMode, InventoryState, ReservationStatus, SeatStatus, TicketTier, HTTP_STATUS } from '@mad/shared';
+import { BookingMode, InventoryState, ReservationStatus, SeatStatus, HTTP_STATUS } from '@mad/shared';
 
 import { getRedis, releaseLockAtomic } from '../config/redis';
 import { emitToAdmin, emitToEvent } from '../config/socket';
@@ -12,6 +12,9 @@ import { auditLog } from '../utils/audit';
 import { logger } from '../utils/logger';
 import { CacheService } from './cache.service';
 import { assertReservationTransition, reservationToInventoryState } from './inventory-state.service';
+import { isSeatReservationCollision, type ReservationRequest } from './reservation/seat-collision.helper';
+
+export { isSeatReservationCollision, type ReservationRequest };
 
 const ACTIVE_RESERVATION_STATUSES = [
   ReservationStatus.RESERVED,
@@ -19,79 +22,12 @@ const ACTIVE_RESERVATION_STATUSES = [
   ReservationStatus.CONFIRMED,
 ];
 
-interface ReservationRequest {
-  eventId: Types.ObjectId;
-  bookingMode: BookingMode;
-  tier: TicketTier;
-  quantity: number; // Represents Admission Count (not Package Count) as per MAD-COUPLE-004
-  seats?: { seatId: string; section?: string }[];
-  sessionId: string;
-  socketId?: string;
-  userId?: string;
-  bookingId?: Types.ObjectId;
-  bookingReference?: string;
-  correlationId?: string;
-  expiresAt: Date;
-}
-
 function safeEmit(label: string, emit: () => void, details: Record<string, unknown>) {
   try {
     emit();
   } catch (err) {
     logger.debug({ err, ...details }, `Socket emit skipped: ${label}`);
   }
-}
-
-interface MongoDuplicateKeyError {
-  code?: number | string;
-  keyPattern?: Record<string, unknown>;
-  keyValue?: Record<string, unknown>;
-  message?: string;
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null;
-}
-
-/**
- * Strictly verifies whether a MongoDB error represents a verified seat collision
- * on the partial unique index { eventId: 1, seatId: 1 } (default name: eventId_1_seatId_1)
- * of the Reservation collection.
- */
-export function isSeatReservationCollision(err: unknown): boolean {
-  if (!isRecord(err)) {
-    return false;
-  }
-
-  const errObj = err as MongoDuplicateKeyError;
-  const code = errObj.code;
-  if (code !== 11000 && code !== '11000') {
-    return false;
-  }
-
-  // Strict check 1: Driver keyPattern contains BOTH eventId and seatId
-  if (isRecord(errObj.keyPattern)) {
-    const hasEventId = Object.prototype.hasOwnProperty.call(errObj.keyPattern, 'eventId');
-    const hasSeatId = Object.prototype.hasOwnProperty.call(errObj.keyPattern, 'seatId');
-    if (hasEventId && hasSeatId) {
-      return true;
-    }
-  }
-
-  // Strict check 2: Error message explicitly contains the specific partial index name
-  const message = typeof errObj.message === 'string' ? errObj.message : '';
-  if (message.includes('eventId_1_seatId_1')) {
-    if (isRecord(errObj.keyValue)) {
-      const hasEvent = Object.prototype.hasOwnProperty.call(errObj.keyValue, 'eventId');
-      const hasSeat = Object.prototype.hasOwnProperty.call(errObj.keyValue, 'seatId');
-      if (hasEvent && hasSeat) {
-        return true;
-      }
-    }
-    return true;
-  }
-
-  return false;
 }
 
 export class ReservationService {

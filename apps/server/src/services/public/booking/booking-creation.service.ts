@@ -313,38 +313,25 @@ export class BookingCreationService {
         };
       });
     } catch (err: unknown) {
-      const errObj = typeof err === 'object' && err !== null ? (err as Record<string, unknown>) : undefined;
-      const errCode = errObj?.code;
-      const errMsg = typeof errObj?.message === 'string' ? errObj.message : '';
+      const errObj = typeof err === 'object' && err !== null ? (err as Record<string, unknown>) : {};
+      const isDuplicate = errObj.code === 11000 || errObj.code === '11000';
+      const errMsg = typeof errObj.message === 'string' ? errObj.message : '';
 
-      if (
-        (errCode === 11000 || errCode === '11000') &&
-        (errMsg.includes('idx_session_event_awaiting_payment') ||
-          errMsg.includes('idx_user_event_awaiting_payment'))
-      ) {
-        logger.info(
-          { sessionId, userId, eventId: event._id },
-          'Concurrent booking checkout collision detected, resolving winner.'
-        );
+      if (isDuplicate && (errMsg.includes('idx_session_event_awaiting_payment') || errMsg.includes('idx_user_event_awaiting_payment'))) {
+        logger.info({ sessionId, userId, eventId: event._id }, 'Concurrent booking checkout collision detected, resolving winner.');
         const winningBooking = await Booking.findOne(query);
-        if (winningBooking) {
-          if (winningBooking.selectionFingerprint === requestFingerprint) {
-            (winningBooking as any).isReused = true;
-            return winningBooking;
-          }
+        if (winningBooking && winningBooking.selectionFingerprint === requestFingerprint) {
+          (winningBooking as any).isReused = true;
+          return winningBooking;
         }
 
-        const conflictErr = AppError.conflict(
-          'A concurrent booking checkout is already in progress with a different selection. Please refresh your cart and try again.'
-        );
+        const conflictErr = AppError.conflict('A concurrent booking checkout is already in progress with a different selection. Please refresh your cart and try again.');
         conflictErr.code = 'CONCURRENT_BOOKING_ATTEMPT';
         throw conflictErr;
       }
 
       if (ReservationService.isSeatReservationCollision?.(err)) {
-        const conflictErr = AppError.conflict(
-          'One or more of the selected seats have already been reserved. Please choose different seats.'
-        );
+        const conflictErr = AppError.conflict('One or more of the selected seats have already been reserved. Please choose different seats.');
         conflictErr.code = 'SEAT_ALREADY_RESERVED';
         throw conflictErr;
       }
