@@ -3,6 +3,7 @@
 import { ImageWrapper } from '@/components/common/ImageWrapper';
 import { formatMoney } from '@mad/shared';
 import type { Event } from '@mad/types';
+import { formatDate } from '@mad/utils';
 
 interface CheckoutEventSummaryCardProps {
   event: Event;
@@ -31,7 +32,7 @@ export function CheckoutEventSummaryCard({
       <div className="space-y-0.5 min-w-0 flex-1">
         <h2 className="text-xs sm:text-sm font-bold text-white truncate">{event.title}</h2>
         <p className="text-[11px] text-text-muted truncate">
-          {new Date(event.startDate).toLocaleDateString('en-US', {
+          {formatDate(event.startDate, {
             weekday: 'short',
             month: 'short',
             day: 'numeric',

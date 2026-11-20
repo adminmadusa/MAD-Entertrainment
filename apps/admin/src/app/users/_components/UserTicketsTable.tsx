@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@mad/ui';
+import { formatDateTime } from '@mad/utils';
 
 interface UserTicketItem {
   ticketId: string;
@@ -82,7 +83,8 @@ export default function UserTicketsTable({
                 </TableCell>
                 <TableCell sticky="end" showStickyDivider className="py-3.5 px-5 text-right text-text-secondary text-xs">
                   {t.scannedAt
-                    ? new Date(t.scannedAt).toLocaleDateString('en-IN', {
+                    ? formatDateTime(t.scannedAt, {
+                        locale: 'en-IN',
                         day: 'numeric',
                         month: 'short',
                         hour: '2-digit',
