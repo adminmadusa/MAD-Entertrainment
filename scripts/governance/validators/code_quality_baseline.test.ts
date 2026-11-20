@@ -80,6 +80,26 @@ describe("CodeQualityValidator 249-Line Baseline Enforcement", () => {
     expect(result.errors[0].snippet).toContain("Limit: 249 lines");
   });
 
+  const mockLegacy = (lines: number, ceiling = 350) => {
+    const fakeContent = Array(lines)
+      .fill("export function legacy() {}")
+      .join("\n");
+    vi.mocked(fs.readFileSync).mockImplementation((path: any) =>
+      String(path).includes("code_quality_baseline.json")
+        ? JSON.stringify({
+            entries: {
+              "apps/server/src/services/legacy.service.ts": {
+                ruleId: "VAL-QUAL-004",
+                lineCount: ceiling,
+              },
+            },
+          })
+        : fakeContent,
+    );
+  };
+
+  it("reports warning without failing build for an unchanged legacy baseline file", async () => {
+    mockLegacy(350, 350);
     const result = await validator.run(
       ["apps/server/src/services/legacy.service.ts"],
       { changedFiles: [] } as any,
@@ -92,6 +112,36 @@ describe("CodeQualityValidator 249-Line Baseline Enforcement", () => {
     );
   });
 
+  it("passes with warning when a baseline file is modified without line-count growth", async () => {
+    mockLegacy(350, 350);
+    const result = await validator.run(
+      ["apps/server/src/services/legacy.service.ts"],
+      { changedFiles: ["apps/server/src/services/legacy.service.ts"] } as any,
+    );
+    expect(result.success).toBe(true);
+    expect(result.errors).toHaveLength(0);
+    expect(result.warnings).toHaveLength(1);
+    expect(result.warnings[0].message).toContain(
+      "[BASELINE] Legacy code quality debt",
+    );
+  });
+
+  it("passes with warning when a baseline file is modified and reduced in size", async () => {
+    mockLegacy(300, 350);
+    const result = await validator.run(
+      ["apps/server/src/services/legacy.service.ts"],
+      { changedFiles: ["apps/server/src/services/legacy.service.ts"] } as any,
+    );
+    expect(result.success).toBe(true);
+    expect(result.errors).toHaveLength(0);
+    expect(result.warnings).toHaveLength(1);
+    expect(result.warnings[0].message).toContain(
+      "[BASELINE] Legacy code quality debt",
+    );
+  });
+
+  it("fails if an unchanged legacy baseline file exceeds its frozen baseline ceiling", async () => {
+    mockLegacy(355, 350);
     const result = await validator.run(
       ["apps/server/src/services/legacy.service.ts"],
       { changedFiles: [] } as any,
@@ -101,12 +151,15 @@ describe("CodeQualityValidator 249-Line Baseline Enforcement", () => {
     expect(result.errors[0].message).toContain("Freeze Violation");
   });
 
+  it("fails if a baseline file is modified and exceeds its frozen baseline ceiling", async () => {
+    mockLegacy(351, 350);
     const result = await validator.run(
       ["apps/server/src/services/legacy.service.ts"],
       { changedFiles: ["apps/server/src/services/legacy.service.ts"] } as any,
     );
     expect(result.success).toBe(false);
     expect(result.errors).toHaveLength(1);
+    expect(result.errors[0].message).toContain("Freeze Violation");
   });
 
   it("auto-prunes a baseline entry when a file is brought below 250 lines", async () => {

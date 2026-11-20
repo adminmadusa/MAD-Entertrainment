@@ -159,6 +159,7 @@ export class CodeQualityValidator implements GovernanceValidator {
         baselinePruned = true;
       } else if (lineCount > limit) {
         if (baselineEntry) {
+          if (lineCount > baselineEntry.lineCount) {
             this.addIssue(
               errors,
               relPath,
@@ -173,6 +174,7 @@ export class CodeQualityValidator implements GovernanceValidator {
               relPath,
               ruleId,
               "WARNING",
+              `[BASELINE] Legacy code quality debt: "${relPath}" has ${lineCount} lines (Ceiling: ${baselineEntry.lineCount}, Target: ${limit} lines)${isChanged ? " [modified within ceiling]" : ""}. Tracked in code_quality_baseline.json.`,
               `Ceiling: ${baselineEntry.lineCount}`,
             );
           }
