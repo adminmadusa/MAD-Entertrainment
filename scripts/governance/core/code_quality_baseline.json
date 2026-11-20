@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
   "description": "Tracked baseline of pre-existing legacy files on develop exceeding the 249-line limit (including scripts/governance).",
-  "updatedAt": "2026-11-19T12:28:59.775Z",
+  "updatedAt": "2026-11-20T12:01:58.235Z",
   "entries": {
     "apps/admin/next.config.ts": {
       "ruleId": "VAL-QUAL-004",
@@ -402,14 +402,6 @@
     "apps/server/src/sockets/index.ts": {
       "ruleId": "VAL-QUAL-004",
       "lineCount": 604
-    },
-    "apps/server/src/utils/pdf.monolithic.ts": {
-      "ruleId": "VAL-QUAL-004",
-      "lineCount": 396
-    },
-    "apps/server/src/utils/pdf.test.ts": {
-      "ruleId": "VAL-QUAL-006",
-      "lineCount": 255
     },
     "apps/server/src/validations/admin-content.validation.test.ts": {
       "ruleId": "VAL-QUAL-006",
