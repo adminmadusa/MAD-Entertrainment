@@ -99,6 +99,8 @@ export const Drawer = forwardRef<HTMLDivElement, DrawerProps>(
                 onClose();
               }
             }}
+            role="presentation"
+            tabIndex={-1}
             aria-hidden="true"
           />
         )}

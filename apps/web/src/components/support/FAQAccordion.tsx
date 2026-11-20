@@ -32,6 +32,8 @@ export function FAQAccordion({ faqs }: FAQAccordionProps) {
             key={faq.id}
             className="group glass-strong border border-border-subtle rounded-2xl overflow-hidden [&_summary::-webkit-details-marker]:hidden"
             open={isOpen}
+            role="group"
+            tabIndex={-1}
             onClick={(e) => {
               e.preventDefault();
               setOpenId(isOpen ? null : faq.id);

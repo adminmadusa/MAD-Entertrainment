@@ -93,6 +93,7 @@ export function Lightbox({ items, currentIndex, onClose, onChange }: LightboxPro
         role="dialog"
         aria-modal="true"
         aria-label="Image gallery lightbox"
+        tabIndex={-1}
         onClick={onClose}
       >
         {/* Top Controls: Counter & Close Button */}
@@ -157,6 +158,8 @@ export function Lightbox({ items, currentIndex, onClose, onChange }: LightboxPro
             exit={{ opacity: 0, scale: 0.96 }}
             transition={{ duration: 0.2 }}
             className="relative w-full max-w-5xl h-[70vh] sm:h-[80vh] flex items-center justify-center cursor-default"
+            role="presentation"
+            tabIndex={-1}
             onClick={(e) => e.stopPropagation()}
           >
             <Image

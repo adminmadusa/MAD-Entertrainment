@@ -153,6 +153,13 @@ export const UpcomingEventsCarousel = memo(function UpcomingEventsCarousel({
                   isActive ? 'pointer-events-auto' : 'pointer-events-none sm:pointer-events-auto'
                 } w-[220px] xs:w-[250px] sm:w-[290px] md:w-[320px] h-[260px] xs:h-[290px] sm:h-[350px] md:h-[380px]`}
                 onClick={() => !isActive && setActiveIndex(index)}
+                onKeyDown={(e) => {
+                  if (!isActive && (e.key === 'Enter' || e.key === ' ')) {
+                    e.preventDefault();
+                    setActiveIndex(index);
+                  }
+                }}
+                tabIndex={isActive ? 0 : -1}
                 role="group"
                 aria-roledescription="slide"
                 aria-label={`${index + 1} of ${events.length}: ${event.title}`}
