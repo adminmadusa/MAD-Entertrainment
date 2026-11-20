@@ -1,6 +1,6 @@
 import { ClientSession } from 'mongoose';
 import { BookingStatus, NotificationType, PaymentStatus } from '@mad/shared';
-import { getEnv } from '../../../config/env';
+import { getEnv, getPublicWebUrl } from '../../../config/env';
 import { getQueueName } from '../../../config/queue.config';
 import { paymentFailureHtml } from '../../../lib/email';
 import { IBooking } from '../../../models/booking.schema';
@@ -135,7 +135,7 @@ export class PaymentFailureService {
             customerName: booking.guestName,
             eventTitle: event?.title || 'MAD Event',
             bookingReference: booking.bookingId,
-            retryUrl: `${getEnv().FRONTEND_URL || 'http://localhost:3000'}/checkout/${booking.bookingId}`,
+            retryUrl: `${getPublicWebUrl()}/checkout/${booking.bookingId}`,
           });
 
           const jobId = `payfail-${payment._id}`;

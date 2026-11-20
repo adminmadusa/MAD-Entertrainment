@@ -2,7 +2,7 @@ import { Types } from 'mongoose';
 
 import { NotificationType, BookingStatus } from '@mad/shared';
 
-import { getEnv } from '../../config/env';
+import { getEnv, getPublicWebUrl } from '../../config/env';
 import { getQueueName } from '../../config/queue.config';
 import { AppError } from '../../middleware/error.middleware';
 import { Booking } from '../../models/booking.schema';
@@ -166,7 +166,7 @@ export async function claimTicket(
 
   // 3. Post-Commit: Queue Confirmation Notification
   try {
-    const frontendUrl = getEnv().FRONTEND_URL || 'http://localhost:3000';
+    const frontendUrl = getPublicWebUrl();
     const ticketsLink = `${frontendUrl}/tickets`;
     const subject = 'Ticket Claim Confirmed!';
     const html = `
