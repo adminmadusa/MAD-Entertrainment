@@ -143,7 +143,16 @@ export function DjGalleryCarousel({ galleryImages = [] }: DjGalleryCarouselProps
                   className={`pointer-events-auto group glass rounded-2xl border ${
                     isActive ? 'border-accent-pink/50 shadow-glow' : 'border-border-subtle cursor-pointer'
                   } overflow-hidden flex flex-col`}
+                  role={!isActive ? 'button' : 'group'}
+                  tabIndex={!isActive ? 0 : -1}
+                  aria-label={!isActive ? `Select slide ${index + 1}` : undefined}
                   onClick={() => !isActive && setActiveIndex(index)}
+                  onKeyDown={(e) => {
+                    if (!isActive && (e.key === 'Enter' || e.key === ' ')) {
+                      e.preventDefault();
+                      setActiveIndex(index);
+                    }
+                  }}
                 >
                   <div className="w-full h-full relative overflow-hidden bg-white/5 flex-shrink-0">
                     {img.url ? (

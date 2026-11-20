@@ -1,12 +1,7 @@
-import { ExitCode } from '../config/schema';
-import { ExecutionContext } from './context';
+import { OutputModel } from '../types/output';
+import { ExecutionContext } from '../types/context';
 
-export interface OutputModel<T = unknown> {
-  type: string;
-  success: boolean;
-  exitCode: ExitCode;
-  data?: T;
-}
+export { OutputModel };
 
 export interface CommandMetadata {
   id: string;
