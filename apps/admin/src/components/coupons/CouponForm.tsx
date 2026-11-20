@@ -211,7 +211,17 @@ export function CouponForm({
                   const isSelected = formState.selectedEvents.includes(event._id);
                   return (
                     <div
-                      key={event._id} onClick={() => toggleEventSelection(event._id)}
+                      key={event._id}
+                      role="button"
+                      tabIndex={0}
+                      aria-label={`Select ${event.title}`}
+                      onClick={() => toggleEventSelection(event._id)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          toggleEventSelection(event._id);
+                        }
+                      }}
                       className={`flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer transition-all ${
                         isSelected ? 'bg-accent-purple/10 text-white' : 'hover:bg-white/5 text-text-secondary'
                       }`}
