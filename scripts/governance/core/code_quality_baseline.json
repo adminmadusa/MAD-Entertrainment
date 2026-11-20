@@ -1,0 +1,671 @@
+{
+  "version": "1.0.0",
+  "description": "Tracked baseline of pre-existing legacy files on develop exceeding the 249-line limit (including scripts/governance).",
+  "updatedAt": "2026-11-19T12:28:59.775Z",
+  "entries": {
+    "apps/admin/next.config.ts": {
+      "ruleId": "VAL-QUAL-004",
+      "lineCount": 323
+    },
+    "apps/admin/src/app/bookings/_components/BookingDetailsModal.tsx": {
+      "ruleId": "VAL-QUAL-001",
+      "lineCount": 283
+    },
+    "apps/admin/src/app/coupons/page.tsx": {
+      "ruleId": "VAL-QUAL-001",
+      "lineCount": 279
+    },
+    "apps/admin/src/app/diagnostics/emails/page.tsx": {
+      "ruleId": "VAL-QUAL-001",
+      "lineCount": 296
+    },
+    "apps/admin/src/app/diagnostics/page.tsx": {
+      "ruleId": "VAL-QUAL-001",
+      "lineCount": 291
+    },
+    "apps/admin/src/app/diagnostics/webhooks/page.tsx": {
+      "ruleId": "VAL-QUAL-001",
+      "lineCount": 257
+    },
+    "apps/admin/src/app/dj-operators/page.tsx": {
+      "ruleId": "VAL-QUAL-001",
+      "lineCount": 286
+    },
+    "apps/admin/src/app/events/components/AdminEventsTable.tsx": {
+      "ruleId": "VAL-QUAL-001",
+      "lineCount": 275
+    },
+    "apps/admin/src/app/login/page.tsx": {
+      "ruleId": "VAL-QUAL-001",
+      "lineCount": 295
+    },
+    "apps/admin/src/app/popups/page.tsx": {
+      "ruleId": "VAL-QUAL-001",
+      "lineCount": 265
+    },
+    "apps/admin/src/app/refunds/components/ProcessRefundModal.tsx": {
+      "ruleId": "VAL-QUAL-001",
+      "lineCount": 279
+    },
+    "apps/admin/src/app/ticket-management/_components/EventCategoriesTab.tsx": {
+      "ruleId": "VAL-QUAL-001",
+      "lineCount": 276
+    },
+    "apps/admin/src/app/ticket-management/_components/TicketTiersTab.tsx": {
+      "ruleId": "VAL-QUAL-001",
+      "lineCount": 279
+    },
+    "apps/admin/src/components/AdminSidebar.tsx": {
+      "ruleId": "VAL-QUAL-001",
+      "lineCount": 267
+    },
+    "apps/admin/src/components/UnifiedMediaUpload.tsx": {
+      "ruleId": "VAL-QUAL-001",
+      "lineCount": 273
+    },
+    "apps/admin/src/components/coupons/CouponForm.tsx": {
+      "ruleId": "VAL-QUAL-001",
+      "lineCount": 275
+    },
+    "apps/admin/src/components/events/EventTicketingCard.tsx": {
+      "ruleId": "VAL-QUAL-001",
+      "lineCount": 282
+    },
+    "apps/admin/src/components/events/gallery/EventGalleryGrid.tsx": {
+      "ruleId": "VAL-QUAL-001",
+      "lineCount": 250
+    },
+    "apps/admin/src/components/events/gallery/EventGalleryWorkspace.tsx": {
+      "ruleId": "VAL-QUAL-001",
+      "lineCount": 285
+    },
+    "apps/admin/src/components/popups/PopupForm.tsx": {
+      "ruleId": "VAL-QUAL-001",
+      "lineCount": 281
+    },
+    "apps/admin/src/components/ticket-profiles/TicketTierCard.tsx": {
+      "ruleId": "VAL-QUAL-001",
+      "lineCount": 271
+    },
+    "apps/admin/src/lib/api/admin/diagnostics.service.ts": {
+      "ruleId": "VAL-QUAL-004",
+      "lineCount": 260
+    },
+    "apps/server/src/config/env.ts": {
+      "ruleId": "VAL-QUAL-004",
+      "lineCount": 318
+    },
+    "apps/server/src/config/openapi.ts": {
+      "ruleId": "VAL-QUAL-004",
+      "lineCount": 268
+    },
+    "apps/server/src/controllers/admin/analytics.controller.test.ts": {
+      "ruleId": "VAL-QUAL-006",
+      "lineCount": 303
+    },
+    "apps/server/src/controllers/admin/diagnostics.controller.test.ts": {
+      "ruleId": "VAL-QUAL-006",
+      "lineCount": 263
+    },
+    "apps/server/src/controllers/admin/scanner.controller.test.ts": {
+      "ruleId": "VAL-QUAL-006",
+      "lineCount": 454
+    },
+    "apps/server/src/controllers/public/auth.controller.test.ts": {
+      "ruleId": "VAL-QUAL-006",
+      "lineCount": 576
+    },
+    "apps/server/src/controllers/public/booking.controller.test.ts": {
+      "ruleId": "VAL-QUAL-006",
+      "lineCount": 793
+    },
+    "apps/server/src/controllers/public/payment.controller.webhook.test.ts": {
+      "ruleId": "VAL-QUAL-006",
+      "lineCount": 675
+    },
+    "apps/server/src/lib/email/templates/booking-confirmation.tsx": {
+      "ruleId": "VAL-QUAL-004",
+      "lineCount": 281
+    },
+    "apps/server/src/middleware/auth.middleware.ts": {
+      "ruleId": "VAL-QUAL-004",
+      "lineCount": 336
+    },
+    "apps/server/src/middleware/rate.middleware.ts": {
+      "ruleId": "VAL-QUAL-004",
+      "lineCount": 351
+    },
+    "apps/server/src/routes/admin/diagnostics.routes.test.ts": {
+      "ruleId": "VAL-QUAL-006",
+      "lineCount": 295
+    },
+    "apps/server/src/routes/admin/operational-rbac.routes.test.ts": {
+      "ruleId": "VAL-QUAL-006",
+      "lineCount": 571
+    },
+    "apps/server/src/routes/public/booking.routes.test.ts": {
+      "ruleId": "VAL-QUAL-006",
+      "lineCount": 298
+    },
+    "apps/server/src/services/admin/analytics.service.ts": {
+      "ruleId": "VAL-QUAL-004",
+      "lineCount": 468
+    },
+    "apps/server/src/services/admin/booking/booking-command.cancel.test.ts": {
+      "ruleId": "VAL-QUAL-006",
+      "lineCount": 760
+    },
+    "apps/server/src/services/admin/booking/booking-command.email.test.ts": {
+      "ruleId": "VAL-QUAL-006",
+      "lineCount": 622
+    },
+    "apps/server/src/services/admin/booking/booking-command.service.ts": {
+      "ruleId": "VAL-QUAL-004",
+      "lineCount": 284
+    },
+    "apps/server/src/services/admin/booking/booking-query.service.test.ts": {
+      "ruleId": "VAL-QUAL-006",
+      "lineCount": 634
+    },
+    "apps/server/src/services/admin/event-gallery.service.test.ts": {
+      "ruleId": "VAL-QUAL-006",
+      "lineCount": 303
+    },
+    "apps/server/src/services/admin/event-gallery.service.ts": {
+      "ruleId": "VAL-QUAL-004",
+      "lineCount": 319
+    },
+    "apps/server/src/services/admin/event.service.test.ts": {
+      "ruleId": "VAL-QUAL-006",
+      "lineCount": 567
+    },
+    "apps/server/src/services/admin/event.service.ts": {
+      "ruleId": "VAL-QUAL-004",
+      "lineCount": 441
+    },
+    "apps/server/src/services/admin/refund/refund-integrity.service.test.ts": {
+      "ruleId": "VAL-QUAL-006",
+      "lineCount": 794
+    },
+    "apps/server/src/services/admin/refund/refund-lifecycle.service.test.ts": {
+      "ruleId": "VAL-QUAL-006",
+      "lineCount": 632
+    },
+    "apps/server/src/services/admin/refund/refund-lifecycle.service.ts": {
+      "ruleId": "VAL-QUAL-004",
+      "lineCount": 300
+    },
+    "apps/server/src/services/admin/refund/refund-policy.service.test.ts": {
+      "ruleId": "VAL-QUAL-006",
+      "lineCount": 372
+    },
+    "apps/server/src/services/admin/refund/refund-validation.service.ts": {
+      "ruleId": "VAL-QUAL-004",
+      "lineCount": 286
+    },
+    "apps/server/src/services/admin/scanner.service.test.ts": {
+      "ruleId": "VAL-QUAL-006",
+      "lineCount": 296
+    },
+    "apps/server/src/services/admin/team.service.test.ts": {
+      "ruleId": "VAL-QUAL-006",
+      "lineCount": 450
+    },
+    "apps/server/src/services/admin/team.service.ts": {
+      "ruleId": "VAL-QUAL-004",
+      "lineCount": 342
+    },
+    "apps/server/src/services/admin/ticket-profile.service.test.ts": {
+      "ruleId": "VAL-QUAL-006",
+      "lineCount": 474
+    },
+    "apps/server/src/services/admin/ticket-profile.service.ts": {
+      "ruleId": "VAL-QUAL-004",
+      "lineCount": 337
+    },
+    "apps/server/src/services/admin/user.service.ts": {
+      "ruleId": "VAL-QUAL-004",
+      "lineCount": 445
+    },
+    "apps/server/src/services/consistency/booking-consistency.service.test.ts": {
+      "ruleId": "VAL-QUAL-006",
+      "lineCount": 526
+    },
+    "apps/server/src/services/consistency/inventory-candidate-and-batching.service.test.ts": {
+      "ruleId": "VAL-QUAL-006",
+      "lineCount": 430
+    },
+    "apps/server/src/services/consistency/notification-consistency.service.ts": {
+      "ruleId": "VAL-QUAL-004",
+      "lineCount": 451
+    },
+    "apps/server/src/services/consistency/notification-seat-consistency.service.test.ts": {
+      "ruleId": "VAL-QUAL-006",
+      "lineCount": 744
+    },
+    "apps/server/src/services/consistency/payment-refund-consistency.service.test.ts": {
+      "ruleId": "VAL-QUAL-006",
+      "lineCount": 261
+    },
+    "apps/server/src/services/consistency/pipeline-watchdog.service.test.ts": {
+      "ruleId": "VAL-QUAL-006",
+      "lineCount": 491
+    },
+    "apps/server/src/services/consistency/seat-consistency.service.ts": {
+      "ruleId": "VAL-QUAL-004",
+      "lineCount": 257
+    },
+    "apps/server/src/services/diagnostics.service.test.ts": {
+      "ruleId": "VAL-QUAL-006",
+      "lineCount": 380
+    },
+    "apps/server/src/services/diagnostics.service.ts": {
+      "ruleId": "VAL-QUAL-004",
+      "lineCount": 267
+    },
+    "apps/server/src/services/public/auth.service.test.ts": {
+      "ruleId": "VAL-QUAL-006",
+      "lineCount": 649
+    },
+    "apps/server/src/services/public/auth.service.ts": {
+      "ruleId": "VAL-QUAL-004",
+      "lineCount": 444
+    },
+    "apps/server/src/services/public/booking.service.idempotency.test.ts": {
+      "ruleId": "VAL-QUAL-006",
+      "lineCount": 396
+    },
+    "apps/server/src/services/public/booking.service.pricing.test.ts": {
+      "ruleId": "VAL-QUAL-006",
+      "lineCount": 587
+    },
+    "apps/server/src/services/public/booking.service.test.ts": {
+      "ruleId": "VAL-QUAL-006",
+      "lineCount": 661
+    },
+    "apps/server/src/services/public/booking/booking-creation.service.ts": {
+      "ruleId": "VAL-QUAL-004",
+      "lineCount": 483
+    },
+    "apps/server/src/services/public/booking/booking-lifecycle.service.ts": {
+      "ruleId": "VAL-QUAL-004",
+      "lineCount": 367
+    },
+    "apps/server/src/services/public/event.service.ts": {
+      "ruleId": "VAL-QUAL-004",
+      "lineCount": 435
+    },
+    "apps/server/src/services/public/ownership-characterization.test.ts": {
+      "ruleId": "VAL-QUAL-006",
+      "lineCount": 324
+    },
+    "apps/server/src/services/public/ownership-consolidation.test.ts": {
+      "ruleId": "VAL-QUAL-006",
+      "lineCount": 591
+    },
+    "apps/server/src/services/public/payment-booking.service.ts": {
+      "ruleId": "VAL-QUAL-004",
+      "lineCount": 352
+    },
+    "apps/server/src/services/public/payment-intent.service.test.ts": {
+      "ruleId": "VAL-QUAL-006",
+      "lineCount": 423
+    },
+    "apps/server/src/services/public/payment-intent.service.ts": {
+      "ruleId": "VAL-QUAL-004",
+      "lineCount": 494
+    },
+    "apps/server/src/services/public/payment-inventory.service.test.ts": {
+      "ruleId": "VAL-QUAL-006",
+      "lineCount": 314
+    },
+    "apps/server/src/services/public/payment-inventory.service.ts": {
+      "ruleId": "VAL-QUAL-004",
+      "lineCount": 301
+    },
+    "apps/server/src/services/public/payment-ownership.service.test.ts": {
+      "ruleId": "VAL-QUAL-006",
+      "lineCount": 523
+    },
+    "apps/server/src/services/public/payment-proof.service.test.ts": {
+      "ruleId": "VAL-QUAL-006",
+      "lineCount": 529
+    },
+    "apps/server/src/services/public/payment-validation.service.ts": {
+      "ruleId": "VAL-QUAL-004",
+      "lineCount": 427
+    },
+    "apps/server/src/services/public/payment-verify.service.test.ts": {
+      "ruleId": "VAL-QUAL-006",
+      "lineCount": 644
+    },
+    "apps/server/src/services/public/payment-verify.service.ts": {
+      "ruleId": "VAL-QUAL-004",
+      "lineCount": 362
+    },
+    "apps/server/src/services/public/payment-webhook.service.test.ts": {
+      "ruleId": "VAL-QUAL-006",
+      "lineCount": 415
+    },
+    "apps/server/src/services/public/payment-webhook.service.ts": {
+      "ruleId": "VAL-QUAL-004",
+      "lineCount": 356
+    },
+    "apps/server/src/services/public/payment.production.test.ts": {
+      "ruleId": "VAL-QUAL-006",
+      "lineCount": 408
+    },
+    "apps/server/src/services/public/payment.service.confirm-booking-rollback.test.ts": {
+      "ruleId": "VAL-QUAL-006",
+      "lineCount": 757
+    },
+    "apps/server/src/services/public/payment.service.confirm-booking.test.ts": {
+      "ruleId": "VAL-QUAL-006",
+      "lineCount": 570
+    },
+    "apps/server/src/services/public/payment.service.refund-webhook.test.ts": {
+      "ruleId": "VAL-QUAL-006",
+      "lineCount": 576
+    },
+    "apps/server/src/services/public/payment.service.ts": {
+      "ruleId": "VAL-QUAL-004",
+      "lineCount": 469
+    },
+    "apps/server/src/services/public/payment/payment-refund-reconciliation.service.ts": {
+      "ruleId": "VAL-QUAL-004",
+      "lineCount": 401
+    },
+    "apps/server/src/services/public/payment/stripe-webhook-confirmation.helper.ts": {
+      "ruleId": "VAL-QUAL-004",
+      "lineCount": 260
+    },
+    "apps/server/src/services/public/ticket-ownership.service.ts": {
+      "ruleId": "VAL-QUAL-004",
+      "lineCount": 298
+    },
+    "apps/server/src/services/public/ticket.service.ts": {
+      "ruleId": "VAL-QUAL-004",
+      "lineCount": 463
+    },
+    "apps/server/src/services/queue.service.test.ts": {
+      "ruleId": "VAL-QUAL-006",
+      "lineCount": 261
+    },
+    "apps/server/src/services/reservation.service.ts": {
+      "ruleId": "VAL-QUAL-004",
+      "lineCount": 433
+    },
+    "apps/server/src/sockets/index.test.ts": {
+      "ruleId": "VAL-QUAL-006",
+      "lineCount": 585
+    },
+    "apps/server/src/sockets/index.ts": {
+      "ruleId": "VAL-QUAL-004",
+      "lineCount": 604
+    },
+    "apps/server/src/utils/pdf.monolithic.ts": {
+      "ruleId": "VAL-QUAL-004",
+      "lineCount": 396
+    },
+    "apps/server/src/utils/pdf.test.ts": {
+      "ruleId": "VAL-QUAL-006",
+      "lineCount": 255
+    },
+    "apps/server/src/validations/admin-content.validation.test.ts": {
+      "ruleId": "VAL-QUAL-006",
+      "lineCount": 359
+    },
+    "apps/server/src/validations/admin-content.validation.ts": {
+      "ruleId": "VAL-QUAL-004",
+      "lineCount": 376
+    },
+    "apps/server/src/validations/event.validation.ts": {
+      "ruleId": "VAL-QUAL-004",
+      "lineCount": 256
+    },
+    "apps/server/src/workers/booking.worker.test.ts": {
+      "ruleId": "VAL-QUAL-006",
+      "lineCount": 310
+    },
+    "apps/server/src/workers/dlq-alerting.test.ts": {
+      "ruleId": "VAL-QUAL-006",
+      "lineCount": 280
+    },
+    "apps/server/src/workers/email.worker.test.ts": {
+      "ruleId": "VAL-QUAL-006",
+      "lineCount": 454
+    },
+    "apps/server/src/workers/email.worker.ts": {
+      "ruleId": "VAL-QUAL-004",
+      "lineCount": 324
+    },
+    "apps/server/src/workers/pdf.worker.ts": {
+      "ruleId": "VAL-QUAL-004",
+      "lineCount": 281
+    },
+    "apps/web/src/app/(auth)/dashboard/_components/DashboardTicketsTab.tsx": {
+      "ruleId": "VAL-QUAL-001",
+      "lineCount": 259
+    },
+    "apps/web/src/app/(auth)/dashboard/page.tsx": {
+      "ruleId": "VAL-QUAL-001",
+      "lineCount": 264
+    },
+    "apps/web/src/app/events/[slug]/components/EventBookingFlow.tsx": {
+      "ruleId": "VAL-QUAL-001",
+      "lineCount": 273
+    },
+    "apps/web/src/app/global-error.tsx": {
+      "ruleId": "VAL-QUAL-001",
+      "lineCount": 269
+    },
+    "apps/web/src/app/page.tsx": {
+      "ruleId": "VAL-QUAL-001",
+      "lineCount": 279
+    },
+    "apps/web/src/app/tickets/page.tsx": {
+      "ruleId": "VAL-QUAL-001",
+      "lineCount": 283
+    },
+    "apps/web/src/components/auth/AuthForm.test.tsx": {
+      "ruleId": "VAL-QUAL-006",
+      "lineCount": 382
+    },
+    "apps/web/src/components/booking/CheckoutContent.tsx": {
+      "ruleId": "VAL-QUAL-001",
+      "lineCount": 282
+    },
+    "apps/web/src/components/booking/TicketSelectionContent.tsx": {
+      "ruleId": "VAL-QUAL-001",
+      "lineCount": 265
+    },
+    "apps/web/src/components/booking/checkout/CheckoutForm.tsx": {
+      "ruleId": "VAL-QUAL-001",
+      "lineCount": 264
+    },
+    "apps/web/src/components/booking/shared/EntryPassGrid.tsx": {
+      "ruleId": "VAL-QUAL-001",
+      "lineCount": 268
+    },
+    "apps/web/src/components/common/EventCard.tsx": {
+      "ruleId": "VAL-QUAL-001",
+      "lineCount": 282
+    },
+    "apps/web/src/lib/api/client.test.ts": {
+      "ruleId": "VAL-QUAL-006",
+      "lineCount": 283
+    },
+    "apps/web/src/lib/api/client.ts": {
+      "ruleId": "VAL-QUAL-004",
+      "lineCount": 329
+    },
+    "apps/web/src/lib/api/public.service.ts": {
+      "ruleId": "VAL-QUAL-004",
+      "lineCount": 398
+    },
+    "packages/shared/src/constants/index.ts": {
+      "ruleId": "VAL-QUAL-004",
+      "lineCount": 421
+    },
+    "packages/ui/src/composites/Pagination/Pagination.tsx": {
+      "ruleId": "VAL-QUAL-001",
+      "lineCount": 252
+    },
+    "scripts/governance/cli/fix.ts": {
+      "ruleId": "VAL-QUAL-004",
+      "lineCount": 288
+    },
+    "scripts/governance/core/__tests__/analytics_engine.test.ts": {
+      "ruleId": "VAL-QUAL-006",
+      "lineCount": 287
+    },
+    "scripts/governance/core/__tests__/autofix_engine.test.ts": {
+      "ruleId": "VAL-QUAL-006",
+      "lineCount": 415
+    },
+    "scripts/governance/core/__tests__/finding_manager.test.ts": {
+      "ruleId": "VAL-QUAL-006",
+      "lineCount": 328
+    },
+    "scripts/governance/core/__tests__/interactive_execution.test.ts": {
+      "ruleId": "VAL-QUAL-006",
+      "lineCount": 277
+    },
+    "scripts/governance/core/__tests__/repository_hygiene_fixers.test.ts": {
+      "ruleId": "VAL-QUAL-006",
+      "lineCount": 252
+    },
+    "scripts/governance/core/__tests__/rule_registry.test.ts": {
+      "ruleId": "VAL-QUAL-006",
+      "lineCount": 385
+    },
+    "scripts/governance/core/audit_engine.ts": {
+      "ruleId": "VAL-QUAL-004",
+      "lineCount": 323
+    },
+    "scripts/governance/core/dependency_analyzer.ts": {
+      "ruleId": "VAL-QUAL-004",
+      "lineCount": 434
+    },
+    "scripts/governance/core/execution_engine.ts": {
+      "ruleId": "VAL-QUAL-004",
+      "lineCount": 262
+    },
+    "scripts/governance/core/finding_manager.ts": {
+      "ruleId": "VAL-QUAL-004",
+      "lineCount": 626
+    },
+    "scripts/governance/core/knowledge_graph.ts": {
+      "ruleId": "VAL-QUAL-004",
+      "lineCount": 427
+    },
+    "scripts/governance/core/metadata.ts": {
+      "ruleId": "VAL-QUAL-004",
+      "lineCount": 289
+    },
+    "scripts/governance/git-audit/run.ts": {
+      "ruleId": "VAL-QUAL-004",
+      "lineCount": 420
+    },
+    "scripts/governance/git-audit/utils/scoring.ts": {
+      "ruleId": "VAL-QUAL-004",
+      "lineCount": 290
+    },
+    "scripts/governance/git-audit/writers/markdown-report.ts": {
+      "ruleId": "VAL-QUAL-004",
+      "lineCount": 328
+    },
+    "scripts/governance/index.ts": {
+      "ruleId": "VAL-QUAL-004",
+      "lineCount": 353
+    },
+    "scripts/governance/migrate-findings.ts": {
+      "ruleId": "VAL-QUAL-004",
+      "lineCount": 317
+    },
+    "scripts/governance/platform/testing/cleanup-planner.test.ts": {
+      "ruleId": "VAL-QUAL-006",
+      "lineCount": 290
+    },
+    "scripts/governance/platform/testing/contracts.test.ts": {
+      "ruleId": "VAL-QUAL-006",
+      "lineCount": 456
+    },
+    "scripts/governance/rules/metadata/DOCUMENTATION.ts": {
+      "ruleId": "VAL-QUAL-004",
+      "lineCount": 786
+    },
+    "scripts/governance/rules/metadata/HYGIENE.ts": {
+      "ruleId": "VAL-QUAL-004",
+      "lineCount": 582
+    },
+    "scripts/governance/rules/metadata/UI.ts": {
+      "ruleId": "VAL-QUAL-004",
+      "lineCount": 503
+    },
+    "scripts/governance/validators/accessibility_validator.ts": {
+      "ruleId": "VAL-QUAL-004",
+      "lineCount": 295
+    },
+    "scripts/governance/validators/adr_validator.ts": {
+      "ruleId": "VAL-QUAL-004",
+      "lineCount": 494
+    },
+    "scripts/governance/validators/architecture_validator.test.ts": {
+      "ruleId": "VAL-QUAL-006",
+      "lineCount": 546
+    },
+    "scripts/governance/validators/architecture_validator.ts": {
+      "ruleId": "VAL-QUAL-004",
+      "lineCount": 412
+    },
+    "scripts/governance/validators/barrel_file_validator.ts": {
+      "ruleId": "VAL-QUAL-004",
+      "lineCount": 312
+    },
+    "scripts/governance/validators/documentation_validator.ts": {
+      "ruleId": "VAL-QUAL-004",
+      "lineCount": 547
+    },
+    "scripts/governance/validators/helpers/dead_asset_detector.ts": {
+      "ruleId": "VAL-QUAL-004",
+      "lineCount": 307
+    },
+    "scripts/governance/validators/helpers/duplicate_component_detector.ts": {
+      "ruleId": "VAL-QUAL-004",
+      "lineCount": 408
+    },
+    "scripts/governance/validators/link_validator.ts": {
+      "ruleId": "VAL-QUAL-004",
+      "lineCount": 280
+    },
+    "scripts/governance/validators/performance_validator.test.ts": {
+      "ruleId": "VAL-QUAL-006",
+      "lineCount": 340
+    },
+    "scripts/governance/validators/performance_validator.ts": {
+      "ruleId": "VAL-QUAL-004",
+      "lineCount": 344
+    },
+    "scripts/governance/validators/repository_hygiene_validator.ts": {
+      "ruleId": "VAL-QUAL-004",
+      "lineCount": 449
+    },
+    "scripts/governance/validators/ssot_validator.ts": {
+      "ruleId": "VAL-QUAL-004",
+      "lineCount": 421
+    },
+    "scripts/governance/validators/ui_design_validator.ts": {
+      "ruleId": "VAL-QUAL-004",
+      "lineCount": 494
+    },
+    "scripts/governance/validators/ui_validators.test.ts": {
+      "ruleId": "VAL-QUAL-006",
+      "lineCount": 265
+    },
+    "scripts/governance/validators/ux_state_validator.ts": {
+      "ruleId": "VAL-QUAL-004",
+      "lineCount": 312
+    }
+  }
+}
