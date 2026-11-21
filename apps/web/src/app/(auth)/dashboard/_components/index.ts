@@ -4,3 +4,5 @@ export { DashboardAccountTab } from './DashboardAccountTab';
 export { DashboardHeader } from './DashboardHeader';
 export { DashboardNavTabs } from './DashboardNavTabs';
 export { DashboardStickyToolbar } from './DashboardStickyToolbar';
+export { DashboardOnboardingView } from './DashboardOnboardingView';
+export { DashboardAlerts } from './DashboardAlerts';

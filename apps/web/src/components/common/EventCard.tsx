@@ -4,17 +4,15 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { memo } from 'react';
 
-import { ImageWrapper } from '@/components/common/ImageWrapper';
 import { formatEventDate } from '@/utils/date';
-import { getOptimizedImageUrl } from '@/utils/image';
 import {
-  EventCategory,
-  EVENT_CATEGORY_LABELS,
   formatMoney,
   deriveBookingEligibility,
 } from '@mad/shared';
 import type { Event } from '@mad/types';
-import { CalendarIcon, Camera, Images } from '@mad/ui';
+import { Button, CalendarIcon } from '@mad/ui';
+
+import { EventCardBanner } from './EventCardBanner';
 
 export interface EventCardProps {
   event: Event;
@@ -53,30 +51,6 @@ export const EventCard = memo(function EventCard({
     event.ticketTiers && event.ticketTiers.length > 0
       ? Math.min(...event.ticketTiers.map((t) => t.price))
       : 0;
-
-  // Lifecycle / Status Badge
-  let statusBadge: React.ReactNode = null;
-  if (isCompleted) {
-    statusBadge = (
-      <span className="px-2 py-0.5 text-[9px] sm:text-[10px] font-black uppercase tracking-wider bg-black/75 backdrop-blur-md text-text-muted rounded-full border border-white/10 flex items-center gap-1 shrink-0">
-        <Camera className="w-2.5 h-2.5 sm:w-3 sm:h-3" aria-hidden="true" />
-        Ended
-      </span>
-    );
-  } else if (event.lifecycle === 'LIVE') {
-    statusBadge = (
-      <span className="px-2 py-0.5 text-[9px] sm:text-[10px] font-black uppercase tracking-wider bg-black/85 backdrop-blur-md text-emerald-400 rounded-full border border-emerald-500/30 flex items-center gap-1 shrink-0 shadow-glow-sm">
-        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-        Live
-      </span>
-    );
-  } else if (event.booking?.reason === 'BOOKING_NOT_STARTED') {
-    statusBadge = (
-      <span className="px-2 py-0.5 text-[9px] sm:text-[10px] font-bold uppercase tracking-wider bg-black/70 backdrop-blur-md text-accent-purple-light rounded-full border border-accent-purple/20 shrink-0">
-        Soon
-      </span>
-    );
-  }
 
   const dateColorClass = isCompleted ? 'text-accent-pink-light' : 'text-accent-purple-light';
   const categoryColorClass = isCompleted
@@ -139,71 +113,19 @@ export const EventCard = memo(function EventCard({
       className={`group relative glass rounded-2xl border overflow-hidden transition-all duration-300 ${rootContainerClass} h-full ${borderClass} ${className}`}
     >
       {/* ─── Banner Image Link ─── */}
-      <Link
-        href={destinationUrl}
-        id={`event-card-${event.slug}`}
-        className="block relative focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple"
-        aria-label={
-          isCompleted && hasPublishedGallery
-            ? `View Happy Moments gallery for ${event.title}`
-            : `View details for ${event.title}`
-        }
-        tabIndex={tabIndex ?? (isActive ? 0 : -1)}
-      >
-        <div className={`${imageContainerClass} overflow-hidden relative bg-white/5 shrink-0`}>
-          {event.bannerImage?.url ? (
-            <ImageWrapper
-              src={getOptimizedImageUrl(event.bannerImage.url, 500)}
-              alt={`Event banner for ${event.title}`}
-              fill
-              priority={priority}
-              sizes="(max-width: 640px) 128px, (max-width: 1024px) 50vw, 360px"
-              className="object-cover group-hover:scale-105 transition-transform duration-500"
-            />
-          ) : (
-            <div
-              className={`w-full h-full flex items-center justify-center ${
-                isCompleted ? 'text-accent-pink' : 'text-accent-purple'
-              }`}
-              aria-hidden="true"
-            >
-              {isCompleted ? (
-                <Camera className="w-8 h-8 sm:w-12 sm:h-12 opacity-40" />
-              ) : (
-                <span className="text-2xl sm:text-4xl opacity-70">🎧</span>
-              )}
-            </div>
-          )}
-
-          {/* Inactive carousel slide overlay */}
-          {!isActive && <div className="absolute inset-0 bg-black/40 transition-opacity" />}
-
-          {/* Top Badges Header */}
-          <div className="absolute top-1.5 inset-x-1.5 sm:top-2.5 sm:inset-x-2.5 flex items-center justify-between gap-1.5 pointer-events-none z-10">
-            <span
-              className={`px-1.5 sm:px-2 py-0.5 text-[8px] sm:text-[10px] font-bold uppercase tracking-wider bg-black/75 backdrop-blur-md rounded-full border truncate max-w-[90px] sm:max-w-[150px] ${categoryColorClass}`}
-            >
-              {EVENT_CATEGORY_LABELS[event.category as EventCategory] || event.category}
-            </span>
-            <div className="hidden sm:block">{statusBadge}</div>
-          </div>
-
-          {/* Photo Count Badge (Completed with gallery) */}
-          {isCompleted && hasPublishedGallery && (
-            <span className="absolute bottom-1.5 right-1.5 sm:bottom-2 sm:right-2 px-1.5 sm:px-2 py-0.5 text-[8px] sm:text-[9px] font-bold bg-accent-pink/90 backdrop-blur-md text-white rounded-full flex items-center gap-1 z-10 shadow-sm">
-              <Images className="w-2.5 h-2.5" aria-hidden="true" />
-              {photoCount} Photos
-            </span>
-          )}
-
-          {/* Closed / Sold Out Overlay Banner */}
-          {!isCompleted && cta.action === 'NONE' && (
-            <span className="absolute inset-0 bg-black/65 backdrop-blur-[2px] flex items-center justify-center text-white font-bold text-[10px] sm:text-xs tracking-wider uppercase">
-              {cta.text}
-            </span>
-          )}
-        </div>
-      </Link>
+      <EventCardBanner
+        event={event}
+        destinationUrl={destinationUrl}
+        isCompleted={isCompleted}
+        hasPublishedGallery={hasPublishedGallery}
+        photoCount={photoCount}
+        priority={priority}
+        isActive={isActive}
+        tabIndex={tabIndex}
+        imageContainerClass={imageContainerClass}
+        categoryColorClass={categoryColorClass}
+        cta={cta}
+      />
 
       {/* ─── Card Content Details & Footer ─── */}
       <div className="flex flex-col flex-1 min-w-0 bg-black/20 justify-between">
@@ -254,8 +176,9 @@ export const EventCard = memo(function EventCard({
             </div>
           )}
 
-          <button
+          <Button
             type="button"
+            variant="ghost"
             onClick={(e) => {
               e.preventDefault();
               if (isCompleted) {
@@ -270,10 +193,10 @@ export const EventCard = memo(function EventCard({
               }
             }}
             disabled={!isCompleted && (cta.disabled || cta.action === 'NONE')}
-            className={`font-bold rounded-xl transition-all flex items-center justify-center text-center shrink-0 cursor-pointer ${buttonSizingClass} ${buttonStyleClass}`}
+            className={`font-bold rounded-xl transition-all flex items-center justify-center text-center shrink-0 cursor-pointer p-0 ${buttonSizingClass} ${buttonStyleClass}`}
           >
             {buttonText}
-          </button>
+          </Button>
         </div>
       </div>
     </div>
