@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { AdminBooking } from '@/lib/api/admin/booking.service';
 import { extractApiError } from '@/lib/api/client';
 import { EMAIL_REGEX, AUTH_ERROR_MESSAGES, BOOKING_ERROR_MESSAGES } from '@mad/shared';
-import { Modal } from '@mad/ui';
+import { Modal, Button } from '@mad/ui';
 
 export interface CorrectEmailModalProps {
   booking: AdminBooking;
@@ -113,20 +113,23 @@ export default function CorrectEmailModal({
           </div>
 
           <div className="flex gap-3 pt-2">
-            <button
+            <Button
               type="button"
+              variant="outline"
               onClick={onClose}
-              className="flex-1 py-2.5 glass border border-border-subtle rounded-xl text-sm font-medium text-text-secondary hover:text-white transition-colors"
+              className="flex-1 py-2.5 rounded-xl text-sm font-medium"
             >
               Cancel
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
+              variant="primary"
               disabled={isPending}
-              className="flex-1 py-2.5 btn-gradient text-white font-bold rounded-xl shadow-glow-sm disabled:opacity-60 transition-all text-sm"
+              isLoading={isPending}
+              className="flex-1 py-2.5 rounded-xl font-bold text-sm shadow-glow-sm"
             >
-              {isPending ? 'Saving...' : 'Save Changes'}
-            </button>
+              Save Changes
+            </Button>
           </div>
         </form>
     </Modal>
