@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-export interface GlobalErrorViewProps {
+export interface GlobalErrorContentProps {
   error: Error & { digest?: string };
   isChunk: boolean;
   isOffline: boolean;
@@ -14,7 +14,7 @@ export interface GlobalErrorViewProps {
   onForceReload: () => void;
 }
 
-export function GlobalErrorView({
+export function GlobalErrorContent({
   error,
   isChunk,
   isOffline,
@@ -24,7 +24,7 @@ export function GlobalErrorView({
   onReset,
   onOfflineRetry,
   onForceReload,
-}: GlobalErrorViewProps) {
+}: GlobalErrorContentProps) {
   let title = 'Critical Error';
   let description = 'The app encountered a fatal error and could not recover. Please try refreshing the page.';
   let primaryAction = (
@@ -137,61 +137,45 @@ export function GlobalErrorView({
   }
 
   return (
-    <html lang="en">
-      <body
-        style={{
-          margin: 0,
-          minHeight: '100vh',
-          background: '#0B0F1A',
-          color: '#E2E8F0',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontFamily: 'system-ui, sans-serif',
-          textAlign: 'center',
-          padding: '2rem',
-        }}
-      >
-        <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>{icon}</div>
-        <h1 style={{ fontSize: '2rem', fontWeight: 900, marginBottom: '0.5rem' }}>
-          {title}
-        </h1>
-        <p style={{ color: '#94a3b8', marginBottom: '1.5rem', maxWidth: '400px' }}>
-          {description}
-          {error?.digest && (
-            <span
-              style={{
-                display: 'block',
-                marginTop: '0.5rem',
-                fontSize: '0.75rem',
-                fontFamily: 'monospace',
-                color: '#64748b',
-              }}
-            >
-              ID: {error.digest}
-            </span>
-          )}
-        </p>
-        <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', justifyContent: 'center' }}>
-          {primaryAction}
-          <a
-            href="/"
+    <>
+      <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>{icon}</div>
+      <h1 style={{ fontSize: '2rem', fontWeight: 900, marginBottom: '0.5rem' }}>
+        {title}
+      </h1>
+      <p style={{ color: '#94a3b8', marginBottom: '1.5rem', maxWidth: '400px' }}>
+        {description}
+        {error?.digest && (
+          <span
             style={{
-              padding: '0.75rem 1.5rem',
-              background: 'rgba(255,255,255,0.05)',
-              color: '#fff',
-              border: '1px solid rgba(255,255,255,0.1)',
-              borderRadius: '0.75rem',
-              fontWeight: 600,
-              textDecoration: 'none',
-              fontSize: '0.875rem',
+              display: 'block',
+              marginTop: '0.5rem',
+              fontSize: '0.75rem',
+              fontFamily: 'monospace',
+              color: '#64748b',
             }}
           >
-            Go Home
-          </a>
-        </div>
-      </body>
-    </html>
+            ID: {error.digest}
+          </span>
+        )}
+      </p>
+      <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+        {primaryAction}
+        <a
+          href="/"
+          style={{
+            padding: '0.75rem 1.5rem',
+            background: 'rgba(255,255,255,0.05)',
+            color: '#fff',
+            border: '1px solid rgba(255,255,255,0.1)',
+            borderRadius: '0.75rem',
+            fontWeight: 600,
+            textDecoration: 'none',
+            fontSize: '0.875rem',
+          }}
+        >
+          Go Home
+        </a>
+      </div>
+    </>
   );
 }

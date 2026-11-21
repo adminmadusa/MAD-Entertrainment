@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 
-import { GlobalErrorView } from './_components/GlobalErrorView';
+import { GlobalErrorContent } from './_components/GlobalErrorContent';
 import {
   isChunkLoadFailure,
   isBuildMismatchChunkFailure,
@@ -107,16 +107,34 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
   };
 
   return (
-    <GlobalErrorView
-      error={error}
-      isChunk={isChunk}
-      isOffline={isOffline}
-      isAutoReloading={isAutoReloading}
-      isCooldownActive={isCooldownActive}
-      isBuildMismatch={isBuildMismatch}
-      onReset={reset}
-      onOfflineRetry={handleOfflineRetry}
-      onForceReload={handleForceReload}
-    />
+    <html lang="en">
+      <body
+        style={{
+          margin: 0,
+          minHeight: '100vh',
+          background: '#0B0F1A',
+          color: '#E2E8F0',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontFamily: 'system-ui, sans-serif',
+          textAlign: 'center',
+          padding: '2rem',
+        }}
+      >
+        <GlobalErrorContent
+          error={error}
+          isChunk={isChunk}
+          isOffline={isOffline}
+          isAutoReloading={isAutoReloading}
+          isCooldownActive={isCooldownActive}
+          isBuildMismatch={isBuildMismatch}
+          onReset={reset}
+          onOfflineRetry={handleOfflineRetry}
+          onForceReload={handleForceReload}
+        />
+      </body>
+    </html>
   );
 }
