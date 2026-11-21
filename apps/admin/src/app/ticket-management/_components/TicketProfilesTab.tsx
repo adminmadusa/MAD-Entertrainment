@@ -23,6 +23,7 @@ import {
   FloatingActionBar,
   EmptyState,
   Checkbox,
+  Button,
   useBulkSelection
 } from '@mad/ui';
 import { Ticket } from '@mad/ui/icons';
@@ -205,28 +206,36 @@ export function TicketProfilesTab({ canMutate, qc, showToast }: TabProps) {
         selectedCount={selectedCount}
         onClearSelection={clearSelection}
       >
-        <button
+        <Button
+          variant="secondary"
+          size="sm"
           onClick={() => bulkStatusMutation.mutate({ ids: Array.from(selectedIds), isActive: true })}
           disabled={bulkStatusMutation.isPending || bulkDeleteMutation.isPending}
-          className="px-3 py-1.5 text-sm font-medium text-white hover:text-green-400 bg-white/5 hover:bg-green-500/20 border border-transparent hover:border-green-500/30 rounded-lg transition-all"
+          isLoading={bulkStatusMutation.isPending}
+          className="hover:text-green-400 hover:border-green-500/30"
         >
-          {bulkStatusMutation.isPending ? 'Processing...' : 'Activate'}
-        </button>
-        <button
+          Activate
+        </Button>
+        <Button
+          variant="secondary"
+          size="sm"
           onClick={() => bulkStatusMutation.mutate({ ids: Array.from(selectedIds), isActive: false })}
           disabled={bulkStatusMutation.isPending || bulkDeleteMutation.isPending}
-          className="px-3 py-1.5 text-sm font-medium text-white hover:text-yellow-400 bg-white/5 hover:bg-yellow-500/20 border border-transparent hover:border-yellow-500/30 rounded-lg transition-all"
+          isLoading={bulkStatusMutation.isPending}
+          className="hover:text-yellow-400 hover:border-yellow-500/30"
         >
-          {bulkStatusMutation.isPending ? 'Processing...' : 'Deactivate'}
-        </button>
+          Deactivate
+        </Button>
         <div className="w-px h-4 bg-border-default mx-1" />
-        <button
+        <Button
+          variant="danger"
+          size="sm"
           onClick={() => bulkDeleteMutation.mutate(Array.from(selectedIds))}
           disabled={bulkDeleteMutation.isPending || bulkStatusMutation.isPending}
-          className="px-3 py-1.5 text-sm font-medium text-white hover:text-red-400 bg-white/5 hover:bg-red-500/20 border border-transparent hover:border-red-500/30 rounded-lg transition-all"
+          isLoading={bulkDeleteMutation.isPending}
         >
-          {bulkDeleteMutation.isPending ? 'Processing...' : 'Delete'}
-        </button>
+          Delete
+        </Button>
       </FloatingActionBar>
     </div>
   );

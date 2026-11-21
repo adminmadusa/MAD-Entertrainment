@@ -2,7 +2,7 @@ import Link from 'next/link';
 import React from 'react';
 
 import type { TicketProfile } from '@mad/types';
-import { TableRow, TableCell, Checkbox } from '@mad/ui';
+import { TableRow, TableCell, Checkbox, Button } from '@mad/ui';
 import { formatDate } from '@mad/utils';
 
 interface TicketProfileRowProps {
@@ -58,7 +58,9 @@ export function TicketProfileRow({
       </TableCell>
       <TableCell className="py-4 px-4">
         {canMutate ? (
-          <button
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => onToggleStatus(profile._id, !profile.isActive)}
             className={`text-xs px-2.5 py-1 rounded-full border font-medium transition-all ${
               profile.isActive
@@ -67,7 +69,7 @@ export function TicketProfileRow({
             }`}
           >
             {profile.isActive ? 'Active' : 'Inactive'}
-          </button>
+          </Button>
         ) : (
           <span className={`text-xs px-2.5 py-1 rounded-full border font-medium ${
             profile.isActive
@@ -87,12 +89,14 @@ export function TicketProfileRow({
             >
               Edit
             </Link>
-            <button
+            <Button
+              variant="secondary"
+              size="sm"
               onClick={() => onDeleteTarget(profile)}
-              className="px-3 py-1.5 text-xs font-semibold glass border border-border-subtle rounded-lg text-text-muted hover:text-red-400 hover:border-red-500/40 transition-all"
+              className="text-text-muted hover:text-red-400 hover:border-red-500/40"
             >
               Delete
-            </button>
+            </Button>
           </div>
         ) : (
           <div className="text-right text-text-muted">—</div>
