@@ -379,10 +379,6 @@
       "ruleId": "VAL-QUAL-004",
       "lineCount": 281
     },
-    "apps/web/src/app/(auth)/dashboard/_components/DashboardTicketsTab.tsx": {
-      "ruleId": "VAL-QUAL-001",
-      "lineCount": 259
-    },
     "apps/web/src/app/(auth)/dashboard/page.tsx": {
       "ruleId": "VAL-QUAL-001",
       "lineCount": 264
@@ -390,10 +386,6 @@
     "apps/web/src/app/events/[slug]/components/EventBookingFlow.tsx": {
       "ruleId": "VAL-QUAL-001",
       "lineCount": 273
-    },
-    "apps/web/src/app/global-error.tsx": {
-      "ruleId": "VAL-QUAL-001",
-      "lineCount": 269
     },
     "apps/web/src/app/page.tsx": {
       "ruleId": "VAL-QUAL-001",

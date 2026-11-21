@@ -7,6 +7,8 @@ import { BookingCard } from '@/components/booking/shared/BookingCard';
 import type { Booking, Ticket } from '@mad/types';
 import { Button } from '@mad/ui';
 
+import { DashboardTicketsSubTabs, type TicketSubTabKey } from './DashboardTicketsSubTabs';
+
 export function BookingCardSkeleton() {
   return (
     <div className="glass rounded-3xl border border-border-subtle p-6 space-y-4 animate-pulse">
@@ -63,7 +65,7 @@ export function DashboardTicketsTab({
   cancelledBookings,
   refundedBookings,
 }: DashboardTicketsTabProps) {
-  const [activeTicketSubTab, setActiveTicketSubTab] = useState<'upcoming' | 'live' | 'past' | 'cancelled' | 'refunded'>('upcoming');
+  const [activeTicketSubTab, setActiveTicketSubTab] = useState<TicketSubTabKey>('upcoming');
   const syncedRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -144,48 +146,6 @@ export function DashboardTicketsTab({
     }
   };
 
-  const renderSubTabs = () => {
-    const tabs: { key: typeof activeTicketSubTab; label: string; count: number }[] = [
-      { key: 'upcoming', label: 'Upcoming', count: upcomingBookings.length },
-      { key: 'live', label: 'Live', count: liveBookings.length },
-      { key: 'past', label: 'Past Events', count: pastBookings.length },
-      { key: 'cancelled', label: 'Cancelled', count: cancelledBookings.length },
-      { key: 'refunded', label: 'Refunded', count: refundedBookings.length },
-    ];
-
-    return (
-      <div
-        className="flex items-center gap-2 overflow-x-auto whitespace-nowrap scrollbar-none py-1 w-full"
-        role="tablist"
-        aria-label="Ticket categories"
-      >
-        {tabs.map((tab) => (
-          <button
-            key={tab.key}
-            type="button"
-            role="tab"
-            id={`subtab-${tab.key}`}
-            aria-selected={activeTicketSubTab === tab.key}
-            aria-controls={`subtab-panel-${tab.key}`}
-            onClick={() => setActiveTicketSubTab(tab.key)}
-            className={`flex-shrink-0 px-4 py-2 text-xs font-bold rounded-full transition-all duration-200 min-h-[38px] flex items-center gap-1.5 focus-ring ${
-              activeTicketSubTab === tab.key
-                ? 'bg-white text-black font-extrabold shadow-md'
-                : 'text-text-secondary hover:text-white bg-white/5 hover:bg-white/10 border border-white/10'
-            }`}
-          >
-            <span>{tab.label}</span>
-            <span className={`text-[11px] px-1.5 py-0.5 rounded-full ${
-              activeTicketSubTab === tab.key ? 'bg-black/10 text-black font-black' : 'bg-white/10 text-text-muted'
-            }`}>
-              {tab.count}
-            </span>
-          </button>
-        ))}
-      </div>
-    );
-  };
-
   if (bookings.length === 0) {
     return (
       <div className="glass rounded-3xl border border-border-subtle p-12 text-center space-y-4">
@@ -210,7 +170,15 @@ export function DashboardTicketsTab({
     <div className="space-y-5">
       {/* Sticky Category filter headers (Search removed) */}
       <div className="sticky top-[80px] z-20 bg-background/95 backdrop-blur-md pb-4 pt-1 border-b border-white/5">
-        {renderSubTabs()}
+        <DashboardTicketsSubTabs
+          activeTab={activeTicketSubTab}
+          onTabChange={setActiveTicketSubTab}
+          upcomingCount={upcomingBookings.length}
+          liveCount={liveBookings.length}
+          pastCount={pastBookings.length}
+          cancelledCount={cancelledBookings.length}
+          refundedCount={refundedBookings.length}
+        />
       </div>
 
       <div
