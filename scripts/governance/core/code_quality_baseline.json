@@ -11,10 +11,6 @@
       "ruleId": "VAL-QUAL-001",
       "lineCount": 286
     },
-    "apps/admin/src/app/events/components/AdminEventsTable.tsx": {
-      "ruleId": "VAL-QUAL-001",
-      "lineCount": 275
-    },
     "apps/admin/src/app/login/page.tsx": {
       "ruleId": "VAL-QUAL-001",
       "lineCount": 295
