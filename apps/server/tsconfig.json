@@ -18,6 +18,10 @@
     "src/**/*.test.ts",
     "src/**/*.test.tsx",
     "src/**/*.spec.ts",
-    "src/**/*.spec.tsx"
+    "src/**/*.spec.tsx",
+    "../../packages/**/src/**/*.test.ts",
+    "../../packages/**/src/**/*.test.tsx",
+    "../../packages/**/src/**/*.spec.ts",
+    "../../packages/**/src/**/*.spec.tsx"
   ]
 }
