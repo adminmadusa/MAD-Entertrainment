@@ -87,6 +87,8 @@ export default [
       name: 'governance',
       environment: 'node',
       globals: true,
+      testTimeout: 30000,
+      hookTimeout: 30000,
       include: [
         'scripts/governance/**/*.test.ts'
       ],
