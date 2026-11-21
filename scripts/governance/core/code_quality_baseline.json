@@ -7,10 +7,6 @@
       "ruleId": "VAL-QUAL-004",
       "lineCount": 323
     },
-    "apps/admin/src/app/coupons/page.tsx": {
-      "ruleId": "VAL-QUAL-001",
-      "lineCount": 279
-    },
     "apps/admin/src/app/diagnostics/emails/page.tsx": {
       "ruleId": "VAL-QUAL-001",
       "lineCount": 296
