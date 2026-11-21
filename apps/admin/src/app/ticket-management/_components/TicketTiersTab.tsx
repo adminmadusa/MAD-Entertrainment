@@ -11,11 +11,13 @@ import {
   type AdminTier
 } from '@/lib/api/admin/tier.service';
 import { extractApiError } from '@/lib/api/client';
+import { HEX_COLOR_REGEX } from '@mad/shared';
 import { EmptyState, ErrorState } from '@mad/ui';
 import { Ticket } from '@mad/ui/icons';
 
 import { TierAddForm } from './TierAddForm';
 import { TierCardItem } from './TierCardItem';
+import { TierFilterBar } from './TierFilterBar';
 import { TierEditModal, TierDeleteModal } from './TierFormModal';
 
 interface TabProps {
@@ -84,7 +86,7 @@ export function TicketTiersTab({ canMutate, qc, showToast }: TabProps) {
     setValidationError(null);
     if (!nameInput.trim()) return;
 
-    if (!/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(colorInput.trim())) {
+    if (!HEX_COLOR_REGEX.test(colorInput.trim())) {
       setValidationError('Invalid color format. Please enter a valid Hex code (e.g. #FFFFFF).');
       return;
     }
@@ -106,7 +108,7 @@ export function TicketTiersTab({ canMutate, qc, showToast }: TabProps) {
     setValidationError(null);
 
     if (!editingTier.name.trim()) return;
-    if (editingTier.color && !/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(editingTier.color.trim())) {
+    if (editingTier.color && !HEX_COLOR_REGEX.test(editingTier.color.trim())) {
       setValidationError('Invalid color format. Please enter a valid Hex code.');
       return;
     }
@@ -150,53 +152,12 @@ export function TicketTiersTab({ canMutate, qc, showToast }: TabProps) {
 
   return (
     <div className="space-y-6">
-      {/* Search and Filters panel */}
-      <div className="glass p-4 rounded-2xl border border-border-subtle flex flex-col sm:flex-row gap-4 items-center justify-between">
-        <div className="relative w-full sm:max-w-xs">
-          <input
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search tiers by name or slug..."
-            className="w-full pl-9 pr-4 py-2 rounded-xl bg-background border border-border-subtle text-sm text-text-primary focus:outline-none focus:border-accent-purple"
-          />
-          <svg className="absolute left-3 top-2.5 w-4 h-4 text-text-muted" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-          </svg>
-        </div>
-
-        <div className="flex gap-2 w-full sm:w-auto">
-          <button
-            onClick={() => setStatusFilter('all')}
-            className={`flex-1 sm:flex-initial px-3.5 py-1.5 text-xs font-bold rounded-lg border transition-all ${
-              statusFilter === 'all'
-                ? 'bg-accent-purple/20 text-accent-purple-light border-accent-purple/30'
-                : 'glass border-border-subtle text-text-secondary hover:text-white'
-            }`}
-          >
-            All Tiers
-          </button>
-          <button
-            onClick={() => setStatusFilter('active')}
-            className={`flex-1 sm:flex-initial px-3.5 py-1.5 text-xs font-bold rounded-lg border transition-all ${
-              statusFilter === 'active'
-                ? 'bg-green-500/10 text-green-400 border-green-500/20'
-                : 'glass border-border-subtle text-text-secondary hover:text-white'
-            }`}
-          >
-            Active
-          </button>
-          <button
-            onClick={() => setStatusFilter('inactive')}
-            className={`flex-1 sm:flex-initial px-3.5 py-1.5 text-xs font-bold rounded-lg border transition-all ${
-              statusFilter === 'inactive'
-                ? 'bg-red-500/10 text-red-400 border-red-500/20'
-                : 'glass border-border-subtle text-text-secondary hover:text-white'
-            }`}
-          >
-            Inactive
-          </button>
-        </div>
-      </div>
+      <TierFilterBar
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        statusFilter={statusFilter}
+        onStatusFilterChange={setStatusFilter}
+      />
 
       {validationError && (
         <div aria-live="polite" className="px-4 py-3 bg-error/10 border border-error/30 rounded-xl text-sm text-red-400">
@@ -204,7 +165,6 @@ export function TicketTiersTab({ canMutate, qc, showToast }: TabProps) {
         </div>
       )}
 
-      {/* Grid Layout (Desktop 2-col, Mobile 1-col) */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         {canMutate && (
           <TierAddForm
@@ -225,7 +185,6 @@ export function TicketTiersTab({ canMutate, qc, showToast }: TabProps) {
           />
         )}
 
-        {/* Right column: Tiers Master Directory List */}
         <div className={`${canMutate ? 'lg:col-span-2' : 'lg:col-span-3'} space-y-4`}>
           {isLoading ? (
             <div className="glass rounded-2xl border border-border-subtle p-8 text-center text-text-muted">
@@ -258,7 +217,6 @@ export function TicketTiersTab({ canMutate, qc, showToast }: TabProps) {
         </div>
       </div>
 
-      {/* Editing Dialog Modal */}
       <TierEditModal
         editingTier={editingTier}
         onClose={() => setEditingTier(null)}
@@ -267,7 +225,6 @@ export function TicketTiersTab({ canMutate, qc, showToast }: TabProps) {
         isPending={updateMutation.isPending}
       />
 
-      {/* Deletion Dialog Modal */}
       <TierDeleteModal
         deleteTierId={deleteTierId}
         onClose={() => setDeleteTierId(null)}

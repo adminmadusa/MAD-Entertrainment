@@ -43,10 +43,6 @@
       "ruleId": "VAL-QUAL-001",
       "lineCount": 276
     },
-    "apps/admin/src/app/ticket-management/_components/TicketTiersTab.tsx": {
-      "ruleId": "VAL-QUAL-001",
-      "lineCount": 279
-    },
     "apps/admin/src/components/AdminSidebar.tsx": {
       "ruleId": "VAL-QUAL-001",
       "lineCount": 267
