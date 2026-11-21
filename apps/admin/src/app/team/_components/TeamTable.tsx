@@ -3,7 +3,7 @@
 import { AdminUser } from '@/lib/api/admin/auth.service';
 import { AdminRole } from '@mad/shared';
 import type { Admin } from '@mad/types';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, TablePagination, EmptyState } from '@mad/ui';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, TablePagination, EmptyState, Button } from '@mad/ui';
 import { formatDateTime } from '@mad/utils';
 
 const ROLE_LABELS: Record<AdminRole, string> = {
@@ -114,40 +114,45 @@ export default function TeamTable({
           <div className="flex items-center justify-end gap-2">
             {currentAdmin?.role === AdminRole.SUPER_ADMIN ? (
               <>
-                <button
+                <Button
+                  variant="secondary"
+                  size="sm"
                   onClick={() => onOpenEdit(admin)}
-                  className="px-2.5 py-1.5 text-xs font-medium glass border border-border-subtle rounded-lg text-text-secondary hover:text-white hover:border-accent-purple/40 transition-all"
                 >
                   Edit
-                </button>
-                <button
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="sm"
                   onClick={() => onOpenRole(admin)}
                   disabled={meProfileId !== undefined && meProfileId === admin._id}
-                  className="px-2.5 py-1.5 text-xs font-medium glass border border-border-subtle rounded-lg text-text-secondary hover:text-white hover:border-accent-purple/40 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                   title={meProfileId !== undefined && meProfileId === admin._id ? 'You cannot modify your own role' : undefined}
                 >
                   Role
-                </button>
-                <button
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="sm"
                   onClick={() => onOpenReset(admin)}
                   disabled={meProfileId !== undefined && meProfileId === admin._id}
-                  className="px-2.5 py-1.5 text-xs font-medium glass border border-border-subtle rounded-lg text-text-secondary hover:text-white hover:border-accent-purple/40 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                   title={meProfileId !== undefined && meProfileId === admin._id ? 'Use account settings to change your password' : undefined}
                 >
                   Reset
-                </button>
+                </Button>
                 {meProfileId !== undefined && meProfileId !== admin._id ? (
-                  <button
+                  <Button
+                    variant={admin.isActive ? 'danger' : 'secondary'}
+                    size="sm"
                     onClick={() => onToggle(admin._id)}
                     disabled={toggleIsPending}
-                    className={`px-2.5 py-1.5 text-xs font-medium border rounded-lg transition-all ${
+                    className={
                       admin.isActive
                         ? 'bg-red-500/10 text-red-400 border-red-500/30 hover:bg-red-500/20'
                         : 'bg-green-500/10 text-green-400 border-green-500/30 hover:bg-green-500/20'
-                    }`}
+                    }
                   >
                     {admin.isActive ? 'Deactivate' : 'Activate'}
-                  </button>
+                  </Button>
                 ) : (
                   <span className="text-text-muted text-xs italic px-2 py-1.5">Self</span>
                 )}

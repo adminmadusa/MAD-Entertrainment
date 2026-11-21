@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Modal } from '@mad/ui';
+import { Modal, Button } from '@mad/ui';
 
 interface UserConfirmModalProps {
   isOpen: boolean;
@@ -32,23 +32,22 @@ export default function UserConfirmModal({
         </div>
 
         <div className="flex gap-3 pt-2">
-          <button
+          <Button
+            variant="secondary"
             onClick={onClose}
-            className="flex-1 py-2.5 glass border border-border-subtle rounded-xl text-xs font-medium text-text-secondary hover:text-white transition-colors"
+            className="flex-1"
           >
             Cancel
-          </button>
-          <button
+          </Button>
+          <Button
+            variant={confirmType === 'suspend' ? 'danger' : 'primary'}
             onClick={onConfirm}
             disabled={isPending}
-            className={`flex-1 py-2.5 text-white font-bold rounded-xl text-xs shadow-glow-sm disabled:opacity-50 transition-all ${
-              confirmType === 'suspend'
-                ? 'bg-red-600 hover:bg-red-500'
-                : 'bg-accent-purple hover:bg-accent-purple/80'
-            }`}
+            isLoading={isPending}
+            className="flex-1"
           >
-            {isPending ? 'Processing...' : confirmType === 'suspend' ? 'Suspend' : 'Reactivate'}
-          </button>
+            {confirmType === 'suspend' ? 'Suspend' : 'Reactivate'}
+          </Button>
         </div>
       </div>
     </Modal>
