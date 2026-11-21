@@ -15,10 +15,6 @@
       "ruleId": "VAL-QUAL-001",
       "lineCount": 295
     },
-    "apps/admin/src/app/popups/page.tsx": {
-      "ruleId": "VAL-QUAL-001",
-      "lineCount": 265
-    },
     "apps/admin/src/app/refunds/components/ProcessRefundModal.tsx": {
       "ruleId": "VAL-QUAL-001",
       "lineCount": 279

@@ -6,7 +6,7 @@ import { useState } from 'react';
 import { adminGetNotifications, adminRetryNotification } from '@/lib/api/admin/notification.service';
 import { useAdminAuth } from '@/providers/AdminAuthProvider';
 import { AdminRole } from '@mad/shared';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, ErrorState, EmptyState } from '@mad/ui';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, ErrorState, EmptyState, Button } from '@mad/ui';
 import { Send, Search } from '@mad/ui/icons';
 
 export default function AdminNotificationsPage() {
@@ -97,13 +97,15 @@ export default function AdminNotificationsPage() {
         </TableCell>
         <TableCell className="py-4 px-5 text-right">
           {canRetryNotification && !notif.isSent ? (
-            <button
+            <Button
+              variant="primary"
+              size="sm"
               onClick={() => retryMutation.mutate(notif._id)}
               disabled={retryMutation.isPending}
-              className="px-3 py-1.5 text-xs font-semibold btn-gradient rounded-lg text-white shadow-glow-sm hover:scale-105 transition-transform disabled:opacity-60"
+              isLoading={retryMutation.isPending}
             >
               Retry
-            </button>
+            </Button>
           ) : (
             <span className="text-text-muted text-xs">—</span>
           )}
@@ -184,20 +186,22 @@ export default function AdminNotificationsPage() {
               Page {pagination.page} of {pagination.totalPages} · {pagination.total} notifications
             </p>
             <div className="flex gap-2">
-              <button
+              <Button
+                variant="secondary"
+                size="sm"
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page === 1}
-                className="px-3 py-1.5 text-xs glass border border-border-subtle rounded-lg disabled:opacity-40 text-text-secondary hover:text-white transition-all"
               >
                 ← Prev
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="secondary"
+                size="sm"
                 onClick={() => setPage((p) => p + 1)}
                 disabled={page >= pagination.totalPages}
-                className="px-3 py-1.5 text-xs glass border border-border-subtle rounded-lg disabled:opacity-40 text-text-secondary hover:text-white transition-all"
               >
                 Next →
-              </button>
+              </Button>
             </div>
           </div>
         )}
