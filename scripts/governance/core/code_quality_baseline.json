@@ -7,10 +7,6 @@
       "ruleId": "VAL-QUAL-004",
       "lineCount": 323
     },
-    "apps/admin/src/app/diagnostics/page.tsx": {
-      "ruleId": "VAL-QUAL-001",
-      "lineCount": 291
-    },
     "apps/admin/src/app/dj-operators/page.tsx": {
       "ruleId": "VAL-QUAL-001",
       "lineCount": 286
