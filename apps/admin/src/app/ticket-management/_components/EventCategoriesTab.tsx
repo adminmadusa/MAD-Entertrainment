@@ -4,6 +4,8 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
 
+import { CategoryListItem } from './CategoryListItem';
+import { DeleteCategoryModal } from './DeleteCategoryModal';
 import {
   adminGetCategories,
   adminCreateCategory,
@@ -12,7 +14,7 @@ import {
   type AdminCategory,
 } from '@/lib/api/admin/category.service';
 import { extractApiError } from '@/lib/api/client';
-import { Modal, EmptyState } from '@mad/ui';
+import { EmptyState, Button } from '@mad/ui';
 import { LayoutList } from '@mad/ui/icons';
 
 interface EventCategoriesTabProps {
@@ -110,64 +112,22 @@ export function EventCategoriesTab({ canMutate, qc, showToast }: EventCategories
       <div className="divide-y divide-border-subtle/50">
         <AnimatePresence>
           {categories.map((item) => (
-            <motion.div
+            <CategoryListItem
               key={item._id}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="p-5 flex items-center justify-between gap-4 hover:bg-white/2 transition-colors"
-            >
-              {editingId === item._id ? (
-                <div className="flex-1 flex items-center gap-2">
-                  <input
-                    value={editingName}
-                    onChange={(e) => setEditingName(e.target.value)}
-                    className="flex-1 max-w-xs px-3 py-1.5 rounded-lg bg-background border border-border-subtle text-sm text-text-primary focus:outline-none focus:border-accent-purple"
-                    aria-label={`Edit category name for ${item.name}`}
-                  />
-                  <button
-                    onClick={() => handleSaveEdit(item._id)}
-                    disabled={updateCategoryMutation.isPending}
-                    className="px-3 py-1.5 bg-accent-purple/20 text-accent-purple-light text-xs font-bold rounded-lg hover:bg-accent-purple/30 transition-colors disabled:opacity-60"
-                  >
-                    Save
-                  </button>
-                  <button
-                    onClick={() => setEditingId(null)}
-                    className="px-3 py-1.5 bg-white/5 text-text-secondary text-xs font-bold rounded-lg hover:text-white transition-colors"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              ) : (
-                <div className="flex-1">
-                  <p className="text-white font-semibold text-sm">{item.name}</p>
-                  <p className="text-text-muted text-xs font-mono mt-0.5">{item.slug}</p>
-                </div>
-              )}
-
-              {canMutate && editingId !== item._id && (
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => {
-                      setEditingId(item._id);
-                      setEditingName(item.name);
-                    }}
-                    className="px-3 py-1.5 bg-white/5 text-text-secondary hover:text-white text-xs font-bold rounded-lg transition-colors border border-white/5"
-                    aria-label={`Edit ${item.name}`}
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => setDeleteTarget(item)}
-                    className="px-3 py-1.5 bg-error/10 text-error hover:bg-error/20 text-xs font-bold rounded-lg transition-colors"
-                    aria-label={`Delete ${item.name}`}
-                  >
-                    Delete
-                  </button>
-                </div>
-              )}
-            </motion.div>
+              item={item}
+              canMutate={canMutate}
+              editingId={editingId}
+              editingName={editingName}
+              onEditChange={setEditingName}
+              onSaveEdit={handleSaveEdit}
+              onCancelEdit={() => setEditingId(null)}
+              onStartEdit={(cat) => {
+                setEditingId(cat._id);
+                setEditingName(cat.name);
+              }}
+              onDeleteTarget={setDeleteTarget}
+              isSaving={updateCategoryMutation.isPending}
+            />
           ))}
         </AnimatePresence>
       </div>
@@ -210,13 +170,15 @@ export function EventCategoriesTab({ canMutate, qc, showToast }: EventCategories
                   className="w-full px-4 py-2.5 rounded-xl bg-background border border-border-subtle text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple transition-colors"
                 />
               </div>
-              <button
+              <Button
                 type="submit"
+                variant="primary"
                 disabled={createCategoryMutation.isPending}
-                className="w-full py-2.5 btn-gradient text-white text-sm font-bold rounded-xl shadow-glow-sm disabled:opacity-60 transition-all"
+                isLoading={createCategoryMutation.isPending}
+                className="w-full"
               >
-                {createCategoryMutation.isPending ? 'Adding...' : 'Add Entry'}
-              </button>
+                Add Entry
+              </Button>
             </form>
           </div>
         )}
@@ -239,37 +201,12 @@ export function EventCategoriesTab({ canMutate, qc, showToast }: EventCategories
       </div>
 
       {/* Delete Confirmation Modal */}
-      <Modal
-        isOpen={!!deleteTarget}
+      <DeleteCategoryModal
+        target={deleteTarget}
         onClose={() => setDeleteTarget(null)}
-        size="sm"
-        showCloseButton={false}
-        closeOnBackdropClick={true}
-        ariaLabelledBy="delete-category-modal-title"
-        className="glass-strong border border-border-subtle p-6 max-w-sm"
-      >
-        <h2 id="delete-category-modal-title" className="text-white font-bold text-lg mb-2">
-          Delete Category?
-        </h2>
-        <p className="text-text-secondary text-sm mb-5">
-          Are you sure you want to delete <span className="text-white font-semibold">{deleteTarget?.name}</span>? Past events and bookings using it will remain preserved.
-        </p>
-        <div className="flex gap-3">
-          <button
-            onClick={() => setDeleteTarget(null)}
-            className="flex-1 py-2.5 glass border border-border-subtle rounded-xl text-sm font-medium text-text-secondary hover:text-white transition-colors"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={confirmDelete}
-            disabled={deleteCategoryMutation.isPending}
-            className="flex-1 py-2.5 bg-error/80 hover:bg-error rounded-xl text-white text-sm font-medium transition-colors disabled:opacity-60"
-          >
-            {deleteCategoryMutation.isPending ? 'Deleting...' : 'Delete'}
-          </button>
-        </div>
-      </Modal>
+        onConfirm={confirmDelete}
+        isPending={deleteCategoryMutation.isPending}
+      />
     </div>
   );
 }

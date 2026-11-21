@@ -19,4 +19,5 @@ export interface SendEmailInput {
   html: string;
   attachments?: EmailAttachment[];
   messageId?: string;
+  headers?: Record<string, string>;
 }

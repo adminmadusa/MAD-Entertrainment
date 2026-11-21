@@ -6,6 +6,7 @@ import { fullRefundHtml } from "./full-refund";
 import { partialRefundHtml } from "./partial-refund";
 import { paymentFailureHtml } from "./payment-failure";
 import { ticketDeliveryHtml } from "./ticket-delivery";
+import { ticketInvitationHtml } from "./ticket-invitation";
 
 describe("Email Templates Render Tests", () => {
   describe("Booking Confirmation Email", () => {
@@ -211,6 +212,30 @@ describe("Email Templates Render Tests", () => {
       expect(html).toContain("Central Plaza");
       expect(html).toContain("MAD-TIX-666");
       expect(html).toContain("QR ticket will appear here once ticket delivery is activated");
+    });
+  });
+
+  describe("Ticket Invitation Email", () => {
+    it("should render invitation with inviter, recipient, and claim link", async () => {
+      const data = {
+        recipientName: "Alex Smith",
+        inviterName: "John Doe",
+        eventTitle: "MAD Summer Festival 2026",
+        eventDate: "August 30, 2026",
+        venueName: "MAD Arena, Austin, TX",
+        claimUrl: "https://www.madentertainments.net/claim?ticketId=ticket_12345",
+        tierName: "VIP Access",
+      };
+
+      const html = await ticketInvitationHtml(data);
+      expect(html).toContain("Alex Smith");
+      expect(html).toContain("John Doe");
+      expect(html).toContain("MAD Summer Festival 2026");
+      expect(html).toContain("August 30, 2026");
+      expect(html).toContain("MAD Arena, Austin, TX");
+      expect(html).toContain("VIP Access");
+      expect(html).toContain("https://www.madentertainments.net/claim?ticketId=ticket_12345");
+      expect(html).toContain("Claim My Ticket");
     });
   });
 });

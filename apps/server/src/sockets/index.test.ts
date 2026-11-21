@@ -12,42 +12,34 @@ const { mockRedis, mockEventModel } = vi.hoisted(() => ({
     set: vi.fn(),
     del: vi.fn(),
     expire: vi.fn(),
+    eval: vi.fn(),
     isRedisConnected: vi.fn(() => true),
   },
-  mockEventModel: {
-    exists: vi.fn(),
-  },
+  mockEventModel: { exists: vi.fn() },
 }));
 
 // Mock dependencies for ESM imports
-vi.mock('../config/redis', () => ({
-  getRedis: vi.fn(() => mockRedis),
-  isRedisConnected: vi.fn(() => mockRedis.isRedisConnected()),
-}));
+vi.mock('../config/redis', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../config/redis')>();
+  return {
+    ...actual,
+    getRedis: vi.fn(() => mockRedis),
+    isRedisConnected: vi.fn(() => mockRedis.isRedisConnected()),
+  };
+});
 
-vi.mock('../models/event.schema', () => ({
-  Event: mockEventModel,
-}));
+vi.mock('../models/event.schema', () => ({ Event: mockEventModel }));
 
 vi.mock('../models/seat-layout.schema', () => ({
-  SeatLayout: {
-    findOne: vi.fn(),
-  },
+  SeatLayout: { findOne: vi.fn() },
 }));
 
 vi.mock('../services/public/booking.service', () => ({
-  PublicBookingService: {
-    assertBookingAccess: vi.fn(), // Allow by default; individual tests can override to throw
-  },
+  PublicBookingService: { assertBookingAccess: vi.fn() },
 }));
 
 vi.mock('../utils/logger', () => ({
-  logger: {
-    info: vi.fn(),
-    warn: vi.fn(),
-    error: vi.fn(),
-    debug: vi.fn(),
-  },
+  logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() },
 }));
 
 vi.mock('../utils/audit', () => ({
@@ -70,6 +62,7 @@ describe('Socket Handlers (Public Namespace)', () => {
     mockRedis.set.mockReset();
     mockRedis.del.mockReset();
     mockRedis.expire.mockReset();
+    mockRedis.eval.mockReset();
     mockRedis.isRedisConnected.mockReset();
     mockEventModel.exists.mockReset();
 
@@ -383,13 +376,18 @@ describe('Socket Handlers (Public Namespace)', () => {
       // Setup socket to have A1 locked
       mockSocket.data.lockedSeats.add(`${eventId}:A1`);
 
-      // Mock Redis: lock is owned by this session, deletes lock successfully
-      mockRedis.get.mockResolvedValue(sessionId);
+      // Mock Redis atomic Lua: lock is owned by this session, deletes lock successfully
+      mockRedis.eval.mockResolvedValue(1);
 
       await unlockHandler(validLockPayload);
 
       await vi.waitFor(() => {
-        expect(mockRedis.del).toHaveBeenCalledWith(`mad:lock:event:${eventId}:seat:A1`);
+        expect(mockRedis.eval).toHaveBeenCalledWith(
+          expect.stringContaining('redis.call("get", KEYS[1]) == ARGV[1]'),
+          1,
+          `mad:lock:event:${eventId}:seat:A1`,
+          sessionId
+        );
         expect(mockSocket.data.lockedSeats.has(`${eventId}:A1`)).toBe(false);
         expect(mockSocket.emit).toHaveBeenCalledWith('seat:unlock:status', {
           success: true,
@@ -409,13 +407,12 @@ describe('Socket Handlers (Public Namespace)', () => {
 
       mockSocket.data.lockedSeats.add(`${eventId}:A1`);
 
-      // Mock Redis: owned by another session
-      mockRedis.get.mockResolvedValue('another-session-uuid');
+      // Mock Redis atomic Lua: owned by another session (eval returns 0)
+      mockRedis.eval.mockResolvedValue(0);
 
       await unlockHandler(validLockPayload);
 
       await vi.waitFor(() => {
-        expect(mockRedis.del).not.toHaveBeenCalled();
         expect(mockSocket.data.lockedSeats.has(`${eventId}:A1`)).toBe(true); // remains locked locally
       });
     });

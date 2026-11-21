@@ -7,7 +7,7 @@
 - **Authors**: Architecture Review Board
 - **Reviewers**: Repository Governance Owner
 - **Decision Category**: Architecture / UI
-- **Related Documents**: [REPOSITORY_GOVERNANCE.md](../../REPOSITORY_GOVERNANCE.md), [AGENTS.MD](../../AGENTS.MD)
+- **Related Documents**: [REPOSITORY_GOVERNANCE.md](../../REPOSITORY_GOVERNANCE.md), [AGENTS.md](../../AGENTS.md)
 - **Related GitHub Issues**: None
 - **Related Pull Requests**: None
 

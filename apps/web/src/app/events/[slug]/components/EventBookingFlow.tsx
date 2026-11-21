@@ -220,7 +220,7 @@ export const EventBookingFlow = forwardRef<EventBookingFlowHandle, EventBookingF
                       <span className="font-semibold text-white">{formatMoney(subtotal, currency)}</span>
                     </div>
                     <p className="text-[9px] text-text-muted leading-relaxed">
-                      Convenience fees, GST, and discounts will be calculated at checkout details stage.
+                      Convenience fees, taxes, and discounts will be calculated at checkout details stage.
                     </p>
                   </div>
                 )}

@@ -3,7 +3,7 @@
 import React from 'react';
 
 import type { AdminTier } from '@/lib/api/admin/tier.service';
-import { Modal } from '@mad/ui';
+import { Modal, Button } from '@mad/ui';
 
 import { COLOR_PRESETS, ICON_PRESETS, getTierIcon } from './tier-presets';
 
@@ -63,11 +63,12 @@ export function TierEditModal({
               <label className="text-text-secondary text-xs font-bold block mb-1">Accent Color</label>
               <div className="flex flex-wrap gap-1.5 mb-2">
                 {COLOR_PRESETS.map((preset) => (
-                  <button
+                  <Button
                     key={preset.hex}
                     type="button"
+                    variant="ghost"
                     onClick={() => onTierChange({ ...editingTier, color: preset.hex })}
-                    className={`w-5 h-5 rounded-full border transition-all ${
+                    className={`w-5 h-5 p-0 rounded-full border transition-all min-h-0 min-w-0 ${
                       editingTier.color === preset.hex ? 'scale-110 border-white' : 'border-transparent'
                     }`}
                     style={{ backgroundColor: preset.hex }}
@@ -86,9 +87,10 @@ export function TierEditModal({
               <label className="text-text-secondary text-xs font-bold block mb-1">Icon Badge</label>
               <div className="grid grid-cols-5 gap-1.5">
                 {ICON_PRESETS.map((icon) => (
-                  <button
+                  <Button
                     key={icon.id}
                     type="button"
+                    variant="ghost"
                     onClick={() => onTierChange({ ...editingTier, icon: icon.id })}
                     className={`py-1.5 rounded-lg border flex items-center justify-center transition-all ${
                       editingTier.icon === icon.id
@@ -97,7 +99,7 @@ export function TierEditModal({
                     }`}
                   >
                     {getTierIcon(icon.id)}
-                  </button>
+                  </Button>
                 ))}
               </div>
             </div>
@@ -127,20 +129,23 @@ export function TierEditModal({
             </div>
 
             <div className="flex gap-3 pt-2">
-              <button
+              <Button
                 type="button"
+                variant="secondary"
                 onClick={onClose}
-                className="flex-1 py-2.5 glass border border-border-subtle rounded-xl text-sm font-medium text-text-secondary hover:text-white transition-colors"
+                className="flex-1"
               >
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
                 type="submit"
+                variant="primary"
                 disabled={isPending}
-                className="flex-1 py-2.5 btn-gradient text-white text-sm font-bold rounded-xl shadow-glow-sm disabled:opacity-60 transition-all"
+                isLoading={isPending}
+                className="flex-1"
               >
-                {isPending ? 'Saving...' : 'Save Changes'}
-              </button>
+                Save Changes
+              </Button>
             </div>
           </form>
         </div>
@@ -174,18 +179,20 @@ export function TierDeleteModal({ deleteTierId, onClose, onConfirm }: TierDelete
         normally.
       </p>
       <div className="flex gap-3">
-        <button
+        <Button
+          variant="secondary"
           onClick={onClose}
-          className="flex-1 py-2.5 glass border border-border-subtle rounded-xl text-sm font-medium text-text-secondary hover:text-white transition-colors"
+          className="flex-1"
         >
           Cancel
-        </button>
-        <button
+        </Button>
+        <Button
+          variant="danger"
           onClick={onConfirm}
-          className="flex-1 py-2.5 bg-error/80 hover:bg-error rounded-xl text-white text-sm font-medium transition-colors"
+          className="flex-1"
         >
           Delete
-        </button>
+        </Button>
       </div>
     </Modal>
   );

@@ -3,7 +3,7 @@
 
 import { AdminBooking } from '@/lib/api/admin/booking.service';
 import { BookingStatus, getBookingStatusLabel } from '@mad/shared';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, EmptyState, TablePagination } from '@mad/ui';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, EmptyState, TablePagination, Button } from '@mad/ui';
 import { Search } from '@mad/ui/icons';
 import { formatDateTime } from '@mad/utils';
 
@@ -128,15 +128,17 @@ export default function BookingsTable({
           </TableCell>
           <TableCell sticky="end" showStickyDivider className="py-4 px-5 text-right">
             {canMutateBookings && booking.status === BookingStatus.CONFIRMED && (
-              <button
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={(e) => {
                   e.stopPropagation();
                   onCancelClick(booking);
                 }}
-                className="px-3 py-1.5 text-xs glass border border-border-subtle rounded-lg text-text-muted hover:text-red-400 hover:border-red-500/40 transition-all"
+                className="px-3 py-1.5 text-xs text-text-muted hover:text-red-400 hover:border-red-500/40"
               >
                 Cancel
-              </button>
+              </Button>
             )}
           </TableCell>
         </TableRow>

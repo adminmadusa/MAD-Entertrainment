@@ -76,6 +76,9 @@ Start
  ├─► Proposing changes to monorepo package boundaries, DTO schemas, or drafting ADRs?
  │    └─► architecture-review
  │
+ ├─► Auditing code for duplication, dead/legacy code, unused exports, or file complexity?
+ │    └─► code-clean
+ │
  ├─► Debugging tests, compile crashes, race conditions, memory leaks, or profiling?
  │    └─► ci-investigation
  │
@@ -100,6 +103,7 @@ Start
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | **`governance-audit`** | 1.1 | Principal Software Architect | Governance | Enforce compliance gates and guide governance engine edits. | None | None | `pr-review`, `architecture-review` | `ci-investigation`, `documentation`, `ui-ux` |
 | **`architecture-review`** | 1.1 | Technical Architect | Architecture | Maintain package boundaries, client-server contracts, and ADRs. | GStack | None | `governance-audit`, `pr-review`, `ci-investigation` | `ci-investigation`, `documentation`, `ui-ux` |
+| **`code-clean`** | 1.0 | Principal Software Architect | Hygiene | Audit code for duplication, dead code, architectural boundaries, and complexity. | None | None | `governance-audit`, `architecture-review`, `pr-review` | `ci-investigation`, `documentation`, `ui-ux` |
 | **`ci-investigation`** | 1.1 | Lead Diagnostic Engineer | Investigation | Isolate, reproduce, and debug test, build, or compile failures. | Caveman | None | `governance-audit`, `architecture-review`, `pr-review` | `governance-audit`, `architecture-review`, `ui-ux` |
 | **`documentation`** | 1.1 | Technical Writer | Documentation | Maintain READMEs, runbooks, changelogs, and copy tone. | Humanizer | None | `governance-audit`, `architecture-review`, `pr-review` | `architecture-review`, `governance-audit`, `ui-ux` |
 | **`git-workflow`** | 1.0 | Release Manager | Git Lifecycle | Enforce branch prefixes, commit structure, and history cleanup. | None | None | `pr-review` | `pr-review`, `governance-audit`, `architecture-review` |
@@ -114,11 +118,12 @@ If a user prompt matches trigger keywords for multiple skills, the routing engin
 
 1. **`governance-audit`** (Enforces core repository safety)
 2. **`architecture-review`** (Enforces monorepo boundaries)
-3. **`ci-investigation`** (Diagnoses failures)
-4. **`documentation`** (Governs writing quality)
-5. **`ui-ux`** (Audits visual layout)
-6. **`git-workflow`** (Manages branch lifecycle)
-7. **`pr-review`** (Performs final gate checklist)
+3. **`code-clean`** (Audits duplication and dead code)
+4. **`ci-investigation`** (Diagnoses failures)
+5. **`documentation`** (Governs writing quality)
+6. **`ui-ux`** (Audits visual layout)
+7. **`git-workflow`** (Manages branch lifecycle)
+8. **`pr-review`** (Performs final gate checklist)
 
 ---
 
@@ -130,6 +135,7 @@ Skills map directly to specific directories to prevent routing ambiguity:
 | :--- | :--- | :--- |
 | `scripts/governance/` | **`governance-audit`** | `pr-review` |
 | `packages/` | **`architecture-review`** | `governance-audit` |
+| `apps/`, `packages/` (code cleanliness) | **`code-clean`** | `architecture-review` |
 | `docs/` | **`documentation`** | `architecture-review` |
 | `.github/` | **`documentation`** | `git-workflow` |
 | `apps/web/` / `apps/admin/` (UI layouts) | **`ui-ux`** | `pr-review` |
@@ -146,6 +152,7 @@ Skills map directly to specific directories to prevent routing ambiguity:
 | *"Check component sizes before merge"* | **`governance-audit`** | Evaluates warning thresholds. |
 | *"Add a package for payment utilities"* | **`architecture-review`** | Verifies monorepo package boundaries. |
 | *"Verify types match controller schemas"* | **`architecture-review`** | Verifies API contracts. |
+| *"Audit code for dead code or duplication"* | **`code-clean`** | Identifies dead code, duplicates, and file complexity. |
 | *"Debug vitest connection timeouts in CI"* | **`ci-investigation`** | Enforces the GOV-INV-001 evidence workflow. |
 | *"Locate introducing commit for database error"* | **`ci-investigation`** | Triggers git archaeology. |
 | *"Draft installation guidelines"* | **`documentation`** | Employs technical writing standards. |
@@ -193,6 +200,11 @@ Skills map directly to specific directories to prevent routing ambiguity:
 - **Primary**: UI audit, UX audit, accessibility audit, responsive audit, mobile review.
 - **Secondary**: WCAG contrast, keyboard navigation review, loading state review, Radix, shadcn.
 - **Negative Triggers**: *Do NOT trigger for backend database migration or REST schemas.*
+
+### 8. `code-clean`
+- **Primary**: code clean, dead code, duplicate code, legacy code, unused export, unused import, orphan component.
+- **Secondary**: code duplication, file complexity, unused variable, unused interface.
+- **Negative Triggers**: *Do NOT trigger for visual UI layout, CSS styling, or git branch management.*
 
 ---
 

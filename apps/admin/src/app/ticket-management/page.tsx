@@ -7,6 +7,7 @@ import { useState, useEffect, Suspense } from 'react';
 
 import { useAdminAuth } from '@/providers/AdminAuthProvider';
 import { AdminRole } from '@mad/shared';
+import { Button } from '@mad/ui';
 
 import { EventCategoriesTab } from './_components/EventCategoriesTab';
 import { TicketProfilesTab } from './_components/TicketProfilesTab';
@@ -84,42 +85,45 @@ function TicketManagementContent() {
         role="tablist"
         aria-label="Ticket Management Subtabs"
       >
-        <button
+        <Button
+          variant="ghost"
           onClick={() => handleTabChange('profiles')}
           role="tab"
           aria-selected={activeTab === 'profiles'}
-          className={`px-6 py-3 font-semibold text-sm transition-all border-b-2 -mb-[2px] ${
+          className={`px-6 py-3 font-semibold text-sm transition-all border-b-2 rounded-none -mb-[2px] ${
             activeTab === 'profiles'
               ? 'border-accent-purple text-accent-purple-light'
               : 'border-transparent text-text-secondary hover:text-text-primary'
           }`}
         >
           Ticket Profiles
-        </button>
-        <button
+        </Button>
+        <Button
+          variant="ghost"
           onClick={() => handleTabChange('tiers')}
           role="tab"
           aria-selected={activeTab === 'tiers'}
-          className={`px-6 py-3 font-semibold text-sm transition-all border-b-2 -mb-[2px] ${
+          className={`px-6 py-3 font-semibold text-sm transition-all border-b-2 rounded-none -mb-[2px] ${
             activeTab === 'tiers'
               ? 'border-accent-purple text-accent-purple-light'
               : 'border-transparent text-text-secondary hover:text-text-primary'
           }`}
         >
           Ticket Tiers
-        </button>
-        <button
+        </Button>
+        <Button
+          variant="ghost"
           onClick={() => handleTabChange('categories')}
           role="tab"
           aria-selected={activeTab === 'categories'}
-          className={`px-6 py-3 font-semibold text-sm transition-all border-b-2 -mb-[2px] ${
+          className={`px-6 py-3 font-semibold text-sm transition-all border-b-2 rounded-none -mb-[2px] ${
             activeTab === 'categories'
               ? 'border-accent-purple text-accent-purple-light'
               : 'border-transparent text-text-secondary hover:text-text-primary'
           }`}
         >
           Event Categories
-        </button>
+        </Button>
       </div>
 
       {activeTab === 'profiles' && (

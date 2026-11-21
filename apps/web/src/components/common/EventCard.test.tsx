@@ -13,6 +13,8 @@ vi.mock('next/navigation', () => ({
 }));
 
 const DAY_MS = 24 * 60 * 60 * 1000;
+// Relative dates: a hardcoded future date becomes a past date over time and
+// silently flips booking eligibility, which changes the rendered CTA.
 const eventStart = new Date(Date.now() + 30 * DAY_MS).toISOString();
 const eventEnd = new Date(Date.now() + 30 * DAY_MS + 5 * 60 * 60 * 1000).toISOString();
 

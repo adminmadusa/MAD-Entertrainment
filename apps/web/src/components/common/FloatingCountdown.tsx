@@ -37,7 +37,19 @@ export function FloatingCountdown({ popup, onClose }: FloatingCountdownProps) {
       exit={{ opacity: 0, y: 50, scale: 0.9 }}
       className="fixed bottom-4 right-4 z-40 sm:bottom-6 sm:right-6 w-[calc(100%-2rem)] sm:w-auto"
     >
-      <div className="relative glass-strong rounded-2xl border border-accent-purple/30 p-4 shadow-glow flex items-center gap-4 cursor-pointer hover:bg-white/5 transition-colors overflow-hidden" onClick={() => setIsExpanded(true)}>
+      <div
+        className="relative glass-strong rounded-2xl border border-accent-purple/30 p-4 shadow-glow flex items-center gap-4 cursor-pointer hover:bg-white/5 transition-colors overflow-hidden"
+        role="button"
+        tabIndex={0}
+        aria-label="Expand countdown details"
+        onClick={() => setIsExpanded(true)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            setIsExpanded(true);
+          }
+        }}
+      >
 
         {/* Minimize/Close Button - Stops propagation to prevent opening modal */}
         <button

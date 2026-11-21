@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@mad/ui';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, Button } from '@mad/ui';
+import { formatDateTime } from '@mad/utils';
 
 interface UserTicketItem {
   ticketId: string;
@@ -82,7 +83,8 @@ export default function UserTicketsTable({
                 </TableCell>
                 <TableCell sticky="end" showStickyDivider className="py-3.5 px-5 text-right text-text-secondary text-xs">
                   {t.scannedAt
-                    ? new Date(t.scannedAt).toLocaleDateString('en-IN', {
+                    ? formatDateTime(t.scannedAt, {
+                        locale: 'en-IN',
                         day: 'numeric',
                         month: 'short',
                         hour: '2-digit',
@@ -103,20 +105,22 @@ export default function UserTicketsTable({
             Page {currentPage} of {totalPages}
           </p>
           <div className="flex gap-2">
-            <button
+            <Button
+              variant="secondary"
+              size="sm"
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
               disabled={currentPage === 1}
-              className="px-3 py-1 text-xs glass border border-border-subtle rounded-lg disabled:opacity-40 text-text-secondary"
             >
               ← Prev
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
               onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
               disabled={currentPage === totalPages}
-              className="px-3 py-1 text-xs glass border border-border-subtle rounded-lg disabled:opacity-40 text-text-secondary"
             >
               Next →
-            </button>
+            </Button>
           </div>
         </div>
       )}

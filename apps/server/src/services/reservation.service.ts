@@ -1,8 +1,8 @@
 import { Types, ClientSession } from 'mongoose';
 
-import { BookingMode, InventoryState, ReservationStatus, SeatStatus, TicketTier, HTTP_STATUS } from '@mad/shared';
+import { BookingMode, InventoryState, ReservationStatus, SeatStatus, HTTP_STATUS } from '@mad/shared';
 
-import { getRedis } from '../config/redis';
+import { getRedis, releaseLockAtomic } from '../config/redis';
 import { emitToAdmin, emitToEvent } from '../config/socket';
 import { AppError } from '../middleware/error.middleware';
 import { Event } from '../models/event.schema';
@@ -12,27 +12,15 @@ import { auditLog } from '../utils/audit';
 import { logger } from '../utils/logger';
 import { CacheService } from './cache.service';
 import { assertReservationTransition, reservationToInventoryState } from './inventory-state.service';
+import { isSeatReservationCollision, type ReservationRequest } from './reservation/seat-collision.helper';
+
+export { isSeatReservationCollision, type ReservationRequest };
 
 const ACTIVE_RESERVATION_STATUSES = [
   ReservationStatus.RESERVED,
   ReservationStatus.PENDING_PAYMENT,
   ReservationStatus.CONFIRMED,
 ];
-
-interface ReservationRequest {
-  eventId: Types.ObjectId;
-  bookingMode: BookingMode;
-  tier: TicketTier;
-  quantity: number; // Represents Admission Count (not Package Count) as per MAD-COUPLE-004
-  seats?: { seatId: string; section?: string }[];
-  sessionId: string;
-  socketId?: string;
-  userId?: string;
-  bookingId?: Types.ObjectId;
-  bookingReference?: string;
-  correlationId?: string;
-  expiresAt: Date;
-}
 
 function safeEmit(label: string, emit: () => void, details: Record<string, unknown>) {
   try {
@@ -43,6 +31,7 @@ function safeEmit(label: string, emit: () => void, details: Record<string, unkno
 }
 
 export class ReservationService {
+  static isSeatReservationCollision = isSeatReservationCollision;
   static async reserveForBooking(
     request: ReservationRequest,
     session?: ClientSession
@@ -175,12 +164,9 @@ export class ReservationService {
         },
       };
     } finally {
-      // Safely release the lock
+      // Safely release the lock atomically
       try {
-        const currentVal = await redis.get(lockKey);
-        if (currentVal === lockVal) {
-          await redis.del(lockKey);
-        }
+        await releaseLockAtomic(redis, lockKey, lockVal);
       } catch (err) {
         logger.warn({ err, eventId: request.eventId, correlationId: request.correlationId }, 'Redis connection error during lock release');
       }
@@ -215,7 +201,18 @@ export class ReservationService {
         correlationId: request.correlationId,
         transitionLog: [{ from: InventoryState.AVAILABLE, to: InventoryState.RESERVED, reason: 'booking-created', correlationId: request.correlationId }],
       });
-      await reservation.save({ session });
+      try {
+        await reservation.save({ session });
+      } catch (err: unknown) {
+        if (isSeatReservationCollision(err)) {
+          const conflictErr = AppError.conflict(
+            `Seat ${seat.seatId} is already reserved by another user. Please choose different seats.`
+          );
+          conflictErr.code = 'SEAT_ALREADY_RESERVED';
+          throw conflictErr;
+        }
+        throw err;
+      }
       reservations.push(reservation);
     }
 

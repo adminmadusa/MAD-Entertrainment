@@ -5,6 +5,8 @@ export type { BookingConfirmationData } from "./templates/booking-confirmation";
 
 export { ticketDeliveryHtml } from "./templates/ticket-delivery";
 export type { TicketDeliveryData } from "./templates/ticket-delivery";
+export { ticketInvitationHtml } from "./templates/ticket-invitation";
+export type { TicketInvitationData } from "./templates/ticket-invitation";
 export { fullRefundHtml } from "./templates/full-refund";
 export type { FullRefundData } from "./templates/full-refund";
 export { partialRefundHtml } from "./templates/partial-refund";

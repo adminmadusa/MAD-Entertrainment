@@ -60,9 +60,17 @@ export class MarketingService {
     if (recipientCount > 0) {
       const timestamp = Date.now();
       const queueName = getQueueName('marketing-queue');
+      const secret = getEnv().MARKETING_UNSUBSCRIBE_SECRET || 'marketing-default-secret';
+      const webUrl = getEnv().FRONTEND_URL || 'https://www.madentertainments.net';
 
       // 5. Enqueue one job per recipient onto marketing-queue
       for (const email of targetEmails) {
+        const token = crypto
+          .createHash('sha256')
+          .update(email.toLowerCase() + secret)
+          .digest('hex');
+        const unsubscribeUrl = `${webUrl}/api/marketing/unsubscribe?email=${encodeURIComponent(email)}&token=${token}`;
+
         const jobId = `mkt-${timestamp}-${email}`;
         await QueueService.enqueue(
           queueName,
@@ -72,6 +80,10 @@ export class MarketingService {
             subject,
             html,
             notificationType: NotificationType.MARKETING,
+            headers: {
+              'List-Unsubscribe': `<${unsubscribeUrl}>`,
+              'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+            },
           },
           jobId
         );

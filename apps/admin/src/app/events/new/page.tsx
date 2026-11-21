@@ -73,12 +73,15 @@ export default function CreateEventPage() {
           <h1 className="text-2xl font-black text-white">Create Event</h1>
           <p className="text-text-muted text-sm mt-0.5">Fill in the details below</p>
         </div>
-        <button
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
           onClick={() => router.back()}
-          className="text-text-muted text-sm hover:text-text-secondary transition-colors flex items-center gap-1.5"
+          className="text-text-muted hover:text-text-secondary flex items-center gap-1.5"
         >
           ← Cancel
-        </button>
+        </Button>
       </div>
 
       <div className="px-4 py-6 bg-surface border border-border-subtle rounded-xl mb-8">

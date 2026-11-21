@@ -1,3 +1,6 @@
+// Must stay first: extends Zod before any schema module is evaluated.
+import './config/zod-openapi-extension';
+
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';

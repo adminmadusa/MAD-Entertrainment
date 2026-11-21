@@ -117,6 +117,8 @@ export function Modal({
         isVisible ? 'opacity-100' : 'opacity-0',
         closeOnBackdropClick && 'cursor-pointer'
       )}
+      role="presentation"
+      tabIndex={-1}
       onClick={(e) => {
         if (closeOnBackdropClick && e.target === e.currentTarget) {
           onClose();

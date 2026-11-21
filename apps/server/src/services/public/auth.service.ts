@@ -9,6 +9,7 @@ import { magicLinkHtml } from '../../lib/email';
 import { AppError } from '../../middleware/error.middleware';
 import { MagicTokenModel } from '../../models/magic-token.schema';
 import { UserModel, IUser } from '../../models/user.schema';
+import { auditLog } from '../../utils/audit';
 import { normalizeEmail } from '../../utils/email';
 import { logger } from '../../utils/logger';
 import { createNotificationSafe } from '../notification.service';
@@ -278,10 +279,27 @@ export class AuthService {
     }
 
     const env = getEnv();
+    const isProduction = env.NODE_ENV === 'production' || env.APP_ENV === 'production';
     const isDevPlaceholder = env.GOOGLE_CLIENT_ID === 'google_client_id_placeholder';
 
+    if (idToken.startsWith('mock_')) {
+      if (isProduction || !isDevPlaceholder) {
+        logger.error(
+          { idTokenPrefix: 'mock_', isProduction, isDevPlaceholder },
+          'Security Alert: Mock Google ID Token rejected in non-development environment'
+        );
+        auditLog({
+          action: 'MOCK_AUTH_PRODUCTION_BLOCKED',
+          status: 'failure',
+          description: 'Mock Google ID token was rejected in non-development environment',
+          metadata: { isProduction, isDevPlaceholder },
+        });
+        throw AppError.unauthorized('Mock Google ID tokens are strictly forbidden in this environment');
+      }
+    }
+
     let payload;
-    if (isDevPlaceholder && idToken.startsWith('mock_')) {
+    if (!isProduction && isDevPlaceholder && idToken.startsWith('mock_')) {
       payload = {
         email: idToken.split('_')[1] || 'mock@example.com',
         name: 'Mock User',

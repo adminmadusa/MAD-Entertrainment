@@ -1,3 +1,4 @@
+import { formatMoney } from "@mad/shared";
 import { Section, Text } from "@react-email/components";
 
 import { renderTemplate } from "../render-template";
@@ -40,8 +41,6 @@ export default function PartialRefundEmail({
     currency = "INR",
   } = data;
 
-  const currencySymbol = currency === "INR" ? "₹" : currency;
-
   return (
     <EmailBase
       previewText={`Partial Refund Completed — ${bookingReference}`}
@@ -66,17 +65,17 @@ export default function PartialRefundEmail({
 
         <Text style={emailSharedStyles.detailLabel}>Original Order Amount</Text>
         <Text style={emailSharedStyles.detailValueText}>
-          {`${currencySymbol}${originalAmount.toLocaleString("en-IN")}`}
+          {formatMoney(originalAmount, currency)}
         </Text>
 
         <Text style={emailSharedStyles.detailLabel}>Refunded Amount</Text>
         <Text style={emailSharedStyles.partialRefundAmount}>
-          {`${currencySymbol}${refundAmount.toLocaleString("en-IN")}`}
+          {formatMoney(refundAmount, currency)}
         </Text>
 
         <Text style={emailSharedStyles.detailLabel}>Remaining Balance</Text>
         <Text style={emailSharedStyles.detailValueText}>
-          {`${currencySymbol}${remainingAmount.toLocaleString("en-IN")}`}
+          {formatMoney(remainingAmount, currency)}
         </Text>
 
         {reason && (

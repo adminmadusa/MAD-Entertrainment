@@ -31,7 +31,7 @@ export const seedCategoriesAndTiers = async () => {
       { name: 'Family', slug: 'family', icon: 'users', color: '#10B981', description: 'Family group package pass.', sortIndex: 5, defaultVisibility: true },
       { name: 'Couple', slug: 'couple', icon: 'heart', color: '#EC4899', description: 'Pass admitting two guests.', sortIndex: 6, defaultVisibility: true },
       { name: 'Early Bird', slug: 'early_bird', icon: 'clock', color: '#14B8A6', description: 'Discounted early registration.', sortIndex: 7, defaultVisibility: true },
-      { name: 'Free', slug: 'free', icon: 'gift', color: '#3B82F6', description: 'Complimentary registration.', sortIndex: 8, defaultVisibility: true },
+      { name: 'Custom', slug: 'custom', icon: 'gift', color: '#3B82F6', description: 'Custom promotional or special pass.', sortIndex: 8, defaultVisibility: true },
     ];
 
     for (const tier of defaultTiers) {

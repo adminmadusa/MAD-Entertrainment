@@ -35,6 +35,8 @@ export function EventFormWizardView({
     setCountryCode,
     convenienceFee,
     setConvenienceFee,
+    taxPercentage,
+    setTaxPercentage,
     organizerName,
     setOrganizerName,
     highlightsInput,
@@ -99,6 +101,8 @@ export function EventFormWizardView({
             setCountryCode={setCountryCode}
             convenienceFee={convenienceFee}
             setConvenienceFee={setConvenienceFee}
+            taxPercentage={taxPercentage}
+            setTaxPercentage={setTaxPercentage}
           />
           <EventAdditionalDetailsCard
             organizerName={organizerName}

@@ -3,7 +3,7 @@
 import { useState } from 'react';
 
 import { AdminBooking } from '@/lib/api/admin/booking.service';
-import { Modal } from '@mad/ui';
+import { Modal, Button } from '@mad/ui';
 
 export interface CancelBookingModalProps {
   booking: AdminBooking;
@@ -96,21 +96,24 @@ export default function CancelBookingModal({
       </div>
 
       <div className="flex gap-3">
-        <button
+        <Button
           type="button"
+          variant="outline"
           onClick={onClose}
-          className="flex-1 py-2.5 glass border border-border-subtle rounded-xl text-sm text-text-secondary hover:text-white"
+          className="flex-1 py-2.5 rounded-xl text-sm"
         >
           Close
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
+          variant="danger"
           onClick={handleSubmit}
           disabled={isSubmitDisabled}
-          className="flex-1 py-2.5 bg-error/80 hover:bg-error rounded-xl text-white text-sm font-medium disabled:opacity-60 transition-colors"
+          isLoading={isPending || hasSubmitted}
+          className="flex-1 py-2.5 rounded-xl text-sm font-medium"
         >
-          {isPending || hasSubmitted ? 'Processing...' : (isPaid ? 'Cancel & Refund' : 'Confirm Cancel')}
-        </button>
+          {isPaid ? 'Cancel & Refund' : 'Confirm Cancel'}
+        </Button>
       </div>
     </Modal>
   );

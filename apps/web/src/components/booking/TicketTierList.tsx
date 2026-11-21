@@ -4,6 +4,7 @@ import React from 'react';
 
 import { formatMoney } from '@mad/shared';
 import type { Event as EventData } from '@mad/types';
+import { formatDate } from '@mad/utils';
 
 export type TicketTierWithOptionalFields = EventData['ticketTiers'][number] & {
   groupName?: string;
@@ -100,7 +101,7 @@ export function TicketTierList({
                         {tier.description || 'General Entry Ticket'}
                         {tier.availabilityWindow?.endDate && (
                           <span className="text-accent-cyan ml-1.5">
-                            · Sales end {new Date(tier.availabilityWindow.endDate).toLocaleDateString('en-US', { timeZone: 'UTC' })}
+                            · Sales end {formatDate(tier.availabilityWindow.endDate, { timeZone: 'UTC' })}
                           </span>
                         )}
                       </p>

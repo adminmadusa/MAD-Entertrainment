@@ -8,7 +8,7 @@
 - **Authors**: Principal Software Architect, Governance Engine Architect
 - **Reviewers**: Repository Governance Owner, Architecture Review Board
 - **Decision Category**: Governance
-- **Related Documents**: [REPOSITORY_GOVERNANCE.md](../../REPOSITORY_GOVERNANCE.md), [AGENTS.MD](../../AGENTS.MD)
+- **Related Documents**: [REPOSITORY_GOVERNANCE.md](../../REPOSITORY_GOVERNANCE.md), [AGENTS.md](../../AGENTS.md)
 - **Related GitHub Issues**: None
 - **Related Pull Requests**: None
 - **Supersedes**: None
@@ -141,5 +141,5 @@ Before Phase 3 begins, we must confirm:
 ---
 
 ## References
-- [AGENTS.MD](../../AGENTS.MD) — Section on Manual Verification Gate & Single Source of Truth
+- [AGENTS.md](../../AGENTS.md) — Section on Manual Verification Gate & Single Source of Truth
 - [REPOSITORY_GOVERNANCE.md](../../REPOSITORY_GOVERNANCE.md)

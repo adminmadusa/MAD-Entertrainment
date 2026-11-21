@@ -83,6 +83,8 @@ export function OtpVerifyForm({
             {/* Interactive 6-Slot Segmented OTP Display */}
             <div
               className="relative flex justify-center items-center cursor-text py-1"
+              role="presentation"
+              tabIndex={-1}
               onClick={() => inputRef.current?.focus()}
             >
               {/* Native transparent input capturing keystrokes & paste */}

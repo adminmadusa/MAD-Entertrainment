@@ -31,6 +31,16 @@ export function UnifiedMediaTriggerView({
       )}
 
       <div
+        role="button"
+        tabIndex={disabled ? -1 : 0}
+        aria-label="Upload files"
+        aria-disabled={disabled}
+        onKeyDown={(e) => {
+          if (!disabled && uploads.length === 0 && (e.key === 'Enter' || e.key === ' ')) {
+            e.preventDefault();
+            inputRef.current?.click();
+          }
+        }}
         onDragOver={(e) => {
           e.preventDefault();
           if (!disabled) setIsDragging(true);

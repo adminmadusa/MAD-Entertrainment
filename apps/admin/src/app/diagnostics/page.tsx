@@ -1,6 +1,6 @@
 'use client';
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 
 import { DeadLetterQueueTab } from '@/components/diagnostics/DeadLetterQueueTab';
@@ -10,9 +10,17 @@ import { DiagnosticsModals } from '@/components/diagnostics/DiagnosticsModals';
 import { DiagnosticsNavigation } from '@/components/diagnostics/DiagnosticsNavigation';
 import { QueueControlsTab } from '@/components/diagnostics/QueueControlsTab';
 import { ReservationLedgerTab } from '@/components/diagnostics/ReservationLedgerTab';
-import { adminGetConsistencyReport, adminGetReservations, adminRepairConsistency, adminGetDlqJobs, adminGetDlqJobPayload, adminRetryDlqJob, adminRetryAllDlqJobs, adminGetSystemHealth, adminGetQueues, adminPauseQueue, adminResumeQueue, adminDrainQueue, DeadLetterJobMetadata, DeadLetterJobDetails } from '@/lib/api/admin/diagnostics.service';
+import {
+  adminGetConsistencyReport,
+  adminGetDlqJobs,
+  adminGetQueues,
+  adminGetReservations,
+  adminGetSystemHealth,
+} from '@/lib/api/admin/diagnostics.service';
 import { useAdminAuth } from '@/providers/AdminAuthProvider';
-import { QUERY_KEYS, AdminRole } from '@mad/shared';
+import { AdminRole, QUERY_KEYS } from '@mad/shared';
+import { Button } from '@mad/ui';
+import { useDiagnosticsActions } from './_hooks/useDiagnosticsActions';
 
 export default function DiagnosticsPage() {
   const { admin } = useAdminAuth();
@@ -30,21 +38,6 @@ export default function DiagnosticsPage() {
   const [dlqLimit] = useState(10);
   const [dlqQueue, setDlqQueue] = useState('');
   const [dlqSearch, setDlqSearch] = useState('');
-
-  // Inspections and dialogs state
-  const [inspectingJobId, setInspectingJobId] = useState<string | null>(null);
-  const [inspectedJob, setInspectedJob] = useState<DeadLetterJobDetails | null>(null);
-  const [isInspectLoading, setIsInspectLoading] = useState(false);
-  const [inspectError, setInspectError] = useState<string | null>(null);
-
-  // Single job retry confirmation modal
-  const [confirmRetryJob, setConfirmRetryJob] = useState<DeadLetterJobMetadata | null>(null);
-
-  // Bulk retry safety dialog
-  const [confirmRetryAll, setConfirmRetryAll] = useState(false);
-
-  // Queue controls state
-  const [drainTargetQueue, setDrainTargetQueue] = useState<string | null>(null);
 
   // Fetch consistency report
   const { data: report } = useQuery({
@@ -86,79 +79,32 @@ export default function DiagnosticsPage() {
     enabled: isSuperAdmin && activeSubTab === 'queues',
   });
 
-  // Consistency repair mutation
-  const repairMutation = useMutation({
-    mutationFn: adminRepairConsistency,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.admin.diagnostics.consistency() });
-      queryClient.invalidateQueries({ queryKey: ['admin', 'diagnostics', 'health'] });
-    },
+  // Extracted actions and dialog states
+  const {
+    inspectingJobId,
+    inspectedJob,
+    isInspectLoading,
+    inspectError,
+    confirmRetryJob,
+    confirmRetryAll,
+    drainTargetQueue,
+    repairMutation,
+    retryMutation,
+    retryAllMutation,
+    pauseMutation,
+    resumeMutation,
+    drainMutation,
+    handleInspect,
+    handleCopyPayload,
+    handleCloseInspector,
+    handleRetryInspectorJob,
+    setConfirmRetryJob,
+    setConfirmRetryAll,
+    setDrainTargetQueue,
+  } = useDiagnosticsActions({
+    queryClient,
+    refetchDlq,
   });
-
-  // Single job retry mutation
-  const retryMutation = useMutation({
-    mutationFn: adminRetryDlqJob,
-    onSuccess: () => {
-      setConfirmRetryJob(null);
-      refetchDlq();
-      queryClient.invalidateQueries({ queryKey: ['admin', 'diagnostics', 'health'] });
-    },
-  });
-
-  // Retry all jobs mutation
-  const retryAllMutation = useMutation({
-    mutationFn: adminRetryAllDlqJobs,
-    onSuccess: () => {
-      setConfirmRetryAll(false);
-      refetchDlq();
-      queryClient.invalidateQueries({ queryKey: ['admin', 'diagnostics', 'health'] });
-    },
-  });
-
-  // Queue mutations
-  const pauseMutation = useMutation({
-    mutationFn: adminPauseQueue,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin', 'diagnostics', 'queue-controls'] });
-    },
-  });
-
-  const resumeMutation = useMutation({
-    mutationFn: adminResumeQueue,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin', 'diagnostics', 'queue-controls'] });
-    },
-  });
-
-  const drainMutation = useMutation({
-    mutationFn: adminDrainQueue,
-    onSuccess: () => {
-      setDrainTargetQueue(null);
-      queryClient.invalidateQueries({ queryKey: ['admin', 'diagnostics', 'queue-controls'] });
-    },
-  });
-
-  // Lazy inspect handler
-  const handleInspect = async (id: string) => {
-    setInspectingJobId(id);
-    setIsInspectLoading(true);
-    setInspectError(null);
-    setInspectedJob(null);
-    try {
-      const details = await adminGetDlqJobPayload(id);
-      setInspectedJob(details);
-    } catch (err: any) {
-      setInspectError(err.response?.data?.message || err.message || 'Failed to retrieve payload');
-    } finally {
-      setIsInspectLoading(false);
-    }
-  };
-
-  const handleCopyPayload = () => {
-    if (inspectedJob) {
-      navigator.clipboard.writeText(JSON.stringify(inspectedJob.data, null, 2));
-    }
-  };
 
   if (!isSuperAdmin) {
     return <DiagnosticsAccessDenied />;
@@ -178,14 +124,15 @@ export default function DiagnosticsPage() {
           </p>
         </div>
         {isSuperAdmin && activeSubTab === 'health' && (
-          <button
+          <Button
             type="button"
+            variant="primary"
             onClick={() => repairMutation.mutate()}
             disabled={repairMutation.isPending}
-            className="px-4 py-2.5 btn-gradient text-white font-semibold text-sm rounded-xl disabled:opacity-60 transition-opacity"
+            className="btn-gradient text-white font-semibold text-sm rounded-xl disabled:opacity-60 transition-opacity"
           >
             {repairMutation.isPending ? 'Repairing...' : 'Run Repair'}
-          </button>
+          </Button>
         )}
       </div>
 
@@ -257,15 +204,8 @@ export default function DiagnosticsPage() {
         isInspectLoading={isInspectLoading}
         inspectError={inspectError}
         isSuperAdmin={isSuperAdmin}
-        onCloseInspector={() => {
-          setInspectingJobId(null);
-          setInspectedJob(null);
-        }}
-        onRetryInspectorJob={(job) => {
-          setConfirmRetryJob(job);
-          setInspectingJobId(null);
-          setInspectedJob(null);
-        }}
+        onCloseInspector={handleCloseInspector}
+        onRetryInspectorJob={handleRetryInspectorJob}
         onCopyInspectorPayload={handleCopyPayload}
         confirmRetryJob={confirmRetryJob}
         onCloseRetryJob={() => setConfirmRetryJob(null)}

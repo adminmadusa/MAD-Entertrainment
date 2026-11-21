@@ -4,7 +4,7 @@ owner: Repository Governance Owner
 
 # Governance Execution Engine
 
-This document describes the technical architecture of the automated governance engine located in `scripts/governance/` and `tests/ui-governance/`.
+This document describes the technical architecture of the automated governance engine located in `scripts/governance/`.
 
 ---
 
@@ -36,9 +36,9 @@ graph TD
     end
 
     subgraph UX ["UX Experience Layer"]
-        F["Pattern Specifications<br>(docs/design-system/patterns/)"]
-        G["Journey Flows<br>(docs/design-system/journeys/)"]
-        H["UX Compliance Audits<br>(docs/design-system/UX_COMPLIANCE_REPORT.md)"]
+        F["UI/UX Governance Rules<br>(UI_UX_GOVERNANCE.md)"]
+        G["Design System Standards<br>(docs/design-system/standards/)"]
+        H["UX Compliance Audits"]
     end
 
     subgraph Automation ["Phase 4 Automation Engine"]
@@ -70,8 +70,8 @@ graph TD
    - Prevents hardcoded color values (hex/rgb) or ad-hoc custom styles in layout views.
    - Verifies compliance with the Theme Contract across products.
 
-4. **UX & Pattern Governance (Composites & Journeys):**
-   - Compares implemented pages against the 19 canonical pattern documents (e.g., verifying `UX-AUTH-001` forms use `FormField`).
+4. **UX & Accessibility Governance:**
+   - Enforces UI-001 accessibility and UX state specifications (loading skeletons, empty states, error boundaries).
    - Enforces keyboard focus trapping and ARIA standards (WCAG AA accessibility target).
 
 5. **Compliance & Backlog Tracking:**
@@ -138,8 +138,8 @@ Phase 4 moves the governance engine from descriptive documentation to automated 
 
 Every developer making changes in the repository must adhere to the following sequence:
 
-1. **Consult Patterns:** Refer to `docs/design-system/patterns/` to align new features with approved UX layouts.
-2. **Reuse Components:** Utilize stable composites from `@mad/ui` (such as `FormField` or `ErrorState`). If a primitive is missing, log a gap in `BACKLOG.md` rather than building an ad-hoc local component.
+1. **Consult Standards:** Refer to `UI_UX_GOVERNANCE.md` and `packages/ui/README.md` to align new features with approved UX standards and reusable components.
+2. **Reuse Components:** Utilize stable composites from `@mad/ui` (such as `FormField` or `ErrorState`). If a primitive is missing, propose an addition in `@mad/ui` rather than building an ad-hoc local component.
 3. **Execute Local Audits:** Prior to staging commits, run lint commands:
    ```bash
    pnpm governance:docs

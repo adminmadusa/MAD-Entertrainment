@@ -5,17 +5,18 @@
 - **Version**: 1.0
 - **Repository**: MAD Entertrainment
 - **Review Cycle**: Quarterly
-- **Last Updated**: 2026-06-25
+- **Last Updated**: 2026-11-21
 - **Related Documents:**
   - [README.md](README.md)
   - [ARCHITECTURE.md](ARCHITECTURE.md)
   - [DEPLOYMENT_MAP.md](DEPLOYMENT_MAP.md)
   - [API_CONTRACTS.md](API_CONTRACTS.md)
   - [RUNBOOK.md](RUNBOOK.md)
-  - [AGENTS.MD](AGENTS.MD)
+  - [AGENTS.md](AGENTS.md)
   - [TESTING.md](TESTING.md)
   - [Architecture Decisions Index](docs/decisions/README.md)
   - [CHANGELOG.md](CHANGELOG.md)
+  - [Font Licenses](apps/server/src/lib/pdf/ticket/fonts/LICENSES.md)
 - **Supersedes**: None (Initial Release)
 
 ---
@@ -63,7 +64,7 @@ graph TD
 | [API_CONTRACTS.md](API_CONTRACTS.md) | Endpoint definitions & validation | Authority on request/response schemas, errors, and authentication. |
 | [docs/decisions/](docs/decisions/README.md) | Decision records (ADRs) | Rationale behind historical technical decisions (the "Why"). |
 | [RUNBOOK.md](RUNBOOK.md) | Operational guidelines & scripts | Incident response, backup, and manual testing procedures. |
-| [AGENTS.MD](AGENTS.MD) | Operational developer instructions | Instructions for human and AI agents implementing the governance policies. |
+| [AGENTS.md](AGENTS.md) | Operational developer instructions | Instructions for human and AI agents implementing the governance policies. |
 
 ### Document Dependency Matrix
 
@@ -86,10 +87,11 @@ A dependency matrix helps contributors understand which documents should be revi
 1. **Single Source of Truth (SSOT)**: Every rule, boundary, or API must have exactly one owner. Frontend code must never duplicate backend decisions (e.g. calculating price totals or coupon validity).
 2. **Evidence-Based Documentation**: Documentation must not rely on assumptions. It is backed by verified route definitions and automation (e.g. `audit_data.json`).
 3. **Decision Traceability**: Any architectural deviation or significant decision must be documented in an ADR under `docs/decisions/`.
-4. **Documentation-First**: Documentation must be updated in tandem with code changes. PRs with undocumented API or architectural changes are blocked.
-5. **Code Ownership**: Specific domain experts review changes affecting their modules.
-6. **Verification-First Workflow**: Changes are validated locally (lint, tests, builds) before staging or merging.
-7. **Continuous Improvement**: Governance policies and checks are updated as repository capabilities expand.
+4. **Documentation-First & Search Before Create**: Documentation must be updated in tandem with code changes. No new `.md` file may be created until the repository has been searched for an existing canonical document covering the same subject (`RULE-DOC-001`).
+5. **One Topic → One Canonical SSOT**: Every active subject must have exactly one authoritative `.md` document (`RULE-DOC-002`). Historical records and completed plans belong in `docs/archive/`.
+6. **Code Ownership**: Specific domain experts review changes affecting their modules.
+7. **Verification-First Workflow**: Changes are validated locally (lint, tests, builds) before staging or merging.
+8. **Continuous Improvement**: Governance policies and checks are updated as repository capabilities expand.
 
 ---
 
@@ -146,7 +148,7 @@ Use this matrix to determine the SSOT location, whether an ADR is required, and 
 | **Architecture** | [ARCHITECTURE.md](ARCHITECTURE.md) | Yes | Workspace build + structural review |
 | **Deployment** | [DEPLOYMENT_MAP.md](DEPLOYMENT_MAP.md) | Sometimes | Configuration validation + smoke test |
 | **API Contracts** | [API_CONTRACTS.md](API_CONTRACTS.md) | Breaking changes only | Integration tests + validation checks |
-| **Security** | [AGENTS.MD](AGENTS.MD) / ADR | Yes | Security review + secret scanning |
+| **Security** | [AGENTS.md](AGENTS.md) / ADR | Yes | Security review + secret scanning |
 | **Governance** | [REPOSITORY_GOVERNANCE.md](REPOSITORY_GOVERNANCE.md) | Yes | Document review + link audits |
 
 ---

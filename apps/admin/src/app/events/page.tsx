@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { EVENT_STATUS_METADATA, EventStatus } from '@mad/shared';
+import { Button } from '@mad/ui';
 
 import { useAdminEventsList } from './hooks/useAdminEventsList';
 import { AdminEventsTable } from './components/AdminEventsTable';
@@ -65,34 +66,40 @@ export default function AdminEventsPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         {/* Tab Buttons */}
         <div className="flex flex-wrap bg-white/5 border border-border-subtle p-1 rounded-xl gap-1">
-          <button
+          <Button
+            type="button"
+            variant={statusFilter === '' ? 'primary' : 'ghost'}
+            size="sm"
             onClick={() => {
               setStatusFilter('');
               setPage(1);
             }}
-            className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+            className={`px-3 py-1.5 text-xs font-semibold ${
               statusFilter === ''
-                ? 'bg-accent-purple text-white shadow-glow-sm'
+                ? 'shadow-glow-sm'
                 : 'text-text-secondary hover:text-white'
             }`}
           >
             All Statuses
-          </button>
+          </Button>
           {EVENT_STATUS_FILTER_OPTIONS.map(([value, meta]) => (
-            <button
+            <Button
               key={value}
+              type="button"
+              variant={statusFilter === value ? 'primary' : 'ghost'}
+              size="sm"
               onClick={() => {
                 setStatusFilter(value as EventStatus);
                 setPage(1);
               }}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+              className={`px-3 py-1.5 text-xs font-semibold ${
                 statusFilter === value
-                  ? 'bg-accent-purple text-white shadow-glow-sm'
+                  ? 'shadow-glow-sm'
                   : 'text-text-secondary hover:text-white'
               }`}
             >
               {meta.label}
-            </button>
+            </Button>
           ))}
         </div>
 
