@@ -20,7 +20,7 @@ const MANDATORY_SSOT_DOCUMENTS = [
   'CHANGELOG.md',
   'RUNBOOK.md',
   'TESTING.md',
-  'AGENTS.MD',
+  'AGENTS.md',
   'docs/decisions/README.md'
 ];
 

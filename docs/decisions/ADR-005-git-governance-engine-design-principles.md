@@ -6,7 +6,7 @@
 - **Authors**: AI Architecture Agent & Repository Owner
 - **Reviewers**: Repository Governance Owner, Architecture Review Board
 - **Decision Category**: Governance
-- **Related Documents**: [REPOSITORY_GOVERNANCE.md](../../REPOSITORY_GOVERNANCE.md), [AGENTS.MD](../../AGENTS.MD), [ADR-004-governance-execution-engine.md](ADR-004-governance-execution-engine.md)
+- **Related Documents**: [REPOSITORY_GOVERNANCE.md](../../REPOSITORY_GOVERNANCE.md), [AGENTS.md](../../AGENTS.md), [ADR-004-governance-execution-engine.md](ADR-004-governance-execution-engine.md)
 - **Related GitHub Issues**: None
 - **Related Pull Requests**: None
 
@@ -203,4 +203,4 @@ The following future milestones separate the accepted core design from planned e
 
 ## References
 - [REPOSITORY_GOVERNANCE.md](../../REPOSITORY_GOVERNANCE.md)
-- [AGENTS.MD](../../AGENTS.MD)
+- [AGENTS.md](../../AGENTS.md)

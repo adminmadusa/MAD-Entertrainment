@@ -51,18 +51,13 @@ export function useEventFormState(initialValues?: Partial<AdminEvent>, propError
   const [highlightsInput, setHighlightsInput] = useState('');
   const [countryCode, setCountryCode] = useState('US');
   const [convenienceFee, setConvenienceFee] = useState<number | ''>('');
+  const [taxPercentage, setTaxPercentage] = useState<number | ''>('');
   const [localError, setLocalError] = useState('');
 
   // Queries
-  const { data: dbCategories = [] } = useQuery({
-    queryKey: ['adminCategories'],
-    queryFn: adminGetCategories,
-  });
+  const { data: dbCategories = [] } = useQuery({ queryKey: ['adminCategories'], queryFn: adminGetCategories });
   const { data: dbTiers = [] } = useQuery({ queryKey: ['adminTiers'], queryFn: adminGetTiers });
-  const { data: dbProfiles = [] } = useQuery({
-    queryKey: ['adminTicketProfiles'],
-    queryFn: adminGetTicketProfiles,
-  });
+  const { data: dbProfiles = [] } = useQuery({ queryKey: ['adminTicketProfiles'], queryFn: adminGetTicketProfiles });
 
   const activeProfile = dbProfiles.find((p: TicketProfile) => p._id === selectedProfileId);
   const displayError = propError || localError;
@@ -85,6 +80,7 @@ export function useEventFormState(initialValues?: Partial<AdminEvent>, propError
       setHighlightsInput(init.highlightsInput);
       setCountryCode(init.countryCode);
       setConvenienceFee(init.convenienceFee);
+      setTaxPercentage(init.taxPercentage);
       setTags(init.tags);
       setRequireTerms(init.requireTerms);
       setRequireAgeConfirmation(init.requireAgeConfirmation);
@@ -160,6 +156,7 @@ export function useEventFormState(initialValues?: Partial<AdminEvent>, propError
       organizerName,
       countryCode,
       convenienceFee,
+      taxPercentage,
       ticketingType,
       selectedProfileId,
       overrides,
@@ -228,6 +225,8 @@ export function useEventFormState(initialValues?: Partial<AdminEvent>, propError
     setCountryCode,
     convenienceFee,
     setConvenienceFee,
+    taxPercentage,
+    setTaxPercentage,
     displayError,
     dbCategories,
     dbTiers,

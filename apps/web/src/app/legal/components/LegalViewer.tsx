@@ -1,6 +1,7 @@
 'use client';
 
 import ReactMarkdown from 'react-markdown';
+import { formatDate } from '@mad/utils';
 
 import { LegalMobileTabs } from './LegalMobileTabs';
 
@@ -23,10 +24,10 @@ export function LegalViewer({ title, lastUpdated, markdownContent }: LegalViewer
           <p className="text-text-muted text-sm flex items-center gap-2">
             <span>Last Updated:</span>
             <time dateTime={lastUpdated} className="text-text-secondary font-medium">
-              {new Date(lastUpdated).toLocaleDateString('en-US', {
+              {formatDate(lastUpdated, {
                 year: 'numeric',
                 month: 'long',
-                day: 'numeric'
+                day: 'numeric',
               })}
             </time>
           </p>

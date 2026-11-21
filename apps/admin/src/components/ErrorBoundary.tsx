@@ -1,5 +1,6 @@
 'use client';
 import React, { Component, ErrorInfo, ReactNode } from 'react';
+import { Button } from '@mad/ui';
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -33,12 +34,14 @@ export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
             <p className="text-text-muted mb-6">
               An unexpected error occurred. Please try refreshing the page.
             </p>
-            <button
+            <Button
+              variant="primary"
+              size="sm"
               onClick={() => window.location.reload()}
               className="px-4 py-2 bg-accent-purple hover:bg-accent-purple/80 text-white rounded"
             >
               Refresh
-            </button>
+            </Button>
           </div>
         </div>
       );

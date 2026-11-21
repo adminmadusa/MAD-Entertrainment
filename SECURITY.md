@@ -1,5 +1,16 @@
 # Security Policy
 
+- **Owner**: Security Guild
+- **Status**: Active
+- **Version**: 1.0
+- **Review Cycle**: Quarterly
+- **Last Updated**: 2026-11-19
+- **Related Documents:**
+  - [README.md](README.md)
+  - [CHANGELOG.md](CHANGELOG.md)
+
+---
+
 ## Overview
 
 MAD Entertrainment takes the security of its platform and the safety of its users

@@ -2,6 +2,7 @@
 
 import { useState, useRef, useCallback } from 'react';
 
+import { Button } from '@mad/ui';
 import { adminApiClient } from '@/lib/api/client';
 
 interface CloudinaryAsset {
@@ -120,25 +121,38 @@ export function CloudinaryUpload({
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={value.url} alt={value.alt ?? 'Uploaded image'} width={400} height={300} className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
-            <button
+            <Button
               type="button"
+              variant="outline"
+              size="sm"
               onClick={() => inputRef.current?.click()}
-              className="px-3 py-2 bg-white/20 backdrop-blur text-white text-xs font-medium rounded-lg hover:bg-white/30 transition-colors"
+              className="px-3 py-2 bg-white/20 backdrop-blur text-white text-xs font-medium rounded-lg hover:bg-white/30 transition-colors border-0"
             >
               Replace
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
+              variant="danger"
+              size="sm"
               onClick={handleRemove}
               className="px-3 py-2 bg-error/70 backdrop-blur text-white text-xs font-medium rounded-lg hover:bg-error transition-colors"
             >
               Remove
-            </button>
+            </Button>
           </div>
         </div>
       ) : (
         /* Drop zone */
         <div
+          role="button"
+          tabIndex={0}
+          aria-label="Upload media file"
+          onKeyDown={(e) => {
+            if ((e.key === 'Enter' || e.key === ' ') && uploadState !== 'uploading') {
+              e.preventDefault();
+              inputRef.current?.click();
+            }
+          }}
           onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
           onDragLeave={() => setIsDragging(false)}
           onDrop={handleDrop}

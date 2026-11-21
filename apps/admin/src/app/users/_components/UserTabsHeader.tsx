@@ -1,5 +1,7 @@
 import React from 'react';
 
+import { Button } from '@mad/ui';
+
 interface UserTabsHeaderProps {
   activeTab: 'bookings' | 'tickets' | 'refunds';
   onTabChange: (tab: 'bookings' | 'tickets' | 'refunds') => void;
@@ -17,36 +19,39 @@ export default function UserTabsHeader({
 }: UserTabsHeaderProps) {
   return (
     <div className="flex border-b border-border-subtle gap-4">
-      <button
+      <Button
+        variant="ghost"
         onClick={() => onTabChange('bookings')}
-        className={`py-2 px-1 text-sm font-semibold border-b-2 transition-all ${
+        className={`py-2 px-1 text-sm font-semibold border-b-2 rounded-none transition-all ${
           activeTab === 'bookings'
             ? 'border-accent-purple text-white'
             : 'border-transparent text-text-muted hover:text-white'
         }`}
       >
         Booking History ({bookingsCount})
-      </button>
-      <button
+      </Button>
+      <Button
+        variant="ghost"
         onClick={() => onTabChange('tickets')}
-        className={`py-2 px-1 text-sm font-semibold border-b-2 transition-all ${
+        className={`py-2 px-1 text-sm font-semibold border-b-2 rounded-none transition-all ${
           activeTab === 'tickets'
             ? 'border-accent-purple text-white'
             : 'border-transparent text-text-muted hover:text-white'
         }`}
       >
         Tickets Logs ({ticketsCount})
-      </button>
-      <button
+      </Button>
+      <Button
+        variant="ghost"
         onClick={() => onTabChange('refunds')}
-        className={`py-2 px-1 text-sm font-semibold border-b-2 transition-all ${
+        className={`py-2 px-1 text-sm font-semibold border-b-2 rounded-none transition-all ${
           activeTab === 'refunds'
             ? 'border-accent-purple text-white'
             : 'border-transparent text-text-muted hover:text-white'
         }`}
       >
         Refunds Logs ({refundsCount})
-      </button>
+      </Button>
     </div>
   );
 }

@@ -1,3 +1,6 @@
+import type { IBooking } from '../../models/booking.schema';
+import type { IPayment } from '../../models/payment.schema';
+
 /**
  * Shared payment webhook payload types.
  *
@@ -7,6 +10,26 @@
  * All consumers (controllers, payment-refund.service) import from here.
  * payment.service.ts re-exports these for backward compatibility.
  */
+
+export interface PaymentWebhookPersistence {
+  confirmBooking(
+    booking: IBooking,
+    payment: IPayment
+  ): Promise<IBooking | null>;
+  failPaymentAndReleaseInventory(
+    booking: IBooking,
+    payment: IPayment,
+    reason: string,
+    source?: 'manual' | 'auto_recovery',
+    code?:
+      | 'AMOUNT_MISMATCH'
+      | 'BOOKING_REFERENCE_MISMATCH'
+      | 'BOOKING_ID_MISMATCH'
+      | 'CURRENCY_MISMATCH'
+      | 'PAYMENT_VALIDATION_FAILURE'
+      | 'EXPIRED_BOOKING_CAPACITY_UNAVAILABLE'
+  ): Promise<void>;
+}
 
 export interface StripeChargeWebhookPayload {
   id: string;

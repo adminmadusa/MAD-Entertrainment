@@ -38,6 +38,8 @@ vi.mock('../../controllers/admin/diagnostics.controller', () => ({
   drainQueueHandler: vi.fn(),
   listDeadLetterJobs: vi.fn(),
   getDeadLetterJob: vi.fn(),
+  listEmailTemplates: vi.fn(),
+  previewEmailTemplate: vi.fn(),
 }));
 
 vi.mock('../../controllers/admin/refund.controller', () => ({

@@ -200,7 +200,7 @@ export function validateEnv(): Readonly<Env> {
 
   const result = envSchema.safeParse(process.env);
   if (!result.success) {
-    const details = result.error.errors
+    const details = result.error.issues
       .map((issue) => `${issue.path.join('.')}: ${issue.message}`)
       .join('; ');
     throw new Error(`Invalid environment variables: ${details}`);

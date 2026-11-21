@@ -37,6 +37,8 @@ export function EventFormStackedView({ formState }: EventFormStackedViewProps) {
     setCountryCode,
     convenienceFee,
     setConvenienceFee,
+    taxPercentage,
+    setTaxPercentage,
     organizerName,
     setOrganizerName,
     highlightsInput,
@@ -103,6 +105,8 @@ export function EventFormStackedView({ formState }: EventFormStackedViewProps) {
         setCountryCode={setCountryCode}
         convenienceFee={convenienceFee}
         setConvenienceFee={setConvenienceFee}
+        taxPercentage={taxPercentage}
+        setTaxPercentage={setTaxPercentage}
       />
 
       <EventAdditionalDetailsCard

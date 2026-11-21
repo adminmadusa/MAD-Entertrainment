@@ -42,7 +42,8 @@ export async function processEmailDispatch(
   bookingId?: string,
   _eventId?: string,
   notificationType?: NotificationType,
-  messageId?: string
+  messageId?: string,
+  headers?: Record<string, string>
 ): Promise<void> {
   // 1. Decode base64 attachments back into Buffer instances
   const parsedAttachments = attachments?.map((att) => ({
@@ -58,6 +59,7 @@ export async function processEmailDispatch(
     html,
     attachments: parsedAttachments,
     messageId,
+    headers,
   });
 
   // Notification DB log is handled at the handleJobExecution wrapper level.
@@ -65,7 +67,7 @@ export async function processEmailDispatch(
 }
 
 export async function handleJobExecution(jobId: string, data: any, attemptsMade: number, queueName: string = QUEUE_NAME): Promise<void> {
-  const { to, subject, html, attachments, bookingId, eventId, notificationType } = data;
+  const { to, subject, html, attachments, bookingId, eventId, notificationType, headers } = data;
   logger.info({ jobId, recipient: to, attemptsMade }, "Email worker started");
 
   if (!to || !subject || !html) {
@@ -169,7 +171,7 @@ export async function handleJobExecution(jobId: string, data: any, attemptsMade:
         name: `worker:${queueName}`,
       },
       async () => {
-        await processEmailDispatch(to, subject, html, attachments, bookingId, eventId, notificationType, messageId);
+        await processEmailDispatch(to, subject, html, attachments, bookingId, eventId, notificationType, messageId, headers);
       }
     );
 

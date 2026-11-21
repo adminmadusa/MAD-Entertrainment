@@ -2,6 +2,7 @@
 
 import React from 'react';
 
+import { Button } from '@mad/ui';
 import { formatDateTime } from '@mad/utils';
 
 export interface IndividualTicket {
@@ -37,13 +38,15 @@ export function BookingIndividualTickets({
       <div className="flex items-center justify-between">
         <h4 className="text-text-muted font-medium text-xs uppercase tracking-wider">Individual Tickets & QR Status</h4>
         {canMutateBookings && isConfirmed && (
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="sm"
             onClick={onSelectAllActive}
-            className="text-[10px] text-accent-purple hover:text-white transition-colors uppercase font-semibold"
+            className="text-[10px] text-accent-purple hover:text-white uppercase font-semibold h-auto px-2 py-1"
           >
             Select All Active
-          </button>
+          </Button>
         )}
       </div>
       <div className="space-y-1.5">

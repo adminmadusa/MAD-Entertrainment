@@ -5,7 +5,7 @@ import { Socket } from 'socket.io';
 
 import { SeatStatus } from '@mad/shared';
 
-import { getRedis, isRedisConnected } from '../config/redis';
+import { getRedis, isRedisConnected, releaseLockAtomic } from '../config/redis';
 import { Booking } from '../models/booking.schema';
 import { Event } from '../models/event.schema';
 import { SeatLayout } from '../models/seat-layout.schema';
@@ -82,10 +82,11 @@ async function releaseLockKeys(keys: string[], sessionId: string): Promise<strin
   const released: string[] = [];
 
   for (const key of keys) {
-    const currentLock = await redis.get(key);
-    if (currentLock === sessionId) {
-      await redis.del(key);
-      released.push(key);
+    try {
+      const ok = await releaseLockAtomic(redis, key, sessionId);
+      if (ok) released.push(key);
+    } catch (err) {
+      logger.warn({ err, key, sessionId }, 'Failed to release lock atomically');
     }
   }
 
@@ -95,9 +96,7 @@ async function releaseLockKeys(keys: string[], sessionId: string): Promise<strin
 // Release locks in Redis, but only when still owned by this session.
 async function releaseLocks(eventId: string, seatIds: string[], sessionId: string): Promise<string[]> {
   const keys = seatIds.map((id) => getSeatLockKey(eventId, id));
-  if (keys.length === 0) return [];
-
-  return releaseLockKeys(keys, sessionId);
+  return keys.length > 0 ? releaseLockKeys(keys, sessionId) : [];
 }
 
 async function filterSeatsStillReservedInDatabase(eventId: string, seatIds: string[]): Promise<string[]> {

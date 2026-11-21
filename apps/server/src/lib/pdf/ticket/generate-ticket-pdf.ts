@@ -58,8 +58,11 @@ export async function generateTicketPDF(
         status: "active",
       }).sort({ createdAt: 1 });
     }
-  } catch (_err) {
-    // Graceful fallback to empty list
+  } catch (err) {
+    if (role === "attendee") {
+      throw err;
+    }
+    // Graceful fallback to empty list for purchaser
   }
 
   // Fallback to a single placeholder ticket representing the booking if no records found

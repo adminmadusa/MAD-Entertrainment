@@ -1,11 +1,15 @@
-import { BookingStatus, ReservationStatus, SeatStatus } from '@mad/shared';
+import { FilterQuery, Types } from 'mongoose';
+
+import { BookingStatus, EventStatus, ReservationStatus, SeatStatus } from '@mad/shared';
 
 import { getRedis, isRedisConnected } from '../../config/redis';
 import { Booking } from '../../models/booking.schema';
-import { Event } from '../../models/event.schema';
+import { Event, IEvent } from '../../models/event.schema';
 import { Reservation } from '../../models/reservation.schema';
 import { SeatLayout } from '../../models/seat-layout.schema';
 import { logger } from '../../utils/logger';
+
+export const INVENTORY_RECONCILIATION_WINDOW_MS = 48 * 60 * 60 * 1000;
 
 export class SeatConsistencyService {
   static async countRedisLocks(): Promise<number> {
@@ -83,8 +87,52 @@ export class SeatConsistencyService {
     return repaired;
   }
 
+  static async getInventoryCandidateFilter(
+    windowMs = INVENTORY_RECONCILIATION_WINDOW_MS
+  ): Promise<FilterQuery<IEvent>> {
+    const windowStart = new Date(Date.now() - windowMs);
+    let recentBookingEventIds: any[] = [];
+    try {
+      if (typeof Booking.distinct === 'function') {
+        recentBookingEventIds = await Booking.distinct('eventId', {
+          updatedAt: { $gte: windowStart },
+          eventId: { $exists: true, $ne: null },
+        });
+      }
+    } catch (err) {
+      logger.warn({ err }, 'Consistency: Failed to query distinct eventIds for inventory candidate filter');
+    }
+
+    const isValidObjectId = (id: any): boolean => {
+      if (!id) return false;
+      if (id instanceof Types.ObjectId) return true;
+      if (typeof id === 'string') {
+        return /^[0-9a-fA-F]{24}$/.test(id);
+      }
+      return false;
+    };
+
+    const validEventIds = (recentBookingEventIds || []).filter(isValidObjectId);
+
+    const orClauses: FilterQuery<IEvent>[] = [
+      { status: EventStatus.PUBLISHED },
+      { reservedCount: { $gt: 0 } },
+      { updatedAt: { $gte: windowStart } },
+    ];
+
+    if (validEventIds.length > 0) {
+      orClauses.push({ _id: { $in: validEventIds } } as FilterQuery<IEvent>);
+    }
+
+    return {
+      isDeleted: { $ne: true },
+      $or: orClauses,
+    };
+  }
+
   static async countEventInventoryMismatches(): Promise<number> {
-    const events = await Event.find({}).select('_id soldCount reservedCount totalCapacity isSoldOut').lean();
+    const filter = await this.getInventoryCandidateFilter();
+    const events = await Event.find(filter).select('_id soldCount reservedCount totalCapacity isSoldOut').lean();
     let mismatches = 0;
 
     for (const event of events) {
@@ -120,7 +168,8 @@ export class SeatConsistencyService {
   }
 
   static async repairEventInventoryMismatches(): Promise<number> {
-    const events = await Event.find({}).select('_id soldCount reservedCount totalCapacity isSoldOut ticketTiers eventVersion');
+    const filter = await this.getInventoryCandidateFilter();
+    const events = await Event.find(filter).select('_id soldCount reservedCount totalCapacity isSoldOut ticketTiers eventVersion');
     let repairedCount = 0;
 
     for (const event of events) {

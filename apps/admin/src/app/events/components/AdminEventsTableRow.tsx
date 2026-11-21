@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { EVENT_STATUS_METADATA, EVENT_STATUS_TRANSITIONS, EventStatus } from '@mad/shared';
-import { TableRow, TableCell, Checkbox } from '@mad/ui';
+import { TableRow, TableCell, Checkbox, Button } from '@mad/ui';
 import { formatEventDate } from '@mad/utils';
 import type { AdminEvent } from '@/lib/api/admin/event.service';
 
@@ -166,13 +166,16 @@ export function AdminEventsTableRow({
                 Edit
               </Link>
 
-              <button
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
                 onClick={onDeleteClick}
                 id={`event-delete-btn-${event._id}`}
-                className="px-3 py-1.5 text-xs font-medium glass border border-border-subtle rounded-lg text-text-secondary hover:text-red-400 hover:border-red-500/40 transition-all"
+                className="px-3 py-1.5 text-xs font-medium text-text-secondary hover:text-red-400"
               >
                 Delete
-              </button>
+              </Button>
             </div>
           )
         ) : (

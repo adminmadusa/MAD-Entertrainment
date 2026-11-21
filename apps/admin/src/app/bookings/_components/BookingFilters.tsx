@@ -3,6 +3,7 @@
 import { AdminBooking } from '@/lib/api/admin/booking.service';
 import { BookingStatus, getBookingStatusLabel } from '@mad/shared';
 import { Input, Button } from '@mad/ui';
+import { formatDate } from '@mad/utils';
 
 export interface BookingFiltersProps {
   search: string;
@@ -54,7 +55,7 @@ export default function BookingFilters({
         const keepUpdated = customer?.keepUpdated ? 'Yes' : 'No';
         const sendBestEvents = customer?.sendBestEvents ? 'Yes' : 'No';
         const eventTitle = (b.eventId as { title?: string })?.title?.replace(/,/g, '') ?? '—';
-        return `${b.bookingId},${firstName},${lastName},${email},${phone},${keepUpdated},${sendBestEvents},${eventTitle},${b.totalAmount},${getBookingStatusLabel(b.status)},${new Date(b.createdAt).toLocaleDateString('en-IN')}`;
+        return `${b.bookingId},${firstName},${lastName},${email},${phone},${keepUpdated},${sendBestEvents},${eventTitle},${b.totalAmount},${getBookingStatusLabel(b.status)},${formatDate(b.createdAt, { locale: 'en-IN' })}`;
       }),
     ].join('\n');
 

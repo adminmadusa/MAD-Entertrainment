@@ -1,12 +1,13 @@
 import { useRouter } from 'next/navigation';
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 
-import type { DJOperator, ImageAsset } from '@mad/types';
+import type { DJOperator } from '@mad/types';
 import { Alert, AdminFormActions } from '@mad/ui';
 
 import { DJBasicInfoCard } from './DJBasicInfoCard';
 import { DJMediaCard } from './DJMediaCard';
 import { DJSocialLinksCard } from './DJSocialLinksCard';
+import { useDJOperatorForm } from './useDJOperatorForm';
 
 interface DJOperatorFormProps {
   title: string;
@@ -32,105 +33,12 @@ export const DJOperatorForm: React.FC<DJOperatorFormProps> = ({
   isEdit = false,
 }) => {
   const router = useRouter();
-  const [error, setError] = useState('');
-
-  // Centralized State
-  const [name, setName] = useState('');
-  const [slug, setSlug] = useState('');
-  const [bio, setBio] = useState('');
-  const [specialties, setSpecialties] = useState('');
-  const [experienceYears, setExperienceYears] = useState('');
-  const [isActive, setIsActive] = useState(true);
-
-  // Social Links
-  const [instagram, setInstagram] = useState('');
-  const [soundcloud, setSoundcloud] = useState('');
-  const [youtube, setYoutube] = useState('');
-  const [facebook, setFacebook] = useState('');
-  const [twitter, setTwitter] = useState('');
-  const [spotify, setSpotify] = useState('');
-  const [website, setWebsite] = useState('');
-
-  // Media
-  const [profileImage, setProfileImage] = useState<ImageAsset | null>(null);
-  const [galleryImages, setGalleryImages] = useState<ImageAsset[]>([]);
-
-  // Synchronize API errors
-  useEffect(() => {
-    if (apiError) {
-      setError(apiError);
-    }
-  }, [apiError]);
-
-  // Prepopulate state when editing
-  useEffect(() => {
-    if (initialData) {
-      setName(initialData.name || '');
-      setSlug(initialData.slug || '');
-      setBio(initialData.bio || '');
-      setSpecialties(initialData.specialties?.join(', ') || '');
-      setExperienceYears(initialData.experienceYears !== undefined ? String(initialData.experienceYears) : '');
-      setIsActive(initialData.isActive ?? true);
-
-      const getSocialUrl = (platform: string) => {
-        const socialLinks = initialData.socialLinks as { platform: string; url: string }[] | undefined;
-        return socialLinks?.find((link) => link.platform === platform)?.url || '';
-      };
-      setInstagram(getSocialUrl('instagram'));
-      setSoundcloud(getSocialUrl('soundcloud'));
-      setYoutube(getSocialUrl('youtube'));
-      setFacebook(getSocialUrl('facebook'));
-      setTwitter(getSocialUrl('twitter'));
-      setSpotify(getSocialUrl('spotify'));
-      setWebsite(getSocialUrl('website'));
-
-      setProfileImage(initialData.profileImage || null);
-      setGalleryImages(initialData.galleryImages || []);
-    }
-  }, [initialData]);
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-
-    if (!name.trim()) {
-      setError('Name is required.');
-      return;
-    }
-
-    const cleanSlug = slug.trim()
-      ? slug.trim().toLowerCase().replace(/[^a-z0-9-]/g, '-')
-      : name.trim().toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
-
-    const specs = specialties.split(',').map((s) => s.trim()).filter(Boolean);
-    const links = [
-      ...(instagram.trim() ? [{ platform: 'instagram', url: instagram.trim() }] : []),
-      ...(soundcloud.trim() ? [{ platform: 'soundcloud', url: soundcloud.trim() }] : []),
-      ...(youtube.trim() ? [{ platform: 'youtube', url: youtube.trim() }] : []),
-      ...(facebook.trim() ? [{ platform: 'facebook', url: facebook.trim() }] : []),
-      ...(twitter.trim() ? [{ platform: 'twitter', url: twitter.trim() }] : []),
-      ...(spotify.trim() ? [{ platform: 'spotify', url: spotify.trim() }] : []),
-      ...(website.trim() ? [{ platform: 'website', url: website.trim() }] : []),
-    ];
-
-    const parsedExpYears = parseInt(experienceYears, 10);
-
-    const payload: Partial<DJOperator> = {
-      name: name.trim(),
-      slug: cleanSlug,
-      bio: bio.trim() || undefined,
-      specialties: specs.length > 0 ? specs : undefined,
-      experienceYears: isNaN(parsedExpYears) || parsedExpYears < 0 ? 0 : parsedExpYears,
-      profileImage: isEdit
-        ? ((profileImage === null ? null : profileImage) as unknown as DJOperator['profileImage'])
-        : (profileImage ?? undefined),
-      galleryImages: galleryImages ?? [],
-      socialLinks: links.length > 0 ? links : undefined,
-      isActive,
-    };
-
-    onSubmit(payload);
-  };
+  const { error, handleSubmit, basicInfo, socialLinks, media } = useDJOperatorForm({
+    initialData,
+    apiError,
+    isEdit,
+    onSubmit,
+  });
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
@@ -156,43 +64,43 @@ export const DJOperatorForm: React.FC<DJOperatorFormProps> = ({
         )}
 
         <DJMediaCard
-          profileImage={profileImage}
-          setProfileImage={setProfileImage}
-          galleryImages={galleryImages}
-          setGalleryImages={setGalleryImages}
+          profileImage={media.profileImage}
+          setProfileImage={media.setProfileImage}
+          galleryImages={media.galleryImages}
+          setGalleryImages={media.setGalleryImages}
         />
 
         <DJBasicInfoCard
-          name={name}
-          setName={setName}
-          slug={slug}
-          setSlug={setSlug}
-          specialties={specialties}
-          setSpecialties={setSpecialties}
-          bio={bio}
-          setBio={setBio}
-          experienceYears={experienceYears}
-          setExperienceYears={setExperienceYears}
-          isEdit={isEdit}
+          name={basicInfo.name}
+          setName={basicInfo.setName}
+          slug={basicInfo.slug}
+          setSlug={basicInfo.setSlug}
+          specialties={basicInfo.specialties}
+          setSpecialties={basicInfo.setSpecialties}
+          bio={basicInfo.bio}
+          setBio={basicInfo.setBio}
+          experienceYears={basicInfo.experienceYears}
+          setExperienceYears={basicInfo.setExperienceYears}
+          isEdit={basicInfo.isEdit}
         />
 
         <DJSocialLinksCard
-          instagram={instagram}
-          setInstagram={setInstagram}
-          soundcloud={soundcloud}
-          setSoundcloud={setSoundcloud}
-          youtube={youtube}
-          setYoutube={setYoutube}
-          facebook={facebook}
-          setFacebook={setFacebook}
-          twitter={twitter}
-          setTwitter={setTwitter}
-          spotify={spotify}
-          setSpotify={setSpotify}
-          website={website}
-          setWebsite={setWebsite}
-          isActive={isActive}
-          setIsActive={setIsActive}
+          instagram={socialLinks.instagram}
+          setInstagram={socialLinks.setInstagram}
+          soundcloud={socialLinks.soundcloud}
+          setSoundcloud={socialLinks.setSoundcloud}
+          youtube={socialLinks.youtube}
+          setYoutube={socialLinks.setYoutube}
+          facebook={socialLinks.facebook}
+          setFacebook={socialLinks.setFacebook}
+          twitter={socialLinks.twitter}
+          setTwitter={socialLinks.setTwitter}
+          spotify={socialLinks.spotify}
+          setSpotify={socialLinks.setSpotify}
+          website={socialLinks.website}
+          setWebsite={socialLinks.setWebsite}
+          isActive={socialLinks.isActive}
+          setIsActive={socialLinks.setIsActive}
         />
 
         <AdminFormActions

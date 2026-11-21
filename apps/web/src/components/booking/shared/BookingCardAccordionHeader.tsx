@@ -31,6 +31,8 @@ export function BookingCardAccordionHeader({
 }: BookingCardAccordionHeaderProps) {
   return (
     <div
+      role="region"
+      tabIndex={-1}
       onClick={!isLapsed ? onToggleExpand : undefined}
       className={`p-3 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
         !isLapsed ? 'cursor-pointer' : ''

@@ -15,6 +15,7 @@ import { TicketValidationModal } from '@/components/scanner/TicketValidationModa
 import { useScannerState } from '@/hooks/useScannerState';
 import { adminGetEvents } from '@/lib/api/admin/event.service';
 import { EventStatus } from '@mad/shared';
+import { Button } from '@mad/ui';
 
 export default function ScannerPage() {
   const {
@@ -97,13 +98,14 @@ export default function ScannerPage() {
             </svg>
             <span>{syncResultSummary}</span>
           </div>
-          <button
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => setSyncResultSummary(null)}
-            className="text-text-muted hover:text-white transition-colors focus-ring rounded"
             aria-label="Dismiss sync result"
           >
             Dismiss
-          </button>
+          </Button>
         </div>
       )}
 

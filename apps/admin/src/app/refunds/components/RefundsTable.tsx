@@ -4,7 +4,7 @@ import React from 'react';
 
 import type { AdminRefund } from '@/lib/api/admin/refund.service';
 import { formatMoney } from '@mad/shared';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, EmptyState } from '@mad/ui';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, EmptyState, Button } from '@mad/ui';
 import { Receipt, Search } from '@mad/ui/icons';
 import { formatDateTime } from '@mad/utils';
 
@@ -82,12 +82,14 @@ export function RefundsTable({
         <TableCell className="py-3.5 px-4 text-text-muted text-xs">{formatDateTime(refund.createdAt)}</TableCell>
         <TableCell className="py-3.5 px-4">
           {canProcessRefund && refund.status === 'requested' && (
-            <button
+            <Button
+              variant="secondary"
+              size="sm"
               onClick={() => onProcess(refund)}
-              className="px-3 py-1.5 text-xs glass border border-accent-purple/30 rounded-lg text-accent-purple hover:bg-accent-purple/10 transition-all"
+              className="text-accent-purple border-accent-purple/30 hover:bg-accent-purple/10"
             >
               Process
-            </button>
+            </Button>
           )}
         </TableCell>
       </TableRow>

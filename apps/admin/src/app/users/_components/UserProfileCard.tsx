@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 
 import { UserDetailResponse } from '@/lib/api/admin/user.service';
+import { Button } from '@mad/ui';
 import { formatDateTime } from '@mad/utils';
 
 interface UserProfileCardProps {
@@ -57,17 +58,19 @@ export default function UserProfileCard({
                 {profile.isActive ? 'Active' : 'Suspended'}
               </span>
               {isToggleAllowed && (
-                <button
+                <Button
+                  variant={profile.isActive ? 'danger' : 'secondary'}
+                  size="sm"
                   onClick={onToggleClick}
                   disabled={isPending}
-                  className={`text-xs font-bold px-3 py-1.5 rounded-lg border transition-all ${
+                  className={
                     profile.isActive
                       ? 'border-error/30 text-red-400 hover:bg-error/10'
                       : 'border-green-500/30 text-green-400 hover:bg-green-500/10'
-                  }`}
+                  }
                 >
                   {profile.isActive ? 'Suspend' : 'Reactivate'}
-                </button>
+                </Button>
               )}
             </div>
           </div>
@@ -79,25 +82,29 @@ export default function UserProfileCard({
             <span className="text-text-muted">Email</span>
             <div className="flex items-center gap-1.5 font-mono">
               <span className="text-text-secondary">{profile.email}</span>
-              <button
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={() => handleCopy(profile.email, 'email')}
-                className="p-1 hover:bg-white/5 rounded text-[10px] text-accent-purple"
+                className="p-1 h-6 hover:bg-white/5 rounded text-[10px] text-accent-purple"
               >
                 {emailCopied ? 'Copied!' : 'Copy'}
-              </button>
+              </Button>
             </div>
           </div>
           <div className="flex items-center justify-between">
             <span className="text-text-muted">Mobile Number</span>
             <div className="flex items-center gap-1.5 font-mono">
               <span className="text-text-secondary">{profile.phone}</span>
-              <button
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={() => handleCopy(profile.phone, 'phone')}
-                className="p-1 hover:bg-white/5 rounded text-[10px] text-accent-purple"
+                className="p-1 h-6 hover:bg-white/5 rounded text-[10px] text-accent-purple"
                 disabled={profile.phone === '—'}
               >
                 {phoneCopied ? 'Copied!' : 'Copy'}
-              </button>
+              </Button>
             </div>
           </div>
           <div className="flex items-center justify-between">

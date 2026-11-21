@@ -114,6 +114,31 @@ export async function adminGetEmailLogs(params: { page?: number; limit?: number;
     }
   };
 }
+
+export interface EmailTemplateInfo {
+  id: string;
+  name: string;
+  category: string;
+}
+
+export interface EmailTemplatePreviewResponse {
+  templateId: string;
+  subject: string;
+  html: string;
+}
+
+export async function adminGetEmailTemplates(): Promise<EmailTemplateInfo[]> {
+  const { data } = await adminApiClient.get<{ data: EmailTemplateInfo[] }>('/admin/diagnostics/email-templates');
+  return data?.data || [];
+}
+
+export async function adminPreviewEmailTemplate(templateId: string): Promise<EmailTemplatePreviewResponse> {
+  const { data } = await adminApiClient.get<{ data: EmailTemplatePreviewResponse }>(
+    `/admin/diagnostics/email-templates/${templateId}/preview`
+  );
+  return data?.data;
+}
+
 export interface DeadLetterJobMetadata {
   _id: string;
   queueName: string;

@@ -2,6 +2,21 @@ import { execSync } from 'child_process';
 
 import type { NextConfig } from 'next';
 
+/**
+ * Resolves the destination URL for Next.js API proxy rewrites.
+ * Guarantees that the destination always preserves the `/api` prefix, regardless
+ * of whether `NEXT_PUBLIC_API_URL` is configured with `/api`, without `/api`,
+ * with trailing slashes, or omitted entirely.
+ */
+export function resolveApiRewriteDestination(
+  rawApiUrl: string | undefined = process.env.NEXT_PUBLIC_API_URL,
+  fallback = 'http://localhost:3001/api'
+): string {
+  const target = (rawApiUrl && rawApiUrl.trim()) || fallback;
+  const sanitizedBase = target.replace(/\/+$/, '').replace(/\/api$/, '');
+  return `${sanitizedBase}/api/:path*`;
+}
+
 const nextConfig: NextConfig = {
   // ─── Stable Build ID (prevents stale chunk mismatches) ─────
   generateBuildId: async () => {
@@ -103,7 +118,7 @@ const nextConfig: NextConfig = {
     const csp = [
       "default-src 'self'",
       "script-src 'self' 'unsafe-inline' https://accounts.google.com https://checkout.razorpay.com https://js.stripe.com",
-      "style-src 'self' 'unsafe-inline'",
+      "style-src 'self' 'unsafe-inline' https://accounts.google.com",
       "font-src 'self'",
       "img-src 'self' data: blob: https://res.cloudinary.com https://images.unsplash.com",
       "connect-src 'self' https://accounts.google.com https://api.razorpay.com https://api.stripe.com",
@@ -182,8 +197,8 @@ const nextConfig: NextConfig = {
     return [
       {
         source: '/api/:path*',
-        // Proxy to the actual backend if NEXT_PUBLIC_API_URL is configured, else fallback to local
-        destination: `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'}/:path*`,
+        // Preserve /api prefix regardless of whether NEXT_PUBLIC_API_URL includes it
+        destination: resolveApiRewriteDestination(),
       },
     ];
   },

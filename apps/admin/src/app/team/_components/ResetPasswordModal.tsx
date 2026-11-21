@@ -3,7 +3,7 @@
 import { useState } from 'react';
 
 import type { Admin } from '@mad/types';
-import { Modal } from '@mad/ui';
+import { Modal, Button } from '@mad/ui';
 
 const inputCls =
   'w-full px-4 py-2.5 rounded-xl bg-background border border-border-subtle text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple transition-colors';
@@ -84,13 +84,15 @@ export default function ResetPasswordModal({
                 required
                 className={inputCls}
               />
-              <button
+              <Button
                 type="button"
+                variant="ghost"
+                size="sm"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3.5 top-3 text-text-muted hover:text-white text-xs font-semibold"
+                className="absolute right-1.5 top-1.5 text-text-muted hover:text-white text-xs font-semibold h-7 px-2"
               >
                 {showPassword ? 'Hide' : 'Show'}
-              </button>
+              </Button>
             </div>
             <p className="text-[10px] text-text-muted leading-relaxed">
               Must contain at least 8 chars, 1 uppercase, 1 lowercase, 1 number, and 1 special character.
@@ -110,20 +112,23 @@ export default function ResetPasswordModal({
           </div>
 
           <div className="flex gap-3 pt-2">
-            <button
+            <Button
               type="button"
+              variant="secondary"
               onClick={onClose}
-              className="flex-1 py-2.5 glass border border-border-subtle rounded-xl text-sm font-medium text-text-secondary hover:text-white transition-colors"
+              className="flex-1"
             >
               Cancel
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
+              variant="primary"
               disabled={isPending}
-              className="flex-1 py-2.5 btn-gradient text-white font-bold rounded-xl shadow-glow-sm disabled:opacity-60 transition-all text-sm"
+              isLoading={isPending}
+              className="flex-1"
             >
-              {isPending ? 'Resetting...' : 'Confirm Reset'}
-            </button>
+              Confirm Reset
+            </Button>
           </div>
         </form>
     </Modal>

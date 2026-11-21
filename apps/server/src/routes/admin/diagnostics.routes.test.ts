@@ -14,6 +14,8 @@ vi.mock('../../controllers/admin/diagnostics.controller', () => ({
   pauseQueueHandler: vi.fn((req: any, res: any) => res.status(200).json({ success: true })),
   resumeQueueHandler: vi.fn((req: any, res: any) => res.status(200).json({ success: true })),
   drainQueueHandler: vi.fn((req: any, res: any) => res.status(200).json({ success: true })),
+  listEmailTemplates: vi.fn((req: any, res: any) => res.status(200).json({ success: true })),
+  previewEmailTemplate: vi.fn((req: any, res: any) => res.status(200).json({ success: true })),
 }));
 
 vi.mock('../../middleware/auth.middleware', () => ({

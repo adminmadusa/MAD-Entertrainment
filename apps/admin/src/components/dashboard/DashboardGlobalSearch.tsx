@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 
-import { BOOKING_REFERENCE_REGEX } from '@mad/shared';
+import { BOOKING_REFERENCE_REGEX, EMAIL_REGEX, BOOKING_ERROR_MESSAGES } from '@mad/shared';
 
 export function DashboardGlobalSearch() {
   const router = useRouter();
@@ -16,16 +16,15 @@ export function DashboardGlobalSearch() {
     const query = globalSearchQuery.trim();
     if (!query) return;
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const refRegex = new RegExp(BOOKING_REFERENCE_REGEX.source, 'i');
 
-    if (emailRegex.test(query)) {
+    if (EMAIL_REGEX.test(query)) {
       router.push(`/bookings?search=${encodeURIComponent(query)}`);
     } else if (refRegex.test(query)) {
       const normalizedRef = query.toUpperCase();
       router.push(`/bookings?search=${encodeURIComponent(normalizedRef)}`);
     } else {
-      setGlobalSearchError('Please enter a valid Booking Reference (MAD-YYYY-XXXXX) or Customer Email.');
+      setGlobalSearchError(BOOKING_ERROR_MESSAGES.GLOBAL_SEARCH_PROMPT);
     }
   };
 

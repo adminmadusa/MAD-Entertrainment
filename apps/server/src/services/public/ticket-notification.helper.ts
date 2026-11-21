@@ -1,6 +1,7 @@
 import { NotificationType } from '@mad/shared';
-import { getEnv } from '../../config/env';
+import { getPublicWebUrl } from '../../config/env';
 import { getQueueName } from '../../config/queue.config';
+import { ticketInvitationHtml } from '../../lib/email';
 import { logger } from '../../utils/logger';
 import { createNotificationSafe } from '../notification.service';
 import { QueueService } from '../queue.service';
@@ -13,23 +14,17 @@ export async function sendTicketAssignmentEmail(params: {
 }): Promise<void> {
   const { ticketId, normalizedEmail, booking, ticket } = params;
   try {
-    const frontendUrl = getEnv().FRONTEND_URL || 'http://localhost:3000';
-    const claimLink = `${frontendUrl}/claim?ticketId=${ticketId}`;
-    const subject = `Invitation to claim your ticket for ${booking.guestName || 'the event'}`;
-    const html = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
-        <h2 style="color: #a855f7;">You've Been Invited!</h2>
-        <p>Hi,</p>
-        <p>A ticket has been assigned to you. Click the link below to claim your ticket and access your entry QR code:</p>
-        <p style="text-align: center; margin: 30px 0;">
-          <a href="${claimLink}" style="background-color: #a855f7; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">Claim My Ticket</a>
-        </p>
-        <p>If the button doesn't work, copy and paste this URL into your browser:</p>
-        <p><a href="${claimLink}">${claimLink}</a></p>
-        <br/>
-        <p>MAD Entertainment Team</p>
-      </div>
-    `;
+    const webUrl = getPublicWebUrl();
+    const claimLink = `${webUrl}/claim?ticketId=${ticketId}`;
+    const eventTitle = ticket.eventTitle || 'MAD Event';
+    const subject = `Invitation to claim your ticket for ${ticket.eventTitle || booking.guestName || 'the event'}`;
+    const html = await ticketInvitationHtml({
+      recipientName: ticket.guestName || undefined,
+      inviterName: booking.guestName || undefined,
+      eventTitle,
+      claimUrl: claimLink,
+      tierName: ticket.tierName || ticket.tier || undefined,
+    });
 
     const jobId = `ticket-assign-${ticketId}-${Date.now()}`;
     await createNotificationSafe({

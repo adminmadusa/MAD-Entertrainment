@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 
 import { AdminRole } from '@mad/shared';
-import { Modal } from '@mad/ui';
+import { Modal, Button } from '@mad/ui';
 
 const inputCls =
   'w-full px-4 py-2.5 rounded-xl bg-background border border-border-subtle text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple transition-colors';
@@ -135,20 +135,23 @@ export default function InviteAdminModal({
           </div>
 
           <div className="flex gap-3 pt-2">
-            <button
+            <Button
               type="button"
+              variant="secondary"
               onClick={onClose}
-              className="flex-1 py-2.5 glass border border-border-subtle rounded-xl text-sm font-medium text-text-secondary hover:text-white transition-colors"
+              className="flex-1"
             >
               Cancel
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
+              variant="primary"
               disabled={isPending}
-              className="flex-1 py-2.5 btn-gradient text-white font-bold rounded-xl shadow-glow-sm disabled:opacity-60 transition-all text-sm"
+              isLoading={isPending}
+              className="flex-1"
             >
-              {isPending ? 'Inviting...' : 'Invite'}
-            </button>
+              Invite
+            </Button>
           </div>
         </form>
     </Modal>

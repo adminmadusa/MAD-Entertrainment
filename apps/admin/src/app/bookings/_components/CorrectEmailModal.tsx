@@ -4,7 +4,8 @@ import { useState } from 'react';
 
 import { AdminBooking } from '@/lib/api/admin/booking.service';
 import { extractApiError } from '@/lib/api/client';
-import { Modal } from '@mad/ui';
+import { EMAIL_REGEX, AUTH_ERROR_MESSAGES, BOOKING_ERROR_MESSAGES } from '@mad/shared';
+import { Modal, Button } from '@mad/ui';
 
 export interface CorrectEmailModalProps {
   booking: AdminBooking;
@@ -36,16 +37,15 @@ export default function CorrectEmailModal({
     setEditEmailError('');
 
     // Basic client-side email format validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(editEmailValue.trim())) {
-      setEditEmailError('Please enter a valid email address.');
+    if (!EMAIL_REGEX.test(editEmailValue.trim())) {
+      setEditEmailError(AUTH_ERROR_MESSAGES.INVALID_EMAIL);
       return;
     }
 
     // Reason length checks
     const reason = editReasonValue.trim();
     if (reason.length < 5 || reason.length > 500) {
-      setEditEmailError('Reason must be between 5 and 500 characters.');
+      setEditEmailError(BOOKING_ERROR_MESSAGES.REASON_LENGTH);
       return;
     }
 
@@ -113,20 +113,23 @@ export default function CorrectEmailModal({
           </div>
 
           <div className="flex gap-3 pt-2">
-            <button
+            <Button
               type="button"
+              variant="outline"
               onClick={onClose}
-              className="flex-1 py-2.5 glass border border-border-subtle rounded-xl text-sm font-medium text-text-secondary hover:text-white transition-colors"
+              className="flex-1 py-2.5 rounded-xl text-sm font-medium"
             >
               Cancel
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
+              variant="primary"
               disabled={isPending}
-              className="flex-1 py-2.5 btn-gradient text-white font-bold rounded-xl shadow-glow-sm disabled:opacity-60 transition-all text-sm"
+              isLoading={isPending}
+              className="flex-1 py-2.5 rounded-xl font-bold text-sm shadow-glow-sm"
             >
-              {isPending ? 'Saving...' : 'Save Changes'}
-            </button>
+              Save Changes
+            </Button>
           </div>
         </form>
     </Modal>

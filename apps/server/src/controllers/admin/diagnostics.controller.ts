@@ -11,6 +11,7 @@ import { sendSuccess } from '../../utils/response';
 
 export * from './dlq.controller';
 export * from './queue-control.controller';
+export * from './email-preview.controller';
 
 export async function getConsistencyDiagnostics(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
@@ -40,7 +41,7 @@ export async function repairConsistency(req: Request, res: Response, next: NextF
       return next(AppError.forbidden('Super admin access required'));
     }
 
-    const report = await ConsistencyService.runRepairCycle();
+    const report = await ConsistencyService.runRepairCycle({ includeReport: true });
 
     auditLog({
       action: 'DIAGNOSTICS_REPAIR_TRIGGERED',

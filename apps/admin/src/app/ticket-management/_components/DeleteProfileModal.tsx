@@ -2,7 +2,7 @@ import React from 'react';
 
 import { extractApiError } from '@/lib/api/client';
 import type { TicketProfile } from '@mad/types';
-import { Modal } from '@mad/ui';
+import { Modal, Button } from '@mad/ui';
 
 interface DeleteProfileModalProps {
   deleteTarget: TicketProfile | null;
@@ -40,19 +40,22 @@ export function DeleteProfileModal({
             <p className="text-red-400 text-xs mb-3">{extractApiError(error).message}</p>
           )}
           <div className="flex gap-3">
-            <button
+            <Button
+              variant="secondary"
               onClick={onClose}
-              className="flex-1 py-2.5 glass border border-border-subtle rounded-xl text-sm font-medium text-text-secondary hover:text-white transition-colors"
+              className="flex-1"
             >
               Cancel
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="danger"
               onClick={() => onConfirmDelete(deleteTarget._id)}
               disabled={isPending}
-              className="flex-1 py-2.5 bg-error/80 hover:bg-error rounded-xl text-white text-sm font-medium transition-colors disabled:opacity-60"
+              isLoading={isPending}
+              className="flex-1"
             >
-              {isPending ? 'Deleting...' : 'Delete'}
-            </button>
+              Delete
+            </Button>
           </div>
         </div>
       )}

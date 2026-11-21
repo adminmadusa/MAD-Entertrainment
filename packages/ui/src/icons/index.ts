@@ -60,6 +60,8 @@ export {
   Settings,
   Bell,
   BellOff,
+  Smartphone,
+  Monitor,
 } from 'lucide-react';
 
 // Status & Feedback

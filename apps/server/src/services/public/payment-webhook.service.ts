@@ -1,38 +1,21 @@
 import { PaymentStatus } from '@mad/shared';
 
 import { getEnv } from '../../config/env';
-import { Booking, IBooking } from '../../models/booking.schema';
-import { Payment, IPayment } from '../../models/payment.schema';
+import { Booking } from '../../models/booking.schema';
+import { Payment } from '../../models/payment.schema';
 import { auditLog } from '../../utils/audit';
 import { logger } from '../../utils/logger';
 import { PaymentRefundService } from './payment-refund.service';
 import { PaymentValidationService } from './payment-validation.service';
 import type {
+  PaymentWebhookPersistence,
+  RazorpayRefundWebhookPayload,
   StripeChargeWebhookPayload,
   StripeRefundWebhookPayload,
-  RazorpayRefundWebhookPayload,
 } from './payment.types';
 import { confirmFromWebhookStripeHelper } from './payment/stripe-webhook-confirmation.helper';
 
-export interface PaymentWebhookPersistence {
-  confirmBooking(
-    booking: IBooking,
-    payment: IPayment
-  ): Promise<IBooking | null>;
-  failPaymentAndReleaseInventory(
-    booking: IBooking,
-    payment: IPayment,
-    reason: string,
-    source?: 'manual' | 'auto_recovery',
-    code?:
-      | 'AMOUNT_MISMATCH'
-      | 'BOOKING_REFERENCE_MISMATCH'
-      | 'BOOKING_ID_MISMATCH'
-      | 'CURRENCY_MISMATCH'
-      | 'PAYMENT_VALIDATION_FAILURE'
-      | 'EXPIRED_BOOKING_CAPACITY_UNAVAILABLE'
-  ): Promise<void>;
-}
+export type { PaymentWebhookPersistence };
 
 export class PaymentWebhookService {
   private static assertProductionPaymentIntegrity(

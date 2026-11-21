@@ -3,6 +3,7 @@
 import React from 'react';
 
 import type { AdminTier } from '@/lib/api/admin/tier.service';
+import { Button } from '@mad/ui';
 
 import { getTierIcon } from './tier-presets';
 
@@ -52,18 +53,20 @@ export function TierCardItem({
         <span className="text-xs text-text-muted font-mono mr-2">Pos: {tier.sortIndex ?? 0}</span>
         {canMutate && (
           <>
-            <button
+            <Button
+              variant="secondary"
+              size="sm"
               onClick={() => onEdit(tier)}
-              className="px-3 py-1.5 glass border border-border-subtle hover:border-white/20 text-xs font-semibold text-text-secondary hover:text-white rounded-xl transition-all"
             >
               Edit
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="danger"
+              size="sm"
               onClick={() => onDelete(tier._id)}
-              className="px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 text-xs font-semibold rounded-xl transition-all"
             >
               Delete
-            </button>
+            </Button>
           </>
         )}
       </div>

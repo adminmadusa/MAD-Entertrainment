@@ -1,8 +1,8 @@
 'use client';
 
-import { Modal, FloatingActionBar } from '@mad/ui';
 import { extractApiError } from '@/lib/api/client';
 import type { AdminEvent } from '@/lib/api/admin/event.service';
+import { Button, FloatingActionBar, Modal } from '@mad/ui';
 
 interface AdminEventsDeleteModalsProps {
   deleteTarget: AdminEvent | null;
@@ -59,19 +59,23 @@ export function AdminEventsDeleteModals({
               <p className="text-red-400 text-xs mb-3">{extractApiError(deleteError).message}</p>
             )}
             <div className="flex gap-3">
-              <button
+              <Button
+                type="button"
+                variant="outline"
                 onClick={onCloseDeleteModal}
-                className="flex-1 py-2.5 glass border border-border-subtle rounded-xl text-sm font-medium text-text-secondary hover:text-white transition-colors"
+                className="flex-1"
               >
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
+                type="button"
+                variant="danger"
                 onClick={() => onConfirmDelete(deleteTarget._id)}
                 disabled={isDeleting}
-                className="flex-1 py-2.5 bg-error/80 hover:bg-error rounded-xl text-white text-sm font-medium transition-colors disabled:opacity-60"
+                className="flex-1"
               >
                 {isDeleting ? 'Deleting...' : 'Delete'}
-              </button>
+              </Button>
             </div>
           </div>
         )}
@@ -97,31 +101,37 @@ export function AdminEventsDeleteModals({
           </p>
           <p className="text-error text-xs mb-5">This action cannot be undone.</p>
           <div className="flex gap-3">
-            <button
+            <Button
+              type="button"
+              variant="outline"
               onClick={onCloseBulkDeleteModal}
-              className="flex-1 py-2.5 glass border border-border-subtle rounded-xl text-sm font-medium text-text-secondary hover:text-white transition-colors"
+              className="flex-1"
             >
               Cancel
-            </button>
-            <button
+            </Button>
+            <Button
+              type="button"
+              variant="danger"
               onClick={onConfirmBulkDelete}
               disabled={isBulkDeleting}
-              className="flex-1 py-2.5 bg-error/80 hover:bg-error rounded-xl text-white text-sm font-medium transition-colors disabled:opacity-60"
+              className="flex-1"
             >
               {isBulkDeleting ? 'Deleting...' : `Delete ${selectedCount}`}
-            </button>
+            </Button>
           </div>
         </div>
       </Modal>
 
       <FloatingActionBar selectedCount={selectedCount} onClearSelection={onClearSelection}>
-        <button
+        <Button
+          type="button"
+          variant="danger"
+          size="sm"
           onClick={onOpenBulkDeleteModal}
           disabled={isBulkDeleting}
-          className="px-4 py-2 text-sm font-semibold bg-error/80 hover:bg-error text-white rounded-lg transition-colors disabled:opacity-50"
         >
           Delete Selected ({selectedCount})
-        </button>
+        </Button>
       </FloatingActionBar>
     </>
   );

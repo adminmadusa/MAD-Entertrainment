@@ -1,17 +1,7 @@
 import { adminApiClient } from '@/lib/api/client';
+import type { AdminTier } from '@mad/types';
 
-export interface AdminTier {
-  _id: string;
-  name: string;
-  slug: string;
-  icon?: string;
-  color?: string;
-  description?: string;
-  isActive?: boolean;
-  defaultVisibility?: boolean;
-  sortIndex?: number;
-  createdAt: string;
-}
+export type { AdminTier };
 
 export async function adminGetTiers(): Promise<AdminTier[]> {
   const { data } = await adminApiClient.get<{ data: AdminTier[] }>('/admin/tiers');

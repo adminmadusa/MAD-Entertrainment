@@ -101,12 +101,15 @@ export default function EditEventPage() {
     return (
       <div className="py-12 flex flex-col items-center justify-center gap-4 text-center">
         <p className="text-text-muted text-sm">Event not found or has been deleted.</p>
-        <button
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
           onClick={() => router.push('/events')}
-          className="px-4 py-2 text-sm rounded-xl bg-accent-purple/10 border border-accent-purple/30 text-accent-purple hover:bg-accent-purple/20 transition-colors"
+          className="text-accent-purple border-accent-purple/30 bg-accent-purple/10 hover:bg-accent-purple/20"
         >
           Back to Events
-        </button>
+        </Button>
       </div>
     );
   }
@@ -118,12 +121,15 @@ export default function EditEventPage() {
           <h1 className="text-2xl font-black">Edit Event</h1>
           <p className="text-text-muted text-sm mt-0.5">Modify event details and ticketing</p>
         </div>
-        <button
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
           onClick={() => router.back()}
-          className="text-text-muted text-sm hover:text-text-secondary transition-colors flex items-center gap-1.5"
+          className="text-text-muted hover:text-text-secondary flex items-center gap-1.5"
         >
           ← Back
-        </button>
+        </Button>
       </div>
 
 
