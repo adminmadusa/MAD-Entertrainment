@@ -2,6 +2,8 @@
 
 import React from 'react';
 
+import { Button } from '@mad/ui';
+
 import { COLOR_PRESETS, ICON_PRESETS, getTierIcon } from './tier-presets';
 
 interface TierAddFormProps {
@@ -102,12 +104,13 @@ export function TierAddForm({
             <label className="text-text-secondary text-xs font-bold block mb-1.5">Accent Color</label>
             <div className="flex flex-wrap gap-2 mb-2">
               {COLOR_PRESETS.map((preset) => (
-                <button
+                <Button
                   key={preset.hex}
                   type="button"
+                  variant="ghost"
                   onClick={() => setColorInput(preset.hex)}
                   title={preset.name}
-                  className={`w-6 h-6 rounded-full border-2 transition-all ${
+                  className={`w-6 h-6 p-0 rounded-full border-2 transition-all min-h-0 min-w-0 ${
                     colorInput === preset.hex ? 'scale-110 border-white shadow-glow-sm' : 'border-transparent hover:scale-105'
                   }`}
                   style={{ backgroundColor: preset.hex }}
@@ -127,9 +130,10 @@ export function TierAddForm({
             <label className="text-text-secondary text-xs font-bold block mb-1.5">Icon Badge</label>
             <div className="grid grid-cols-5 gap-2">
               {ICON_PRESETS.map((icon) => (
-                <button
+                <Button
                   key={icon.id}
                   type="button"
+                  variant="ghost"
                   onClick={() => setIconInput(icon.id)}
                   title={icon.label}
                   className={`p-2 rounded-xl border flex items-center justify-center transition-all ${
@@ -139,7 +143,7 @@ export function TierAddForm({
                   }`}
                 >
                   {getTierIcon(icon.id)}
-                </button>
+                </Button>
               ))}
             </div>
           </div>
@@ -169,13 +173,15 @@ export function TierAddForm({
             </div>
           </div>
 
-          <button
+          <Button
             type="submit"
+            variant="primary"
             disabled={isPending}
-            className="w-full py-3 btn-gradient text-white text-sm font-bold rounded-xl shadow-glow transition-all active:scale-[0.98] disabled:opacity-60"
+            isLoading={isPending}
+            className="w-full py-3"
           >
-            {isPending ? 'Saving...' : 'Save & Publish Tier'}
-          </button>
+            Save & Publish Tier
+          </Button>
         </form>
       </div>
     </div>

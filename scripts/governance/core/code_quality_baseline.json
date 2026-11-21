@@ -15,10 +15,6 @@
       "ruleId": "VAL-QUAL-001",
       "lineCount": 295
     },
-    "apps/admin/src/app/ticket-management/_components/EventCategoriesTab.tsx": {
-      "ruleId": "VAL-QUAL-001",
-      "lineCount": 276
-    },
     "apps/admin/src/components/AdminSidebar.tsx": {
       "ruleId": "VAL-QUAL-001",
       "lineCount": 267
