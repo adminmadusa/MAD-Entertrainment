@@ -379,10 +379,6 @@
       "ruleId": "VAL-QUAL-004",
       "lineCount": 281
     },
-    "apps/web/src/app/(auth)/dashboard/page.tsx": {
-      "ruleId": "VAL-QUAL-001",
-      "lineCount": 264
-    },
     "apps/web/src/app/events/[slug]/components/EventBookingFlow.tsx": {
       "ruleId": "VAL-QUAL-001",
       "lineCount": 273
@@ -414,10 +410,6 @@
     "apps/web/src/components/booking/shared/EntryPassGrid.tsx": {
       "ruleId": "VAL-QUAL-001",
       "lineCount": 268
-    },
-    "apps/web/src/components/common/EventCard.tsx": {
-      "ruleId": "VAL-QUAL-001",
-      "lineCount": 282
     },
     "apps/web/src/lib/api/client.test.ts": {
       "ruleId": "VAL-QUAL-006",
