@@ -5,7 +5,7 @@
 - **Version**: 1.0
 - **Repository**: MAD Entertrainment
 - **Review Cycle**: Quarterly
-- **Last Updated**: 2026-06-25
+- **Last Updated**: 2026-11-21
 - **Related Documents:**
   - [README.md](README.md)
   - [ARCHITECTURE.md](ARCHITECTURE.md)
@@ -16,6 +16,7 @@
   - [TESTING.md](TESTING.md)
   - [Architecture Decisions Index](docs/decisions/README.md)
   - [CHANGELOG.md](CHANGELOG.md)
+  - [Font Licenses](apps/server/src/lib/pdf/ticket/fonts/LICENSES.md)
 - **Supersedes**: None (Initial Release)
 
 ---
