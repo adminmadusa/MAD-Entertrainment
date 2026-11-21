@@ -1,6 +1,11 @@
 import { z } from 'zod';
 
-import { EventCategory, PopupTrigger } from '@mad/shared';
+import {
+  EventCategory,
+  PopupTrigger,
+  HEX_COLOR_REGEX,
+  VALIDATION_ERROR_MESSAGES,
+} from '@mad/shared';
 import { objectIdSchema } from '../common.validator';
 import { adminIdParamSchema } from './operations.validator';
 
@@ -129,7 +134,7 @@ export const updateCategorySchema = z.object({
 const tierBodySchema = z.object({
   name: z.string().trim().min(1, 'Tier name is required').max(100),
   icon: z.enum(['ticket', 'star', 'medal', 'crown', 'lock', 'users', 'heart', 'clock', 'gift']).optional(),
-  color: z.string().trim().regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, 'Invalid hex color format').optional(),
+  color: z.string().trim().regex(HEX_COLOR_REGEX, VALIDATION_ERROR_MESSAGES.INVALID_HEX_COLOR).optional(),
   description: z.string().trim().max(500).optional(),
   isActive: z.boolean().optional(),
   defaultVisibility: z.boolean().optional(),

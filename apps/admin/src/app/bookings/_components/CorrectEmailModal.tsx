@@ -4,6 +4,7 @@ import { useState } from 'react';
 
 import { AdminBooking } from '@/lib/api/admin/booking.service';
 import { extractApiError } from '@/lib/api/client';
+import { EMAIL_REGEX, AUTH_ERROR_MESSAGES, BOOKING_ERROR_MESSAGES } from '@mad/shared';
 import { Modal } from '@mad/ui';
 
 export interface CorrectEmailModalProps {
@@ -36,16 +37,15 @@ export default function CorrectEmailModal({
     setEditEmailError('');
 
     // Basic client-side email format validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(editEmailValue.trim())) {
-      setEditEmailError('Please enter a valid email address.');
+    if (!EMAIL_REGEX.test(editEmailValue.trim())) {
+      setEditEmailError(AUTH_ERROR_MESSAGES.INVALID_EMAIL);
       return;
     }
 
     // Reason length checks
     const reason = editReasonValue.trim();
     if (reason.length < 5 || reason.length > 500) {
-      setEditEmailError('Reason must be between 5 and 500 characters.');
+      setEditEmailError(BOOKING_ERROR_MESSAGES.REASON_LENGTH);
       return;
     }
 

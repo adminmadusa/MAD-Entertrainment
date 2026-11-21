@@ -1,4 +1,13 @@
 import { z } from 'zod';
+import { PASSWORD_PATTERNS, AUTH_ERROR_MESSAGES } from '@mad/shared';
+
+const adminPasswordSchema = z
+  .string()
+  .min(8, AUTH_ERROR_MESSAGES.PASSWORD_MIN_LENGTH)
+  .regex(PASSWORD_PATTERNS.UPPERCASE, AUTH_ERROR_MESSAGES.PASSWORD_UPPERCASE)
+  .regex(PASSWORD_PATTERNS.LOWERCASE, AUTH_ERROR_MESSAGES.PASSWORD_LOWERCASE)
+  .regex(PASSWORD_PATTERNS.NUMBER, AUTH_ERROR_MESSAGES.PASSWORD_NUMBER)
+  .regex(PASSWORD_PATTERNS.SPECIAL, AUTH_ERROR_MESSAGES.PASSWORD_SPECIAL);
 
 export const adminLoginSchema = z.object({
   body: z.object({
@@ -12,13 +21,7 @@ export const createAdminSchema = z.object({
     name: z.string().trim().min(1, 'Name is required'),
     email: z.string().email('Invalid email format'),
     role: z.enum(['super_admin', 'admin', 'manager', 'support', 'scanner']),
-    password: z
-      .string()
-      .min(8, 'Password must be at least 8 characters long')
-      .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
-      .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
-      .regex(/[0-9]/, 'Password must contain at least one number')
-      .regex(/[^A-Za-z0-9]/, 'Password must contain at least one special character'),
+    password: adminPasswordSchema,
   }),
 });
 
@@ -37,12 +40,7 @@ export const updateAdminRoleSchema = z.object({
 
 export const resetAdminPasswordSchema = z.object({
   body: z.object({
-    password: z
-      .string()
-      .min(8, 'Password must be at least 8 characters long')
-      .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
-      .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
-      .regex(/[0-9]/, 'Password must contain at least one number')
-      .regex(/[^A-Za-z0-9]/, 'Password must contain at least one special character'),
+    password: adminPasswordSchema,
   }),
 });
+
