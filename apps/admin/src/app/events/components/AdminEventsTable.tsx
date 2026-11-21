@@ -2,21 +2,20 @@
 
 import Link from 'next/link';
 import {
-  Table,
-  TableHeader,
-  TableBody,
-  TableRow,
-  TableHead,
-  TableCell,
+  Button,
   EmptyState,
-  Checkbox,
+  Table,
+  TableBody,
+  TableCell,
   TablePagination,
+  TableRow,
 } from '@mad/ui';
 import { CalendarDays, Search } from '@mad/ui/icons';
 import { extractApiError } from '@/lib/api/client';
 import type { AdminEvent } from '@/lib/api/admin/event.service';
 import type { EventStatus } from '@mad/shared';
 
+import { AdminEventsTableHeader } from './AdminEventsTableHeader';
 import { AdminEventsTableRow } from './AdminEventsTableRow';
 
 interface AdminEventsTableProps {
@@ -110,12 +109,15 @@ export function AdminEventsTable({
               title="Unable to load events"
               description={errorMessage}
               action={
-                <button
+                <Button
+                  type="button"
+                  variant="primary"
+                  size="sm"
                   onClick={() => refetch()}
-                  className="px-4 py-2 mt-2 text-sm font-medium text-white bg-accent-purple hover:bg-accent-purple/90 rounded-xl transition-colors"
+                  className="mt-2"
                 >
                   Retry Loading
-                </button>
+                </Button>
               }
             />
           </TableCell>
@@ -175,88 +177,12 @@ export function AdminEventsTable({
   return (
     <div className="glass rounded-2xl border border-border-subtle overflow-x-auto">
       <Table className="min-w-[900px]">
-        <TableHeader stickyHeader>
-          <TableRow>
-            <TableHead sticky="start" className="py-3.5 px-5 w-12">
-              <Checkbox
-                checked={bulkSelection.allSelected}
-                indeterminate={bulkSelection.indeterminate}
-                onChange={() =>
-                  bulkSelection.allSelected
-                    ? bulkSelection.clearSelection()
-                    : bulkSelection.selectAll()
-                }
-                aria-label="Select all events on this page"
-              />
-            </TableHead>
-            <TableHead
-              onClick={() => onSort('title')}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  onSort('title');
-                }
-              }}
-              tabIndex={0}
-              role="columnheader"
-              aria-sort={
-                sortField === 'title'
-                  ? sortOrder === 'asc'
-                    ? 'ascending'
-                    : 'descending'
-                  : 'none'
-              }
-              className="py-3.5 px-5 cursor-pointer hover:text-white transition-colors select-none focus:outline-none focus-visible:ring-1 focus-visible:ring-accent-purple rounded"
-            >
-              Event {sortField === 'title' ? (sortOrder === 'asc' ? '▲' : '▼') : ''}
-            </TableHead>
-            <TableHead className="py-3.5 px-4 text-text-secondary select-none">Category</TableHead>
-            <TableHead
-              onClick={() => onSort('startDate')}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  onSort('startDate');
-                }
-              }}
-              tabIndex={0}
-              role="columnheader"
-              aria-sort={
-                sortField === 'startDate'
-                  ? sortOrder === 'asc'
-                    ? 'ascending'
-                    : 'descending'
-                  : 'none'
-              }
-              className="py-3.5 px-4 cursor-pointer hover:text-white transition-colors select-none focus:outline-none focus-visible:ring-1 focus-visible:ring-accent-purple rounded"
-            >
-              Event Starts {sortField === 'startDate' ? (sortOrder === 'asc' ? '▲' : '▼') : ''}
-            </TableHead>
-            <TableHead
-              onClick={() => onSort('status')}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  onSort('status');
-                }
-              }}
-              tabIndex={0}
-              role="columnheader"
-              aria-sort={
-                sortField === 'status'
-                  ? sortOrder === 'asc'
-                    ? 'ascending'
-                    : 'descending'
-                  : 'none'
-              }
-              className="py-3.5 px-4 cursor-pointer hover:text-white transition-colors select-none focus:outline-none focus-visible:ring-1 focus-visible:ring-accent-purple rounded"
-            >
-              Status {sortField === 'status' ? (sortOrder === 'asc' ? '▲' : '▼') : ''}
-            </TableHead>
-
-            <TableHead className="py-3.5 px-5 text-right select-none">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
+        <AdminEventsTableHeader
+          bulkSelection={bulkSelection}
+          sortField={sortField}
+          sortOrder={sortOrder}
+          onSort={onSort}
+        />
         <TableBody>{renderTableBody()}</TableBody>
       </Table>
 
