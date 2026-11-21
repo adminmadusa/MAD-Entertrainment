@@ -22,7 +22,7 @@ export const bookingReferenceParamSchema = z.object({
 export const createPaymentIntentSchema = z.object({
   bookingId: bookingReferenceSchema,
   gateway: z.enum(['stripe', 'razorpay'], {
-    error: "Gateway must be 'stripe' or 'razorpay'",
+    message: "Gateway must be 'stripe' or 'razorpay'",
   }),
 }).strict();
 
