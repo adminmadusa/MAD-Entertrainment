@@ -10,7 +10,7 @@ import { extractApiError } from '@/lib/api/client';
 import { useAdminAuth } from '@/providers/AdminAuthProvider';
 import { AdminRole } from '@mad/shared';
 import type { Admin } from '@mad/types';
-import { ErrorState, LoadingState } from '@mad/ui';
+import { ErrorState, LoadingState, Button } from '@mad/ui';
 
 import ChangeRoleModal from './_components/ChangeRoleModal';
 import EditAdminModal from './_components/EditAdminModal';
@@ -136,12 +136,9 @@ export default function AdminTeamPage() {
           </p>
         </div>
         {currentAdmin?.role === AdminRole.SUPER_ADMIN && (
-          <button
-            onClick={() => setIsInviteOpen(true)}
-            className="px-4 py-2.5 btn-gradient text-white font-semibold text-sm rounded-xl shadow-glow-sm hover:scale-105 transition-transform flex items-center gap-2"
-          >
+          <Button variant="primary" onClick={() => setIsInviteOpen(true)} className="flex items-center gap-2">
             <span>+</span> Invite Member
-          </button>
+          </Button>
         )}
       </div>
 

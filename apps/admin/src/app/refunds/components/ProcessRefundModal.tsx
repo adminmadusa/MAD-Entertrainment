@@ -2,11 +2,11 @@
 
 import React from 'react';
 
+import { ProcessRefundDetails } from './ProcessRefundDetails';
 import type { AdminBooking } from '@/lib/api/admin/booking.service';
 import type { AdminRefund } from '@/lib/api/admin/refund.service';
 import { AdminRole, formatMoney } from '@mad/shared';
-import { Modal } from '@mad/ui';
-import { formatEventDate } from '@mad/utils';
+import { Modal, Button } from '@mad/ui';
 
 export interface PopulatedAdminRefund extends Omit<AdminRefund, 'bookingId' | 'paymentId'> {
   bookingId: AdminBooking;
@@ -63,8 +63,6 @@ export function ProcessRefundModal({
   const target = processTarget as unknown as PopulatedAdminRefund;
   const booking = target.bookingId;
   const customer = booking?.guestInfo ?? booking?.userId;
-  const event = booking?.eventId;
-  const payment = target.paymentId;
 
   const threeHoursAgo = new Date(Date.now() - 3 * 60 * 60 * 1000);
   const isLockedByTime = new Date(processTarget.createdAt) > threeHoursAgo;
@@ -92,51 +90,7 @@ export function ProcessRefundModal({
     >
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 overflow-y-auto max-h-[90vh]">
         {/* Context Column (Left) */}
-        <div className="space-y-4 text-sm border-r border-white/5 pr-4 md:block hidden">
-          <div>
-            <span className="text-[10px] text-text-muted uppercase tracking-wider block font-semibold">Booking ID</span>
-            <span className="text-accent-purple font-mono font-bold">{booking?.bookingId ?? '—'}</span>
-            {target.ticketIds && target.ticketIds.length > 0 && (
-              <div className="mt-2">
-                <span className="text-[10px] text-text-muted uppercase tracking-wider block font-semibold">Selected Tickets</span>
-                <div className="flex flex-wrap gap-1 mt-1">
-                  {target.ticketIds.map((tid) => (
-                    <span key={tid} className="text-[10px] font-mono bg-white/5 border border-white/10 px-1.5 py-0.5 rounded text-text-secondary">{tid}</span>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-
-          <div>
-            <span className="text-[10px] text-text-muted uppercase tracking-wider block font-semibold">Customer Info</span>
-            <p className="text-white font-medium">{customer?.name ?? '—'}</p>
-            <p className="text-text-secondary text-xs">{customer?.email ?? '—'}</p>
-            {customer?.phone && <p className="text-text-secondary text-xs">{customer.phone}</p>}
-          </div>
-
-          <div>
-            <span className="text-[10px] text-text-muted uppercase tracking-wider block font-semibold">Event Parameters</span>
-            <p className="text-white font-semibold">{event?.title ?? '—'}</p>
-            {event?.startDate && (
-              <p className="text-text-muted text-xs mt-0.5">
-                {formatEventDate(event.startDate)}
-              </p>
-            )}
-            {event?.venue && <p className="text-text-muted text-xs mt-0.5">{event.venue}</p>}
-          </div>
-
-          <div>
-            <span className="text-[10px] text-text-muted uppercase tracking-wider block font-semibold">Payment / Gateway details</span>
-            <p className="text-white font-medium">{payment ? formatMoney(payment.amount, target.currency) : '—'} via <span className="uppercase text-accent-purple font-mono">{payment?.gateway ?? '—'}</span></p>
-            {payment?.gatewayPaymentId && <p className="text-text-muted font-mono text-[10px] truncate mt-0.5" title={payment.gatewayPaymentId}>ID: {payment.gatewayPaymentId}</p>}
-          </div>
-
-          <div>
-            <span className="text-[10px] text-text-muted uppercase tracking-wider block font-semibold">Requested Refund Reason</span>
-            <p className="text-text-secondary italic text-xs bg-white/3 p-2 rounded-lg mt-1">&ldquo;{processTarget.reason ?? 'No reason provided'}&rdquo;</p>
-          </div>
-        </div>
+        <ProcessRefundDetails target={target} processTarget={processTarget} />
 
         {/* Action Column (Right) */}
         <div className="space-y-4 flex flex-col justify-between">
@@ -176,10 +130,10 @@ export function ProcessRefundModal({
 
             <div className="flex gap-3 mt-4">
               {(['approve', 'reject'] as const).map((a) => (
-                <button key={a} type="button" onClick={() => setAction(a)}
+                <Button key={a} type="button" variant="secondary" onClick={() => setAction(a)}
                   className={`flex-1 py-2 rounded-xl text-sm font-medium border transition-all capitalize ${getActionClass(a)}`}>
                   {a}
-                </button>
+                </Button>
               ))}
             </div>
 
@@ -252,9 +206,10 @@ export function ProcessRefundModal({
               </div>
             )}
             <div className="flex gap-3 pt-4">
-              <button type="button" onClick={onClose} className="flex-1 py-2.5 glass border border-border-subtle rounded-xl text-sm text-text-secondary">Cancel</button>
-              <button
+              <Button type="button" variant="secondary" onClick={onClose} className="flex-1">Cancel</Button>
+              <Button
                 type="button"
+                variant={action === 'approve' ? 'primary' : 'danger'}
                 onClick={onConfirm}
                 disabled={
                   isPending ||
@@ -265,10 +220,11 @@ export function ProcessRefundModal({
                     !gatewayId.trim()
                   ))
                 }
-                className={`flex-1 py-2.5 rounded-xl text-white text-sm font-medium disabled:opacity-60 ${action === 'approve' ? 'bg-green-600 hover:bg-green-500' : 'bg-red-600 hover:bg-red-500'}`}
+                isLoading={isPending}
+                className="flex-1"
               >
                 {isPending ? 'Processing...' : `Confirm ${action}`}
-              </button>
+              </Button>
             </div>
           </div>
         </div>

@@ -7,7 +7,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { adminGetUsers } from '@/lib/api/admin/user.service';
 import { useAdminAuth } from '@/providers/AdminAuthProvider';
 import { AdminRole } from '@mad/shared';
-import { ErrorState, TablePagination } from '@mad/ui';
+import { ErrorState, TablePagination, Button } from '@mad/ui';
 
 import { UsersMobileCards } from './components/UsersMobileCards';
 import { UsersTable } from './components/UsersTable';
@@ -118,7 +118,9 @@ export default function UsersDirectoryPage() {
       <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
         {/* Tab Buttons */}
         <div className="flex bg-white/5 border border-border-subtle p-1 rounded-xl">
-          <button
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => updateUrlParams({ type: 'registered', page: 1 })}
             className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all ${
               typeParam === 'registered'
@@ -127,8 +129,10 @@ export default function UsersDirectoryPage() {
             }`}
           >
             Registered Customers
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => updateUrlParams({ type: 'guest', page: 1 })}
             className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all ${
               typeParam === 'guest'
@@ -137,7 +141,7 @@ export default function UsersDirectoryPage() {
             }`}
           >
             Guest Customers
-          </button>
+          </Button>
         </div>
 
         {/* Search */}
@@ -153,12 +157,14 @@ export default function UsersDirectoryPage() {
             <circle cx="11" cy="11" r="8" /><line x1="21" x2="16.65" y1="21" y2="16.65" />
           </svg>
           {searchInput && (
-            <button
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={() => setSearchInput('')}
-              className="absolute right-3 top-3 text-text-muted hover:text-white"
+              className="absolute right-1.5 top-1.5 text-text-muted hover:text-white h-7 w-7 p-0"
             >
               ×
-            </button>
+            </Button>
           )}
         </div>
       </div>
@@ -197,23 +203,27 @@ export default function UsersDirectoryPage() {
         {/* Mobile Pagination */}
         {pagination && pagination.totalPages > 1 && (
           <div className="flex items-center justify-between p-1 bg-white/5 border border-border-subtle rounded-xl">
-            <button
+            <Button
+              variant="secondary"
+              size="sm"
               onClick={() => updateUrlParams({ page: Math.max(1, pageParam - 1) })}
               disabled={pageParam === 1}
-              className="flex-1 py-2 text-center text-xs font-semibold disabled:opacity-40 text-text-secondary hover:text-white transition-all"
+              className="flex-1"
             >
               ← Prev
-            </button>
+            </Button>
             <span className="px-3 text-text-muted text-xs">
               Page {pagination.page} / {pagination.totalPages}
             </span>
-            <button
+            <Button
+              variant="secondary"
+              size="sm"
               onClick={() => updateUrlParams({ page: pageParam + 1 })}
               disabled={pageParam >= pagination.totalPages}
-              className="flex-1 py-2 text-center text-xs font-semibold disabled:opacity-40 text-text-secondary hover:text-white transition-all"
+              className="flex-1"
             >
               Next →
-            </button>
+            </Button>
           </div>
         )}
       </div>
