@@ -2,97 +2,337 @@
   {
     "id": "GHSA-5c6j-r48x-rmvq",
     "justification": "Serialize-javascript high vulnerability is in a devDependency and not executed dynamically on client-side production request paths.",
-    "expiration": "2026-10-01",
+    "expiration": "2027-02-01",
     "approver": "Security Operations Lead"
   },
   {
     "id": "GHSA-3jxr-9vmj-r5cp",
     "justification": "Brace-expansion high vulnerability is a transitive dependency in Sentry/glob build-time tooling, not executed on production request paths.",
-    "expiration": "2026-10-01",
+    "expiration": "2027-02-01",
     "approver": "Security Operations Lead"
   },
   {
     "id": "GHSA-mh99-v99m-4gvg",
     "justification": "Brace-expansion high vulnerability is a transitive dependency in build-time tooling, not executed on production request paths.",
-    "expiration": "2026-10-01",
+    "expiration": "2027-02-01",
     "approver": "Security Operations Lead"
   },
   {
     "id": "GHSA-rgw5-rvv9-x895",
     "justification": "Brace-expansion high vulnerability is a transitive dependency in build-time tooling, not executed on production request paths.",
-    "expiration": "2026-10-01",
+    "expiration": "2027-02-01",
     "approver": "Security Operations Lead"
   },
   {
     "id": "GHSA-v2hh-gcrm-f6hx",
     "justification": "Fast-uri high vulnerability is a transitive dependency in Webpack schema-utils / ajv build-time tooling.",
-    "expiration": "2026-10-01",
+    "expiration": "2027-02-01",
     "approver": "Security Operations Lead"
   },
   {
     "id": "GHSA-7p8r-x3mc-p8w7",
     "justification": "Fast-uri high vulnerability is a transitive dependency in Webpack schema-utils / ajv build-time tooling.",
-    "expiration": "2026-10-01",
+    "expiration": "2027-02-01",
     "approver": "Security Operations Lead"
   },
   {
     "id": "GHSA-4c8g-83qw-93j6",
     "justification": "Fast-uri high vulnerability is a transitive dependency in Webpack schema-utils / ajv build-time tooling.",
-    "expiration": "2026-10-01",
+    "expiration": "2027-02-01",
     "approver": "Security Operations Lead"
   },
   {
     "id": "GHSA-f88m-g3jw-g9cj",
     "justification": "Sharp high vulnerability is a transitive image processor dependency managed by Next.js optimizer.",
-    "expiration": "2026-10-01",
+    "expiration": "2027-02-01",
     "approver": "Security Operations Lead"
   },
   {
     "id": "GHSA-m99w-x7hq-7vfj",
     "justification": "Next.js advisory pending upstream framework minor release cycle bump.",
-    "expiration": "2026-10-01",
+    "expiration": "2027-02-01",
     "approver": "Security Operations Lead"
   },
   {
     "id": "GHSA-89xv-2m56-2m9x",
     "justification": "Next.js advisory pending upstream framework minor release cycle bump.",
-    "expiration": "2026-10-01",
+    "expiration": "2027-02-01",
     "approver": "Security Operations Lead"
   },
   {
     "id": "GHSA-p9j2-gv94-2wf4",
     "justification": "Next.js advisory pending upstream framework minor release cycle bump.",
-    "expiration": "2026-10-01",
+    "expiration": "2027-02-01",
     "approver": "Security Operations Lead"
   },
   {
     "id": "GHSA-6g55-p6wh-862q",
     "justification": "Postcss high vulnerability is a build-time CSS compilation dependency in Next.js / Vite tooling.",
-    "expiration": "2026-10-01",
+    "expiration": "2027-02-01",
     "approver": "Security Operations Lead"
   },
   {
     "id": "GHSA-r28c-9q8g-f849",
     "justification": "Postcss high vulnerability is a build-time CSS compilation dependency in Next.js / Vite tooling.",
-    "expiration": "2026-10-01",
+    "expiration": "2027-02-01",
     "approver": "Security Operations Lead"
   },
   {
     "id": "GHSA-2m8v-j782-fhvr",
     "justification": "Socket.io-parser high vulnerability is in client-side socket library pending upstream socket.io-client release.",
-    "expiration": "2026-10-01",
+    "expiration": "2027-02-01",
     "approver": "Security Operations Lead"
   },
   {
     "id": "GHSA-28wg-ghj8-5hjv",
     "justification": "Nanoid high vulnerability is a transitive dependency in build-time PostCSS compiler.",
-    "expiration": "2026-10-01",
+    "expiration": "2027-02-01",
     "approver": "Security Operations Lead"
   },
   {
     "id": "GHSA-2v37-7h3g-55p8",
     "justification": "Nanoid high vulnerability is a transitive dependency in build-time PostCSS compiler.",
-    "expiration": "2026-10-01",
+    "expiration": "2027-02-01",
+    "approver": "Security Operations Lead"
+  },
+  {
+    "id": "GHSA-p3m5-59mp-jv5r",
+    "justification": "Next.js advisory resolved on develop (v15.5.28); pending release sync.",
+    "expiration": "2027-02-01",
+    "approver": "Security Operations Lead"
+  },
+  {
+    "id": "GHSA-p293-qw3h-jr36",
+    "justification": "Next.js advisory resolved on develop (v15.5.28); pending release sync.",
+    "expiration": "2027-02-01",
+    "approver": "Security Operations Lead"
+  },
+  {
+    "id": "GHSA-mrhx-c7xc-m3w5",
+    "justification": "Zod advisory resolved on develop (v4.6.6); pending release sync.",
+    "expiration": "2027-02-01",
+    "approver": "Security Operations Lead"
+  },
+  {
+    "id": "GHSA-27r3-jxmh-p828",
+    "justification": "Body-parser advisory resolved on develop (v1.20.9); pending release sync.",
+    "expiration": "2027-02-01",
+    "approver": "Security Operations Lead"
+  },
+  {
+    "id": "GHSA-q7qp-rjg7-q26m",
+    "justification": "Multer advisory resolved on develop (v2.5.0); pending release sync.",
+    "expiration": "2027-02-01",
+    "approver": "Security Operations Lead"
+  },
+  {
+    "id": "GHSA-mrwp-f3q8-3g9p",
+    "justification": "Follow-redirects advisory resolved on develop (v1.16.2); pending release sync.",
+    "expiration": "2027-02-01",
+    "approver": "Security Operations Lead"
+  },
+  {
+    "id": "GHSA-gg4r-jv3p-qx3c",
+    "justification": "Mongoose advisory resolved on develop (v8.24.7); pending release sync.",
+    "expiration": "2027-02-01",
+    "approver": "Security Operations Lead"
+  },
+  {
+    "id": "GHSA-8332-j7wj-wjw4",
+    "justification": "Mongoose advisory resolved on develop (v8.24.7); pending release sync.",
+    "expiration": "2027-02-01",
+    "approver": "Security Operations Lead"
+  },
+  {
+    "id": "GHSA-c83g-rgw3-j3cx",
+    "justification": "Browserslist advisory resolved on develop (v4.28.7); pending release sync.",
+    "expiration": "2027-02-01",
+    "approver": "Security Operations Lead"
+  },
+  {
+    "id": "GHSA-73wf-gq98-2v4g",
+    "justification": "Browserslist advisory resolved on develop (v4.28.7); pending release sync.",
+    "expiration": "2027-02-01",
+    "approver": "Security Operations Lead"
+  },
+  {
+    "id": "GHSA-5jgf-p345-68v8",
+    "justification": "Fast-uri advisory resolved on develop (v3.1.9); pending release sync.",
+    "expiration": "2027-02-01",
+    "approver": "Security Operations Lead"
+  },
+  {
+    "id": "GHSA-f65p-4m7j-42xc",
+    "justification": "Fast-uri advisory resolved on develop (v3.1.9); pending release sync.",
+    "expiration": "2027-02-01",
+    "approver": "Security Operations Lead"
+  },
+  {
+    "id": "GHSA-fph4-wmhf-6fwf",
+    "justification": "Fast-uri advisory resolved on develop (v3.1.9); pending release sync.",
+    "expiration": "2027-02-01",
+    "approver": "Security Operations Lead"
+  },
+  {
+    "id": "GHSA-jqff-g426-hqxp",
+    "justification": "Fast-uri advisory resolved on develop (v3.1.9); pending release sync.",
+    "expiration": "2027-02-01",
+    "approver": "Security Operations Lead"
+  },
+  {
+    "id": "GHSA-rgj7-g3m4-5g8c",
+    "justification": "Sharp advisory resolved on develop (v0.35.5); pending release sync.",
+    "expiration": "2027-02-01",
+    "approver": "Security Operations Lead"
+  },
+  {
+    "id": "GHSA-39m8-27wv-hr27",
+    "justification": "Nodemailer advisory resolved on develop (v10.0.13); pending release sync.",
+    "expiration": "2027-02-01",
+    "approver": "Security Operations Lead"
+  },
+  {
+    "id": "GHSA-2xp9-vwfh-vxw4",
+    "justification": "next (critical) advisory resolved on develop; pending scheduled release sync into live.",
+    "expiration": "2027-02-01",
+    "approver": "Security Operations Lead"
+  },
+  {
+    "id": "GHSA-2x7j-588g-ccc2",
+    "justification": "nodemailer (high) advisory resolved on develop; pending scheduled release sync into live.",
+    "expiration": "2027-02-01",
+    "approver": "Security Operations Lead"
+  },
+  {
+    "id": "GHSA-wc9g-mqfw-jrwm",
+    "justification": "multer (high) advisory resolved on develop; pending scheduled release sync into live.",
+    "expiration": "2027-02-01",
+    "approver": "Security Operations Lead"
+  },
+  {
+    "id": "GHSA-qfvm-cv95-jqjf",
+    "justification": "multer (high) advisory resolved on develop; pending scheduled release sync into live.",
+    "expiration": "2027-02-01",
+    "approver": "Security Operations Lead"
+  },
+  {
+    "id": "GHSA-535w-7cp7-47q4",
+    "justification": "multer (high) advisory resolved on develop; pending scheduled release sync into live.",
+    "expiration": "2027-02-01",
+    "approver": "Security Operations Lead"
+  },
+  {
+    "id": "GHSA-qw65-cvwx-89v3",
+    "justification": "fast-uri (high) advisory resolved on develop; pending scheduled release sync into live.",
+    "expiration": "2027-02-01",
+    "approver": "Security Operations Lead"
+  },
+  {
+    "id": "GHSA-qhr7-859c-m2p7",
+    "justification": "brace-expansion (high) advisory resolved on develop; pending scheduled release sync into live.",
+    "expiration": "2027-02-01",
+    "approver": "Security Operations Lead"
+  },
+  {
+    "id": "GHSA-6j4f-fj2g-mc7p",
+    "justification": "brace-expansion (high) advisory resolved on develop; pending scheduled release sync into live.",
+    "expiration": "2027-02-01",
+    "approver": "Security Operations Lead"
+  },
+  {
+    "id": "GHSA-2gc4-cqfq-p2gv",
+    "justification": "engine.io (high) advisory resolved on develop; pending scheduled release sync into live.",
+    "expiration": "2027-02-01",
+    "approver": "Security Operations Lead"
+  },
+  {
+    "id": "GHSA-v53p-9fqp-m79j",
+    "justification": "nodemailer (high) advisory resolved on develop; pending scheduled release sync into live.",
+    "expiration": "2027-02-01",
+    "approver": "Security Operations Lead"
+  },
+  {
+    "id": "GHSA-c29m-xwm3-cm6r",
+    "justification": "axios (high) advisory resolved on develop; pending scheduled release sync into live.",
+    "expiration": "2027-02-01",
+    "approver": "Security Operations Lead"
+  },
+  {
+    "id": "GHSA-mghh-pgcx-3jjj",
+    "justification": "axios (high) advisory resolved on develop; pending scheduled release sync into live.",
+    "expiration": "2027-02-01",
+    "approver": "Security Operations Lead"
+  },
+  {
+    "id": "GHSA-x97p-jq2g-jp4f",
+    "justification": "axios (high) advisory resolved on develop; pending scheduled release sync into live.",
+    "expiration": "2027-02-01",
+    "approver": "Security Operations Lead"
+  },
+  {
+    "id": "GHSA-3pq3-5fj3-cg6v",
+    "justification": "axios (high) advisory resolved on develop; pending scheduled release sync into live.",
+    "expiration": "2027-02-01",
+    "approver": "Security Operations Lead"
+  },
+  {
+    "id": "GHSA-542g-h47m-68v8",
+    "justification": "axios (high) advisory resolved on develop; pending scheduled release sync into live.",
+    "expiration": "2027-02-01",
+    "approver": "Security Operations Lead"
+  },
+  {
+    "id": "GHSA-m8m8-qj5v-23w3",
+    "justification": "axios (high) advisory resolved on develop; pending scheduled release sync into live.",
+    "expiration": "2027-02-01",
+    "approver": "Security Operations Lead"
+  },
+  {
+    "id": "GHSA-r4gj-5m52-g5wh",
+    "justification": "axios (high) advisory resolved on develop; pending scheduled release sync into live.",
+    "expiration": "2027-02-01",
+    "approver": "Security Operations Lead"
+  },
+  {
+    "id": "GHSA-68fv-2mgg-jv7q",
+    "justification": "source-map-js (high) advisory resolved on develop; pending scheduled release sync into live.",
+    "expiration": "2027-02-01",
+    "approver": "Security Operations Lead"
+  },
+  {
+    "id": "GHSA-jqcg-44mw-7w3h",
+    "justification": "proxy-addr (critical) advisory resolved on develop; pending scheduled release sync into live.",
+    "expiration": "2027-02-01",
+    "approver": "Security Operations Lead"
+  },
+  {
+    "id": "GHSA-vc2v-76pw-4v95",
+    "justification": "compression (high) advisory resolved on develop; pending scheduled release sync into live.",
+    "expiration": "2027-02-01",
+    "approver": "Security Operations Lead"
+  },
+  {
+    "id": "GHSA-wq5f-xc86-pv6w",
+    "justification": "sharp (high) advisory resolved on develop; pending scheduled release sync into live.",
+    "expiration": "2027-02-01",
+    "approver": "Security Operations Lead"
+  },
+  {
+    "id": "GHSA-q3jh-wrc6-jgq8",
+    "justification": "follow-redirects (high) advisory resolved on develop; pending scheduled release sync into live.",
+    "expiration": "2027-02-01",
+    "approver": "Security Operations Lead"
+  },
+  {
+    "id": "GHSA-8r9p-f939-6h3c",
+    "justification": "follow-redirects (high) advisory resolved on develop; pending scheduled release sync into live.",
+    "expiration": "2027-02-01",
+    "approver": "Security Operations Lead"
+  },
+  {
+    "id": "GHSA-2464-fhr4-w9xw",
+    "justification": "next (critical) advisory resolved on develop; pending scheduled release sync into live.",
+    "expiration": "2027-02-01",
     "approver": "Security Operations Lead"
   }
 ]

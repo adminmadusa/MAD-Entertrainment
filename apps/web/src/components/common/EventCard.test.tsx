@@ -12,6 +12,10 @@ vi.mock('next/navigation', () => ({
   }),
 }));
 
+const DAY_MS = 24 * 60 * 60 * 1000;
+const eventStart = new Date(Date.now() + 30 * DAY_MS).toISOString();
+const eventEnd = new Date(Date.now() + 30 * DAY_MS + 5 * 60 * 60 * 1000).toISOString();
+
 const mockActiveEvent: Event = {
   _id: 'event-123',
   title: 'Holi X-Plosion Night',
@@ -20,8 +24,8 @@ const mockActiveEvent: Event = {
   category: EventCategory.CONCERT,
   status: EventStatus.PUBLISHED,
   lifecycle: 'UPCOMING',
-  startDate: '2026-09-02T18:00:00.000Z',
-  endDate: '2026-09-02T23:00:00.000Z',
+  startDate: eventStart,
+  endDate: eventEnd,
   currency: 'USD',
   bannerImage: {
     url: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819',
