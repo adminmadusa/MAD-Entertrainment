@@ -33,7 +33,21 @@ export interface EventBookingState {
  * @param event The event data
  * @returns The comprehensive booking state including the computed CTA
  */
-export function deriveBookingEligibility(event: BaseEventForBooking): EventBookingState {
+export function deriveBookingEligibility(event?: BaseEventForBooking): EventBookingState {
+  if (!event) {
+    return {
+      bookingAllowed: false,
+      bookingReason: BookingReason.BOOKING_CLOSED,
+      eventState: EventState.UPCOMING,
+      bookingCTA: {
+        text: 'Book Now',
+        disabled: false,
+        variant: 'primary',
+        action: 'BOOK',
+      },
+    };
+  }
+
   const result = deriveEventCapabilities(event as any);
 
   let eventState = EventState.UPCOMING;
@@ -58,14 +72,40 @@ export function deriveBookingEligibility(event: BaseEventForBooking): EventBooki
     text: 'Book Now',
     disabled: !bookingAllowed,
     variant: bookingAllowed ? 'primary' : 'disabled',
-    action: bookingAllowed ? 'BOOK' : 'NONE'
+    action: bookingAllowed ? 'BOOK' : 'NONE',
   };
 
-  if (!bookingAllowed) {
+  if (result.lifecycle === 'COMPLETED') {
+    cta = {
+      text: 'Happy Moments',
+      disabled: false,
+      variant: 'secondary',
+      action: 'GALLERY',
+    };
+  } else if (result.lifecycle === 'LIVE') {
+    if (bookingAllowed) {
+      cta = {
+        text: 'Join Now',
+        disabled: false,
+        variant: 'primary',
+        action: 'BOOK',
+      };
+    } else {
+      cta = {
+        text: 'In Progress',
+        disabled: true,
+        variant: 'disabled',
+        action: 'NONE',
+      };
+    }
+  } else if (!bookingAllowed) {
     switch (bookingReason) {
       case 'SOLD_OUT':
       case 'CAPACITY_REACHED':
         cta.text = 'Sold Out';
+        break;
+      case 'BOOKING_NOT_STARTED':
+        cta.text = 'Coming Soon';
         break;
       case 'BOOKING_CLOSED':
         cta.text = 'Booking Closed';
@@ -85,6 +125,6 @@ export function deriveBookingEligibility(event: BaseEventForBooking): EventBooki
     bookingAllowed,
     bookingReason,
     eventState,
-    bookingCTA: cta
+    bookingCTA: cta,
   };
 }

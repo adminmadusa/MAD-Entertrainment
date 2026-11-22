@@ -6,7 +6,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { useEffect, useRef } from 'react';
 
 import { publicGetEventBySlug, publicGetGallery } from '@/lib/api/public.service';
-import { QUERY_KEYS, formatMoney } from '@mad/shared';
+import { QUERY_KEYS, formatMoney, deriveBookingEligibility } from '@mad/shared';
 import type { Event as EventData } from '@mad/types';
 import { formatDate } from '@mad/utils';
 
@@ -16,7 +16,6 @@ import { EventStickyCTA } from './components/EventStickyCTA';
 import { ExpiredEventView } from './components/ExpiredEventView';
 import { EventHeroBanner } from './components/EventHeroBanner';
 import { EventPolicyAndVenue } from './components/EventPolicyAndVenue';
-import { getEventBookingCTA } from './components/use-event-booking-cta';
 
 const EventBookingFlow = dynamic(
   () => import('./components/EventBookingFlow').then((mod) => mod.EventBookingFlow),
@@ -65,7 +64,7 @@ export default function EventDetailClient({ slug, initialEvent }: EventDetailCli
     staleTime: 60_000,
   });
 
-  const cta = getEventBookingCTA(event);
+  const cta = deriveBookingEligibility(event).bookingCTA;
 
   useEffect(() => {
     if (searchParams.get('modal') === 'booking' && cta.action === 'BOOK') {
