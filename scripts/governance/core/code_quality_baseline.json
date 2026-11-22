@@ -1,12 +1,8 @@
 {
   "version": "1.0.0",
   "description": "Tracked baseline of pre-existing legacy files on develop exceeding the 249-line limit (including scripts/governance).",
-  "updatedAt": "2026-11-20T14:48:05.605Z",
+  "updatedAt": "2026-11-22T03:26:28.961Z",
   "entries": {
-    "apps/admin/next.config.ts": {
-      "ruleId": "VAL-QUAL-004",
-      "lineCount": 323
-    },
     "apps/admin/src/app/dj-operators/page.tsx": {
       "ruleId": "VAL-QUAL-001",
       "lineCount": 286
