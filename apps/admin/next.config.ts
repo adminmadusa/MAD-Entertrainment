@@ -1,6 +1,5 @@
 import { execSync } from 'child_process';
 
-import withPWAInit from '@ducanh2912/next-pwa';
 import type { NextConfig } from 'next';
 
 const cacheVersion = (() => {
@@ -11,170 +10,20 @@ const cacheVersion = (() => {
   }
 })();
 
-const withPWA = withPWAInit({
-  dest: 'public',
-  cacheOnFrontEndNav: false,
-  aggressiveFrontEndNavCaching: false,
-  reloadOnOnline: true,
-  disable: process.env.NODE_ENV === 'development',
-  // Do NOT extend default runtime caching — we define all routes explicitly
-  // to avoid duplicate route conflicts that cause no-response errors.
-  extendDefaultRuntimeCaching: false,
-  fallbacks: {
-    // When a page navigation fails (network error, stale chunk, offline),
-    // serve the cached app shell at "/" instead of throwing no-response.
-    document: '/',
-  },
-  workboxOptions: {
-    disableDevLogs: true,
-    runtimeCaching: [
-      // ── API calls: never cache, always network ──────────────────────────
-      {
-        urlPattern: /^\/api\/.*/i,
-        handler: 'NetworkOnly',
-        method: 'GET',
-        options: { cacheName: 'api-get' },
-      },
-      {
-        urlPattern: /^\/api\/.*/i,
-        handler: 'NetworkOnly',
-        method: 'POST',
-        options: { cacheName: 'api-post' },
-      },
-      {
-        urlPattern: /^\/api\/.*/i,
-        handler: 'NetworkOnly',
-        method: 'PUT',
-        options: { cacheName: 'api-put' },
-      },
-      {
-        urlPattern: /^\/api\/.*/i,
-        handler: 'NetworkOnly',
-        method: 'PATCH',
-        options: { cacheName: 'api-patch' },
-      },
-      {
-        urlPattern: /^\/api\/.*/i,
-        handler: 'NetworkOnly',
-        method: 'DELETE',
-        options: { cacheName: 'api-delete' },
-      },
-      // ── Next.js RSC prefetch requests ────────────────────────────────────
-      {
-        urlPattern: ({ request, url, sameOrigin }: { request: Request; url: URL; sameOrigin: boolean }) =>
-          request.headers.get('RSC') === '1' &&
-          request.headers.get('Next-Router-Prefetch') === '1' &&
-          sameOrigin &&
-          !url.pathname.startsWith('/api/'),
-        handler: 'NetworkFirst',
-        options: {
-          cacheName: 'pages-rsc-prefetch',
-          networkTimeoutSeconds: 10,
-          expiration: { maxEntries: 32, maxAgeSeconds: 60 * 60 * 24 },
-        },
-      },
-      // ── Next.js RSC navigation requests ─────────────────────────────────
-      {
-        urlPattern: ({ request, url, sameOrigin }: { request: Request; url: URL; sameOrigin: boolean }) =>
-          request.headers.get('RSC') === '1' &&
-          sameOrigin &&
-          !url.pathname.startsWith('/api/'),
-        handler: 'NetworkFirst',
-        options: {
-          cacheName: 'pages-rsc',
-          networkTimeoutSeconds: 10,
-          expiration: { maxEntries: 32, maxAgeSeconds: 60 * 60 * 24 },
-        },
-      },
-      // ── HTML page navigations ─────────────────────────────────────────────
-      // networkTimeoutSeconds: 10 means if network doesn't respond in 10s,
-      // fall back to cache. Combined with fallbacks.document above, this
-      // prevents the no-response throw on navigation failures.
-      {
-        urlPattern: ({ url, sameOrigin }: { url: URL; sameOrigin: boolean }) =>
-          sameOrigin && !url.pathname.startsWith('/api/'),
-        handler: 'NetworkFirst',
-        options: {
-          cacheName: 'pages',
-          networkTimeoutSeconds: 10,
-          expiration: { maxEntries: 32, maxAgeSeconds: 60 * 60 * 24 },
-        },
-      },
-      // ── Next.js static JS chunks ──────────────────────────────────────────
-      {
-        urlPattern: /\/_next\/static.+\.js$/i,
-        handler: 'CacheFirst',
-        options: {
-          cacheName: 'next-static-js',
-          expiration: { maxEntries: 128, maxAgeSeconds: 60 * 60 * 24 * 365 },
-        },
-      },
-      // ── Next.js image optimisation ────────────────────────────────────────
-      {
-        urlPattern: /\/_next\/image\?url=.+$/i,
-        handler: 'StaleWhileRevalidate',
-        options: {
-          cacheName: 'next-image',
-          expiration: { maxEntries: 64, maxAgeSeconds: 60 * 60 * 24 },
-        },
-      },
-      // ── Next.js data routes ───────────────────────────────────────────────
-      {
-        urlPattern: /\/_next\/data\/.+\/.+\.json$/i,
-        handler: 'StaleWhileRevalidate',
-        options: {
-          cacheName: 'next-data',
-          expiration: { maxEntries: 32, maxAgeSeconds: 60 * 60 * 24 },
-        },
-      },
-      // ── Google Fonts stylesheets ──────────────────────────────────────────
-      {
-        urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
-        handler: 'StaleWhileRevalidate',
-        options: {
-          cacheName: 'google-fonts-stylesheets',
-          expiration: { maxEntries: 4, maxAgeSeconds: 60 * 60 * 24 * 7 },
-        },
-      },
-      // ── Google Fonts web font files ───────────────────────────────────────
-      {
-        urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
-        handler: 'CacheFirst',
-        options: {
-          cacheName: 'google-fonts-webfonts',
-          expiration: { maxEntries: 4, maxAgeSeconds: 60 * 60 * 24 * 365 },
-        },
-      },
-      // ── Static images ─────────────────────────────────────────────────────
-      {
-        urlPattern: /\.(?:jpg|jpeg|gif|png|svg|ico|webp|avif)$/i,
-        handler: 'StaleWhileRevalidate',
-        options: {
-          cacheName: 'static-images',
-          expiration: { maxEntries: 64, maxAgeSeconds: 60 * 60 * 24 * 30 },
-        },
-      },
-      // ── Static fonts ──────────────────────────────────────────────────────
-      {
-        urlPattern: /\.(?:eot|otf|ttf|woff|woff2)$/i,
-        handler: 'StaleWhileRevalidate',
-        options: {
-          cacheName: 'static-fonts',
-          expiration: { maxEntries: 8, maxAgeSeconds: 60 * 60 * 24 * 7 },
-        },
-      },
-      // ── Static CSS ────────────────────────────────────────────────────────
-      {
-        urlPattern: /\.(?:css|less)$/i,
-        handler: 'StaleWhileRevalidate',
-        options: {
-          cacheName: 'static-styles',
-          expiration: { maxEntries: 32, maxAgeSeconds: 60 * 60 * 24 },
-        },
-      },
-    ],
-  },
-});
+/**
+ * Resolves the destination URL for Next.js API proxy rewrites.
+ * Guarantees that the destination always preserves the `/api` prefix, regardless
+ * of whether `NEXT_PUBLIC_API_URL` is configured with `/api`, without `/api`,
+ * with trailing slashes, or omitted entirely.
+ */
+export function resolveApiRewriteDestination(
+  rawApiUrl: string | undefined = process.env.NEXT_PUBLIC_API_URL,
+  fallback = 'http://localhost:3001/api'
+): string {
+  const target = (rawApiUrl && rawApiUrl.trim()) || fallback;
+  const sanitizedBase = target.replace(/\/+$/, '').replace(/\/api$/, '');
+  return `${sanitizedBase}/api/:path*`;
+}
 
 const nextConfig: NextConfig = {
   // ─── Stable Build ID (prevents stale chunk mismatches) ─────
@@ -256,7 +105,7 @@ const nextConfig: NextConfig = {
         ],
       },
       {
-        source: '/:path(sw.js|workbox-.*.js|swe-worker-.*.js|manifest.json)',
+        source: '/:path(manifest.json)',
         headers: [
           {
             key: 'Cache-Control',
@@ -295,8 +144,8 @@ const nextConfig: NextConfig = {
     return [
       {
         source: '/api/:path*',
-        // Proxy to the actual backend if NEXT_PUBLIC_API_URL is configured, else fallback to local
-        destination: `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'}/:path*`,
+        // Preserve /api prefix regardless of whether NEXT_PUBLIC_API_URL includes it
+        destination: resolveApiRewriteDestination(),
       },
     ];
   },
@@ -319,4 +168,4 @@ const nextConfig: NextConfig = {
   transpilePackages: ['@mad/shared', '@mad/ui', '@mad/types', '@mad/validations'],
 };
 
-export default withPWA(nextConfig);
+export default nextConfig;

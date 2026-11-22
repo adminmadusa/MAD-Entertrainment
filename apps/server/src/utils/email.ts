@@ -10,9 +10,19 @@ export type { EmailAttachment, SendEmailInput } from './email.types';
 
 
 let transporter: Transporter | null = null;
+let isTransporterVerifiedFlag = false;
+
+export function isTransporterVerified(): boolean {
+  const env = getEnv();
+  if (env.EMAIL_PROVIDER === 'zeptomail') {
+    return Boolean(env.ZEPTOMAIL_API_TOKEN);
+  }
+  return isTransporterVerifiedFlag;
+}
 
 export function resetTransporter(): void {
   transporter = null;
+  isTransporterVerifiedFlag = false;
 }
 
 export function validateSmtpConfig(): void {
@@ -99,12 +109,14 @@ export async function verifyTransporter(): Promise<boolean> {
   const env = getEnv();
   if (env.EMAIL_PROVIDER === 'zeptomail') {
     logger.info('Email provider configured as ZeptoMail HTTPS API; skipping SMTP transport verification.');
+    isTransporterVerifiedFlag = true;
     return true;
   }
 
   const tx = getTransporter();
   if (!tx) {
     logger.warn('SMTP transporter not configured; skipping verification');
+    isTransporterVerifiedFlag = false;
     return false;
   }
 
@@ -122,8 +134,10 @@ export async function verifyTransporter(): Promise<boolean> {
       description: 'SMTP transporter ready and verified successfully',
     });
 
+    isTransporterVerifiedFlag = true;
     return true;
   } catch (error: any) {
+    isTransporterVerifiedFlag = false;
     logger.error(error, "SMTP_TRANSPORT_UNAVAILABLE: SMTP verify failed");
     logger.error(error, "SMTP_TRANSPORT_UNAVAILABLE: SMTP transporter failed verification");
 

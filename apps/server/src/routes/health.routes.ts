@@ -2,41 +2,14 @@ import { Router } from 'express';
 import mongoose from 'mongoose';
 
 import { isRedisConnected } from '../config/redis';
-import { verifyTransporter } from '../utils/email';
+import { isTransporterVerified } from '../utils/email';
 
 const router: Router = Router();
 
-let cachedEmailStatus = false;
-let lastEmailCheckTime = 0;
-const EMAIL_CHECK_TTL = 60 * 1000; // 1 minute
-
-let emailVerificationPromise: Promise<boolean> | null = null;
-
-async function checkEmailHealth(): Promise<boolean> {
-  const now = Date.now();
-
-  if (now - lastEmailCheckTime > EMAIL_CHECK_TTL) {
-    if (!emailVerificationPromise) {
-      emailVerificationPromise = verifyTransporter()
-        .then((status) => {
-          cachedEmailStatus = status;
-          lastEmailCheckTime = Date.now();
-          return status;
-        })
-        .finally(() => {
-          emailVerificationPromise = null;
-        });
-    }
-    return emailVerificationPromise;
-  }
-
-  return cachedEmailStatus;
-}
-
-router.get('/', async (_req, res) => {
+router.get('/', (_req, res) => {
   const isMongoUp = mongoose.connection.readyState === 1;
   const isRedisUp = isRedisConnected();
-  const isEmailUp = await checkEmailHealth();
+  const isEmailUp = isTransporterVerified();
 
   const isUnhealthy = !isMongoUp || !isRedisUp;
   const isDegraded = !isUnhealthy && !isEmailUp;
