@@ -47,6 +47,14 @@ interface RootLayoutProps {
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en" className={`${outfit.variable} dark`} suppressHydrationWarning data-scroll-behavior="smooth">
+      <head>
+        <script
+          // eslint-disable-next-line react/no-danger
+          dangerouslySetInnerHTML={{
+            __html: `if(typeof window!=='undefined'&&'serviceWorker'in navigator){navigator.serviceWorker.getRegistrations().then(function(r){for(var s of r){s.unregister()}})}`,
+          }}
+        />
+      </head>
       <body className="bg-background text-text-primary antialiased" suppressHydrationWarning>
         <Providers>
           <ErrorBoundary>
