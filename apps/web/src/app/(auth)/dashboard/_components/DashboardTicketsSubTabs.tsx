@@ -25,8 +25,8 @@ export function DashboardTicketsSubTabs({
   refundedCount,
 }: DashboardTicketsSubTabsProps) {
   const tabs: { key: TicketSubTabKey; label: string; count: number }[] = [
-    { key: 'upcoming', label: 'Upcoming', count: upcomingCount },
     { key: 'live', label: 'Live', count: liveCount },
+    { key: 'upcoming', label: 'Upcoming', count: upcomingCount },
     { key: 'past', label: 'Past Events', count: pastCount },
     { key: 'cancelled', label: 'Cancelled', count: cancelledCount },
     { key: 'refunded', label: 'Refunded', count: refundedCount },
@@ -50,7 +50,7 @@ export function DashboardTicketsSubTabs({
             aria-selected={isActive}
             aria-controls={`subtab-panel-${tab.key}`}
             onClick={() => onTabChange(tab.key)}
-            className={`flex-shrink-0 px-4 py-2 text-xs font-bold rounded-full transition-all duration-200 min-h-[38px] h-auto flex items-center gap-1.5 border ${
+            className={`flex-shrink-0 px-4 py-2.5 text-xs font-bold rounded-full transition-all duration-200 min-h-[44px] h-auto flex items-center gap-2 border ${
               isActive
                 ? 'bg-white text-black font-extrabold shadow-md border-transparent hover:bg-white hover:text-black'
                 : 'text-text-secondary hover:text-white bg-white/5 hover:bg-white/10 border-white/10'
