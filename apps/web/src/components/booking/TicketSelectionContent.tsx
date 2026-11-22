@@ -19,11 +19,9 @@ interface TicketSelectionContentProps {
   onClose?: () => void;
   isModal?: boolean;
   onQuantitiesChange?: (quantities: Record<string, number>, subtotal: number, selectedCount: number) => void;
-  // External triggers for checkout when rendered inside a modal
   checkoutTriggerRef?: React.MutableRefObject<(() => void) | null>;
   setIsPendingChange?: (isPending: boolean) => void;
   onBookingSuccess?: (bookingId: string) => void;
-  // Controlled Promo Code props
   couponCode?: string;
   couponApplied?: boolean;
   couponMessage?: { type: 'success' | 'error'; text: string } | null;
@@ -60,6 +58,7 @@ export function TicketSelectionContent({
 
   const [sessionToken, setSessionToken] = useState('');
   const [sessionError, setSessionError] = useState(false);
+  const [isRetryingSession, setIsRetryingSession] = useState(false);
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [internalCouponCode, setInternalCouponCode] = useState('');
   const [internalCouponApplied, setInternalCouponApplied] = useState(false);
@@ -100,21 +99,30 @@ export function TicketSelectionContent({
   const handleRemoveCoupon = propOnRemoveCoupon || handleInternalRemoveCoupon;
   const handleCouponChange = propOnCouponChange || handleInternalCouponChange;
 
-  // Setup signed guest session token — extracted for retry support
-  const initGuestSession = useCallback(() => {
+  // Setup signed guest session token — with granular error handling and retry support
+  const initGuestSession = useCallback(async () => {
     if (isAuthenticated) return;
 
     setSessionError(false);
     setError('');
+    setIsRetryingSession(true);
 
-    ensureGuestBookingSession()
-      .then((session) => {
-        setSessionToken(session.token);
-      })
-      .catch(() => {
-        setSessionError(true);
+    try {
+      const session = await ensureGuestBookingSession();
+      setSessionToken(session.token);
+    } catch (err: unknown) {
+      setSessionError(true);
+      const apiErr = extractApiError(err);
+      if (apiErr.statusCode === 429) {
+        setError('Too many requests. Please wait a moment before trying again.');
+      } else if (apiErr.message) {
+        setError(apiErr.message);
+      } else {
         setError('Secure session initialization failed. Please refresh and try again.');
-      });
+      }
+    } finally {
+      setIsRetryingSession(false);
+    }
   }, [isAuthenticated]);
 
   useEffect(() => {
@@ -154,14 +162,9 @@ export function TicketSelectionContent({
   const handleQtyChange = useCallback((tier: string, change: number) => {
     const prevQty = quantities[tier] || 0;
     const newQty = Math.max(0, Math.min(10, prevQty + change));
-
     if (newQty === prevQty) return;
 
-    const next = {
-      ...quantities,
-      [tier]: newQty,
-    };
-
+    const next = { ...quantities, [tier]: newQty };
     setQuantities(next);
 
     if (onQuantitiesChange) {
@@ -184,10 +187,7 @@ export function TicketSelectionContent({
 
     const ticketsPayload = Object.entries(quantities)
       .filter(([_, qty]) => qty > 0)
-      .map(([tier, qty]) => ({
-        tier,
-        quantity: qty,
-      }));
+      .map(([tier, qty]) => ({ tier, quantity: qty }));
 
     if (ticketsPayload.length === 0) {
       setError('Please select at least 1 ticket.');
@@ -209,13 +209,9 @@ export function TicketSelectionContent({
   }, [eventId, quantities, couponCode, couponApplied, sessionToken, setIsPendingChange, createBookingMutation]);
 
   useEffect(() => {
-    if (checkoutTriggerRef) {
-      checkoutTriggerRef.current = handleCheckoutSubmit;
-    }
+    if (checkoutTriggerRef) checkoutTriggerRef.current = handleCheckoutSubmit;
     return () => {
-      if (checkoutTriggerRef) {
-        checkoutTriggerRef.current = null;
-      }
+      if (checkoutTriggerRef) checkoutTriggerRef.current = null;
     };
   }, [checkoutTriggerRef, handleCheckoutSubmit]);
 
@@ -230,9 +226,10 @@ export function TicketSelectionContent({
               variant="outline"
               size="sm"
               onClick={initGuestSession}
+              disabled={isRetryingSession}
               className="mt-2 text-xs"
             >
-              Try Again
+              {isRetryingSession ? 'Connecting...' : 'Try Again'}
             </Button>
           )}
         </Alert>

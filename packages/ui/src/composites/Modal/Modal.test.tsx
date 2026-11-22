@@ -32,6 +32,7 @@ describe('Modal Component', () => {
     );
     const closeBtn = screen.getByRole('button', { name: 'Close dialog' });
     expect(closeBtn).toBeInTheDocument();
+    expect(closeBtn).toHaveClass('absolute');
     fireEvent.click(closeBtn);
     expect(handleClose).toHaveBeenCalledTimes(1);
   });

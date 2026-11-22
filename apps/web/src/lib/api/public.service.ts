@@ -1,5 +1,6 @@
 import { STORAGE_KEYS, STORAGE_VERSION } from '@mad/shared';
 import type { Booking, DJOperator, Event, PaginatedDataResponse, PopupCampaign, Ticket } from '@mad/types';
+import { isTokenExpired } from '@mad/utils';
 import { CheckoutDetailsInput, ReserveTicketsInput } from '@mad/validations';
 
 import type { AuthResponse, AuthUser, VerificationCodeRequestResponse, VerifyVerificationCodeOrOTPPayload } from '../../types/auth';
@@ -37,25 +38,20 @@ function getGuestSessionHeaders(sessionToken?: string): Record<string, string> {
 
 export function getStoredGuestBookingSession(): GuestBookingSession | null {
   if (typeof window === 'undefined') return null;
-
-  let sessionId = sessionStorage.getItem(guestSessionIdKey);
-  let token = sessionStorage.getItem(guestSessionTokenKey);
-
-  if (!sessionId || !token) {
-    sessionId = localStorage.getItem(guestSessionIdKey);
-    token = localStorage.getItem(guestSessionTokenKey);
-  }
-
+  const sessionId = sessionStorage.getItem(guestSessionIdKey) || localStorage.getItem(guestSessionIdKey);
+  const token = sessionStorage.getItem(guestSessionTokenKey) || localStorage.getItem(guestSessionTokenKey);
   if (!sessionId || !token) return null;
-  return {
-    sessionId,
-    token,
-  };
+
+  // Validate token expiration so stale/expired sessions are never returned as valid
+  if (isTokenExpired(token)) {
+    clearGuestBookingSession();
+    return null;
+  }
+  return { sessionId, token };
 }
 
 export function clearGuestBookingSession(): void {
   if (typeof window === 'undefined') return;
-
   sessionStorage.removeItem(guestSessionIdKey);
   sessionStorage.removeItem(guestSessionTokenKey);
   localStorage.removeItem(guestSessionIdKey);
@@ -67,19 +63,29 @@ export async function publicGetBookingSession(): Promise<GuestBookingSession> {
   return data.data;
 }
 
+let inFlightGuestSessionPromise: Promise<GuestBookingSession> | null = null;
+
 export async function ensureGuestBookingSession(): Promise<GuestBookingSession> {
   const existing = getStoredGuestBookingSession();
   if (existing) return existing;
+  if (inFlightGuestSessionPromise) return inFlightGuestSessionPromise;
 
-  const session = await publicGetBookingSession();
-  if (typeof window !== 'undefined') {
-    sessionStorage.setItem(guestSessionIdKey, session.sessionId);
-    sessionStorage.setItem(guestSessionTokenKey, session.token);
-    localStorage.setItem(guestSessionIdKey, session.sessionId);
-    localStorage.setItem(guestSessionTokenKey, session.token);
-  }
+  inFlightGuestSessionPromise = (async () => {
+    try {
+      const session = await publicGetBookingSession();
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem(guestSessionIdKey, session.sessionId);
+        sessionStorage.setItem(guestSessionTokenKey, session.token);
+        localStorage.setItem(guestSessionIdKey, session.sessionId);
+        localStorage.setItem(guestSessionTokenKey, session.token);
+      }
+      return session;
+    } finally {
+      inFlightGuestSessionPromise = null;
+    }
+  })();
 
-  return session;
+  return inFlightGuestSessionPromise;
 }
 
 export interface PublicEventsApiResponse {
@@ -117,14 +123,9 @@ export async function publicGetEvents(
   } = {}
 ): Promise<PublicEventsResponse> {
   const params = new URLSearchParams();
-  if (filters.page) params.set('page', String(filters.page));
-  if (filters.limit) params.set('limit', String(filters.limit));
-  if (filters.search) params.set('search', filters.search);
-  if (filters.category) params.set('category', filters.category);
-  if (filters.status) params.set('status', filters.status);
-  if (filters.state) params.set('state', filters.state);
-  if (filters.sort) params.set('sort', filters.sort);
-  if (filters.exclude) params.set('exclude', filters.exclude);
+  Object.entries(filters).forEach(([k, v]) => {
+    if (v !== undefined) params.set(k, String(v));
+  });
 
   const page = filters.page || 1;
   const limit = filters.limit || 12;
@@ -160,7 +161,6 @@ export async function publicGetGallery(slug: string): Promise<{ items: import('@
   }
 }
 
-
 // ─── DJ Operators ─────────────────────────────────────────────
 
 export type PublicDJsResponse = PaginatedDataResponse<DJOperator>;
@@ -169,9 +169,9 @@ export async function publicGetDJs(
   filters: { search?: string; page?: number; limit?: number } = {}
 ): Promise<PublicDJsResponse> {
   const params = new URLSearchParams();
-  if (filters.search) params.set('search', filters.search);
-  if (filters.page) params.set('page', String(filters.page));
-  if (filters.limit) params.set('limit', String(filters.limit));
+  Object.entries(filters).forEach(([k, v]) => {
+    if (v !== undefined) params.set(k, String(v));
+  });
 
   const page = filters.page || 1;
   const limit = filters.limit || 12;

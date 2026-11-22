@@ -1,7 +1,7 @@
 'use client';
 
 import { ImageWrapper } from '@/components/common/ImageWrapper';
-import { forwardRef, useImperativeHandle, useRef, useState, type ReactNode } from 'react';
+import { forwardRef, useImperativeHandle, useRef, useState } from 'react';
 
 import { CheckoutContent } from '@/components/booking/CheckoutContent';
 import { PromoCodeForm } from '@/components/booking/PromoCodeForm';
@@ -65,23 +65,16 @@ export const EventBookingFlow = forwardRef<EventBookingFlowHandle, EventBookingF
       openBooking: () => setIsBookingModalOpen(true),
     }));
 
-    let modalFooterBadge: ReactNode = null;
-    if (selectedCount > 0) {
-      modalFooterBadge = (
-        <div className="flex flex-col">
-          <span className="text-xs text-text-muted font-medium">
-            {selectedCount} {selectedCount === 1 ? 'ticket' : 'tickets'} selected
-          </span>
-          <span className="text-base font-bold text-accent-purple-light">{formatMoney(subtotal, currency)}</span>
-        </div>
-      );
-    } else {
-      modalFooterBadge = (
-        <span className="text-xs text-text-muted">
-          Select tickets to continue
+    const modalFooterBadge = selectedCount > 0 ? (
+      <div className="flex flex-col">
+        <span className="text-xs text-text-muted font-medium">
+          {selectedCount} {selectedCount === 1 ? 'ticket' : 'tickets'} selected
         </span>
-      );
-    }
+        <span className="text-base font-bold text-accent-purple-light">{formatMoney(subtotal, currency)}</span>
+      </div>
+    ) : (
+      <span className="text-xs text-text-muted">Select tickets to continue</span>
+    );
 
     return (
       <>
@@ -94,10 +87,10 @@ export const EventBookingFlow = forwardRef<EventBookingFlowHandle, EventBookingF
           presentation="bottom-sheet"
           closeOnBackdropClick={true}
           ariaLabelledBy="booking-modal-title"
-          className="h-[85vh] md:h-[650px] max-w-4xl bg-background md:rounded-2xl border border-white/10 overflow-hidden relative flex flex-col md:flex-row shadow-2xl z-10 focus:outline-none p-0"
+          className="max-h-[85vh] md:h-[650px] max-w-4xl bg-background md:rounded-2xl border border-white/10 overflow-hidden relative flex flex-col md:flex-row shadow-2xl z-10 focus:outline-none p-0"
         >
           {/* Left Panel: Ticket selection */}
-          <div className="w-full md:w-3/5 p-3.5 sm:p-5 flex flex-col h-full border-r border-white/5 bg-background overflow-hidden">
+          <div className="w-full md:w-3/5 p-3.5 sm:p-5 flex flex-col max-h-[85vh] md:h-full border-r border-white/5 bg-background overflow-hidden">
             {/* Fixed Header */}
             <div className="pb-2.5 border-b border-white/10 shrink-0 pr-10">
               <h3 id="booking-modal-title" className="text-sm sm:text-base font-bold text-white leading-snug truncate">
@@ -109,7 +102,7 @@ export const EventBookingFlow = forwardRef<EventBookingFlowHandle, EventBookingF
             </div>
 
             {/* Scrollable ticket content */}
-            <div className="flex-1 overflow-y-auto custom-scrollbar pr-1 pt-3 pb-2 space-y-3">
+            <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar pr-1 pt-3 pb-2 space-y-3">
               <TicketSelectionContent
                 event={event}
                 isModal={true}
@@ -154,7 +147,7 @@ export const EventBookingFlow = forwardRef<EventBookingFlowHandle, EventBookingF
           </div>
 
           {/* Right Panel: Cart/Event Image summary */}
-          <div className="hidden md:flex md:w-2/5 bg-bg-card flex-col border-l border-white/5">
+          <div className="hidden md:flex md:w-2/5 md:h-full bg-bg-card flex-col border-l border-white/5">
             {/* Event Image */}
             <div className="aspect-[16/9] w-full overflow-hidden bg-black/40 relative border-b border-white/10 shrink-0">
               {event.bannerImage?.url && (

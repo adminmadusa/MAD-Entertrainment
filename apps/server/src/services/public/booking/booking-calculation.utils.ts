@@ -98,8 +98,38 @@ export async function calculateBookingPricing(params: {
       );
     }
 
-    const tierPriceAfterDiscount = Math.max(0, tierConfig.price - (tierConfig.discount || 0));
-    const tierSubtotal = tierPriceAfterDiscount * ticketReq.quantity;
+    const baseTierPrice = Math.max(0, tierConfig.price - (tierConfig.discount || 0));
+    const grossTierSubtotal = baseTierPrice * ticketReq.quantity;
+
+    let tierOfferDiscount = 0;
+    const offer = tierConfig.offerRules;
+    if (offer && offer.discountType && offer.discountType !== 'none') {
+      const minQty =
+        typeof offer.minQtyRequired === 'number' && offer.minQtyRequired > 0
+          ? offer.minQtyRequired
+          : 1;
+      if (ticketReq.quantity >= minQty && baseTierPrice > 0) {
+        if (
+          typeof offer.buyQty === 'number' &&
+          offer.buyQty > 0 &&
+          typeof offer.freeTicketQty === 'number' &&
+          offer.freeTicketQty > 0
+        ) {
+          const bundleSize = offer.buyQty + offer.freeTicketQty;
+          const completeBundles = Math.floor(ticketReq.quantity / bundleSize);
+          const freeTicketsCount = completeBundles * offer.freeTicketQty;
+          tierOfferDiscount = Math.min(grossTierSubtotal, freeTicketsCount * baseTierPrice);
+        } else if (offer.discountType === 'percentage') {
+          const pct = Math.min(100, Math.max(0, offer.discountValue || 0));
+          tierOfferDiscount = Math.round((grossTierSubtotal * pct) / 100);
+        } else if (offer.discountType === 'flat') {
+          const perTicketDisc = Math.min(baseTierPrice, Math.max(0, offer.discountValue || 0));
+          tierOfferDiscount = perTicketDisc * ticketReq.quantity;
+        }
+      }
+    }
+
+    const tierSubtotal = Math.max(0, grossTierSubtotal - tierOfferDiscount);
 
     const tierTaxPercent = tierConfig.taxPercent ?? event.taxPercentage ?? countryConfig.defaultTax;
     const tierGst = Math.round((tierSubtotal * tierTaxPercent) / 100);
