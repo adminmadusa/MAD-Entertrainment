@@ -122,7 +122,7 @@ export default function EventDetailClient({ slug, initialEvent }: EventDetailCli
   const doorsOpenText = event.doorsOpenTime || event.showTime || 'TBA';
 
   return (
-    <div className="bg-background text-white relative pb-6 md:pb-12">
+    <div className="bg-background text-white relative pb-28 lg:pb-12">
       <div className="container-mad max-w-6xl px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 md:pt-28">
         {/* Contained Cinematic Hero Banner */}
         <EventHeroBanner
