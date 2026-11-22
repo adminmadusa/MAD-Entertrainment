@@ -65,8 +65,19 @@ export function DashboardTicketsTab({
   cancelledBookings,
   refundedBookings,
 }: DashboardTicketsTabProps) {
-  const [activeTicketSubTab, setActiveTicketSubTab] = useState<TicketSubTabKey>('upcoming');
+  const [activeTicketSubTab, setActiveTicketSubTab] = useState<TicketSubTabKey>('live');
   const syncedRef = useRef<string | null>(null);
+  const initialDefaultAppliedRef = useRef(false);
+
+  useEffect(() => {
+    // Graceful initial fallback: if no live events exist on cold load but upcoming do, focus upcoming
+    if (!expandedBookingId && !initialDefaultAppliedRef.current && !isBookingsLoading) {
+      if (liveBookings.length === 0 && upcomingBookings.length > 0) {
+        setActiveTicketSubTab('upcoming');
+      }
+      initialDefaultAppliedRef.current = true;
+    }
+  }, [expandedBookingId, isBookingsLoading, liveBookings.length, upcomingBookings.length]);
 
   useEffect(() => {
     if (expandedBookingId && syncedRef.current !== expandedBookingId) {

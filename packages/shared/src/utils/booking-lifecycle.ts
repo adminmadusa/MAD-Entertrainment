@@ -31,12 +31,21 @@ export function getBookingLifecycle(booking: BookingForLifecycle): BookingLifecy
   }
 
   const event = booking.eventId;
-  if (!event) {
-    return 'upcoming';
+  if (!event || typeof event !== 'object') {
+    return 'past';
   }
 
   if (event.status === EventStatus.CANCELLED) {
     return 'cancelled';
+  }
+
+  if (!event.startDate) {
+    return 'past';
+  }
+
+  const startDateNum = new Date(event.startDate).getTime();
+  if (Number.isNaN(startDateNum)) {
+    return 'past';
   }
 
   const eventState = deriveEventLifecycleState(event);

@@ -136,16 +136,19 @@ export function useBookings() {
     filteredBookings.forEach((b) => {
       // Cast the populated eventInfo to BaseEventForLifecycle
       const lifecycle = getBookingLifecycle(b as unknown as BookingForLifecycle);
-      if (lifecycle === 'upcoming') {
-        upcoming.push(b);
-      } else if (lifecycle === 'live') {
-        live.push(b);
-      } else if (lifecycle === 'past') {
-        past.push(b);
-      } else if (lifecycle === 'cancelled') {
+      if (lifecycle === 'cancelled') {
         cancelled.push(b);
       } else if (lifecycle === 'refunded') {
         refunded.push(b);
+      } else if (b.status === BookingStatus.CONFIRMED) {
+        // Only confirmed bookings qualify for active event buckets
+        if (lifecycle === 'live') {
+          live.push(b);
+        } else if (lifecycle === 'upcoming') {
+          upcoming.push(b);
+        } else if (lifecycle === 'past') {
+          past.push(b);
+        }
       }
     });
 
