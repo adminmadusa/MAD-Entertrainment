@@ -35,7 +35,7 @@ export function FloatingCountdown({ popup, onClose }: FloatingCountdownProps) {
       initial={{ opacity: 0, y: 50, scale: 0.9 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: 50, scale: 0.9 }}
-      className="fixed bottom-4 right-4 z-40 sm:bottom-6 sm:right-6 w-[calc(100%-2rem)] sm:w-auto"
+      className="fixed bottom-[calc(4.75rem+env(safe-area-inset-bottom))] right-4 z-40 md:bottom-6 md:right-6 w-[calc(100%-2rem)] md:w-auto"
     >
       <div
         className="relative glass-strong rounded-2xl border border-accent-purple/30 p-4 shadow-glow flex items-center gap-4 cursor-pointer hover:bg-white/5 transition-colors overflow-hidden"

@@ -34,12 +34,11 @@ export function DashboardStickyToolbar({
 
   return (
     <div
-      className="fixed bottom-0 left-0 right-0 z-40 sm:hidden"
-      style={{ paddingBottom: 'calc(1rem + env(safe-area-inset-bottom))' }}
+      className="fixed bottom-[calc(4rem+env(safe-area-inset-bottom))] left-0 right-0 z-50 md:hidden pointer-events-none"
       role="toolbar"
       aria-label="Ticket quick actions"
     >
-      <div className="mx-4 mb-2 glass border border-white/10 rounded-2xl shadow-2xl backdrop-blur-xl px-4 pt-4 pb-3 flex items-center gap-2">
+      <div className="mx-4 mb-2 glass border border-white/10 rounded-2xl shadow-2xl backdrop-blur-xl px-4 pt-3 pb-3 flex items-center gap-2 pointer-events-auto">
         <Button
           type="button"
           aria-label="Download PDF"
