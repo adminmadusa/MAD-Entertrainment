@@ -1,3 +1,4 @@
+import type { RefundStatus } from '@mad/shared';
 import type { PaginatedItemsResponse } from './common.types';
 
 export interface AdminCategory {
@@ -137,3 +138,25 @@ export interface BookingsSummaryResponse {
 }
 
 export type AdminBookingsSummary = BookingsSummaryResponse;
+
+export interface AdminRefund {
+  _id: string;
+  bookingId: AdminBooking;
+  paymentId: {
+    _id: string;
+    amount: number;
+    gateway: string;
+    gatewayPaymentId?: string;
+  };
+  ticketIds?: string[];
+  amount: number;
+  currency: string;
+  reason?: string;
+  status: RefundStatus | 'requested' | 'processing' | 'completed' | 'failed';
+  adminNotes?: string;
+  gatewayRefundId?: string;
+  createdAt: string;
+  processedAt?: string;
+}
+
+export type NormalizedRefundsResponse = PaginatedItemsResponse<AdminRefund>;

@@ -2,22 +2,11 @@
 
 import React from 'react';
 
-import { ProcessRefundDetails } from './ProcessRefundDetails';
-import type { AdminBooking } from '@/lib/api/admin/booking.service';
-import type { AdminRefund } from '@/lib/api/admin/refund.service';
 import { AdminRole, formatMoney } from '@mad/shared';
-import { Modal, Button } from '@mad/ui';
+import type { AdminRefund } from '@mad/types';
+import { Button, Checkbox, Input, Modal, Textarea } from '@mad/ui';
 
-export interface PopulatedAdminRefund extends Omit<AdminRefund, 'bookingId' | 'paymentId'> {
-  bookingId: AdminBooking;
-  ticketIds?: string[];
-  paymentId: {
-    _id: string;
-    amount: number;
-    gateway: string;
-    gatewayPaymentId?: string;
-  };
-}
+import { ProcessRefundDetails } from './ProcessRefundDetails';
 
 interface ProcessRefundModalProps {
   processTarget: AdminRefund | null;
@@ -60,9 +49,7 @@ export function ProcessRefundModal({
 }: ProcessRefundModalProps) {
   if (!processTarget) return null;
 
-  const target = processTarget as unknown as PopulatedAdminRefund;
-  const booking = target.bookingId;
-  const customer = booking?.guestInfo ?? booking?.userId;
+  const booking = processTarget.bookingId;
 
   const threeHoursAgo = new Date(Date.now() - 3 * 60 * 60 * 1000);
   const isLockedByTime = new Date(processTarget.createdAt) > threeHoursAgo;
@@ -89,26 +76,15 @@ export function ProcessRefundModal({
       className="glass-strong border border-border-subtle p-6 max-w-2xl"
     >
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 overflow-y-auto max-h-[90vh]">
-        {/* Context Column (Left) */}
-        <ProcessRefundDetails target={target} processTarget={processTarget} />
+        {/* Context Column (Left on desktop, Top on mobile) */}
+        <ProcessRefundDetails processTarget={processTarget} />
 
-        {/* Action Column (Right) */}
+        {/* Action Column (Right on desktop, Bottom on mobile) */}
         <div className="space-y-4 flex flex-col justify-between">
           <div className="space-y-4">
             <div>
               <h2 id="process-refund-modal-title" className="text-white font-bold text-lg">Process Refund</h2>
               <p className="text-text-muted text-xs">Authorize or reject refund request</p>
-            </div>
-
-            {/* Mobiles-only quick summary */}
-            <div className="md:hidden block bg-white/3 rounded-xl p-3 text-xs space-y-1">
-              <p className="text-white">Booking: <span className="font-mono font-semibold text-accent-purple">{booking?.bookingId}</span></p>
-              {processTarget.ticketIds && processTarget.ticketIds.length > 0 && (
-                <p className="text-white">Tickets: <span className="font-mono text-text-secondary">{processTarget.ticketIds.length}</span></p>
-              )}
-              <p className="text-white">Customer: {customer?.name}</p>
-              <p className="text-white font-medium">Amount: {formatMoney(processTarget.amount, processTarget.currency)}</p>
-              {processTarget.reason && <p className="text-text-secondary italic">Reason: &ldquo;{processTarget.reason}&rdquo;</p>}
             </div>
 
             {hasScannedTickets && (
@@ -129,27 +105,33 @@ export function ProcessRefundModal({
             </div>
 
             <div className="flex gap-3 mt-4">
-              {(['approve', 'reject'] as const).map((a) => (
-                <Button key={a} type="button" variant="secondary" onClick={() => setAction(a)}
-                  className={`flex-1 py-2 rounded-xl text-sm font-medium border transition-all capitalize ${getActionClass(a)}`}>
-                  {a}
-                </Button>
-              ))}
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => setAction('approve')}
+                className={`flex-1 py-2 rounded-xl text-sm font-medium border transition-all capitalize ${getActionClass('approve')}`}
+              >
+                Approve
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => setAction('reject')}
+                className={`flex-1 py-2 rounded-xl text-sm font-medium border transition-all capitalize ${getActionClass('reject')}`}
+              >
+                Reject
+              </Button>
             </div>
 
             {action === 'approve' && needsOverride && (
               <div className="space-y-4 border border-white/5 bg-white/3 rounded-xl p-3 mt-4">
                 {adminRole === AdminRole.SUPER_ADMIN ? (
                   <>
-                    <label className="flex items-center gap-2 text-sm text-text-secondary cursor-pointer select-none">
-                      <input
-                        type="checkbox"
-                        checked={manualOverride}
-                        onChange={(e) => setManualOverride(e.target.checked)}
-                        className="w-4 h-4 rounded bg-background border-border-subtle text-accent-purple focus:ring-accent-purple"
-                      />
-                      <span>Manual Override Refund Check</span>
-                    </label>
+                    <Checkbox
+                      checked={manualOverride}
+                      onChange={(e) => setManualOverride(e.target.checked)}
+                      label="Manual Override Refund Check"
+                    />
                     {manualOverride && (
                       <>
                         <div className="space-y-1.5">
@@ -159,12 +141,12 @@ export function ProcessRefundModal({
                               {overrideReason.trim().length}/10 min
                             </span>
                           </div>
-                          <textarea
+                          <Textarea
                             value={overrideReason}
                             onChange={(e) => setOverrideReason(e.target.value)}
                             placeholder="Provide reason for override (minimum 10 characters)..."
                             rows={2}
-                            className="w-full px-4 py-2 rounded-xl bg-background border border-border-subtle text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple resize-none"
+                            className="w-full resize-none"
                           />
                           {overrideReason.trim().length > 0 && overrideReason.trim().length < 10 && (
                             <p className="text-[11px] text-yellow-400">Override reason must be at least 10 characters.</p>
@@ -172,11 +154,10 @@ export function ProcessRefundModal({
                         </div>
                         <div className="space-y-1.5">
                           <label className="text-xs text-text-secondary block">Gateway Refund ID *</label>
-                          <input
+                          <Input
                             value={gatewayId}
                             onChange={(e) => setGatewayId(e.target.value)}
                             placeholder="e.g. rfnd_xxx from Razorpay"
-                            className="w-full px-4 py-2.5 rounded-xl bg-background border border-border-subtle text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple"
                           />
                         </div>
                       </>
@@ -190,13 +171,21 @@ export function ProcessRefundModal({
               </div>
             )}
             <div className="space-y-1.5 mt-4">
-              <label className="text-sm text-text-secondary">Admin Notes</label>
-              <input value={adminNotes} onChange={(e) => setAdminNotes(e.target.value)} placeholder="Notes for audit log..." className="w-full px-4 py-2.5 rounded-xl bg-background border border-border-subtle text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple" />
+              <label className="text-sm text-text-secondary block">Admin Notes</label>
+              <Input
+                value={adminNotes}
+                onChange={(e) => setAdminNotes(e.target.value)}
+                placeholder="Notes for audit log..."
+              />
             </div>
             {action === 'approve' && !needsOverride && (
               <div className="space-y-1.5 mt-4">
-                <label className="text-sm text-text-secondary">Gateway Refund ID (optional)</label>
-                <input value={gatewayId} onChange={(e) => setGatewayId(e.target.value)} placeholder="e.g. rfnd_xxx from Razorpay" className="w-full px-4 py-2.5 rounded-xl bg-background border border-border-subtle text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple" />
+                <label className="text-sm text-text-secondary block">Gateway Refund ID (optional)</label>
+                <Input
+                  value={gatewayId}
+                  onChange={(e) => setGatewayId(e.target.value)}
+                  placeholder="e.g. rfnd_xxx from Razorpay"
+                />
               </div>
             )}
             {isError && (
