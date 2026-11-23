@@ -14,7 +14,7 @@ import { ScannerVerifyForm } from '@/components/scanner/ScannerVerifyForm';
 import { TicketValidationModal } from '@/components/scanner/TicketValidationModal';
 import { useScannerState } from '@/hooks/useScannerState';
 import { adminGetEvents } from '@/lib/api/admin/event.service';
-import { EventStatus } from '@mad/shared';
+import { EventStatus, isEventLiveForScanning } from '@mad/shared';
 import { Button } from '@mad/ui';
 
 export default function ScannerPage() {
@@ -47,25 +47,13 @@ export default function ScannerPage() {
   // Camera is paused whenever a result is visible, a scan is in-flight, or not on scan tab
   const isPaused = lastValidationResult !== null || scannerState === 'Processing' || activeTab !== 'scan';
 
-  // Fetch published events for selection and exclude expired/past events
+  // Fetch published events for selection and restrict strictly to live events (SSOT)
   const { data: eventsRes, isLoading: isLoadingEvents } = useQuery({
     queryKey: ['admin-events', { status: EventStatus.PUBLISHED }],
     queryFn: () => adminGetEvents({ limit: 100, status: EventStatus.PUBLISHED }),
   });
 
-  const now = Date.now();
-  const events = (eventsRes?.items || []).filter((ev) => {
-    if (ev.status === EventStatus.COMPLETED || ev.status === EventStatus.ARCHIVED || ev.status === EventStatus.CANCELLED) {
-      return false;
-    }
-    if (ev.endDate) {
-      return new Date(ev.endDate).getTime() >= now;
-    }
-    if (ev.startDate) {
-      return new Date(ev.startDate).getTime() + 24 * 60 * 60 * 1000 >= now;
-    }
-    return true;
-  });
+  const events = (eventsRes?.items || []).filter((ev) => isEventLiveForScanning(ev));
 
   const handleNextScan = () => {
     setLastValidationResult(null);
@@ -182,10 +170,14 @@ export default function ScannerPage() {
           </div>
         </div>
       ) : (
-        <div className="glass rounded-2xl border border-border-subtle p-12 text-center text-text-secondary bg-background-card/30 space-y-2">
-          <p className="text-base font-bold text-white">No Event Selected</p>
+        <div className="glass rounded-2xl border border-border-subtle p-8 sm:p-12 text-center text-text-secondary bg-background-card/30 space-y-2">
+          <p className="text-base font-bold text-white">
+            {events.length === 0 ? 'No Live Events Today' : 'No Event Selected'}
+          </p>
           <p className="text-xs text-text-muted">
-            Please choose a target event from the dropdown above to initialize the gate scanner.
+            {events.length === 0
+              ? 'There are currently no active or live events scheduled for check-in today.'
+              : 'Please choose an active target event from the dropdown above to initialize the gate scanner.'}
           </p>
         </div>
       )}
