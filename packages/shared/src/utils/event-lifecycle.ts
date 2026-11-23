@@ -10,7 +10,7 @@ export type EventLifecycleState =
   | 'postponed';
 
 export interface BaseEventForLifecycle {
-  status: string;
+  status?: string;
   startDate: Date | string;
   endDate?: Date | string | null;
   bookingStartDate?: Date | string | null;
@@ -32,7 +32,7 @@ export function getEventEndDate(event: BaseEventForLifecycle): Date {
  * Derives the effective lifecycle state of an event based on its administrative status and dates.
  */
 export function deriveEventLifecycleState(event: BaseEventForLifecycle): EventLifecycleState {
-  const status = event.status as EventStatus;
+  const status = (event.status || EventStatus.PUBLISHED) as EventStatus;
 
   // Administrative statuses that override dates
   if (
@@ -102,7 +102,7 @@ export function isEventLiveForScanning(
   event: BaseEventForLifecycle,
   earlyCheckInHours: number = 4
 ): boolean {
-  const status = event.status as EventStatus;
+  const status = (event.status || EventStatus.PUBLISHED) as EventStatus;
   if (
     status === EventStatus.DRAFT ||
     status === EventStatus.CANCELLED ||
