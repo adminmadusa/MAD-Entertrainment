@@ -110,6 +110,13 @@ Reusable cross-cutting logic must live in shared packages:
 
 Before creating any utility, type, schema, constant, or validation, search the repository first. Reuse existing implementations. Do not create duplicates.
 
+### Contract Boundary & Runtime Governance
+* **Shared Contracts**: Payloads, responses, DTOs, domain enums, and validation schemas exchanged across apps belong in shared packages.
+* **Internal Schemas**: MongoDB models, route-specific parameters, and controller-internal context types remain localized within their respective applications.
+* **Real Overlaps Only**: Do not forcibly move internal schemas to shared packages. Only consolidate when a business rule truly overlaps across boundaries, and confirm that trimming, default values, and normalization are identical first.
+* **No Fake Success**: Production code must fail fast on unrecoverable errors. Synthetic success payloads and test doubles belong exclusively in test harnesses (`*.test.ts`, `vitest`).
+* **Deprecation Before Deletion**: Confirm zero consumers across all apps and an in-flight client compatibility window before deleting legacy interfaces.
+
 ### Frontend-Backend Contract Governance
 Every UI feature must trace:
 $$\text{Page} \longrightarrow \text{API} \longrightarrow \text{Service} \longrightarrow \text{Database}$$

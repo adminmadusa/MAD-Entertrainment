@@ -140,6 +140,19 @@ The monorepo contains five internal packages under `packages/*`:
 - **`@mad/utils`**: Allowed deps: `@mad/types`. Forbidden deps: React, Next.js, Express, Mongoose.
 - **`@mad/validations`**: Allowed deps: `zod`. Forbidden deps: Next.js, Mongoose, Express.
 
+#### Shared Contract vs. Internal Schema Boundary
+To preserve clean package boundaries and prevent unnecessary abstraction churn, data contracts are governed by strict localization:
+- **Shared Contracts (`@mad/shared`, `@mad/types`, `@mad/validations`)**:
+  - API request payloads and response DTOs communicated across applications and services.
+  - Shared domain enums (e.g. `BookingStatus`, `EventStatus`) and canonical query keys.
+  - Cross-boundary input validation schemas consumed by both frontend forms and backend controllers.
+- **Internal Schemas (Strictly Localized)**:
+  - Database document models and Mongoose schemas (must reside exclusively under `apps/server/src/models/`).
+  - Route-specific internal input parsing, middleware context interfaces, and controller-internal helper types.
+  - Application-internal state models (e.g. Next.js page state, admin UI filter state).
+- **Consolidation Principle**:
+  Do not forcibly move internal models into shared packages. Only consolidate when a business rule truly overlaps across client and server boundaries. Before consolidating, verify that normalization behavior (trimming, case sensitivity, default values, error messages) is 100% identical.
+
 ### Future Recommendations
 - See *Appendix: Future Architecture Considerations* — Proposal 2: "Centralized Service Contracts (`@mad/contracts`)" for proposals regarding validation contracts.
   *Status*: Possible Future Enhancement (Not Approved) · Untracked
@@ -412,6 +425,14 @@ The repository enforces code standards at three levels:
 - **Render States**: Silent UI fallbacks are forbidden. Skeletons, error overlays, offline notifications, unauthorized blocks, and empty-state placeholders must be rendered to handle the six required UX states (Loading, Empty, Error, Offline, Unauthorized, Success) from `AGENTS.MD`.
 - **Middleware Rate-Limiters**: Eager rate limiters using Redis stores must be declared as lazy wrappers, initialized inside `server.ts` after Redis is ready.
 - **Placeholder Routes**: Backend routes returning `501 Not Implemented` are strictly prohibited in the production branch. Every route registered in Express must have a complete, tested controller implementation or be omitted entirely until ready.
+- **No Fake Success & Production Fallback Policy**: Production code must never mask unrecoverable errors with synthetic success payloads or swallow fatal exceptions silently.
+  - *Fail-Fast Rule*: Unrecoverable failures, invalid payment authorizations, missing database records, or gateway timeouts must fail fast, return proper HTTP status codes (e.g. 400, 404, 422, 502), and trigger explicit UI error boundaries.
+  - *Test Mock Isolation*: Stubs, test doubles, and synthetic responses belong exclusively within test harnesses (`*.test.ts`, `vitest`). They are strictly forbidden from leaking into production runtime execution paths.
+- **Compatibility Deprecation Checklist**: The repository maintains necessary compatibility code rather than pursuing a destructive "zero legacy code" crusade. Before retiring or physically deleting any legacy route, adapter, or schema, confirm:
+  1. *Zero Active Consumers*: Confirm zero imports across all applications (`apps/web`, `apps/admin`, `apps/server`).
+  2. *Client Compatibility Window*: Verify no active in-flight mobile or browser client versions depend on the contract.
+  3. *Deprecation Notice Cycle*: Log structured deprecation notices prior to physical deletion.
+- **Static Tooling Baseline**: The repository relies on a lean, established CI verification suite (strict TypeScript, ESLint, Vitest, Turbo build, TruffleHog, and the 300-line code quality validator). Experimental or noisy dead-code/duplicate analyzer tooling must not be introduced prematurely without an established baseline and empirical evidence of an unaddressed gap.
 
 ### Future Recommendations
 - See *Appendix: Future Architecture Considerations* — Proposal 7: "Automated Client API Code Generation" for client-side service generation proposals.
