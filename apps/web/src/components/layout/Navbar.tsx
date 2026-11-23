@@ -34,6 +34,21 @@ export function Navbar() {
 
   const firstName = user?.firstName || user?.name?.split(' ')[0] || 'Member';
 
+  const navCTA = useMemo(() => {
+    if (!pathname || pathname === '/') {
+      return { label: 'Book Now', href: '/events' };
+    }
+    if (pathname === '/events') {
+      return isAuthenticated
+        ? { label: 'My Tickets', href: '/dashboard?tab=tickets' }
+        : { label: 'Find Tickets', href: '/tickets' };
+    }
+    if (pathname.startsWith('/events/')) {
+      return { label: 'Browse Events', href: '/events' };
+    }
+    return { label: 'Browse Events', href: '/events' };
+  }, [pathname, isAuthenticated]);
+
   const dynamicLinks = useMemo(() => {
     return isAuthenticated
       ? [
@@ -127,10 +142,10 @@ export function Navbar() {
           </div>
           <UserDropdown />
           <Link
-            href="/events"
+            href={navCTA.href}
             className="px-5 py-2.5 text-sm font-semibold btn-gradient text-white rounded-xl shadow-glow-sm hover:scale-[1.03] active:scale-95 transition-transform focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           >
-            Book Now
+            {navCTA.label}
           </Link>
         </div>
 
@@ -173,6 +188,7 @@ export function Navbar() {
           firstName={firstName}
           handleLogout={handleLogout}
           openAuthModal={openAuthModal}
+          cta={navCTA}
         />
       )}
 
