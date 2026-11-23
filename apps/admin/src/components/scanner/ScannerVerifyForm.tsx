@@ -44,7 +44,7 @@ export function ScannerVerifyForm({
       role="tabpanel"
       id="tabpanel-verify"
       aria-labelledby="tab-verify"
-      className="glass rounded-2xl border border-border-subtle p-6 md:p-8 bg-background-card/50 max-w-2xl mx-auto space-y-6"
+      className="glass rounded-2xl border border-border-subtle p-4 sm:p-6 md:p-8 bg-background-card/50 max-w-2xl mx-auto space-y-6"
     >
       <div className="text-center space-y-1">
         <h2 className="text-xl font-bold text-white tracking-tight">Manual Ticket Verification</h2>

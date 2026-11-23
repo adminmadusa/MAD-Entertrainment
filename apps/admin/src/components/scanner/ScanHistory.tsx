@@ -38,7 +38,7 @@ export function ScanHistory({
   setSearch,
 }: ScanHistoryProps) {
   return (
-    <div className="glass rounded-2xl border border-border-subtle p-6 space-y-5 bg-background-card/50">
+    <div className="glass rounded-2xl border border-border-subtle p-4 sm:p-6 space-y-5 bg-background-card/50">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h2 className="text-lg font-bold text-white tracking-tight">Gate Audit Log & History</h2>
@@ -46,7 +46,7 @@ export function ScanHistory({
         </div>
 
         {/* Filters with >= 44px touch targets */}
-        <div className="flex items-center gap-3 flex-wrap">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
           <div className="relative flex-1 sm:w-64">
             <input
               type="text"
@@ -75,7 +75,7 @@ export function ScanHistory({
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
-            className="bg-background border border-border-subtle text-white text-xs rounded-xl px-3.5 py-2.5 min-h-[44px] focus-ring"
+            className="w-full sm:w-auto bg-background border border-border-subtle text-white text-xs rounded-xl px-3.5 py-2.5 min-h-[44px] focus-ring"
             aria-label="Filter by scan status"
           >
             <option value="">All Statuses</option>
@@ -86,8 +86,70 @@ export function ScanHistory({
         </div>
       </div>
 
-      {/* History List */}
-      <div className="overflow-x-auto rounded-xl border border-white/5">
+      {/* Mobile History Cards View (< 768px, zero horizontal overflow) */}
+      <div className="space-y-3 md:hidden">
+        {isLoading ? (
+          <div className="py-12 text-center text-text-secondary">
+            <div className="inline-block w-5 h-5 border-2 border-accent-purple border-t-transparent rounded-full animate-spin mr-2" />
+            <span>Loading audit log entries...</span>
+          </div>
+        ) : items.length === 0 ? (
+          <div className="py-8">
+            <EmptyState
+              variant="table"
+              icon={search.trim() !== '' ? <Search /> : <Scan />}
+              title={search.trim() !== '' ? 'No matching scan records' : 'No scans recorded yet'}
+              description={search.trim() !== '' ? 'Try adjusting your search keywords or filter.' : 'Scans will appear here as attendees check in.'}
+            />
+          </div>
+        ) : (
+          items.map((item) => (
+            <div
+              key={item.id}
+              className="glass rounded-xl border border-white/5 p-4 space-y-2.5 bg-white/2 hover:bg-white/4 transition-colors"
+            >
+              <div className="flex items-center justify-between gap-2">
+                <span className="font-mono font-bold text-accent-purple text-xs truncate">
+                  {item.ticketId}
+                </span>
+                <span
+                  className={`inline-block px-2.5 py-1 rounded-md border text-xxs font-bold uppercase tracking-wider shrink-0 ${
+                    HISTORY_STATUS_STYLES[item.status] || 'bg-white/5 border-white/10 text-text-muted'
+                  }`}
+                >
+                  {item.status.replace('_', ' ')}
+                </span>
+              </div>
+              <div className="flex items-center justify-between text-xs pt-1 border-t border-white/5">
+                <span className="font-medium text-white truncate max-w-[180px]">
+                  {item.guestName || '—'}
+                </span>
+                <span className="text-text-secondary text-[11px] shrink-0">
+                  {item.tierName || 'Standard'}
+                </span>
+              </div>
+              <div className="flex items-center justify-between text-[11px] text-text-muted">
+                <span className="tabular-nums">
+                  {new Date(item.scannedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                </span>
+                <span className="capitalize">
+                  {item.offline ? (
+                    <span className="inline-flex items-center gap-1.5 text-blue-400 font-bold text-xxs">
+                      <span className="w-1.5 h-1.5 bg-blue-500 rounded-full" />
+                      Offline
+                    </span>
+                  ) : (
+                    `Source: ${item.scanSource}`
+                  )}
+                </span>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Desktop History Table View (>= 768px) */}
+      <div className="hidden md:block overflow-x-auto rounded-xl border border-white/5">
         <table className="w-full text-left text-xs border-collapse">
           <thead>
             <tr className="bg-white/5 border-b border-white/5 text-text-muted font-semibold">

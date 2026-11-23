@@ -10,7 +10,7 @@ export type EventLifecycleState =
   | 'postponed';
 
 export interface BaseEventForLifecycle {
-  status: string;
+  status?: string;
   startDate: Date | string;
   endDate?: Date | string | null;
   bookingStartDate?: Date | string | null;
@@ -32,7 +32,7 @@ export function getEventEndDate(event: BaseEventForLifecycle): Date {
  * Derives the effective lifecycle state of an event based on its administrative status and dates.
  */
 export function deriveEventLifecycleState(event: BaseEventForLifecycle): EventLifecycleState {
-  const status = event.status as EventStatus;
+  const status = (event.status || EventStatus.PUBLISHED) as EventStatus;
 
   // Administrative statuses that override dates
   if (
@@ -87,3 +87,43 @@ export function canBook(event: BaseEventForLifecycle): boolean {
 
   return true;
 }
+
+/**
+ * Determines whether an event is active/live for venue gate check-in and ticket scanning.
+ * Check-in is permitted if the event is currently 'live', or within an active check-in window
+ * (e.g. up to 4 hours prior to event start) on the day of the event until its end.
+ *
+ * Rules:
+ * - Non-admissible administrative states (DRAFT, CANCELLED, POSTPONED, ARCHIVED, COMPLETED) return false.
+ * - Concluded events (now > end) return false.
+ * - Distant future events (now < gateOpenTime) return false.
+ */
+export function isEventLiveForScanning(
+  event: BaseEventForLifecycle,
+  earlyCheckInHours: number = 4
+): boolean {
+  const status = (event.status || EventStatus.PUBLISHED) as EventStatus;
+  if (
+    status === EventStatus.DRAFT ||
+    status === EventStatus.CANCELLED ||
+    status === EventStatus.POSTPONED ||
+    status === EventStatus.ARCHIVED ||
+    status === EventStatus.COMPLETED
+  ) {
+    return false;
+  }
+
+  const now = Date.now();
+  const start = new Date(event.startDate).getTime();
+  const end = getEventEndDate(event).getTime();
+
+  // Past event: already concluded
+  if (now > end) {
+    return false;
+  }
+
+  // Live or within early check-in gate window
+  const gateOpenTime = start - earlyCheckInHours * 60 * 60 * 1000;
+  return now >= gateOpenTime && now <= end;
+}
+

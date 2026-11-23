@@ -20,7 +20,7 @@ export function ScannerTopBar({
   events,
 }: ScannerTopBarProps) {
   return (
-    <div className="glass rounded-2xl border border-border-subtle p-6 bg-background-card/50 space-y-4">
+    <div className="glass rounded-2xl border border-border-subtle p-4 sm:p-6 bg-background-card/50 space-y-4">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-black text-white tracking-tight">Gate Ticket Scanner</h1>
@@ -55,9 +55,13 @@ export function ScannerTopBar({
           value={selectedEventId}
           onChange={(e) => onSelectEventId(e.target.value)}
           className="w-full bg-background border border-border-subtle rounded-xl px-4 py-3 min-h-[48px] text-white text-sm focus-ring transition-all"
-          disabled={isLoadingEvents}
+          disabled={isLoadingEvents || events.length === 0}
         >
-          <option value="">-- Choose target event to validate tickets --</option>
+          {events.length === 0 ? (
+            <option value="">-- No live events active today --</option>
+          ) : (
+            <option value="">-- Choose live event to validate tickets ({events.length} active) --</option>
+          )}
           {events.map((ev) => (
             <option key={ev._id} value={ev._id}>
               {ev.title} ({formatEventDate(ev.startDate)})
