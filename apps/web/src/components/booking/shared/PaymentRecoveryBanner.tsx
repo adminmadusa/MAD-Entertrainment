@@ -3,6 +3,7 @@
 import Link from 'next/link';
 
 import { useCountdown } from '@/hooks/use-countdown.hook';
+import { APP_EMAILS } from '@mad/shared';
 import type { Booking } from '@mad/types';
 
 interface PaymentRecoveryBannerProps {
@@ -30,7 +31,7 @@ export function PaymentRecoveryBanner({ booking }: PaymentRecoveryBannerProps) {
         <Link href={`/checkout/${booking.bookingId}`} className="px-6 py-2.5 rounded-xl btn-gradient text-white font-bold text-sm shadow-glow-sm hover:scale-[1.02] active:scale-[0.98] transition-all text-center">
           Complete Payment
         </Link>
-        <a href="mailto:support@mad-entertainment.com" className="px-6 py-2.5 rounded-xl border border-white/10 text-white/80 hover:bg-white/5 font-bold text-sm hover:scale-[1.02] active:scale-[0.98] transition-all text-center">
+        <a href={`mailto:${APP_EMAILS.SUPPORT}`} className="px-6 py-2.5 rounded-xl border border-white/10 text-white/80 hover:bg-white/5 font-bold text-sm hover:scale-[1.02] active:scale-[0.98] transition-all text-center">
           Contact Support
         </a>
       </div>

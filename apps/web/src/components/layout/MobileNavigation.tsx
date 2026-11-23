@@ -19,6 +19,7 @@ interface MobileNavigationProps {
   firstName: string;
   handleLogout: () => void;
   openAuthModal: () => void;
+  cta?: { label: string; href: string };
 }
 
 export const MobileNavigation = memo(function MobileNavigation({
@@ -29,6 +30,7 @@ export const MobileNavigation = memo(function MobileNavigation({
   firstName,
   handleLogout,
   openAuthModal,
+  cta = { label: 'Book Now', href: '/events' },
 }: MobileNavigationProps) {
   const navigatingRef = useRef(false);
 
@@ -115,14 +117,14 @@ export const MobileNavigation = memo(function MobileNavigation({
         <div className="mt-3 pt-3 border-t border-border-subtle flex flex-col gap-2">
           {authActionSection}
           <Link
-            href="/events"
+            href={cta.href}
             onClick={() => {
               navigatingRef.current = true;
               onClose();
             }}
             className="w-full py-3 px-4 btn-gradient text-white rounded-xl font-semibold text-center block focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           >
-            Book Now
+            {cta.label}
           </Link>
         </div>
       </div>

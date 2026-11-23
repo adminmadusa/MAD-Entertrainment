@@ -52,6 +52,16 @@ describe('MobileNavigation Component', () => {
     expect(screen.getByText('Book Now')).toBeInTheDocument();
   });
 
+  it('renders custom CTA when provided', () => {
+    render(
+      <MobileNavigation
+        {...defaultProps}
+        cta={{ label: 'Find Tickets', href: '/tickets' }}
+      />
+    );
+    expect(screen.getByText('Find Tickets')).toBeInTheDocument();
+  });
+
   it('calls onClose when a link is clicked', () => {
     const onClose = vi.fn();
     render(<MobileNavigation {...defaultProps} onClose={onClose} />);

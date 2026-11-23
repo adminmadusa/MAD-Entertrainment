@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { ImageWrapper } from '@/components/common/ImageWrapper';
+import { APP_EMAILS } from '@mad/shared';
 import type { DJOperator } from '@mad/types';
 
 interface DjHeroBannerProps {
@@ -88,7 +89,7 @@ export function DjHeroBanner({ dj }: DjHeroBannerProps) {
                 Book Tickets
               </Link>
               <a
-                href={`mailto:bookings@madentertainment.in?subject=Booking Inquiry: ${dj.name}`}
+                href={`mailto:${APP_EMAILS.BOOKINGS}?subject=Booking Inquiry: ${dj.name}`}
                 className="px-5 py-2.5 text-xs font-semibold text-text-primary glass border border-border-subtle hover:border-accent-purple/40 hover:bg-accent-purple/5 rounded-xl transition-all block text-center"
               >
                 Send Inquiry
