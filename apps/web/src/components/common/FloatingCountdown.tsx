@@ -167,7 +167,7 @@ export function FloatingCountdown({ popup, onClose }: FloatingCountdownProps) {
                 onClose();
               }}
             >
-              {popup.ctaText || 'Book Now'}
+              {popup.ctaText || (popup.linkedEvent ? 'Book Tickets' : 'Explore Offer')}
             </Link>
           )}
           <Link
@@ -178,7 +178,7 @@ export function FloatingCountdown({ popup, onClose }: FloatingCountdownProps) {
               onClose();
             }}
           >
-            View More Events
+            Browse Events
           </Link>
         </div>
       </div>

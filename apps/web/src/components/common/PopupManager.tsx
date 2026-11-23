@@ -114,7 +114,7 @@ function PopupModal({ popup, onClose }: PopupModalProps) {
               className="flex-1 text-center px-6 py-3 btn-gradient text-white font-bold rounded-xl shadow-glow-sm hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-accent-purple transition-all"
               onClick={onClose}
             >
-              {popup.ctaText || 'Book Now'}
+              {popup.ctaText || (popup.linkedEvent ? 'Book Tickets' : 'Explore Offer')}
             </Link>
           )}
           <Link
