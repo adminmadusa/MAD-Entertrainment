@@ -19,7 +19,7 @@ export function ScannerNavTabs({
     <div
       role="tablist"
       aria-label="Scanner sections"
-      className="glass rounded-2xl border border-border-subtle bg-background-card/50 p-1.5 flex gap-1 overflow-x-auto"
+      className="glass rounded-2xl border border-border-subtle bg-background-card/50 p-1.5 flex gap-1 overflow-x-auto scrollbar-none scroll-smooth"
     >
       {/* 1. Live Scan Tab */}
       <button

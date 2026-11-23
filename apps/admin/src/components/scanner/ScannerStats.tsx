@@ -24,9 +24,9 @@ export function ScannerStats({ stats, isLoading }: ScannerStatsProps) {
       </div>
 
       {/* Primary KPI Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {/* Total Tickets */}
-        <div className="glass rounded-2xl border border-border-subtle p-5 bg-background-card/50 shadow-sm transition-all hover:border-sky-500/30">
+        <div className="glass rounded-2xl border border-border-subtle p-4 sm:p-5 bg-background-card/50 shadow-sm transition-all hover:border-sky-500/30">
           <div className="flex items-center justify-between">
             <p className="text-text-muted text-xs font-bold uppercase tracking-wider">Total Active</p>
             <span className="w-2 h-2 rounded-full bg-sky-400" />
@@ -38,7 +38,7 @@ export function ScannerStats({ stats, isLoading }: ScannerStatsProps) {
         </div>
 
         {/* Checked In */}
-        <div className="glass rounded-2xl border border-border-subtle p-5 bg-background-card/50 shadow-sm transition-all hover:border-emerald-500/30">
+        <div className="glass rounded-2xl border border-border-subtle p-4 sm:p-5 bg-background-card/50 shadow-sm transition-all hover:border-emerald-500/30">
           <div className="flex items-center justify-between">
             <p className="text-text-muted text-xs font-bold uppercase tracking-wider">Checked In</p>
             <span className="w-2 h-2 rounded-full bg-emerald-400" />
@@ -50,7 +50,7 @@ export function ScannerStats({ stats, isLoading }: ScannerStatsProps) {
         </div>
 
         {/* Remaining */}
-        <div className="glass rounded-2xl border border-border-subtle p-5 bg-background-card/50 shadow-sm transition-all hover:border-amber-500/30">
+        <div className="glass rounded-2xl border border-border-subtle p-4 sm:p-5 bg-background-card/50 shadow-sm transition-all hover:border-amber-500/30">
           <div className="flex items-center justify-between">
             <p className="text-text-muted text-xs font-bold uppercase tracking-wider">Remaining</p>
             <span className="w-2 h-2 rounded-full bg-amber-400" />
@@ -62,7 +62,7 @@ export function ScannerStats({ stats, isLoading }: ScannerStatsProps) {
         </div>
 
         {/* Success Rate */}
-        <div className="glass rounded-2xl border border-border-subtle p-5 bg-background-card/50 shadow-sm transition-all hover:border-accent-purple/30">
+        <div className="glass rounded-2xl border border-border-subtle p-4 sm:p-5 bg-background-card/50 shadow-sm transition-all hover:border-accent-purple/30">
           <div className="flex items-center justify-between">
             <p className="text-text-muted text-xs font-bold uppercase tracking-wider">Gate Success Rate</p>
             <span className="w-2 h-2 rounded-full bg-accent-purple" />
@@ -75,8 +75,8 @@ export function ScannerStats({ stats, isLoading }: ScannerStatsProps) {
       </div>
 
       {/* Operational Health & Sync Panel */}
-      <div className="glass rounded-2xl border border-border-subtle p-5 bg-background-card/50 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-        <div className="flex flex-wrap items-center gap-6 text-xs">
+      <div className="glass rounded-2xl border border-border-subtle p-4 sm:p-5 bg-background-card/50 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div className="flex flex-wrap items-center gap-4 sm:gap-6 text-xs">
           <div className="flex items-center gap-2">
             <span className="text-text-secondary font-medium">Duplicate Scans:</span>
             <span className={`px-2.5 py-0.5 rounded-lg text-xs font-bold ${

@@ -112,7 +112,7 @@ export function ScannerCamera({ isOffline, onScan, scannerState, isPaused }: Sca
   return (
     <div
       ref={containerRef}
-      className={`glass rounded-2xl border border-border-subtle p-6 space-y-5 transition-all ${
+      className={`glass rounded-2xl border border-border-subtle p-4 sm:p-6 space-y-5 transition-all ${
         isFullscreen
           ? 'bg-[#0f111a] w-full h-full max-w-none flex flex-col justify-center p-8'
           : 'bg-background-card/50'
@@ -185,7 +185,7 @@ export function ScannerCamera({ isOffline, onScan, scannerState, isPaused }: Sca
                 Align QR Code Within Frame
               </p>
             </div>
-            <div className="w-60 h-60 relative my-auto">
+            <div className="w-48 h-48 sm:w-60 sm:h-60 relative my-auto">
               <span className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-emerald-400 rounded-tl-xl" />
               <span className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-emerald-400 rounded-tr-xl" />
               <span className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-emerald-400 rounded-bl-xl" />
