@@ -103,9 +103,9 @@ export function normalizeInitialEventForm(initialValues: Partial<AdminEvent>) {
     highlightsInput: initialValues.highlights?.join(', ') || '',
     countryCode: initialValues.countryCode || 'US',
     convenienceFee:
-      initialValues.convenienceFee !== undefined ? initialValues.convenienceFee : '',
+      (initialValues.convenienceFee !== undefined ? initialValues.convenienceFee : '') as number | '',
     taxPercentage:
-      initialValues.taxPercentage !== undefined ? initialValues.taxPercentage : '',
+      (initialValues.taxPercentage !== undefined ? initialValues.taxPercentage : '') as number | '',
     tags: initialValues.tags?.join(', ') || '',
     requireTerms: initialValues.requireTerms ?? true,
     requireAgeConfirmation: !!initialValues.requireAgeConfirmation,
