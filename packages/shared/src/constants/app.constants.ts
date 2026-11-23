@@ -66,5 +66,14 @@ export const API_ROUTES = {
   MEDIA: '/api/media',
 } as const;
 
+export const APP_EMAILS = {
+  SUPPORT: 'support@madentertainments.net',
+  BOOKINGS: 'bookings@madentertainments.net',
+  PRIVACY: 'privacy@madentertainments.net',
+  BILLING: 'billing@madentertainments.net',
+  SECURITY: 'security@madentertainments.net',
+  LEGAL: 'legal@madentertainments.net',
+} as const;
+
 export const SUPPORTED_CURRENCIES = ['INR', 'USD', 'GBP', 'EUR'] as const;
 export type SupportedCurrency = typeof SUPPORTED_CURRENCIES[number];

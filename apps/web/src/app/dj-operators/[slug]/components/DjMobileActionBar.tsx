@@ -2,6 +2,8 @@
 
 import Link from 'next/link';
 
+import { APP_EMAILS } from '@mad/shared';
+
 interface DjMobileActionBarProps {
   djName: string;
 }
@@ -16,7 +18,7 @@ export function DjMobileActionBar({ djName }: DjMobileActionBarProps) {
         Book Tickets
       </Link>
       <a
-        href={`mailto:bookings@madentertainment.in?subject=Booking Inquiry: ${djName}`}
+        href={`mailto:${APP_EMAILS.BOOKINGS}?subject=Booking Inquiry: ${djName}`}
         className="flex-1 py-3 text-sm font-semibold text-text-primary glass border border-border-subtle hover:border-accent-purple/40 hover:bg-accent-purple/5 rounded-xl transition-all text-center flex items-center justify-center"
       >
         Send Inquiry
