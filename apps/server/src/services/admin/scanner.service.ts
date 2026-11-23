@@ -1,6 +1,7 @@
 import { Types } from 'mongoose';
 
 import { BookingStatus, normalizeTicketReference } from '@mad/shared';
+import type { ValidationResult, ValidationStatus } from '@mad/types';
 
 import { AuditLogModel } from '../../models/audit-log.schema';
 import { Booking } from '../../models/booking.schema';
@@ -15,18 +16,7 @@ export interface ScanRequestPayload {
   offline?: boolean;
 }
 
-export type ValidationStatus = 'SUCCESS' | 'ALREADY_SCANNED' | 'INVALID' | 'EXPIRED' | 'WRONG_EVENT' | 'OFFLINE_QUEUED' | 'ERROR';
-
-export interface ValidationResult {
-  status: ValidationStatus;
-  ticketId: string;
-  tierName?: string;
-  admits?: number;
-  message?: string;
-  scannedAt?: string;
-  attendeeEmail?: string;
-  guestName?: string;
-}
+export type { ValidationResult, ValidationStatus };
 
 export async function validateAndCheckInTicket(payload: ScanRequestPayload): Promise<ValidationResult> {
   const { ticketId, eventId, scannerId, requestId } = payload;

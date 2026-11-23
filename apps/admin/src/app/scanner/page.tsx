@@ -118,7 +118,7 @@ export default function ScannerPage() {
               <div className="max-w-2xl mx-auto space-y-5">
                 <ScannerCamera
                   isOffline={isOffline}
-                  onScan={submitScan}
+                  onScan={(code) => submitScan(code, 'camera')}
                   scannerState={scannerState}
                   isPaused={isPaused}
                 />
@@ -130,7 +130,7 @@ export default function ScannerPage() {
             {activeTab === 'verify' && (
               <ScannerVerifyForm
                 scannerState={scannerState}
-                onSubmit={submitScan}
+                onSubmit={(code) => submitScan(code, 'manual')}
                 onBackToScan={() => setActiveTab('scan')}
               />
             )}

@@ -62,17 +62,10 @@ export function useScannerState({ initialEventId = '' }: UseScannerStateProps = 
     setSyncResultSummary,
     refreshOfflineCount,
     triggerOfflineSync,
-  } = useOfflineSync({
-    selectedEventId,
-    isOffline,
-    onSyncCompleted,
-  });
+  } = useOfflineSync({ selectedEventId, isOffline, onSyncCompleted });
 
   // 3. Scanner History Query Hook
-  const historyQuery = useScannerHistoryQuery({
-    selectedEventId,
-    isOffline,
-  });
+  const historyQuery = useScannerHistoryQuery({ selectedEventId, isOffline });
 
   // 4. React Query: Stats query
   const {
@@ -88,21 +81,21 @@ export function useScannerState({ initialEventId = '' }: UseScannerStateProps = 
 
   // 5. Unified derived statistics strategy
   const stats = useMemo<ScannerStats | null>(
-    () =>
-      computeScannerStats(
-        selectedEventId,
-        serverStats,
-        isOffline,
-        offlineCount,
-        optimisticCheckInCount
-      ),
+    () => computeScannerStats(selectedEventId, serverStats, isOffline, offlineCount, optimisticCheckInCount),
     [selectedEventId, serverStats, isOffline, offlineCount, optimisticCheckInCount]
   );
 
   // 6. Online Scan Mutation
   const scanMutation = useMutation({
-    mutationFn: ({ ticketId, requestId }: { ticketId: string; requestId: string }) =>
-      adminScanTicket(ticketId, selectedEventId, requestId, 'camera'),
+    mutationFn: ({
+      ticketId,
+      requestId,
+      source = 'camera',
+    }: {
+      ticketId: string;
+      requestId: string;
+      source?: 'camera' | 'manual' | 'hardware';
+    }) => adminScanTicket(ticketId, selectedEventId, requestId, source),
     onSuccess: (data: ScanResponse) => {
       setScannerState('Success');
       setLastValidationResult({
@@ -121,8 +114,7 @@ export function useScannerState({ initialEventId = '' }: UseScannerStateProps = 
     },
     onError: (err: any, variables) => {
       const apiErr = extractApiError(err);
-      const isDuplicate =
-        apiErr.message?.includes('already used') || apiErr.message?.includes('Already checked');
+      const isDuplicate = apiErr.message?.includes('already used') || apiErr.message?.includes('Already checked');
       playFailure();
 
       const failedTicketId = (apiErr.details as any)?.ticketId || variables?.ticketId || '';
@@ -149,10 +141,9 @@ export function useScannerState({ initialEventId = '' }: UseScannerStateProps = 
 
   // 7. Submit Ticket Scan coordinator
   const submitScan = useCallback(
-    async (rawTicketId: string) => {
+    async (rawTicketId: string, source: 'camera' | 'manual' | 'hardware' = 'camera') => {
       const ticketId = normalizeTicketReference(rawTicketId);
-      if (!selectedEventId || !ticketId) return;
-      if (scannerState === 'Processing') return;
+      if (!selectedEventId || !ticketId || scannerState === 'Processing') return;
 
       setScannerState('Processing');
       setLastValidationResult(null);
@@ -161,10 +152,7 @@ export function useScannerState({ initialEventId = '' }: UseScannerStateProps = 
 
       if (isOffline) {
         try {
-          const { saveOfflineScan, isDuplicateScan } = await import(
-            '../lib/offline-scanner.service'
-          );
-
+          const { saveOfflineScan, isDuplicateScan } = await import('../lib/offline-scanner.service');
           const duplicate = await isDuplicateScan(ticketId, selectedEventId);
           if (duplicate) {
             setScannerState('Duplicate');
@@ -200,17 +188,10 @@ export function useScannerState({ initialEventId = '' }: UseScannerStateProps = 
           playFailure();
         }
       } else {
-        scanMutation.mutate({ ticketId, requestId });
+        scanMutation.mutate({ ticketId, requestId, source });
       }
     },
-    [
-      selectedEventId,
-      isOffline,
-      scanMutation,
-      refreshOfflineCount,
-      setOptimisticCheckInCount,
-      scannerState,
-    ]
+    [selectedEventId, isOffline, scanMutation, refreshOfflineCount, setOptimisticCheckInCount, scannerState]
   );
 
   return {
