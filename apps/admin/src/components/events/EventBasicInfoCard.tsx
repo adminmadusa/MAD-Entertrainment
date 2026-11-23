@@ -1,20 +1,10 @@
 import React from 'react';
 
 import { type AdminCategory } from '@/lib/api/admin/category.service';
-import { EVENT_CATEGORY_LABELS, EventStatus, getCountryConfig, COUNTRY_CONFIG } from '@mad/shared';
+import { EVENT_CATEGORY_LABELS, EventStatus, getCountryConfig, COUNTRY_CONFIG, EVENT_STATUS_METADATA } from '@mad/shared';
 import { FormField, Input, Textarea } from '@mad/ui';
 
 import { EventVenueInput } from './EventVenueInput';
-
-
-const EVENT_STATUS_LABELS: Partial<Record<EventStatus, string>> = {
-  [EventStatus.DRAFT]: 'Draft',
-  [EventStatus.PUBLISHED]: 'Published',
-  [EventStatus.POSTPONED]: 'Postponed',
-  [EventStatus.COMPLETED]: 'Completed',
-  [EventStatus.CANCELLED]: 'Cancelled',
-  [EventStatus.ARCHIVED]: 'Archived',
-};
 
 const inputCls =
   'w-full px-4 py-2.5 rounded-xl bg-background border border-border-subtle text-sm text-text-primary placeholder:text-text-secondary focus:outline-none focus:border-accent-purple focus:ring-2 focus:ring-accent-purple/50 transition-colors';
@@ -125,7 +115,7 @@ export const EventBasicInfoCard = React.memo(function EventBasicInfoCard({
             >
               {statusOptions.map((option) => (
                 <option key={option} value={option} className="bg-background-card">
-                  {EVENT_STATUS_LABELS[option] ?? option}
+                  {EVENT_STATUS_METADATA[option]?.label ?? option}
                 </option>
               ))}
             </select>

@@ -1,25 +1,11 @@
 import React from 'react';
 
 import { type AdminTier } from '@/lib/api/admin/tier.service';
-import { getCountryConfig } from '@mad/shared';
+import { getCountryConfig, TicketTier } from '@mad/shared';
 import type { TicketProfile } from '@mad/types';
 import { FormField, Input } from '@mad/ui';
 
-
-const TICKET_TIER_NAMES = [
-  'general',
-  'silver',
-  'gold',
-  'platinum',
-  'vip',
-  'vvip',
-  'backstage',
-  'couple',
-  'group',
-  'family',
-  'early_bird',
-  'custom',
-];
+const TICKET_TIER_NAMES = Object.values(TicketTier);
 
 const inputCls =
   'w-full px-4 py-2.5 rounded-xl bg-background border border-border-subtle text-sm text-text-primary placeholder:text-text-secondary focus:outline-none focus:border-accent-purple focus:ring-2 focus:ring-accent-purple/50 transition-colors';

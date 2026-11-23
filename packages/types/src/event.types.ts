@@ -133,6 +133,8 @@ export type Event = {
   taxLabel?: string;
   taxPercentage?: number;
   locale?: string;
+  convenienceFee?: number;
+  eventVersion?: number;
   galleryImages?: ImageAsset[];
 
   // Booking Eligibility (Single Source of Truth from Backend)

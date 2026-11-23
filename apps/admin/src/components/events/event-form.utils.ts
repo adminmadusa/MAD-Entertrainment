@@ -15,6 +15,20 @@ export interface EventFormValidationState {
   bannerImage: CloudinaryImage | null;
 }
 
+function validateDateOrder(state: EventFormValidationState): string | undefined {
+  if (!state.startDate) return 'Start date is required.';
+  const start = new Date(state.startDate).getTime();
+  const end = state.endDate ? new Date(state.endDate).getTime() : null;
+  const bookStart = state.bookingStartDate ? new Date(state.bookingStartDate).getTime() : null;
+  const bookEnd = state.bookingEndDate ? new Date(state.bookingEndDate).getTime() : null;
+
+  if (end && end <= start) return 'Event end date must be after event start date.';
+  if (bookStart && bookEnd && bookEnd <= bookStart) return 'Booking close date must be after booking open date.';
+  if (bookStart && bookStart >= start) return 'Booking open date must be before event start date.';
+  if (bookEnd && bookEnd > start) return 'Booking close date must be before or equal to event start date.';
+  return undefined;
+}
+
 export function validateEventFormStep(
   step: number,
   state: EventFormValidationState
@@ -27,26 +41,8 @@ export function validateEventFormStep(
       return { valid: false, error: 'Venue name is required.' };
     }
   } else if (step === 1) {
-    if (!state.startDate) {
-      return { valid: false, error: 'Start date is required.' };
-    }
-    const start = new Date(state.startDate).getTime();
-    const end = state.endDate ? new Date(state.endDate).getTime() : null;
-    const bookStart = state.bookingStartDate ? new Date(state.bookingStartDate).getTime() : null;
-    const bookEnd = state.bookingEndDate ? new Date(state.bookingEndDate).getTime() : null;
-
-    if (end && end <= start) {
-      return { valid: false, error: 'Event end date must be after event start date.' };
-    }
-    if (bookStart && bookEnd && bookEnd <= bookStart) {
-      return { valid: false, error: 'Booking close date must be after booking open date.' };
-    }
-    if (bookStart && bookStart >= start) {
-      return { valid: false, error: 'Booking open date must be before event start date.' };
-    }
-    if (bookEnd && bookEnd > start) {
-      return { valid: false, error: 'Booking close date must be before or equal to event start date.' };
-    }
+    const error = validateDateOrder(state);
+    if (error) return { valid: false, error };
   } else if (step === 2) {
     if (state.ticketingType === 'profile' && !state.selectedProfileId) {
       return { valid: false, error: 'Please select a ticket profile.' };
@@ -62,37 +58,9 @@ export function validateEventFormStep(
 export function validateEventFormAll(
   state: EventFormValidationState
 ): { valid: boolean; error?: string } {
-  if (!state.title.trim() || !state.description.trim()) {
-    return { valid: false, error: 'Title and description are required.' };
-  }
-  if (!state.venue.trim()) {
-    return { valid: false, error: 'Venue name is required.' };
-  }
-  if (!state.startDate) {
-    return { valid: false, error: 'Start date is required.' };
-  }
-  const start = new Date(state.startDate).getTime();
-  const end = state.endDate ? new Date(state.endDate).getTime() : null;
-  const bookStart = state.bookingStartDate ? new Date(state.bookingStartDate).getTime() : null;
-  const bookEnd = state.bookingEndDate ? new Date(state.bookingEndDate).getTime() : null;
-
-  if (end && end <= start) {
-    return { valid: false, error: 'Event end date must be after event start date.' };
-  }
-  if (bookStart && bookEnd && bookEnd <= bookStart) {
-    return { valid: false, error: 'Booking close date must be after booking open date.' };
-  }
-  if (bookStart && bookStart >= start) {
-    return { valid: false, error: 'Booking open date must be before event start date.' };
-  }
-  if (bookEnd && bookEnd > start) {
-    return { valid: false, error: 'Booking close date must be before or equal to event start date.' };
-  }
-  if (state.ticketingType === 'profile' && !state.selectedProfileId) {
-    return { valid: false, error: 'Please select a ticket profile.' };
-  }
-  if (!state.bannerImage) {
-    return { valid: false, error: 'Cover image is required.' };
+  for (let step = 0; step <= 3; step++) {
+    const result = validateEventFormStep(step, state);
+    if (!result.valid) return result;
   }
   return { valid: true };
 }
@@ -182,11 +150,7 @@ export interface BuildEventPayloadParams {
 }
 
 export function buildEventFormPayload(params: BuildEventPayloadParams): Partial<AdminEvent> {
-  const generatedSlug = params.title
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^[-]+|[-]+$/g, '');
+  const generatedSlug = params.title.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^[-]+|[-]+$/g, '');
   const isProfileType = params.ticketingType === 'profile';
   const country = getCountryConfig(params.countryCode);
   const resolvedTaxPercentage =
@@ -209,28 +173,11 @@ export function buildEventFormPayload(params: BuildEventPayloadParams): Partial<
     endDate: params.endDate ? new Date(params.endDate).toISOString() : undefined,
     requireTerms: params.requireTerms,
     requireAgeConfirmation: params.requireAgeConfirmation,
-    ageRestriction:
-      params.requireAgeConfirmation && params.ageRestriction
-        ? Number(params.ageRestriction)
-        : undefined,
-    tags: params.tags
-      .split(',')
-      .map((t) => t.trim())
-      .filter(Boolean),
-    highlights: Array.from(
-      new Set(
-        params.highlightsInput
-          .split(',')
-          .map((h) => h.trim())
-          .filter(Boolean)
-      )
-    ),
-    bookingStartDate: params.bookingStartDate
-      ? new Date(params.bookingStartDate).toISOString()
-      : undefined,
-    bookingEndDate: params.bookingEndDate
-      ? new Date(params.bookingEndDate).toISOString()
-      : undefined,
+    ageRestriction: params.requireAgeConfirmation && params.ageRestriction ? Number(params.ageRestriction) : undefined,
+    tags: params.tags.split(',').map((t) => t.trim()).filter(Boolean),
+    highlights: Array.from(new Set(params.highlightsInput.split(',').map((h) => h.trim()).filter(Boolean))),
+    bookingStartDate: params.bookingStartDate ? new Date(params.bookingStartDate).toISOString() : undefined,
+    bookingEndDate: params.bookingEndDate ? new Date(params.bookingEndDate).toISOString() : undefined,
     refundPolicy: params.refundPolicy.trim() || undefined,
     organizerName: params.organizerName.trim() || undefined,
     countryCode: country.countryCode,
@@ -238,10 +185,7 @@ export function buildEventFormPayload(params: BuildEventPayloadParams): Partial<
     taxLabel: country.taxLabel,
     taxPercentage: resolvedTaxPercentage,
     locale: country.locale,
-    convenienceFee:
-      params.convenienceFee !== undefined && params.convenienceFee !== ''
-        ? Number(params.convenienceFee)
-        : undefined,
+    convenienceFee: params.convenienceFee !== undefined && params.convenienceFee !== '' ? Number(params.convenienceFee) : undefined,
   };
 
   if (isProfileType) {
