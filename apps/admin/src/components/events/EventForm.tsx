@@ -6,7 +6,6 @@ import { type AdminEvent } from '@/lib/api/admin/event.service';
 
 import { useEventFormState } from './useEventFormState';
 import { EventFormWizardView } from './EventFormWizardView';
-import { EventFormStackedView } from './EventFormStackedView';
 
 export interface EventFormProps {
   initialValues?: Partial<AdminEvent>;
@@ -35,8 +34,6 @@ export const EventForm = forwardRef<EventFormHandle, EventFormProps>(function Ev
     getPayload,
   }));
 
-  const isCreateWizard = activeStep !== undefined;
-
   return (
     <div className="space-y-6">
       {displayError && (
@@ -50,15 +47,11 @@ export const EventForm = forwardRef<EventFormHandle, EventFormProps>(function Ev
         </motion.div>
       )}
 
-      {isCreateWizard ? (
-        <EventFormWizardView
-          activeStep={activeStep}
-          formState={formState}
-          onEditStep={onEditStep}
-        />
-      ) : (
-        <EventFormStackedView formState={formState} />
-      )}
+      <EventFormWizardView
+        activeStep={activeStep ?? 0}
+        formState={formState}
+        onEditStep={onEditStep}
+      />
     </div>
   );
 });

@@ -7,9 +7,26 @@ export interface EventFormValidationState {
   description: string;
   venue: string;
   startDate: string;
+  endDate?: string;
+  bookingStartDate?: string;
+  bookingEndDate?: string;
   ticketingType: 'custom' | 'profile';
   selectedProfileId: string;
   bannerImage: CloudinaryImage | null;
+}
+
+function validateDateOrder(state: EventFormValidationState): string | undefined {
+  if (!state.startDate) return 'Start date is required.';
+  const start = new Date(state.startDate).getTime();
+  const end = state.endDate ? new Date(state.endDate).getTime() : null;
+  const bookStart = state.bookingStartDate ? new Date(state.bookingStartDate).getTime() : null;
+  const bookEnd = state.bookingEndDate ? new Date(state.bookingEndDate).getTime() : null;
+
+  if (end && end <= start) return 'Event end date must be after event start date.';
+  if (bookStart && bookEnd && bookEnd <= bookStart) return 'Booking close date must be after booking open date.';
+  if (bookStart && bookStart >= start) return 'Booking open date must be before event start date.';
+  if (bookEnd && bookEnd > start) return 'Booking close date must be before or equal to event start date.';
+  return undefined;
 }
 
 export function validateEventFormStep(
@@ -24,9 +41,8 @@ export function validateEventFormStep(
       return { valid: false, error: 'Venue name is required.' };
     }
   } else if (step === 1) {
-    if (!state.startDate) {
-      return { valid: false, error: 'Start date is required.' };
-    }
+    const error = validateDateOrder(state);
+    if (error) return { valid: false, error };
   } else if (step === 2) {
     if (state.ticketingType === 'profile' && !state.selectedProfileId) {
       return { valid: false, error: 'Please select a ticket profile.' };
@@ -42,20 +58,9 @@ export function validateEventFormStep(
 export function validateEventFormAll(
   state: EventFormValidationState
 ): { valid: boolean; error?: string } {
-  if (!state.title.trim() || !state.description.trim()) {
-    return { valid: false, error: 'Title and description are required.' };
-  }
-  if (!state.venue.trim()) {
-    return { valid: false, error: 'Venue name is required.' };
-  }
-  if (!state.startDate) {
-    return { valid: false, error: 'Start date is required.' };
-  }
-  if (state.ticketingType === 'profile' && !state.selectedProfileId) {
-    return { valid: false, error: 'Please select a ticket profile.' };
-  }
-  if (!state.bannerImage) {
-    return { valid: false, error: 'Cover image is required.' };
+  for (let step = 0; step <= 3; step++) {
+    const result = validateEventFormStep(step, state);
+    if (!result.valid) return result;
   }
   return { valid: true };
 }
@@ -98,9 +103,9 @@ export function normalizeInitialEventForm(initialValues: Partial<AdminEvent>) {
     highlightsInput: initialValues.highlights?.join(', ') || '',
     countryCode: initialValues.countryCode || 'US',
     convenienceFee:
-      initialValues.convenienceFee !== undefined ? initialValues.convenienceFee : (' ' as any),
+      (initialValues.convenienceFee !== undefined ? initialValues.convenienceFee : '') as number | '',
     taxPercentage:
-      initialValues.taxPercentage !== undefined ? initialValues.taxPercentage : (' ' as any),
+      (initialValues.taxPercentage !== undefined ? initialValues.taxPercentage : '') as number | '',
     tags: initialValues.tags?.join(', ') || '',
     requireTerms: initialValues.requireTerms ?? true,
     requireAgeConfirmation: !!initialValues.requireAgeConfirmation,
@@ -145,11 +150,7 @@ export interface BuildEventPayloadParams {
 }
 
 export function buildEventFormPayload(params: BuildEventPayloadParams): Partial<AdminEvent> {
-  const generatedSlug = params.title
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^[-]+|[-]+$/g, '');
+  const generatedSlug = params.title.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^[-]+|[-]+$/g, '');
   const isProfileType = params.ticketingType === 'profile';
   const country = getCountryConfig(params.countryCode);
   const resolvedTaxPercentage =
@@ -172,28 +173,11 @@ export function buildEventFormPayload(params: BuildEventPayloadParams): Partial<
     endDate: params.endDate ? new Date(params.endDate).toISOString() : undefined,
     requireTerms: params.requireTerms,
     requireAgeConfirmation: params.requireAgeConfirmation,
-    ageRestriction:
-      params.requireAgeConfirmation && params.ageRestriction
-        ? Number(params.ageRestriction)
-        : undefined,
-    tags: params.tags
-      .split(',')
-      .map((t) => t.trim())
-      .filter(Boolean),
-    highlights: Array.from(
-      new Set(
-        params.highlightsInput
-          .split(',')
-          .map((h) => h.trim())
-          .filter(Boolean)
-      )
-    ),
-    bookingStartDate: params.bookingStartDate
-      ? new Date(params.bookingStartDate).toISOString()
-      : undefined,
-    bookingEndDate: params.bookingEndDate
-      ? new Date(params.bookingEndDate).toISOString()
-      : undefined,
+    ageRestriction: params.requireAgeConfirmation && params.ageRestriction ? Number(params.ageRestriction) : undefined,
+    tags: params.tags.split(',').map((t) => t.trim()).filter(Boolean),
+    highlights: Array.from(new Set(params.highlightsInput.split(',').map((h) => h.trim()).filter(Boolean))),
+    bookingStartDate: params.bookingStartDate ? new Date(params.bookingStartDate).toISOString() : undefined,
+    bookingEndDate: params.bookingEndDate ? new Date(params.bookingEndDate).toISOString() : undefined,
     refundPolicy: params.refundPolicy.trim() || undefined,
     organizerName: params.organizerName.trim() || undefined,
     countryCode: country.countryCode,
@@ -201,7 +185,7 @@ export function buildEventFormPayload(params: BuildEventPayloadParams): Partial<
     taxLabel: country.taxLabel,
     taxPercentage: resolvedTaxPercentage,
     locale: country.locale,
-    convenienceFee: params.convenienceFee === '' ? undefined : params.convenienceFee,
+    convenienceFee: params.convenienceFee !== undefined && params.convenienceFee !== '' ? Number(params.convenienceFee) : undefined,
   };
 
   if (isProfileType) {
@@ -214,6 +198,8 @@ export function buildEventFormPayload(params: BuildEventPayloadParams): Partial<
       }))
       .filter((o) => o.totalCapacity !== undefined || o.isActive !== undefined);
 
+    // Capacity is calculated server-side from resolved profile tiers.
+    // Default floor of 1 satisfies the non-empty totalCapacity schema requirement.
     payload.totalCapacity = 1;
   } else {
     const ticketTiers = params.tiers.map((t) => ({

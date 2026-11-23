@@ -46,7 +46,7 @@ export const EventRequirementsCard = React.memo(function EventRequirementsCard({
       <div className="glass p-6 rounded-2xl border border-white/5 space-y-4">
         <h3 className="text-white font-bold text-lg mb-2">Registration Requirements</h3>
         <div className="space-y-4 text-sm">
-          <label htmlFor="event-require-terms" className="flex items-center gap-3 cursor-pointer">
+          <label htmlFor="event-require-terms" className="flex items-center gap-3 cursor-pointer min-h-[44px]">
             <input
               id="event-require-terms"
               type="checkbox"
@@ -54,9 +54,9 @@ export const EventRequirementsCard = React.memo(function EventRequirementsCard({
               onChange={(e) => setRequireTerms(e.target.checked)}
               className="w-4 h-4 rounded bg-background border-white/20 text-accent-purple focus:ring-accent-purple"
             />
-            <span className="text-text-secondary">Require Terms & Conditions</span>
+            <span className="text-text-secondary select-none">Require Terms & Conditions</span>
           </label>
-          <label htmlFor="event-require-age" className="flex items-center gap-3 cursor-pointer">
+          <label htmlFor="event-require-age" className="flex items-center gap-3 cursor-pointer min-h-[44px]">
             <input
               id="event-require-age"
               type="checkbox"
@@ -64,23 +64,24 @@ export const EventRequirementsCard = React.memo(function EventRequirementsCard({
               onChange={(e) => setRequireAgeConfirmation(e.target.checked)}
               className="w-4 h-4 rounded bg-background border-white/20 text-accent-purple focus:ring-accent-purple"
             />
-            <span className="text-text-secondary">Require Age Confirmation</span>
+            <span className="text-text-secondary select-none">Require Age Confirmation</span>
           </label>
           {requireAgeConfirmation && (
-            <div className="pl-7">
-              <label htmlFor="event-age-restriction" className="block text-text-secondary mb-2">Age Requirement</label>
-              <select
-                id="event-age-restriction"
-                value={ageRestriction}
-                onChange={(e) => setAgeRestriction(e.target.value === '' ? '' : Number(e.target.value))}
-                className="px-4 py-2 bg-background border border-white/10 rounded-xl text-white focus:outline-none focus:border-accent-purple focus:ring-2 focus:ring-accent-purple/50"
-              >
-                <option value={18}>18</option>
-                <option value={21}>21</option>
-                <option value={25}>25</option>
-                <option value={30}>30</option>
-                <option value="">Custom</option>
-              </select>
+            <div className="pl-7 space-y-2">
+              <FormField label="Age Requirement" htmlFor="event-age-restriction">
+                <select
+                  id="event-age-restriction"
+                  value={ageRestriction}
+                  onChange={(e) => setAgeRestriction(e.target.value === '' ? '' : Number(e.target.value))}
+                  className={inputCls}
+                >
+                  <option value={18} className="bg-background-card">18</option>
+                  <option value={21} className="bg-background-card">21</option>
+                  <option value={25} className="bg-background-card">25</option>
+                  <option value={30} className="bg-background-card">30</option>
+                  <option value="" className="bg-background-card">Custom</option>
+                </select>
+              </FormField>
               {ageRestriction === '' && (
                 <input
                   id="event-age-custom"
@@ -91,7 +92,7 @@ export const EventRequirementsCard = React.memo(function EventRequirementsCard({
                   onBlur={(e) => {
                     if (e.target.value) setAgeRestriction(Number(e.target.value));
                   }}
-                  className="w-full px-4 py-2 mt-2 bg-background border border-white/10 rounded-xl text-white focus:outline-none focus:border-accent-purple focus:ring-2 focus:ring-accent-purple/50"
+                  className={`${inputCls} mt-2`}
                 />
               )}
             </div>
