@@ -1,12 +1,14 @@
 'use client';
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useState, useRef } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import React, { useState } from 'react';
 
-import { adminGetRefunds, adminProcessRefund, type AdminRefund } from '@/lib/api/admin/refund.service';
-import { useAdminAuth } from '@/providers/AdminAuthProvider';
-import { AdminRole, QUERY_KEYS } from '@mad/shared';
+import { AdminRole, QUERY_KEYS, RefundStatus } from '@mad/shared';
+import type { AdminRefund } from '@mad/types';
 import { ErrorState, TablePagination } from '@mad/ui';
+
+import { adminGetRefunds, adminProcessRefund } from '@/lib/api/admin/refund.service';
+import { useAdminAuth } from '@/providers/AdminAuthProvider';
 
 import { ProcessRefundModal } from './components/ProcessRefundModal';
 import { RefundsTable } from './components/RefundsTable';
@@ -17,7 +19,6 @@ export default function AdminRefundsPage() {
   const [statusFilter, setStatusFilter] = useState('');
   const [page, setPage] = useState(1);
   const [processTarget, setProcessTarget] = useState<AdminRefund | null>(null);
-  const isSubmitting = useRef(false);
   const canProcessRefund = !!admin?.role && [AdminRole.SUPER_ADMIN, AdminRole.ADMIN].includes(admin.role as AdminRole);
   const [action, setAction] = useState<'approve' | 'reject'>('approve');
   const [adminNotes, setAdminNotes] = useState('');
@@ -58,7 +59,6 @@ export default function AdminRefundsPage() {
 
   const processMutation = useMutation({
     mutationFn: () => {
-      isSubmitting.current = true;
       return adminProcessRefund(
         processTarget!._id,
         action,
@@ -71,9 +71,6 @@ export default function AdminRefundsPage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: QUERY_KEYS.admin.refunds.all });
       resetStates();
-    },
-    onSettled: () => {
-      isSubmitting.current = false;
     },
   });
 
@@ -90,18 +87,25 @@ export default function AdminRefundsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-black text-white">Refunds</h1>
           <p className="text-text-muted text-sm mt-0.5">{pagination?.total ?? 0} refund requests</p>
         </div>
-        <select value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
-          className="px-4 py-2.5 rounded-xl bg-background-card border border-border-subtle text-sm text-text-primary focus:outline-none focus:border-accent-purple">
+        <select
+          aria-label="Filter by refund status"
+          value={statusFilter}
+          onChange={(e) => {
+            setStatusFilter(e.target.value);
+            setPage(1);
+          }}
+          className="px-4 py-2.5 rounded-xl bg-background-card border border-border-subtle text-sm text-text-primary focus:outline-none focus:border-accent-purple"
+        >
           <option value="">All Statuses</option>
-          <option value="requested">Requested</option>
-          <option value="processing">Processing</option>
-          <option value="completed">Completed</option>
-          <option value="failed">Failed</option>
+          <option value={RefundStatus.REQUESTED}>Requested</option>
+          <option value={RefundStatus.PROCESSING}>Processing</option>
+          <option value={RefundStatus.COMPLETED}>Completed</option>
+          <option value={RefundStatus.FAILED}>Failed</option>
         </select>
       </div>
 
@@ -140,7 +144,6 @@ export default function AdminRefundsPage() {
         overrideReason={overrideReason}
         setOverrideReason={setOverrideReason}
         onConfirm={() => {
-          if (isSubmitting.current) return;
           processMutation.mutate();
         }}
         isPending={processMutation.isPending}

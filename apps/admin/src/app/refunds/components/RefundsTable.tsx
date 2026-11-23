@@ -2,17 +2,17 @@
 
 import React from 'react';
 
-import type { AdminRefund } from '@/lib/api/admin/refund.service';
-import { formatMoney } from '@mad/shared';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, EmptyState, Button } from '@mad/ui';
+import { RefundStatus, formatMoney } from '@mad/shared';
+import type { AdminRefund } from '@mad/types';
+import { Badge, Button, EmptyState, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@mad/ui';
 import { Receipt, Search } from '@mad/ui/icons';
 import { formatDateTime } from '@mad/utils';
 
-const STATUS_COLORS: Record<string, string> = {
-  requested: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/30',
-  processing: 'bg-blue-500/10 text-blue-400 border-blue-500/30',
-  completed: 'bg-green-500/10 text-green-400 border-green-500/30',
-  failed: 'bg-red-500/10 text-red-400 border-red-500/30',
+const STATUS_VARIANT: Record<string, 'warning' | 'info' | 'success' | 'danger' | 'default'> = {
+  [RefundStatus.REQUESTED]: 'warning',
+  [RefundStatus.PROCESSING]: 'info',
+  [RefundStatus.COMPLETED]: 'success',
+  [RefundStatus.FAILED]: 'danger',
 };
 
 interface RefundsTableProps {
@@ -67,7 +67,7 @@ export function RefundsTable({
     return refunds.map((refund) => (
       <TableRow key={refund._id} className="border-b border-border-subtle/40 hover:bg-white/2">
         <TableCell className="py-3.5 px-4 font-mono text-xs text-accent-purple">
-          <div>{(refund.bookingId as { bookingId?: string })?.bookingId ?? String(refund.bookingId).slice(-8)}</div>
+          <div>{refund.bookingId?.bookingId ?? String(refund.bookingId).slice(-8)}</div>
           {refund.ticketIds && refund.ticketIds.length > 0 && (
             <div className="text-[10px] text-text-muted mt-0.5">{refund.ticketIds.length} tickets</div>
           )}
@@ -75,13 +75,13 @@ export function RefundsTable({
         <TableCell className="py-3.5 px-4 text-white font-semibold">{formatMoney(refund.amount, refund.currency)}</TableCell>
         <TableCell className="py-3.5 px-4 text-text-secondary max-w-40 truncate">{refund.reason ?? '—'}</TableCell>
         <TableCell className="py-3.5 px-4">
-          <span className={`text-xs px-2.5 py-1 rounded-full border font-medium ${STATUS_COLORS[refund.status] ?? ''}`}>
+          <Badge variant={STATUS_VARIANT[refund.status] ?? 'default'} size="sm">
             {refund.status}
-          </span>
+          </Badge>
         </TableCell>
         <TableCell className="py-3.5 px-4 text-text-muted text-xs">{formatDateTime(refund.createdAt)}</TableCell>
         <TableCell className="py-3.5 px-4">
-          {canProcessRefund && refund.status === 'requested' && (
+          {canProcessRefund && refund.status === RefundStatus.REQUESTED && (
             <Button
               variant="secondary"
               size="sm"
@@ -101,15 +101,66 @@ export function RefundsTable({
       <TableHeader>
         <TableRow>
           <TableHead className="py-3.5 px-4">Booking</TableHead>
-          <TableHead onClick={() => onSort('amount')} className="py-3.5 px-4 cursor-pointer hover:text-white transition-colors select-none">
-            Amount {sortField === 'amount' ? (sortOrder === 'asc' ? '▲' : '▼') : ''}
+          <TableHead
+            role="columnheader"
+            tabIndex={0}
+            aria-sort={sortField === 'amount' ? (sortOrder === 'asc' ? 'ascending' : 'descending') : 'none'}
+            onClick={() => onSort('amount')}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onSort('amount');
+              }
+            }}
+            className="py-3.5 px-4 cursor-pointer hover:text-white transition-colors select-none"
+          >
+            <span>Amount</span>
+            {sortField === 'amount' && (
+              <span aria-hidden="true" className="ml-1 text-xs">
+                {sortOrder === 'asc' ? '▲' : '▼'}
+              </span>
+            )}
           </TableHead>
           <TableHead className="py-3.5 px-4">Reason</TableHead>
-          <TableHead onClick={() => onSort('status')} className="py-3.5 px-4 cursor-pointer hover:text-white transition-colors select-none">
-            Status {sortField === 'status' ? (sortOrder === 'asc' ? '▲' : '▼') : ''}
+          <TableHead
+            role="columnheader"
+            tabIndex={0}
+            aria-sort={sortField === 'status' ? (sortOrder === 'asc' ? 'ascending' : 'descending') : 'none'}
+            onClick={() => onSort('status')}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onSort('status');
+              }
+            }}
+            className="py-3.5 px-4 cursor-pointer hover:text-white transition-colors select-none"
+          >
+            <span>Status</span>
+            {sortField === 'status' && (
+              <span aria-hidden="true" className="ml-1 text-xs">
+                {sortOrder === 'asc' ? '▲' : '▼'}
+              </span>
+            )}
           </TableHead>
-          <TableHead onClick={() => onSort('createdAt')} className="py-3.5 px-4 cursor-pointer hover:text-white transition-colors select-none">
-            Requested {sortField === 'createdAt' ? (sortOrder === 'asc' ? '▲' : '▼') : ''}
+          <TableHead
+            role="columnheader"
+            tabIndex={0}
+            aria-sort={sortField === 'createdAt' ? (sortOrder === 'asc' ? 'ascending' : 'descending') : 'none'}
+            onClick={() => onSort('createdAt')}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onSort('createdAt');
+              }
+            }}
+            className="py-3.5 px-4 cursor-pointer hover:text-white transition-colors select-none"
+          >
+            <span>Requested</span>
+            {sortField === 'createdAt' && (
+              <span aria-hidden="true" className="ml-1 text-xs">
+                {sortOrder === 'asc' ? '▲' : '▼'}
+              </span>
+            )}
           </TableHead>
           <TableHead className="py-3.5 px-4">Action</TableHead>
         </TableRow>
