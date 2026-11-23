@@ -130,8 +130,8 @@ export const EventScheduleCard = React.memo(function EventScheduleCard({
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <FormField label="Event Starts *">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <FormField label="Event Starts *" htmlFor="event-start-date">
             <input
               id="event-start-date"
               type="datetime-local"
@@ -142,8 +142,9 @@ export const EventScheduleCard = React.memo(function EventScheduleCard({
             />
             <span className={labelCls}>The date and time when your event begins.</span>
           </FormField>
-          <FormField label="Event Ends">
+          <FormField label="Event Ends" htmlFor="event-end-date">
             <input
+              id="event-end-date"
               type="datetime-local"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
@@ -156,9 +157,10 @@ export const EventScheduleCard = React.memo(function EventScheduleCard({
 
       <div className="glass rounded-2xl border border-border-subtle p-6 space-y-5">
         <h2 className="text-white font-semibold">🎟 Ticket Booking</h2>
-        <div className="grid grid-cols-2 gap-4">
-          <FormField label="Booking Opens">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <FormField label="Booking Opens" htmlFor="event-booking-start">
             <input
+              id="event-booking-start"
               type="datetime-local"
               value={bookingStartDate}
               onChange={(e) => setBookingStartDate(e.target.value)}
@@ -166,8 +168,9 @@ export const EventScheduleCard = React.memo(function EventScheduleCard({
             />
             <span className={labelCls}>When tickets become available for booking.</span>
           </FormField>
-          <FormField label="Booking Closes">
+          <FormField label="Booking Closes" htmlFor="event-booking-end">
             <input
+              id="event-booking-end"
               type="datetime-local"
               value={bookingEndDate}
               onChange={(e) => setBookingEndDate(e.target.value)}
@@ -189,7 +192,7 @@ export const EventScheduleCard = React.memo(function EventScheduleCard({
       )}
 
       {startDate && (
-        <div className="p-5 border border-border-subtle rounded-xl bg-surface/50 grid grid-cols-2 gap-4 text-xs">
+        <div className="p-5 border border-border-subtle rounded-xl bg-surface/50 grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
           <div>
             <h4 className="text-text-secondary font-medium mb-2 uppercase tracking-wider">Event Info</h4>
             <p className="text-white text-sm font-semibold">{formatFriendlyDate(startDate)}</p>

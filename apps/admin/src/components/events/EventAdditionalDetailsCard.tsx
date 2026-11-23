@@ -26,8 +26,8 @@ export const EventAdditionalDetailsCard = React.memo(function EventAdditionalDet
   return (
     <div className="glass rounded-2xl border border-border-subtle p-6 space-y-5">
       <h2 className="text-white font-semibold">Additional Details</h2>
-      <div className="grid grid-cols-2 gap-4">
-        <FormField label="Organizer Name">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <FormField label="Organizer Name" htmlFor="event-organizer">
           <input
             id="event-organizer"
             value={organizerName}
@@ -36,7 +36,7 @@ export const EventAdditionalDetailsCard = React.memo(function EventAdditionalDet
             className={inputCls}
           />
         </FormField>
-        <FormField label="Highlights (comma separated)">
+        <FormField label="Highlights (comma separated)" htmlFor="event-highlights">
           <input
             id="event-highlights"
             value={highlightsInput}
@@ -46,7 +46,7 @@ export const EventAdditionalDetailsCard = React.memo(function EventAdditionalDet
           />
         </FormField>
       </div>
-      <FormField label="Refund Policy">
+      <FormField label="Refund Policy" htmlFor="event-refund-policy">
         <textarea
           id="event-refund-policy"
           value={refundPolicy}

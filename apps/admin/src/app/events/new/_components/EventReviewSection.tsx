@@ -58,16 +58,16 @@ export const EventReviewSection: React.FC<EventReviewSectionProps> = ({
       <div className="p-5 border border-border-subtle rounded-xl bg-surface">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-bold text-white flex items-center gap-2">
-            <svg className="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
             Basic Information
           </h3>
-          <Button variant="ghost" size="sm" onClick={() => onEditStep(0)}>
+          <Button variant="ghost" size="sm" onClick={() => onEditStep(0)} aria-label="Edit Basic Information">
             Edit
           </Button>
         </div>
-        <div className="grid grid-cols-2 gap-4 text-sm">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
           <div>
             <span className="text-text-muted block mb-1">Title</span>
             <span className="text-white font-medium">{title || '—'}</span>
@@ -76,7 +76,7 @@ export const EventReviewSection: React.FC<EventReviewSectionProps> = ({
             <span className="text-text-muted block mb-1">Category</span>
             <span className="text-white font-medium capitalize">{category || '—'}</span>
           </div>
-          <div className="col-span-2">
+          <div className="col-span-1 sm:col-span-2">
             <span className="text-text-muted block mb-1">Description</span>
             <span className="text-white font-medium whitespace-pre-wrap">{description || '—'}</span>
           </div>
@@ -95,16 +95,16 @@ export const EventReviewSection: React.FC<EventReviewSectionProps> = ({
       <div className="p-5 border border-border-subtle rounded-xl bg-surface">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-bold text-white flex items-center gap-2">
-            <svg className="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
             Schedule
           </h3>
-          <Button variant="ghost" size="sm" onClick={() => onEditStep(1)}>
+          <Button variant="ghost" size="sm" onClick={() => onEditStep(1)} aria-label="Edit Schedule">
             Edit
           </Button>
         </div>
-        <div className="grid grid-cols-2 gap-4 text-sm">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
           <div>
             <span className="text-text-muted block mb-1">Start Date</span>
             <span className="text-white font-medium">{startDate ? new Date(startDate).toLocaleString() : '—'}</span>
@@ -132,12 +132,12 @@ export const EventReviewSection: React.FC<EventReviewSectionProps> = ({
       <div className="p-5 border border-border-subtle rounded-xl bg-surface">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-bold text-white flex items-center gap-2">
-            <svg className="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
             Ticket Configuration & Requirements
           </h3>
-          <Button variant="ghost" size="sm" onClick={() => onEditStep(2)}>
+          <Button variant="ghost" size="sm" onClick={() => onEditStep(2)} aria-label="Edit Ticket Configuration & Requirements">
             Edit
           </Button>
         </div>

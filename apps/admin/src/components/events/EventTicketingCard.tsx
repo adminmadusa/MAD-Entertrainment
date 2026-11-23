@@ -82,11 +82,13 @@ export const EventTicketingCard = React.memo(function EventTicketingCard({
     <div className="glass rounded-2xl border border-border-subtle p-6 space-y-6">
       <div className="flex items-center justify-between border-b border-white/5 pb-4">
         <h2 className="text-white font-semibold text-base">Ticketing Configuration</h2>
-        <div className="flex bg-white/5 p-1 rounded-xl border border-white/10">
+        <div role="tablist" aria-label="Ticketing Type" className="flex bg-white/5 p-1 rounded-xl border border-white/10">
           <button
             type="button"
+            role="tab"
+            aria-selected={ticketingType === 'custom'}
             onClick={() => setTicketingType('custom')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+            className={`min-h-[44px] px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
               ticketingType === 'custom'
                 ? 'bg-accent-purple text-white shadow-md'
                 : 'text-text-secondary hover:text-white'
@@ -96,8 +98,10 @@ export const EventTicketingCard = React.memo(function EventTicketingCard({
           </button>
           <button
             type="button"
+            role="tab"
+            aria-selected={ticketingType === 'profile'}
             onClick={() => setTicketingType('profile')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+            className={`min-h-[44px] px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
               ticketingType === 'profile'
                 ? 'bg-accent-purple text-white shadow-md'
                 : 'text-text-secondary hover:text-white'
@@ -115,7 +119,7 @@ export const EventTicketingCard = React.memo(function EventTicketingCard({
             <button
               type="button"
               onClick={onAddTier}
-              className="text-accent-purple text-sm font-medium hover:text-accent-purple-light transition-colors"
+              className="text-accent-purple text-sm font-medium hover:text-accent-purple-light transition-colors min-h-[44px] px-2 py-1 flex items-center"
             >
               + Add Tier
             </button>
@@ -128,7 +132,7 @@ export const EventTicketingCard = React.memo(function EventTicketingCard({
                   <button
                     type="button"
                     onClick={() => onRemoveTier(i)}
-                    className="text-error text-xs hover:underline"
+                    className="text-error text-xs hover:underline min-h-[44px] px-2 py-1 flex items-center"
                   >
                     Remove
                   </button>
@@ -250,8 +254,8 @@ export const EventTicketingCard = React.memo(function EventTicketingCard({
                                 className="w-28 text-xs py-1.5"
                               />
                             </div>
-                            <div className="space-y-1 pt-4">
-                              <label htmlFor={`override-visible-${ticket.tier}`} className="flex items-center gap-2 cursor-pointer select-none">
+                            <div className="space-y-1 pt-1">
+                              <label htmlFor={`override-visible-${ticket.tier}`} className="flex items-center gap-2 cursor-pointer select-none min-h-[44px]">
                                 <input
                                   id={`override-visible-${ticket.tier}`}
                                   type="checkbox"
@@ -259,7 +263,7 @@ export const EventTicketingCard = React.memo(function EventTicketingCard({
                                   onChange={(e) =>
                                     onOverrideChange(ticket.tier, 'isActive', e.target.checked)
                                   }
-                                  className="w-3.5 h-3.5 accent-accent-purple rounded"
+                                  className="w-4 h-4 accent-accent-purple rounded"
                                 />
                                 <span className="text-[11px] text-text-secondary font-medium">Visible</span>
                               </label>
