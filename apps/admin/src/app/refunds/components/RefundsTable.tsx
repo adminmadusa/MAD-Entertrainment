@@ -102,7 +102,7 @@ export function RefundsTable({
         <TableRow>
           <TableHead className="py-3.5 px-4">Booking</TableHead>
           <TableHead
-            role="button"
+            role="columnheader"
             tabIndex={0}
             aria-sort={sortField === 'amount' ? (sortOrder === 'asc' ? 'ascending' : 'descending') : 'none'}
             onClick={() => onSort('amount')}
@@ -123,7 +123,7 @@ export function RefundsTable({
           </TableHead>
           <TableHead className="py-3.5 px-4">Reason</TableHead>
           <TableHead
-            role="button"
+            role="columnheader"
             tabIndex={0}
             aria-sort={sortField === 'status' ? (sortOrder === 'asc' ? 'ascending' : 'descending') : 'none'}
             onClick={() => onSort('status')}
@@ -143,7 +143,7 @@ export function RefundsTable({
             )}
           </TableHead>
           <TableHead
-            role="button"
+            role="columnheader"
             tabIndex={0}
             aria-sort={sortField === 'createdAt' ? (sortOrder === 'asc' ? 'ascending' : 'descending') : 'none'}
             onClick={() => onSort('createdAt')}
