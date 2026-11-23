@@ -7,6 +7,9 @@ export interface EventFormValidationState {
   description: string;
   venue: string;
   startDate: string;
+  endDate?: string;
+  bookingStartDate?: string;
+  bookingEndDate?: string;
   ticketingType: 'custom' | 'profile';
   selectedProfileId: string;
   bannerImage: CloudinaryImage | null;
@@ -26,6 +29,23 @@ export function validateEventFormStep(
   } else if (step === 1) {
     if (!state.startDate) {
       return { valid: false, error: 'Start date is required.' };
+    }
+    const start = new Date(state.startDate).getTime();
+    const end = state.endDate ? new Date(state.endDate).getTime() : null;
+    const bookStart = state.bookingStartDate ? new Date(state.bookingStartDate).getTime() : null;
+    const bookEnd = state.bookingEndDate ? new Date(state.bookingEndDate).getTime() : null;
+
+    if (end && end <= start) {
+      return { valid: false, error: 'Event end date must be after event start date.' };
+    }
+    if (bookStart && bookEnd && bookEnd <= bookStart) {
+      return { valid: false, error: 'Booking close date must be after booking open date.' };
+    }
+    if (bookStart && bookStart >= start) {
+      return { valid: false, error: 'Booking open date must be before event start date.' };
+    }
+    if (bookEnd && bookEnd > start) {
+      return { valid: false, error: 'Booking close date must be before or equal to event start date.' };
     }
   } else if (step === 2) {
     if (state.ticketingType === 'profile' && !state.selectedProfileId) {
@@ -50,6 +70,23 @@ export function validateEventFormAll(
   }
   if (!state.startDate) {
     return { valid: false, error: 'Start date is required.' };
+  }
+  const start = new Date(state.startDate).getTime();
+  const end = state.endDate ? new Date(state.endDate).getTime() : null;
+  const bookStart = state.bookingStartDate ? new Date(state.bookingStartDate).getTime() : null;
+  const bookEnd = state.bookingEndDate ? new Date(state.bookingEndDate).getTime() : null;
+
+  if (end && end <= start) {
+    return { valid: false, error: 'Event end date must be after event start date.' };
+  }
+  if (bookStart && bookEnd && bookEnd <= bookStart) {
+    return { valid: false, error: 'Booking close date must be after booking open date.' };
+  }
+  if (bookStart && bookStart >= start) {
+    return { valid: false, error: 'Booking open date must be before event start date.' };
+  }
+  if (bookEnd && bookEnd > start) {
+    return { valid: false, error: 'Booking close date must be before or equal to event start date.' };
   }
   if (state.ticketingType === 'profile' && !state.selectedProfileId) {
     return { valid: false, error: 'Please select a ticket profile.' };
@@ -98,9 +135,9 @@ export function normalizeInitialEventForm(initialValues: Partial<AdminEvent>) {
     highlightsInput: initialValues.highlights?.join(', ') || '',
     countryCode: initialValues.countryCode || 'US',
     convenienceFee:
-      initialValues.convenienceFee !== undefined ? initialValues.convenienceFee : (' ' as any),
+      initialValues.convenienceFee !== undefined ? initialValues.convenienceFee : '',
     taxPercentage:
-      initialValues.taxPercentage !== undefined ? initialValues.taxPercentage : (' ' as any),
+      initialValues.taxPercentage !== undefined ? initialValues.taxPercentage : '',
     tags: initialValues.tags?.join(', ') || '',
     requireTerms: initialValues.requireTerms ?? true,
     requireAgeConfirmation: !!initialValues.requireAgeConfirmation,
@@ -201,7 +238,10 @@ export function buildEventFormPayload(params: BuildEventPayloadParams): Partial<
     taxLabel: country.taxLabel,
     taxPercentage: resolvedTaxPercentage,
     locale: country.locale,
-    convenienceFee: params.convenienceFee === '' ? undefined : params.convenienceFee,
+    convenienceFee:
+      params.convenienceFee !== undefined && params.convenienceFee !== ''
+        ? Number(params.convenienceFee)
+        : undefined,
   };
 
   if (isProfileType) {
@@ -214,6 +254,8 @@ export function buildEventFormPayload(params: BuildEventPayloadParams): Partial<
       }))
       .filter((o) => o.totalCapacity !== undefined || o.isActive !== undefined);
 
+    // Capacity is calculated server-side from resolved profile tiers.
+    // Default floor of 1 satisfies the non-empty totalCapacity schema requirement.
     payload.totalCapacity = 1;
   } else {
     const ticketTiers = params.tiers.map((t) => ({

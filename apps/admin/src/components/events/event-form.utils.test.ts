@@ -97,8 +97,8 @@ describe('event-form.utils', () => {
       const form = normalizeInitialEventForm({});
       expect(form.countryCode).toBe('US');
       expect(form.title).toBe('');
-      expect(form.convenienceFee).toBe(' ');
-      expect(form.taxPercentage).toBe(' ');
+      expect(form.convenienceFee).toBe('');
+      expect(form.taxPercentage).toBe('');
     });
 
     it('normalizes existing event tax and convenience fee', () => {
@@ -119,6 +119,9 @@ describe('event-form.utils', () => {
       description: 'Big festival',
       venue: 'Main Arena',
       startDate: '2026-09-01T20:00:00Z',
+      endDate: '2026-09-01T23:00:00Z',
+      bookingStartDate: '2026-08-01T00:00:00Z',
+      bookingEndDate: '2026-09-01T18:00:00Z',
       ticketingType: 'custom' as const,
       selectedProfileId: '',
       bannerImage: { url: 'https://example.com/banner.jpg', publicId: 'b-1' },
@@ -133,9 +136,57 @@ describe('event-form.utils', () => {
       expect(validateEventFormStep(3, { ...validState, bannerImage: null }).valid).toBe(false);
     });
 
+    it('validates step 1 date ordering rules', () => {
+      // Event end date before or equal to start date
+      const invalidEndDate = {
+        ...validState,
+        endDate: '2026-09-01T19:00:00Z', // Before start
+      };
+      const endRes = validateEventFormStep(1, invalidEndDate);
+      expect(endRes.valid).toBe(false);
+      expect(endRes.error).toBe('Event end date must be after event start date.');
+
+      // Booking close date before or equal to booking open date
+      const invalidBookClose = {
+        ...validState,
+        bookingStartDate: '2026-08-15T00:00:00Z',
+        bookingEndDate: '2026-08-10T00:00:00Z',
+      };
+      const bookCloseRes = validateEventFormStep(1, invalidBookClose);
+      expect(bookCloseRes.valid).toBe(false);
+      expect(bookCloseRes.error).toBe('Booking close date must be after booking open date.');
+
+      // Booking open date on or after event start date
+      const invalidBookOpen = {
+        ...validState,
+        bookingStartDate: '2026-09-02T00:00:00Z', // After event start
+        bookingEndDate: '2026-09-03T00:00:00Z',
+      };
+      const bookOpenRes = validateEventFormStep(1, invalidBookOpen);
+      expect(bookOpenRes.valid).toBe(false);
+      expect(bookOpenRes.error).toBe('Booking open date must be before event start date.');
+
+      // Booking close date after event start date
+      const invalidBookCloseAfterStart = {
+        ...validState,
+        bookingEndDate: '2026-09-01T21:00:00Z', // After event start
+      };
+      const bookAfterStartRes = validateEventFormStep(1, invalidBookCloseAfterStart);
+      expect(bookAfterStartRes.valid).toBe(false);
+      expect(bookAfterStartRes.error).toBe(
+        'Booking close date must be before or equal to event start date.'
+      );
+    });
+
     it('validates all steps together', () => {
       expect(validateEventFormAll(validState).valid).toBe(true);
       expect(validateEventFormAll({ ...validState, venue: '' }).valid).toBe(false);
+      expect(
+        validateEventFormAll({
+          ...validState,
+          endDate: '2026-09-01T19:00:00Z',
+        }).valid
+      ).toBe(false);
     });
   });
 });
