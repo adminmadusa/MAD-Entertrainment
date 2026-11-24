@@ -8,13 +8,17 @@ export function createCrudService<T extends Document>(
   sortIndex: Record<string, 1 | -1> = { name: 1 }
 ) {
   const generateSlug = (name: string): string => {
-    return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    const raw = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    if (raw === 'early-bird') return 'early_bird';
+    return raw;
   };
 
   return {
     create: async (data: Partial<T>): Promise<T> => {
       if ('name' in data && typeof data.name === 'string' && !('slug' in data)) {
         (data as any).slug = generateSlug(data.name);
+      } else if ('slug' in data && (data as any).slug === 'early-bird') {
+        (data as any).slug = 'early_bird';
       }
       const doc = new model(data);
       const result = await doc.save();
@@ -31,6 +35,8 @@ export function createCrudService<T extends Document>(
     update: async (id: string, data: Partial<T>): Promise<T | null> => {
       if ('name' in data && typeof data.name === 'string') {
         (data as any).slug = generateSlug(data.name);
+      } else if ('slug' in data && (data as any).slug === 'early-bird') {
+        (data as any).slug = 'early_bird';
       }
       const updated = await model.findByIdAndUpdate(id, data, { new: true });
       if (cachePattern) {

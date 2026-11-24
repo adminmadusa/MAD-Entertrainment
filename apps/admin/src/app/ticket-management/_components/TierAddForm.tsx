@@ -55,7 +55,13 @@ export function TierAddForm({
             </div>
             <div>
               <h4 className="text-white font-black text-sm uppercase tracking-wider">{nameInput || 'Tier Title'}</h4>
-              <p className="text-[10px] text-text-muted font-mono">{nameInput.toLowerCase().replace(/[^a-z0-9]+/g, '-') || 'slug-auto-preview'}</p>
+              <p className="text-[10px] text-text-muted font-mono">
+                {nameInput
+                  ? (nameInput.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') === 'early-bird'
+                      ? 'early_bird'
+                      : nameInput.toLowerCase().replace(/[^a-z0-9]+/g, '-'))
+                  : 'slug-auto-preview'}
+              </p>
             </div>
           </div>
           <span className="text-[9px] font-bold tracking-widest uppercase px-2 py-0.5 rounded bg-white/10 text-white/90">

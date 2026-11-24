@@ -1,5 +1,7 @@
 import PDFDocument from "pdfkit";
 
+import { TicketTier } from "@mad/shared";
+
 import { Ticket } from "../../../models/ticket.schema";
 import { drawAttendeeDetails } from "./layout/draw-attendee-details";
 import { drawEventDetails } from "./layout/draw-event-details";
@@ -71,7 +73,7 @@ export async function generateTicketPDF(
       {
         ticketId: `TKT-${booking.bookingId}-001`,
         tierName: booking.tickets?.[0]?.tierName || "General Admission",
-        tier: booking.tickets?.[0]?.tier || "general_admission",
+        tier: booking.tickets?.[0]?.tier || TicketTier.GENERAL,
         admits: booking.totalTickets || 1,
         guestName: booking.guestName || "Guest Attendee",
       },

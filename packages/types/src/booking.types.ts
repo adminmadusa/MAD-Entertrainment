@@ -58,19 +58,32 @@ export type Ticket = {
   bookingId: string;
   eventId: string;
   userId?: string;
+  attendeeUserId?: string;
+  attendeeEmail?: string;
   tier: TicketTier;
   tierName: string;
-  price: number;
+  admits?: number;
+  price?: number;
   seatId?: string;
   row?: string;
   seatNumber?: number;
   section?: string;
   guestName?: string;
   guestEmail?: string;
-  status: string;
-  qrCodeImage: string;
+  qrCode?: string;
+  qrCodeImage?: string;
+  status: 'active' | 'voided' | 'replaced' | string;
+  assignmentStatus?: 'unassigned' | 'pending' | 'claimed';
+  claimedAt?: string | Date;
+  scannedAt?: string | Date;
+  scannedById?: string;
+  /** @deprecated Use scannedAt */
   checkedInAt?: string | Date;
+  /** @deprecated Use scannedById */
   checkedInBy?: string;
+  replacedByTicketId?: string;
+  replacedAt?: string | Date;
+  replacementReason?: 'EMAIL_CORRECTION' | 'ADMIN_REISSUE' | 'FRAUD_PREVENTION' | string;
   createdAt?: string | Date;
   updatedAt?: string | Date;
 };

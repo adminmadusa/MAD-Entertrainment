@@ -48,7 +48,7 @@ export interface AdminEvent {
   ageRestriction?: number;
   tags?: string[];
   createdAt: string;
-  ticketProfileId?: string;
+  ticketProfileId?: string | null;
   ticketOverrides?: {
     tier: string;
     price?: number;

@@ -303,14 +303,13 @@ export const updateEvent = async (id: string, data: Partial<IEvent>): Promise<Ev
     if (profile) {
       const overrides = data.ticketOverrides !== undefined ? data.ticketOverrides : existing.ticketOverrides;
       const resolvedTiers = resolveEventTickets(
-        data.title || existing.title,
-        profile,
-        overrides || [],
-        existing.ticketTiers || []
+        data.title || existing.title, profile, overrides || [], existing.ticketTiers || []
       );
       data.ticketTiers = resolvedTiers;
       data.totalCapacity = resolvedTiers.reduce((acc, tier) => acc + (tier.isActive ? tier.totalCapacity : 0), 0);
     }
+  } else if (data.ticketProfileId === null) {
+    data.ticketOverrides = [];
   }
 
   // Capacity Floor Protection check

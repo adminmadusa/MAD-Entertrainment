@@ -4,10 +4,6 @@ import { useEffect, useRef, useState } from 'react';
 import type { Ticket } from '@mad/types';
 import { Modal } from '@mad/ui';
 
-interface ExtendedTicket extends Ticket {
-  assignmentStatus?: 'unassigned' | 'pending' | 'claimed';
-}
-
 interface EntryPassGridProps {
   tickets: Ticket[];
 }
@@ -70,8 +66,7 @@ export function EntryPassGrid({ tickets }: EntryPassGridProps) {
         }`}
       >
         {tickets.map((ticket, tIndex) => {
-          const extTicket = ticket as ExtendedTicket;
-          const assignmentStatus = extTicket.assignmentStatus;
+          const assignmentStatus = ticket.assignmentStatus;
           const isMasked = assignmentStatus === 'pending' || assignmentStatus === 'claimed';
 
           let helpText = 'Present this QR code at the venue entry scanner for digital validation. Do not share this code.';
