@@ -49,6 +49,8 @@ describe('event-form.utils', () => {
       expect(payload.convenienceFee).toBeUndefined();
       expect(payload.bookingMode).toBe(BookingMode.GENERAL_ADMISSION);
       expect(payload.totalCapacity).toBe(200);
+      expect(payload.ticketProfileId).toBeNull();
+      expect(payload.ticketOverrides).toEqual([]);
     });
 
     it('resolves India localization defaults when countryCode is IN', () => {

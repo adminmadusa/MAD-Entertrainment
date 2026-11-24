@@ -202,6 +202,9 @@ export function buildEventFormPayload(params: BuildEventPayloadParams): Partial<
     // Default floor of 1 satisfies the non-empty totalCapacity schema requirement.
     payload.totalCapacity = 1;
   } else {
+    payload.ticketProfileId = null;
+    payload.ticketOverrides = [];
+
     const ticketTiers = params.tiers.map((t) => ({
       name: t.name,
       price: Number(t.price),
@@ -214,13 +217,16 @@ export function buildEventFormPayload(params: BuildEventPayloadParams): Partial<
     }));
 
     payload.ticketTiers = ticketTiers.map((t) => {
-      const resolvedTierEnum = Object.values(TicketTier).includes(t.name as TicketTier)
+      const isEarlyBird = t.name === 'early-bird' || t.name === 'early_bird';
+      const resolvedTierEnum = isEarlyBird
+        ? TicketTier.EARLY_BIRD
+        : Object.values(TicketTier).includes(t.name as TicketTier)
         ? (t.name as TicketTier)
         : TicketTier.CUSTOM;
       return {
         ...t,
         tier: resolvedTierEnum,
-        slug: t.name,
+        slug: isEarlyBird ? 'early_bird' : t.name,
         totalCapacity: t.capacity,
       };
     });

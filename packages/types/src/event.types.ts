@@ -113,7 +113,7 @@ export type Event = {
   requireAgeConfirmation?: boolean;
   dresscode?: string;
   additionalInfo?: string;
-  ticketProfileId?: string;
+  ticketProfileId?: string | null;
   ticketOverrides?: TicketOverride[];
   totalCapacity?: number;
   soldCount?: number;
